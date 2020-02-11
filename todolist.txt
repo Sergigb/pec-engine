@@ -1,0 +1,30 @@
+list of stuff i have to do/fix
+- imgui: WantCaptureKeyboard to know if we need to handle input
+- also integrate imgui
+- in the load scene function (gl utils) update to use new instead of malloc (and cleanup the function)
+- create uniform for the light in the shader
+- frustum culling
+- when we press q/e the up vector we use to change the yaw should rotate?
+- load all meshes in scene as a single mesh?
+- mouse camera movement
+- we should link assimp dynamically
+- in the mesh loading function, in the line 261, shouldn't it be GL_UINT???
+- revise const correctness
+- in the font atlas function, it should be possible to load custom ranges of characters before creating the texture atlas
+- In glutils, when we load the indices and then bind the buffer we pass glfloat to glVertexAttribPointer, is this correct?
+- the shader programme or the shaders are not being deleted right, it leaks memory if the programme gets deleted (see 2d text class destructor)
+- implement kerning in the text rendering/atlas
+- change the name of the texture coords in the character struct to left right top bottom or such
+- create a shader class to avoid having to create a new shader for every object/text or whatever
+- new lines in the 2d text class do not work when its not placed absolute to the bl, fix it or whatever
+- integrate bullet 
+- create a makefile that doesn't suck
+
+Interesting links:
+- planet rendering/reentry effects, etc
+    - http://leah-lindner.com/blog/
+    - http://leah-lindner.com/img/blog/planet_renderer/week5-6/researchPaper.pdf
+- ksp implementation of things: 
+    - https://www.youtube.com/watch?v=mXTxQko-JH0&feature=youtu.be&t=24m31s
+- picking bullet (to do at some point)
+    - https://www.opengl-tutorial.org/miscellaneous/clicking-on-objects/picking-with-a-physics-library/

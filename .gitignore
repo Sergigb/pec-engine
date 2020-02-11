@@ -1,3 +1,18 @@
+# project
+*.ttf
+*.dae
+*.ply
+*.blend
+*.obj
+*.gltf
+bin/opengl
+bin/main
+bin/log.txt
+data/fonts/*.txt
+
+
+# stuff I copied from some rando github repo
+
 # Prerequisites
 *.d
 
@@ -30,3 +45,4 @@
 *.exe
 *.out
 *.app
+
