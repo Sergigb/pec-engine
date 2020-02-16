@@ -144,6 +144,15 @@ float math::length2( const vec3 &v ) {
     return v.v[0] * v.v[0] + v.v[1] * v.v[1] + v.v[2] * v.v[2];
 }
 
+float math::length( const vec4 &v ) {
+    return sqrt( v.v[0] * v.v[0] + v.v[1] * v.v[1] + v.v[2] * v.v[2] + v.v[3] * v.v[3] );
+}
+
+// squared length
+float math::length2( const vec4 &v ) {
+    return v.v[0] * v.v[0] + v.v[1] * v.v[1] + v.v[2] * v.v[2] + v.v[3] * v.v[3];
+}
+
 // note: proper spelling (hehe)
 math::vec3 math::normalise( const vec3 &v ) {
     math::vec3 vb;
@@ -155,6 +164,20 @@ math::vec3 math::normalise( const vec3 &v ) {
     vb.v[1] = v.v[1] / l;
     vb.v[2] = v.v[2] / l;
     return vb;
+}
+
+math::vec4 math::normalise(const vec4 &v){
+    math::vec4 vb;
+    float l = length( v );
+    if ( 0.0f == l ) {
+        return vec4( 0.0f, 0.0f, 0.0f, 0.0f );
+    }
+    vb.v[0] = v.v[0] / l;
+    vb.v[1] = v.v[1] / l;
+    vb.v[2] = v.v[2] / l;
+    vb.v[3] = v.v[3] / l;
+    return vb;
+
 }
 
 math::vec3 math::vec3::operator+( const vec3 &rhs ) {
@@ -235,6 +258,10 @@ math::vec3 &math::vec3::operator=( const vec3 &rhs ) {
 
 float math::dot( const vec3 &a, const vec3 &b ) {
     return a.v[0] * b.v[0] + a.v[1] * b.v[1] + a.v[2] * b.v[2];
+}
+
+float math::dot( const vec4 &a, const vec3 &b ){
+    return p.v[0] * c.v[0] + p.v[1] * c.v[1] + p.v[2] * c.v[2] + p.v[3];
 }
 
 math::vec3 math::cross( const vec3 &a, const vec3 &b ) {

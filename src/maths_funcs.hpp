@@ -114,8 +114,12 @@ namespace math{
     // vector functions
     float length( const vec3 &v );
     float length2( const vec3 &v );
+    float length( const vec4 &v );
+    float length2( const vec4 &v );
     vec3 normalise( const vec3 &v );
+    vec4 normalise(const vec4 &v );
     float dot( const vec3 &a, const vec3 &b );
+    float dot( const vec4 &a, const vec3 &b );
     vec3 cross( const vec3 &a, const vec3 &b );
     float get_squared_dist( vec3 from, vec3 to );
     float direction_to_heading( vec3 d );
