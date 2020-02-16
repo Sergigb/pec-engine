@@ -38,23 +38,23 @@ namespace math{
         // create from truncated vec4
         vec3( const vec4 &vv );
         // add vector to vector
-        vec3 operator+( const vec3 &rhs );
+        vec3 operator+( const vec3 &rhs ) const;
         // add scalar to vector
-        vec3 operator+( float rhs );
+        vec3 operator+( float rhs ) const;
         // because user's expect this too
         vec3 &operator+=( const vec3 &rhs );
         // subtract vector from vector
-        vec3 operator-( const vec3 &rhs );
+        vec3 operator-( const vec3 &rhs ) const;
         // add vector to vector
-        vec3 operator-( float rhs );
+        vec3 operator-( float rhs ) const;
         // because users expect this too
         vec3 &operator-=( const vec3 &rhs );
         // multiply with scalar
-        vec3 operator*( float rhs );
+        vec3 operator*( float rhs ) const;
         // because users expect this too
         vec3 &operator*=( float rhs );
         // divide vector by scalar
-        vec3 operator/( float rhs );
+        vec3 operator/( float rhs ) const;
         // because users expect this too
         vec3 &operator=( const vec3 &rhs );
 
@@ -91,18 +91,18 @@ namespace math{
         // note! this is entering components in ROW-major order
         mat4( float a, float b, float c, float d, float e, float f, float g, float h,
                     float i, float j, float k, float l, float mm, float n, float o, float p );
-        vec4 operator*( const vec4 &rhs );
-        mat4 operator*( const mat4 &rhs );
+        vec4 operator*( const vec4 &rhs ) const;
+        mat4 operator*( const mat4 &rhs ) const;
         mat4 &operator=( const mat4 &rhs );
         float m[16];
     };
 
     struct versor {
         versor();
-        versor operator/( float rhs );
-        versor operator*( float rhs );
-        versor operator*( const versor &rhs );
-        versor operator+( const versor &rhs );
+        versor operator/( float rhs ) const;
+        versor operator*( float rhs ) const;
+        versor operator*( const versor &rhs ) const;
+        versor operator+( const versor &rhs ) const;
         float q[4];
     };
 

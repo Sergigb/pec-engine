@@ -166,7 +166,7 @@ math::vec3 math::normalise( const vec3 &v ) {
     return vb;
 }
 
-math::vec4 math::normalise(const vec4 &v){
+math::vec4 math::normalise(const vec4 &v) {
     math::vec4 vb;
     float l = length( v );
     if ( 0.0f == l ) {
@@ -180,7 +180,7 @@ math::vec4 math::normalise(const vec4 &v){
 
 }
 
-math::vec3 math::vec3::operator+( const vec3 &rhs ) {
+math::vec3 math::vec3::operator+( const vec3 &rhs ) const {
     math::vec3 vc;
     vc.v[0] = v[0] + rhs.v[0];
     vc.v[1] = v[1] + rhs.v[1];
@@ -195,7 +195,7 @@ math::vec3 &math::vec3::operator+=( const vec3 &rhs ) {
     return *this; // return self
 }
 
-math::vec3 math::vec3::operator-( const vec3 &rhs ) {
+math::vec3 math::vec3::operator-( const vec3 &rhs ) const {
     math::vec3 vc;
     vc.v[0] = v[0] - rhs.v[0];
     vc.v[1] = v[1] - rhs.v[1];
@@ -210,7 +210,7 @@ math::vec3 &math::vec3::operator-=( const vec3 &rhs ) {
     return *this;
 }
 
-math::vec3 math::vec3::operator+( float rhs ) {
+math::vec3 math::vec3::operator+( float rhs ) const {
     math::vec3 vc;
     vc.v[0] = v[0] + rhs;
     vc.v[1] = v[1] + rhs;
@@ -218,7 +218,7 @@ math::vec3 math::vec3::operator+( float rhs ) {
     return vc;
 }
 
-math::vec3 math::vec3::operator-( float rhs ) {
+math::vec3 math::vec3::operator-( float rhs ) const {
     math::vec3 vc;
     vc.v[0] = v[0] - rhs;
     vc.v[1] = v[1] - rhs;
@@ -226,7 +226,7 @@ math::vec3 math::vec3::operator-( float rhs ) {
     return vc;
 }
 
-math::vec3 math::vec3::operator*( float rhs ) {
+math::vec3 math::vec3::operator*( float rhs ) const {
     math::vec3 vc;
     vc.v[0] = v[0] * rhs;
     vc.v[1] = v[1] * rhs;
@@ -234,7 +234,7 @@ math::vec3 math::vec3::operator*( float rhs ) {
     return vc;
 }
 
-math::vec3 math::vec3::operator/( float rhs ) {
+math::vec3 math::vec3::operator/( float rhs ) const {
     math::vec3 vc;
     vc.v[0] = v[0] / rhs;
     vc.v[1] = v[1] / rhs;
@@ -316,7 +316,7 @@ math::mat4 math::identity_mat4() {
  3    7 11 15
 */
 
-math::vec4 math::mat4::operator*( const vec4 &rhs ) {
+math::vec4 math::mat4::operator*( const vec4 &rhs ) const {
     // 0x + 4y + 8z + 12w
     float x = m[0] * rhs.v[0] + m[4] * rhs.v[1] + m[8] * rhs.v[2] + m[12] * rhs.v[3];
     // 1x + 5y + 9z + 13w
@@ -328,7 +328,7 @@ math::vec4 math::mat4::operator*( const vec4 &rhs ) {
     return vec4( x, y, z, w );
 }
 
-math::mat4 math::mat4::operator*( const mat4 &rhs ) {
+math::mat4 math::mat4::operator*( const mat4 &rhs ) const {
     mat4 r = zero_mat4();
     int r_index = 0;
     for ( int col = 0; col < 4; col++ ) {
@@ -569,7 +569,7 @@ math::mat4 math::orthographic( float right, float left, float top, float bottom,
 /*----------------------------HAMILTON IN DA HOUSE!---------------------------*/
 math::versor::versor() {}
 
-math::versor math::versor::operator/( float rhs ) {
+math::versor math::versor::operator/( float rhs ) const {
     versor result;
     result.q[0] = q[0] / rhs;
     result.q[1] = q[1] / rhs;
@@ -578,7 +578,7 @@ math::versor math::versor::operator/( float rhs ) {
     return result;
 }
 
-math::versor math::versor::operator*( float rhs ) {
+math::versor math::versor::operator*( float rhs ) const {
     versor result;
     result.q[0] = q[0] * rhs;
     result.q[1] = q[1] * rhs;
@@ -591,7 +591,7 @@ void math::print( const versor &q ) {
     printf( "[%.2f ,%.2f, %.2f, %.2f]\n", q.q[0], q.q[1], q.q[2], q.q[3] );
 }
 
-math::versor math::versor::operator*( const versor &rhs ) {
+math::versor math::versor::operator*( const versor &rhs ) const {
     versor result;
     result.q[0] =
         rhs.q[0] * q[0] - rhs.q[1] * q[1] - rhs.q[2] * q[2] - rhs.q[3] * q[3];
@@ -605,7 +605,7 @@ math::versor math::versor::operator*( const versor &rhs ) {
     return math::normalise( result );
 }
 
-math::versor math::versor::operator+( const versor &rhs ) {
+math::versor math::versor::operator+( const versor &rhs ) const {
     versor result;
     result.q[0] = rhs.q[0] + q[0];
     result.q[1] = rhs.q[1] + q[1];
