@@ -133,7 +133,8 @@ int get_cpu_model(char* stringbuffer){
     uint32_t modelname[64];
 
     if(!__get_cpuid_max(0x80000004, NULL)){
-        std::cerr << "Feature not implemented." << std::endl;
+        std::cerr << "get_cpu_model: Feature not implemented." << std::endl;
+        log("get_cpu_model: Feature not implemented.");
         return EXIT_FAILURE;
     }
 
