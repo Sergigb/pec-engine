@@ -261,7 +261,7 @@ float math::dot( const vec3 &a, const vec3 &b ) {
 }
 
 float math::dot( const vec4 &a, const vec3 &b ){
-    return p.v[0] * c.v[0] + p.v[1] * c.v[1] + p.v[2] * c.v[2] + p.v[3];
+    return a.v[0] * b.v[0] + a.v[1] * b.v[1] + a.v[2] * b.v[2] + a.v[3];
 }
 
 math::vec3 math::cross( const vec3 &a, const vec3 &b ) {
