@@ -19,6 +19,7 @@ list of stuff i have to do/fix
 - new lines in the 2d text class do not work when its not placed absolute to the bl, fix it or whatever
 - integrate bullet 
 - create a makefile that doesn't suck
+- overloaded functions for vec4?
 
 Interesting links:
 - planet rendering/reentry effects, etc
@@ -28,3 +29,5 @@ Interesting links:
     - https://www.youtube.com/watch?v=mXTxQko-JH0&feature=youtu.be&t=24m31s
 - picking bullet (to do at some point)
     - https://www.opengl-tutorial.org/miscellaneous/clicking-on-objects/picking-with-a-physics-library/
+- interesting opengl stuff
+    - https://www.songho.ca/opengl/
