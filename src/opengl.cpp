@@ -14,6 +14,7 @@
 #include "Input.hpp"
 #include "WindowHandler.hpp"
 #include "Text2D.hpp"
+#include "Frustum.hpp"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <stb/stb_image_write.h>
@@ -67,6 +68,7 @@ int main(){
 
 	////////////////// text testing /////////////////
 	Text2D text(gl_width, gl_height, color{1.0, 1.0, 0.0}, 256, "../data/fonts/Liberastika-Regular.ttf", 15);
+	Text2D text2(gl_width, gl_height, color{1.0, 1.0, 0.0}, 256, "../data/fonts/Liberastika-Regular.ttf", 15);
 	const GLubyte* vendor = glGetString(GL_VENDOR); // Returns the vendor
 	const GLubyte* renderer = glGetString(GL_RENDERER); // Returns a hint to the model
 	const GLubyte* gl_version = glGetString(GL_VERSION);
@@ -108,6 +110,7 @@ int main(){
 	Input input;
 	Camera camera(&inital_position, 67.0f, (float)gl_width / (float)gl_height , 0.1f, 10000000.0f, &input);
 	WindowHandler window_handler(g_window, gl_width, gl_height, &input, &camera);
+	Frustum frustum;
 	camera.setSpeed(10.f);
 
 	glfwSetWindowUserPointer(window_handler.getWindow(), &window_handler);
@@ -141,6 +144,7 @@ int main(){
 		input.update();
 		camera.update();
 		window_handler.update();
+		frustum.extractPlanes(camera.getViewMatrix(), camera.getProjMatrix(), false);
 
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glClearColor(0.2, 0.2, 0.2, 1.0);
@@ -152,9 +156,13 @@ int main(){
 		if(camera.projChanged())
 			glUniformMatrix4fv(proj_mat_location, 1, GL_FALSE, camera.getProjMatrix().m);
 		glBindVertexArray(vao_model);
-		for(int i=0; i < 10; i++){
-    		glUniformMatrix4fv(model_mat_location, 1, GL_FALSE, loc[i].m);
-			glDrawElements(GL_TRIANGLES, num_vertex * 3, GL_UNSIGNED_INT, NULL);
+		int num_rendered = 0;
+		for(int i=10; i < 1; i++){
+			if(frustum.checkSphere(math::vec3(loc[i].m[12], loc[i].m[13], loc[i].m[14]), 2*0.994406)){
+				num_rendered += 1;
+    			glUniformMatrix4fv(model_mat_location, 1, GL_FALSE, loc[i].m);
+				glDrawElements(GL_TRIANGLES, num_vertex * 3, GL_UNSIGNED_INT, NULL);
+			}
 		}
 
 		glUseProgram(shader_programme_simple);
@@ -165,8 +173,8 @@ int main(){
 			glUniformMatrix4fv(proj_mat_location_sphere, 1, GL_FALSE, camera.getProjMatrix().m);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		glBindVertexArray(vao_sphere);
-		for(int i=0; i < 10; i++){
-    		glUniformMatrix4fv(model_mat_location_sphere, 1, GL_FALSE, (loc[i] * scale).m);
+		for(int i=0; i < 1; i++){
+			glUniformMatrix4fv(model_mat_location_sphere, 1, GL_FALSE, (loc[i] * scale).m);
 			glDrawElements(GL_TRIANGLES, num_vertex * 3, GL_UNSIGNED_INT, NULL);
 		}
 		glDrawElements(GL_TRIANGLES, num_vertex_sphere * 3, GL_UNSIGNED_INT, NULL);
@@ -175,12 +183,22 @@ int main(){
 
 		//text rendering test
 		glDisable(GL_DEPTH_TEST);
+
+		wchar_t buffer[64];
+		text2.clearStrings();
+		std::ostringstream oss2;
+		oss2 << "Num rendered ducks: " << num_rendered;
+		mbstowcs(buffer, oss2.str().c_str(), 64);
+		text2.addString(buffer, 15, 15, 1, STRING_DRAW_ABSOLUTE_BL);
+
 		if(camera.projChanged()){
 			int w, h;
 			window_handler.getFramebufferSize(w, h);
 			text.onFramebufferSizeUpdate(w, h);
+			text2.onFramebufferSizeUpdate(w, h);
 		}
 		text.render();
+		text2.render();
 		glEnable(GL_DEPTH_TEST);
 		
 		glfwSwapBuffers(window_handler.getWindow());

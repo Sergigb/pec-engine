@@ -1,6 +1,6 @@
 CXX = g++
 CC = gcc
-CFLAGS = #-Wall -Wextra -Werror -pedantic 
+CFLAGS =# -Wall -Wextra -Werror -pedantic 
 LDFLAGS = -lfreetype
 OBJPATH = ../bin
 EXECPATH = ../bin
@@ -38,8 +38,8 @@ $(OBJPATH)/ResourceContainer.o: $(PARTSPAHT)ResourceContainer.cpp $(PARTSPAHT)Re
 $(OBJPATH)/Engine.o: $(PARTSPAHT)Engine.cpp $(PARTSPAHT)Engine.hpp
 	$(CXX) -c $(PARTSPAHT)Engine.cpp -o $(OBJPATH)/Engine.o  $(CFLAGS)
 
-opengl: $(OBJPATH)/opengl.o $(OBJPATH)/log.o $(OBJPATH)/utils.o $(OBJPATH)/gl_utils.o $(OBJPATH)/maths_funcs.o $(OBJPATH)/Camera.o $(OBJPATH)/Input.o $(OBJPATH)/WindowHandler.o $(OBJPATH)/FontAtlas.o $(OBJPATH)/Text2D.o
-	$(CXX) $(CFLAGS) $(INC) $(OBJPATH)/opengl.o $(OBJPATH)/log.o $(OBJPATH)/utils.o $(OBJPATH)/gl_utils.o $(OBJPATH)/maths_funcs.o $(OBJPATH)/Camera.o $(OBJPATH)/Input.o $(OBJPATH)/WindowHandler.o $(OBJPATH)/FontAtlas.o  $(OBJPATH)/Text2D.o $(LIBS) $(GLFLAGS) $(LDFLAGS) -o $(EXECPATH)/opengl
+opengl: $(OBJPATH)/opengl.o $(OBJPATH)/log.o $(OBJPATH)/utils.o $(OBJPATH)/gl_utils.o $(OBJPATH)/maths_funcs.o $(OBJPATH)/Camera.o $(OBJPATH)/Input.o $(OBJPATH)/WindowHandler.o $(OBJPATH)/FontAtlas.o $(OBJPATH)/Text2D.o $(OBJPATH)/Frustum.o
+	$(CXX) $(CFLAGS) $(INC) $(OBJPATH)/opengl.o $(OBJPATH)/log.o $(OBJPATH)/utils.o $(OBJPATH)/gl_utils.o $(OBJPATH)/maths_funcs.o $(OBJPATH)/Camera.o $(OBJPATH)/Input.o $(OBJPATH)/WindowHandler.o $(OBJPATH)/FontAtlas.o  $(OBJPATH)/Text2D.o $(OBJPATH)/Frustum.o $(LIBS) $(GLFLAGS) $(LDFLAGS) -o $(EXECPATH)/opengl
 
 $(OBJPATH)/opengl.o: opengl.cpp
 	$(CXX) -c opengl.cpp -o $(OBJPATH)/opengl.o $(CFLAGS) $(INC)
@@ -70,6 +70,9 @@ $(OBJPATH)/Text2D.o: Text2D.cpp Text2D.hpp
 
 $(OBJPATH)/FontAtlas.o: FontAtlas.cpp FontAtlas.hpp 
 	$(CXX) -c FontAtlas.cpp -o $(OBJPATH)/FontAtlas.o $(CFLAGS) $(INC)
+
+$(OBJPATH)/Frustum.o: Frustum.cpp Frustum.hpp 
+	$(CXX) -c Frustum.cpp -o $(OBJPATH)/Frustum.o $(CFLAGS) $(INC)
 
 clean: 
 	rm $(OBJPATH)/*.o $(EXECPATH)/output
