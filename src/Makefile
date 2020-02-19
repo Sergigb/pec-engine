@@ -1,6 +1,6 @@
 CXX = g++
 CC = gcc
-CFLAGS =# -Wall -Wextra -Werror -pedantic 
+CFLAGS = -Wall -Wextra -Werror -pedantic 
 LDFLAGS = -lfreetype
 OBJPATH = ../bin
 EXECPATH = ../bin
