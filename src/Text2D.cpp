@@ -81,7 +81,6 @@ void Text2D::updateBuffers(){
     GLfloat* vertex_buffer;
     GLfloat* tex_coords_buffer;
     GLushort* index_buffer;
-
     for(uint i=0; i < m_strings.size(); i++)
         total_num_characters += m_strings.at(i).strlen;
 
@@ -108,7 +107,6 @@ void Text2D::updateBuffers(){
         else
             pen_y = m_fb_height - current_string->posy;
 
-        //for(uint j=0; j<current_string->strlen; j++){
         uint j = 0, k = 0; // k is used to skip the possible line breaks
         while(current_string->textbuffer[j] != '\0'){
             if(current_string->textbuffer[j] == '\n'){
@@ -224,3 +222,45 @@ void Text2D::onFramebufferSizeUpdate(int fb_width, int fb_height){
     glUniformMatrix4fv(m_proj_mat_location, 1, GL_FALSE, m_projection.m);
     m_update_buffer = true;
 }
+
+
+void debug_info_box(Text2D** t, int fb_width, int fb_height){
+    *t = new Text2D(fb_width, fb_height, color{1.0, 1.0, 0.0}, 256, "../data/fonts/Liberastika-Regular.ttf", 15);
+    
+    const GLubyte* vendor = glGetString(GL_VENDOR); // Returns the vendor
+    const GLubyte* renderer = glGetString(GL_RENDERER); // Returns a hint to the model
+    const GLubyte* gl_version = glGetString(GL_VERSION);
+    char modelname[64];
+    std::ostringstream oss;
+    wchar_t vendor_w[128];
+    wchar_t renderer_w[128];
+    wchar_t glversion_w[128];
+    wchar_t modelname_w[64];
+    wchar_t totalmemory_w[32];
+    unsigned long long mem_bytes;
+    float mem_gb;
+
+    wstrcpy(vendor_w, L"Vendor: ", 128);
+    wstrcpy(renderer_w, L"Renderer: ", 128);
+    wstrcpy(glversion_w, L"GL version: ", 128);
+
+    ucs2wcs(vendor_w+8, vendor, 128-8);
+    ucs2wcs(renderer_w+10, renderer, 128-10);
+    ucs2wcs(glversion_w+12, gl_version, 128-12);
+    
+    (*t)->addString(vendor_w, 15, 25, 1, STRING_DRAW_ABSOLUTE_TL);
+    (*t)->addString(renderer_w, 15, 45, 1, STRING_DRAW_ABSOLUTE_TL);
+    (*t)->addString(glversion_w, 15, 65, 1, STRING_DRAW_ABSOLUTE_TL);
+
+    get_cpu_model(modelname);
+    mbstowcs(modelname_w, modelname, 64);
+    (*t)->addString(modelname_w+8, 15, 85, 1, STRING_DRAW_ABSOLUTE_TL);
+
+    mem_bytes = get_sys_memory();
+    mem_gb = (float)mem_bytes / 1073741824.;
+    oss.precision(3);
+    oss << "System memory: " << mem_gb << " GB";
+    mbstowcs(totalmemory_w, oss.str().c_str(), 64);
+    (*t)->addString(totalmemory_w, 15, 105, 1, STRING_DRAW_ABSOLUTE_TL);
+}
+

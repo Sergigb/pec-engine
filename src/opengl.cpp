@@ -39,13 +39,14 @@ int main(){
 
 	/////////////////////////////////// model
 	int num_vertex;
+	float rad;
 	GLuint vao_model;
-	load_scene(std::string("../data/duck.dae"), vao_model, num_vertex);
+	load_scene(std::string("../data/duck.dae"), vao_model, num_vertex, rad);
 
 	/////////////////////////////////// 1m sphere
 	int num_vertex_sphere;
 	GLuint vao_sphere;
-	load_scene(std::string("../data/sphere.dae"), vao_sphere, num_vertex_sphere);
+	load_scene(std::string("../data/sphere.dae"), vao_sphere, num_vertex_sphere, rad);
 
 	/////////////////////////////////// shader
 	GLuint shader_programme = create_programme_from_files("../shaders/phong_blinn_vs.glsl",
@@ -67,43 +68,9 @@ int main(){
 
 
 	////////////////// text testing /////////////////
-	Text2D text(gl_width, gl_height, color{1.0, 1.0, 0.0}, 256, "../data/fonts/Liberastika-Regular.ttf", 15);
 	Text2D text2(gl_width, gl_height, color{1.0, 1.0, 0.0}, 256, "../data/fonts/Liberastika-Regular.ttf", 15);
-	const GLubyte* vendor = glGetString(GL_VENDOR); // Returns the vendor
-	const GLubyte* renderer = glGetString(GL_RENDERER); // Returns a hint to the model
-	const GLubyte* gl_version = glGetString(GL_VERSION);
-	char modelname[64];
-	std::ostringstream oss;
-	wchar_t vendor_w[128];
-	wchar_t renderer_w[128];
-	wchar_t glversion_w[128];
-	wchar_t modelname_w[64];
-	wchar_t totalmemory_w[32];
-	unsigned long long mem_bytes;
-	float mem_gb;
-
-	wstrcpy(vendor_w, L"Vendor: ", 128);
-	wstrcpy(renderer_w, L"Renderer: ", 128);
-	wstrcpy(glversion_w, L"GL version: ", 128);
-
-	ucs2wcs(vendor_w+8, vendor, 128-8);
-	ucs2wcs(renderer_w+10, renderer, 128-10);
-	ucs2wcs(glversion_w+12, gl_version, 128-12);
-	
-	text.addString(vendor_w, 15, 25, 1, STRING_DRAW_ABSOLUTE_TL);
-	text.addString(renderer_w, 15, 45, 1, STRING_DRAW_ABSOLUTE_TL);
-	text.addString(glversion_w, 15, 65, 1, STRING_DRAW_ABSOLUTE_TL);
-
-	get_cpu_model(modelname);
-	mbstowcs(modelname_w, modelname, 64);
-	text.addString(modelname_w+8, 15, 85, 1, STRING_DRAW_ABSOLUTE_TL);
-
-	mem_bytes = get_sys_memory();
-	mem_gb = (float)mem_bytes / 1073741824.;
-	oss.precision(3);
-	oss << "System memory: " << mem_gb << " GB";
-	mbstowcs(totalmemory_w, oss.str().c_str(), 64);
-	text.addString(totalmemory_w, 15, 105, 1, STRING_DRAW_ABSOLUTE_TL);
+	Text2D* text;
+	debug_info_box(&text, gl_width, gl_height);
 
 	////////////////// text testing /////////////////
 
@@ -157,7 +124,7 @@ int main(){
 			glUniformMatrix4fv(proj_mat_location, 1, GL_FALSE, camera.getProjMatrix().m);
 		glBindVertexArray(vao_model);
 		int num_rendered = 0;
-		for(int i=10; i < 1; i++){
+		for(int i=0; i < 10; i++){
 			if(frustum.checkSphere(math::vec3(loc[i].m[12], loc[i].m[13], loc[i].m[14]), 2*0.994406)){
 				num_rendered += 1;
     			glUniformMatrix4fv(model_mat_location, 1, GL_FALSE, loc[i].m);
@@ -173,7 +140,7 @@ int main(){
 			glUniformMatrix4fv(proj_mat_location_sphere, 1, GL_FALSE, camera.getProjMatrix().m);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 		glBindVertexArray(vao_sphere);
-		for(int i=0; i < 1; i++){
+		for(int i=0; i < 10; i++){
 			glUniformMatrix4fv(model_mat_location_sphere, 1, GL_FALSE, (loc[i] * scale).m);
 			glDrawElements(GL_TRIANGLES, num_vertex * 3, GL_UNSIGNED_INT, NULL);
 		}
@@ -194,16 +161,15 @@ int main(){
 		if(camera.projChanged()){
 			int w, h;
 			window_handler.getFramebufferSize(w, h);
-			text.onFramebufferSizeUpdate(w, h);
+			text->onFramebufferSizeUpdate(w, h);
 			text2.onFramebufferSizeUpdate(w, h);
 		}
-		text.render();
+		text->render();
 		text2.render();
 		glEnable(GL_DEPTH_TEST);
 		
 		glfwSwapBuffers(window_handler.getWindow());
 		update_fps_counter(window_handler.getWindow());
-		
 	}
 
 	log("Terminating GLFW and exiting");

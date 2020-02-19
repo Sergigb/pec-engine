@@ -22,7 +22,7 @@
 #define STRING_DRAW_ABSOLUTE_TR 3
 #define STRING_DRAW_ABSOLUTE_BR 4
 #define STRING_DRAW_RELATIVE 5 // not implemented
-#define STRING_ALIGN_LEFT 1
+#define STRING_ALIGN_LEFT 1 // TODO
 #define STRING_ALIGN_CENTER 2
 #define STRING_ALIGN_RIGHT 3
 
@@ -66,5 +66,7 @@ struct string{
     float scale;
     wchar_t textbuffer[STRING_MAX_LEN];
 };
+
+void debug_info_box(Text2D** t, int fb_width, int fb_height);
 
 #endif
