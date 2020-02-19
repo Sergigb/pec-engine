@@ -157,7 +157,7 @@ GLuint create_programme_from_files(const char* vert_file_name, const char* frag_
 }
 
 
-int load_scene(const std::string pFile, GLuint& vao, int& point_count){
+int load_scene(const std::string pFile, GLuint& vao, int& point_count, float& cs_radius){
     GLfloat* points = nullptr;
     GLfloat* normals = nullptr;
     GLfloat* texcoords = nullptr;
@@ -179,21 +179,21 @@ int load_scene(const std::string pFile, GLuint& vao, int& point_count){
     //std::cout << "total number of indices: " << point_count << ", total number of vertexes: " << num_vertices * 3  << std::endl;
 
     if(mesh->HasPositions()){
-        points = (GLfloat*)malloc(num_vertices * 3 * sizeof(GLfloat));
-//        float max_norm = 0.0f;
-//        float norm;
+        points = new GLfloat[num_vertices * 3];
+        float norm;
+        cc_radius = 0;
         for(int i = 0; i < num_vertices; i++){
             const aiVector3D *vp = &(mesh->mVertices[i]);
             points[i * 3] = (GLfloat)vp->x;
             points[i * 3 + 1] = (GLfloat)vp->y;
             points[i * 3 + 2] = (GLfloat)vp->z;
-            /*norm = std::sqrt(vp->x * vp->x + vp->y * vp->y + vp->z * vp->z);
-            if(norm > max_norm)
-                max_norm = norm;*/
+            norm = std::sqrt(vp->x * vp->x + vp->y * vp->y + vp->z * vp->z);
+            if(norm > cc_radius)
+                cc_radius = norm;
         }
     }
     if(mesh->HasNormals()){
-        normals = (GLfloat*)malloc(num_vertices * 3 * sizeof(GLfloat));
+        normals = new GLfloat[num_vertices * 3];
         for(int i = 0; i < num_vertices; i++){
             const aiVector3D *vn = &(mesh->mNormals[i]);
             normals[i * 3] = (GLfloat)vn->x;
@@ -202,7 +202,7 @@ int load_scene(const std::string pFile, GLuint& vao, int& point_count){
         }
     }
     if(mesh->HasTextureCoords(0)){
-        texcoords = (GLfloat*)malloc(num_vertices * 2 * sizeof(GLfloat));
+        texcoords = new GLfloat[num_vertices * 2];
         for(int i = 0; i < num_vertices; i++){
             const aiVector3D* vt = &(mesh->mTextureCoords[0][i]);
             texcoords[i * 2] = (GLfloat)vt->x;
@@ -210,10 +210,8 @@ int load_scene(const std::string pFile, GLuint& vao, int& point_count){
         }
     }
     if(mesh->HasFaces()){
-        //unsigned int num_faces = mesh->mNumFaces;
-        //indices = new unsigned int[mesh->mNumFaces * 3 * sizeof(unsigned int)];
-        indices = (unsigned int*)malloc(mesh->mNumFaces * 3 * sizeof(GLuint));
-        for(uint i = 0; i < mesh->mNumFaces; i++){
+        indices = new unsigned int[point_count * 3];
+        for(int i = 0; i < point_count; i++){
             indices[i * 3] = mesh->mFaces[i].mIndices[0];
             indices[i * 3 + 1] = mesh->mFaces[i].mIndices[1];
             indices[i * 3 + 2] = mesh->mFaces[i].mIndices[2];
@@ -232,7 +230,7 @@ int load_scene(const std::string pFile, GLuint& vao, int& point_count){
                                     GL_STATIC_DRAW);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
         glEnableVertexAttribArray(0);
-        free(points);
+        delete[] points;
     }
     if(mesh->HasNormals()){
         GLuint vbo;
@@ -242,7 +240,7 @@ int load_scene(const std::string pFile, GLuint& vao, int& point_count){
                                     GL_STATIC_DRAW);
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
         glEnableVertexAttribArray(1);
-        free(normals);
+        delete[] normals;
     }
     if(mesh->HasTextureCoords(0)){
         GLuint vbo;
@@ -252,7 +250,7 @@ int load_scene(const std::string pFile, GLuint& vao, int& point_count){
                                     GL_STATIC_DRAW);
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, NULL);
         glEnableVertexAttribArray(2);
-        free(texcoords);
+        delete[] texcoords;
     }
     if(mesh->HasFaces()){
         GLuint vbo;
@@ -261,8 +259,7 @@ int load_scene(const std::string pFile, GLuint& vao, int& point_count){
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * point_count * sizeof(GLuint), indices, GL_STATIC_DRAW);
         glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 0, NULL);
         glEnableVertexAttribArray(3);
-        //delete[] indices;
-        free(indices);
+        delete[] indices;
 
     }
 
