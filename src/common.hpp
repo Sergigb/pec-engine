@@ -1,6 +1,7 @@
 #ifndef COMMON_HPP
 #define COMMON_HPP
 #include <map>
+
 #include "BasePart.hpp"
 
 typedef unsigned int EntityId;
@@ -24,11 +25,6 @@ struct color{
 #define OPTION_PRINT_TREE 6
 #define OPTION_PRINT_OPTIONS 7
 #define LOG_GL_MAX_LENGTH 2048
-
-//math defines
-#define TAU 2.0 * M_PI
-#define ONE_DEG_IN_RAD ( 2.0 * M_PI ) / 360.0 // 0.017444444
-#define ONE_RAD_IN_DEG 360.0 / ( 2.0 * M_PI ) // 57.2957795
 
 #define LOG_FILE "log.txt"
 
