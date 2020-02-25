@@ -157,7 +157,7 @@ GLuint create_programme_from_files(const char* vert_file_name, const char* frag_
 }
 
 
-int load_scene(const std::string pFile, GLuint& vao, int& point_count, float& cs_radius){
+int load_scene(const std::string pFile, GLuint& vao, int& point_count, float& cs_radius, struct bbox& aabb){
     GLfloat* points = nullptr;
     GLfloat* normals = nullptr;
     GLfloat* texcoords = nullptr;
@@ -181,16 +181,17 @@ int load_scene(const std::string pFile, GLuint& vao, int& point_count, float& cs
     if(mesh->HasPositions()){
         points = new GLfloat[num_vertices * 3];
         float norm;
-        cc_radius = 0;
+        cs_radius = 0;
         for(int i = 0; i < num_vertices; i++){
             const aiVector3D *vp = &(mesh->mVertices[i]);
             points[i * 3] = (GLfloat)vp->x;
             points[i * 3 + 1] = (GLfloat)vp->y;
             points[i * 3 + 2] = (GLfloat)vp->z;
             norm = std::sqrt(vp->x * vp->x + vp->y * vp->y + vp->z * vp->z);
-            if(norm > cc_radius)
-                cc_radius = norm;
+            if(norm > cs_radius)
+                cs_radius = norm;
         }
+        aabb = get_AABB(points, num_vertices);
     }
     if(mesh->HasNormals()){
         normals = new GLfloat[num_vertices * 3];
@@ -285,4 +286,66 @@ void update_fps_counter(GLFWwindow* window){
         frame_count = 0;
     }
     frame_count++;
+}
+
+
+struct bbox get_AABB(GLfloat* vbuffer, int n_vert){
+    /* I procrastinated a bit and made this unnecessary schematic
+
+                            (x_max, y_max, z_min)
+                                |   (x_max, y_max, z_max)
+                                |         |
+                                v         v
+                                __________    
+                               /|        /|
+                              / |       / |
+    (x_min, y_max, z_min)--->/__|_____ /<-|---(x_min, y_max, z_max)
+                            |   |     |   |
+    (x_max, y_min, z_min)---|-->|_____|___| <---(x_max, y_min, z_max)
+                            |  /      |  /
+                            | /       | /
+                            |/________|/
+                            ^         ^
+                            |         |
+                            |   (x_min, y_min, z_max)
+                            |
+                         (x_min, y_min, z_min)
+
+                              y|  / x
+                               | /
+                               |/____
+                                z
+    */
+    GLfloat x_max = -std::numeric_limits<GLfloat>::max(), x_min = std::numeric_limits<GLfloat>::max(),
+            y_max = -std::numeric_limits<GLfloat>::max(), y_min = std::numeric_limits<GLfloat>::max(),
+            z_max = -std::numeric_limits<GLfloat>::max(), z_min = std::numeric_limits<GLfloat>::max();
+    struct bbox da_box;
+
+    for(int i = 0; i < n_vert; i++){
+        if(vbuffer[i * 3] > x_max)
+            x_max = vbuffer[i * 3];
+        if(vbuffer[i * 3] < x_min)
+            x_min = vbuffer[i * 3];
+
+        if(vbuffer[i * 3 + 1] > y_max)
+            y_max = vbuffer[i * 3 + 1];
+        if(vbuffer[i * 3 + 1] < y_min)
+            y_min = vbuffer[i * 3 + 1];
+
+        if(vbuffer[i * 3 + 2] > z_max)
+            z_max = vbuffer[i * 3 + 2];
+        if(vbuffer[i * 3 + 2] < z_min)
+            z_min = vbuffer[i * 3 + 2];
+    }
+
+    da_box.vert[0] = {x_max, y_max, z_min};
+    da_box.vert[1] = {x_max, y_max, z_max};
+    da_box.vert[2] = {x_min, y_max, z_min};
+    da_box.vert[3] = {x_max, y_min, z_min};
+    da_box.vert[4] = {x_min, y_max, z_max};
+    da_box.vert[5] = {x_max, y_min, z_max};
+    da_box.vert[6] = {x_min, y_min, z_max};
+    da_box.vert[7] = {x_min, y_min, z_min};
+
+    return da_box;
 }
