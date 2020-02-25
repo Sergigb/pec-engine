@@ -257,7 +257,7 @@ void debug_info_box(Text2D** t, int fb_width, int fb_height){
     (*t)->addString(modelname_w+8, 15, 85, 1, STRING_DRAW_ABSOLUTE_TL);
 
     mem_bytes = get_sys_memory();
-    mem_gb = (float)mem_bytes / 1073741824.;
+    mem_gb = (float)mem_bytes / 0x40000000;
     oss.precision(3);
     oss << "System memory: " << mem_gb << " GB";
     mbstowcs(totalmemory_w, oss.str().c_str(), 64);
