@@ -15,7 +15,6 @@
 \******************************************************************************/
 #ifndef MATHS_FUNCS_HPP
 #define MATHS_FUNCS_HPP
-#include "common.hpp"
 
 namespace math{
     struct vec2;
@@ -153,5 +152,9 @@ namespace math{
     void print( const versor &q );
     versor slerp( versor &q, versor &r, float t );
 }
+
+#define TAU 2.0 * M_PI
+#define ONE_DEG_IN_RAD ( 2.0 * M_PI ) / 360.0 // 0.017444444
+#define ONE_RAD_IN_DEG 360.0 / ( 2.0 * M_PI ) // 57.2957795
     
 #endif
