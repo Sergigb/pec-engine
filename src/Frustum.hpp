@@ -4,9 +4,9 @@
 #include <cmath> 
 
 #include "maths_funcs.hpp"
+#include "gl_utils.hpp"
 
 class Frustum{
-    
     private:
         math::vec4 m_planes[6];
     public:
@@ -17,8 +17,7 @@ class Frustum{
 
         bool checkPoint(const math::vec3 p);
         bool checkSphere(const math::vec3 p, float radius);
-        bool checkBox(const math::vec3* pts);
-
+        bool checkBox(const math::vec3* pts, const math::mat4& model_mat);
 };
 
 #endif

@@ -70,20 +70,20 @@ bool Frustum::checkSphere(const math::vec3 p, float radius){
         float d = math::dot(m_planes[i], p);
         if(d < -radius)
             return false;
-        else if(fabs(d) < radius)
-            return true;
+        //else if(fabs(d) < radius)
+        //    return true;
     }
     return true;
 }
 
 
-bool Frustum::checkBox(const math::vec3* pts){
+bool Frustum::checkBox(const math::vec3* pts, const math::mat4& model_mat){
     // not tested yet
     int in, out;
     for(int i=0; i < 6; i++){
         in = 0; out = 0;
         for(int j=0; j < 8 && (in==0 || out==0); j++){
-            if(math::dot(m_planes[i], pts[j]) < 0.0f)
+            if(math::dot(m_planes[i], model_mat * math::vec4{pts[j], 1.0}) < 0.0f)
                 out++;
             else
                 in++;
