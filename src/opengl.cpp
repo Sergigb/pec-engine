@@ -38,15 +38,17 @@ int main(){
 	log_gl_params();
 
 	/////////////////////////////////// model
+	struct bbox aabb_duck;
 	int num_vertex;
 	float rad;
 	GLuint vao_model;
-	load_scene(std::string("../data/duck.dae"), vao_model, num_vertex, rad);
+	load_scene(std::string("../data/duck.dae"), vao_model, num_vertex, rad, aabb_duck);
 
 	/////////////////////////////////// 1m sphere
+	struct bbox aabb_sphere;
 	int num_vertex_sphere;
 	GLuint vao_sphere;
-	load_scene(std::string("../data/sphere.dae"), vao_sphere, num_vertex_sphere, rad);
+	load_scene(std::string("../data/sphere.dae"), vao_sphere, num_vertex_sphere, rad, aabb_sphere);
 
 	/////////////////////////////////// shader
 	GLuint shader_programme = create_programme_from_files("../shaders/phong_blinn_vs.glsl",
@@ -125,7 +127,8 @@ int main(){
 		glBindVertexArray(vao_model);
 		int num_rendered = 0;
 		for(int i=0; i < 10; i++){
-			if(frustum.checkSphere(math::vec3(loc[i].m[12], loc[i].m[13], loc[i].m[14]), 2*0.994406)){
+			//if(frustum.checkSphere(math::vec3(loc[i].m[12], loc[i].m[13], loc[i].m[14]), 2*0.994406)){
+			if(frustum.checkBox(aabb_duck.vert, loc[i])){
 				num_rendered += 1;
     			glUniformMatrix4fv(model_mat_location, 1, GL_FALSE, loc[i].m);
 				glDrawElements(GL_TRIANGLES, num_vertex * 3, GL_UNSIGNED_INT, NULL);
