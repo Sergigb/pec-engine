@@ -22,8 +22,8 @@
 #include <algorithm>
 
 int main(){
-	int model_mat_location, view_mat_location, proj_mat_location, model_mat_location_sphere,
-	    view_mat_location_sphere, proj_mat_location_sphere ;
+	int model_mat_location, view_mat_location, proj_mat_location;//, model_mat_location_sphere,
+	    //view_mat_location_sphere, proj_mat_location_sphere ;
 	math::vec3 inital_position = math::vec3(0.0f, 0.0f, 5.0f);
 	GLFWwindow *g_window = nullptr;
 	int gl_width = 640, gl_height = 480;
@@ -45,10 +45,10 @@ int main(){
 	load_scene(std::string("../data/duck.dae"), vao_model, num_vertex, rad, aabb_duck);
 
 	/////////////////////////////////// 1m sphere
-	struct bbox aabb_sphere;
+	/*struct bbox aabb_sphere;
 	int num_vertex_sphere;
 	GLuint vao_sphere;
-	load_scene(std::string("../data/sphere.dae"), vao_sphere, num_vertex_sphere, rad, aabb_sphere);
+	load_scene(std::string("../data/sphere.dae"), vao_sphere, num_vertex_sphere, rad, aabb_sphere);*/
 
 	/////////////////////////////////// shader
 	GLuint shader_programme = create_programme_from_files("../shaders/phong_blinn_vs.glsl",
@@ -59,12 +59,12 @@ int main(){
 	proj_mat_location = glGetUniformLocation(shader_programme, "proj");
 
 	/////////////////////////////////// simple shader
-	GLuint shader_programme_simple = create_programme_from_files("../shaders/simple_vs.glsl",
+	/*GLuint shader_programme_simple = create_programme_from_files("../shaders/simple_vs.glsl",
 										    					 "../shaders/simple_fs.glsl");
 	log_programme_info(shader_programme_simple);
 	model_mat_location_sphere = glGetUniformLocation(shader_programme_simple, "model");
 	view_mat_location_sphere = glGetUniformLocation(shader_programme_simple, "view");
-	proj_mat_location_sphere = glGetUniformLocation(shader_programme_simple, "proj");
+	proj_mat_location_sphere = glGetUniformLocation(shader_programme_simple, "proj");*/
 
 	//////////////////////////////////////
 
@@ -81,18 +81,15 @@ int main(){
 	WindowHandler window_handler(g_window, gl_width, gl_height, &input, &camera);
 	Frustum frustum;
 	camera.setSpeed(10.f);
-
-	glfwSetWindowUserPointer(window_handler.getWindow(), &window_handler);
-	glfwSetKeyCallback(window_handler.getWindow(), WindowHandler::glfwKeyCallback);
-	glfwSetFramebufferSizeCallback(window_handler.getWindow(), WindowHandler::glfwFramebufferSizeCallback);
+	camera.setWindow(window_handler.getWindow());
 
 	glUseProgram(shader_programme);
 	glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, camera.getViewMatrix().m);
 	glUniformMatrix4fv(proj_mat_location, 1, GL_FALSE, camera.getProjMatrix().m);
 
-	glUseProgram(shader_programme_simple);
+/*	glUseProgram(shader_programme_simple);
 	glUniformMatrix4fv(view_mat_location_sphere, 1, GL_FALSE, camera.getViewMatrix().m);
-	glUniformMatrix4fv(proj_mat_location_sphere, 1, GL_FALSE, camera.getProjMatrix().m);
+	glUniformMatrix4fv(proj_mat_location_sphere, 1, GL_FALSE, camera.getProjMatrix().m);*/
 	
 	glClearColor(0.2, 0.2, 0.2, 1.0);
 
@@ -103,13 +100,12 @@ int main(){
 		loc[i] = translate(identity_mat4(), math::vec3(0., 0., i*std::sin(i*0.75)));
 		loc[i] = translate(loc[i], math::vec3(i*std::cos(i*0.75), 0., 0.)) * rotation;
 	}
-	mat4 scale = identity_mat4();
+	/*mat4 scale = identity_mat4();
 	scale.m[0] = 0.994406;
 	scale.m[5] = 0.994406;
-	scale.m[10] = 0.994406;
+	scale.m[10] = 0.994406;*/
 
 	while (!glfwWindowShouldClose(window_handler.getWindow())){
-		glfwPollEvents();
 		input.update();
 		camera.update();
 		window_handler.update();
@@ -134,7 +130,7 @@ int main(){
 				glDrawElements(GL_TRIANGLES, num_vertex * 3, GL_UNSIGNED_INT, NULL);
 			}
 		}
-
+/*
 		glUseProgram(shader_programme_simple);
 		glDisable(GL_CULL_FACE);
 		if(camera.hasMoved())
@@ -150,7 +146,7 @@ int main(){
 		glDrawElements(GL_TRIANGLES, num_vertex_sphere * 3, GL_UNSIGNED_INT, NULL);
 		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 		glEnable(GL_CULL_FACE);
-
+*/
 		//text rendering test
 		glDisable(GL_DEPTH_TEST);
 
