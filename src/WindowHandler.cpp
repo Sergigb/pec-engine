@@ -17,6 +17,12 @@ WindowHandler::WindowHandler(GLFWwindow* window, int width, int height, Input* i
     m_gl_height = height;
     m_input = input;
     m_camera = camera;
+
+    glfwSetWindowUserPointer(m_window, this);
+    glfwSetKeyCallback(m_window, WindowHandler::glfwKeyCallback);
+    glfwSetFramebufferSizeCallback(m_window, WindowHandler::glfwFramebufferSizeCallback);
+    glfwSetMouseButtonCallback(m_window, WindowHandler::glfwMouseButtonCallback);
+    glfwSetCursorPosCallback(m_window, WindowHandler::glfwMousePosCallback);
 }
 
 
@@ -36,6 +42,17 @@ void WindowHandler::handleFramebufferSizeUpdate(int width, int height){
     glViewport(0, 0, m_gl_width, m_gl_height);
     m_camera->onFramebufferSizeUpdate(m_gl_width, m_gl_height);
 }
+
+
+void WindowHandler::handleMouseButton(int button, int action, int mods){
+    m_input->onMouseButton(button, action, mods);
+}
+
+
+void WindowHandler::handleMousePos(double posx, double posy){
+    m_input->onMouseButtonPos(posx, posy);
+}
+
 
 void WindowHandler::getFramebufferSize(int& gl_width, int& gl_heigth) const{
     gl_heigth = m_gl_height;
@@ -66,4 +83,14 @@ void WindowHandler::glfwKeyCallback(GLFWwindow* window, int key, int scancode, i
 void WindowHandler::glfwFramebufferSizeCallback(GLFWwindow *window, int width, int height){
     WindowHandler* wh = reinterpret_cast<WindowHandler*>(glfwGetWindowUserPointer(window));
     wh->handleFramebufferSizeUpdate(width, height);
+}
+
+void WindowHandler::glfwMouseButtonCallback(GLFWwindow *window, int button, int action, int mods){
+    WindowHandler* wh = reinterpret_cast<WindowHandler*>(glfwGetWindowUserPointer(window));
+    wh->handleMouseButton(button, action, mods);
+}
+
+void WindowHandler::glfwMousePosCallback(GLFWwindow *window, double posx, double posy){
+    WindowHandler* wh = reinterpret_cast<WindowHandler*>(glfwGetWindowUserPointer(window));
+    wh->handleMousePos(posx, posy);
 }
