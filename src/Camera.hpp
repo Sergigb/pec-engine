@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <cmath>
 
 #include "maths_funcs.hpp"
 #include "common.hpp"
@@ -20,7 +21,10 @@ class Camera{
         float m_cam_speed, m_cam_heading_speed, m_near, m_far, m_fovy, m_ar;
         double m_previous_frame_time;
         bool m_has_moved, m_proj_change, m_fb_callback;
+        double m_mouse_posx_last, m_mouse_posy_last;
+        int m_cam_input_mode;
 
+        GLFWwindow* m_g_window;
         const Input* input;
 
         void updateViewMatrix();
@@ -34,6 +38,7 @@ class Camera{
         void setCameraOrientationFromAxisDeg(float cam_heading, const vec3* axis);
         void setSpeed(float speed);
         void setAngularSpeed(float speed);
+        void setWindow(GLFWwindow* g_window);
         void createProjMat(float near, float far, float fovy, float ar);
         void onFramebufferSizeUpdate(int width, int heigth);
 

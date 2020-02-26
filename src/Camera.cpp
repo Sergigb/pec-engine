@@ -20,6 +20,9 @@ Camera::Camera(){
     m_has_moved = false;
     m_proj_change = false;
     m_fb_callback = false;
+    m_mouse_posx_last = 0;
+    m_mouse_posy_last = 0;
+    m_cam_input_mode = GLFW_CURSOR_NORMAL;
     updateViewMatrix();
 }
 
@@ -43,6 +46,9 @@ Camera::Camera(const vec3* pos, float fovy, float ar, float near, float far, con
     m_has_moved = false;
     m_proj_change = false;
     m_fb_callback = false;
+    m_mouse_posx_last = 320;
+    m_mouse_posy_last = 240;
+    m_cam_input_mode = GLFW_CURSOR_NORMAL;
     updateViewMatrix();
 }
 
@@ -162,14 +168,36 @@ void Camera::update(){
         m_proj_change = false;
     
 
-    if(input == nullptr){ // change to assert?
-        log("Camera class: Input object instance was not set");
+    if(!input->keyboardPressed() && !input->mouseMoved()){
+        m_has_moved = false;
         return;
     }
 
-    if(!input->keyboardPressed()){
-        m_has_moved = false;
-        return;
+    // we should be able to reduce the number of comparisons and other stuff
+    if(input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2] && m_cam_input_mode == GLFW_CURSOR_NORMAL){
+        glfwSetInputMode(m_g_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        m_cam_input_mode = GLFW_CURSOR_DISABLED;
+        input->getMousePos(m_mouse_posx_last, m_mouse_posy_last);
+    }
+    else if(!input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2] && m_cam_input_mode == GLFW_CURSOR_DISABLED){
+        glfwSetInputMode(m_g_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        m_cam_input_mode = GLFW_CURSOR_NORMAL;
+    }
+
+    if(input->mouseMoved() && input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2]){
+        double dif_x, dif_y, posx, posy;
+        input->getMousePos(posx, posy);
+        dif_x = m_mouse_posx_last - posx;
+        dif_y = m_mouse_posy_last - posy;
+        
+        cam_pitch += dif_y * 1 * elapsed_time;
+        cam_yaw += dif_x * 1 * elapsed_time;
+
+        rotateCameraPitch(cam_pitch);
+        rotateCameraYaw(cam_yaw);
+
+        m_mouse_posx_last = posx;
+        m_mouse_posy_last = posy;
     }
 
     if(input->pressed_keys[GLFW_KEY_A]){
@@ -242,3 +270,9 @@ bool Camera::projChanged() const{
 vec3 Camera::getCamPosition() const{
     return m_cam_pos;
 }
+
+
+void Camera::setWindow(GLFWwindow* g_window){
+    m_g_window = g_window;
+}
+
