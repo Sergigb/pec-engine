@@ -154,7 +154,7 @@ void Camera::updateViewMatrix(){
 
 void Camera::update(){
     double elapsed_time, current_frame_time = glfwGetTime();
-    float cam_yaw = 0.0f, cam_pitch = 0.0f, cam_roll = 0.0f;
+    float cam_yaw = 0.0f, cam_pitch = 0.0f, cam_roll = 0.0f, speed_mult = 1.0f;
     mat4 R, T;
 
     elapsed_time = current_frame_time - m_previous_frame_time;
@@ -190,8 +190,8 @@ void Camera::update(){
         dif_x = m_mouse_posx_last - posx;
         dif_y = m_mouse_posy_last - posy;
         
-        cam_pitch += dif_y * 1 * elapsed_time;
-        cam_yaw += dif_x * 1 * elapsed_time;
+        cam_pitch += dif_y * 0.25 * elapsed_time;
+        cam_yaw += dif_x * 0.25 * elapsed_time;
 
         rotateCameraPitch(cam_pitch);
         rotateCameraYaw(cam_yaw);
@@ -200,11 +200,14 @@ void Camera::update(){
         m_mouse_posy_last = posy;
     }
 
+    if(input->pressed_keys[GLFW_KEY_LEFT_SHIFT])
+        speed_mult = 4.0f;
+
     if(input->pressed_keys[GLFW_KEY_A]){
-        m_cam_translation.v[0] -= m_cam_speed * elapsed_time;
+        m_cam_translation.v[0] -= m_cam_speed * speed_mult * elapsed_time;
     }
     if(input->pressed_keys[GLFW_KEY_D]){
-        m_cam_translation.v[0] += m_cam_speed * elapsed_time;
+        m_cam_translation.v[0] += m_cam_speed * speed_mult * elapsed_time;
     }
     if(input->pressed_keys[GLFW_KEY_Z]){
         m_cam_translation.v[1] -= m_cam_speed * elapsed_time;
@@ -213,10 +216,10 @@ void Camera::update(){
         m_cam_translation.v[1] += m_cam_speed * elapsed_time;
     }
     if(input->pressed_keys[GLFW_KEY_W]){
-        m_cam_translation.v[2] -= m_cam_speed * elapsed_time;
+        m_cam_translation.v[2] -= m_cam_speed * speed_mult * elapsed_time;
     }
     if(input->pressed_keys[GLFW_KEY_S]){
-        m_cam_translation.v[2] += m_cam_speed * elapsed_time;
+        m_cam_translation.v[2] += m_cam_speed * speed_mult * elapsed_time;
     }
     if(input->pressed_keys[GLFW_KEY_LEFT]){
         cam_yaw += m_cam_heading_speed * elapsed_time;
