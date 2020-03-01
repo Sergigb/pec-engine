@@ -22,8 +22,7 @@
 #include <algorithm>
 
 int main(){
-	int model_mat_location, view_mat_location, proj_mat_location;//, model_mat_location_sphere,
-	    //view_mat_location_sphere, proj_mat_location_sphere ;
+	int model_mat_location, view_mat_location, proj_mat_location, light_pos_location;
 	math::vec3 inital_position = math::vec3(0.0f, 0.0f, 5.0f);
 	GLFWwindow *g_window = nullptr;
 	int gl_width = 640, gl_height = 480;
@@ -44,12 +43,6 @@ int main(){
 	GLuint vao_model;
 	load_scene(std::string("../data/duck.dae"), vao_model, num_vertex, rad, aabb_duck);
 
-	/////////////////////////////////// 1m sphere
-	/*struct bbox aabb_sphere;
-	int num_vertex_sphere;
-	GLuint vao_sphere;
-	load_scene(std::string("../data/sphere.dae"), vao_sphere, num_vertex_sphere, rad, aabb_sphere);*/
-
 	/////////////////////////////////// shader
 	GLuint shader_programme = create_programme_from_files("../shaders/phong_blinn_vs.glsl",
 														  "../shaders/phong_blinn_fs.glsl");
@@ -57,14 +50,7 @@ int main(){
 	model_mat_location = glGetUniformLocation(shader_programme, "model");
 	view_mat_location = glGetUniformLocation(shader_programme, "view");
 	proj_mat_location = glGetUniformLocation(shader_programme, "proj");
-
-	/////////////////////////////////// simple shader
-	/*GLuint shader_programme_simple = create_programme_from_files("../shaders/simple_vs.glsl",
-										    					 "../shaders/simple_fs.glsl");
-	log_programme_info(shader_programme_simple);
-	model_mat_location_sphere = glGetUniformLocation(shader_programme_simple, "model");
-	view_mat_location_sphere = glGetUniformLocation(shader_programme_simple, "view");
-	proj_mat_location_sphere = glGetUniformLocation(shader_programme_simple, "proj");*/
+	light_pos_location = glGetUniformLocation(shader_programme, "light_position_world");
 
 	//////////////////////////////////////
 
@@ -86,10 +72,7 @@ int main(){
 	glUseProgram(shader_programme);
 	glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, camera.getViewMatrix().m);
 	glUniformMatrix4fv(proj_mat_location, 1, GL_FALSE, camera.getProjMatrix().m);
-
-/*	glUseProgram(shader_programme_simple);
-	glUniformMatrix4fv(view_mat_location_sphere, 1, GL_FALSE, camera.getViewMatrix().m);
-	glUniformMatrix4fv(proj_mat_location_sphere, 1, GL_FALSE, camera.getProjMatrix().m);*/
+	glUniform3fv(light_pos_location, 1, camera.getCamPosition().v);
 	
 	glClearColor(0.2, 0.2, 0.2, 1.0);
 
@@ -100,10 +83,6 @@ int main(){
 		loc[i] = translate(identity_mat4(), math::vec3(0., 0., i*std::sin(i*0.75)));
 		loc[i] = translate(loc[i], math::vec3(i*std::cos(i*0.75), 0., 0.)) * rotation;
 	}
-	/*mat4 scale = identity_mat4();
-	scale.m[0] = 0.994406;
-	scale.m[5] = 0.994406;
-	scale.m[10] = 0.994406;*/
 
 	while (!glfwWindowShouldClose(window_handler.getWindow())){
 		input.update();
@@ -116,6 +95,9 @@ int main(){
 
 		// rendering
 		glUseProgram(shader_programme);
+		if(camera.hasMoved())
+			glUniform3fv(light_pos_location, 1, camera.getCamPosition().v); // as a test, the light is on the camera
+
 		if(camera.hasMoved())
 			glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, camera.getViewMatrix().m);
 		if(camera.projChanged())
@@ -130,23 +112,7 @@ int main(){
 				glDrawElements(GL_TRIANGLES, num_vertex * 3, GL_UNSIGNED_INT, NULL);
 			}
 		}
-/*
-		glUseProgram(shader_programme_simple);
-		glDisable(GL_CULL_FACE);
-		if(camera.hasMoved())
-			glUniformMatrix4fv(view_mat_location_sphere, 1, GL_FALSE, camera.getViewMatrix().m);
-		if(camera.projChanged())
-			glUniformMatrix4fv(proj_mat_location_sphere, 1, GL_FALSE, camera.getProjMatrix().m);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-		glBindVertexArray(vao_sphere);
-		for(int i=0; i < 10; i++){
-			glUniformMatrix4fv(model_mat_location_sphere, 1, GL_FALSE, (loc[i] * scale).m);
-			glDrawElements(GL_TRIANGLES, num_vertex * 3, GL_UNSIGNED_INT, NULL);
-		}
-		glDrawElements(GL_TRIANGLES, num_vertex_sphere * 3, GL_UNSIGNED_INT, NULL);
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-		glEnable(GL_CULL_FACE);
-*/
+
 		//text rendering test
 		glDisable(GL_DEPTH_TEST);
 
