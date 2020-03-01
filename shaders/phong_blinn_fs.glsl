@@ -5,9 +5,9 @@ in vec2 st;
 out vec4 frag_colour;
 
 uniform mat4 view;
+uniform vec3 light_position_world;
 
 // fixed point light properties
-vec3 light_position_world  = vec3 (10.0, 10.0, 10.0);
 vec3 Ls = vec3 (1.0, 1.0, 1.0); // specular colour
 vec3 Ld = vec3 (.75, .75, .75); // diffuse light colour
 vec3 La = vec3 (.5, .5, .5); // ambient colour
