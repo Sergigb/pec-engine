@@ -17,7 +17,9 @@
 #include "Frustum.hpp"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
+#define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image_write.h>
+#include <stb/stb_image.h>
 
 #include <algorithm>
 
@@ -38,10 +40,23 @@ int main(){
 
 	/////////////////////////////////// model
 	struct bbox aabb_duck;
-	int num_vertex;
+	unsigned char* data;
+	int num_vertex, x, y, n;
 	float rad;
-	GLuint vao_model;
-	load_scene(std::string("../data/duck.dae"), vao_model, num_vertex, rad, aabb_duck);
+	GLuint vao_model, tex_id;
+	load_scene(std::string("../data/duck_textured.dae"), vao_model, num_vertex, rad, aabb_duck);
+	data = stbi_load("../data/duck_tex.png", &x, &y, &n, 0);
+	
+    glGenTextures(1, &tex_id);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, tex_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    stbi_image_free(data);
 
 	/////////////////////////////////// shader
 	GLuint shader_programme = create_programme_from_files("../shaders/phong_blinn_vs.glsl",
@@ -95,14 +110,17 @@ int main(){
 
 		// rendering
 		glUseProgram(shader_programme);
-		if(camera.hasMoved())
-			glUniform3fv(light_pos_location, 1, camera.getCamPosition().v); // as a test, the light is on the camera
+		
+		/*if(camera.hasMoved())
+			glUniform3fv(light_pos_location, 1, camera.getCamPosition().v); // as a test, the light is on the camera*/
 
 		if(camera.hasMoved())
 			glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, camera.getViewMatrix().m);
 		if(camera.projChanged())
 			glUniformMatrix4fv(proj_mat_location, 1, GL_FALSE, camera.getProjMatrix().m);
 		glBindVertexArray(vao_model);
+		glActiveTexture(GL_TEXTURE0);
+    	glBindTexture(GL_TEXTURE_2D, tex_id);
 		int num_rendered = 0;
 		for(int i=0; i < 10; i++){
 			//if(frustum.checkSphere(math::vec3(loc[i].m[12], loc[i].m[13], loc[i].m[14]), 2*0.994406)){
