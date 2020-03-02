@@ -6,6 +6,7 @@ out vec4 frag_colour;
 
 uniform mat4 view;
 uniform vec3 light_position_world;
+uniform sampler2D tex;
 
 // fixed point light properties
 vec3 Ls = vec3 (1.0, 1.0, 1.0); // specular colour
@@ -13,7 +14,7 @@ vec3 Ld = vec3 (.75, .75, .75); // diffuse light colour
 vec3 La = vec3 (.5, .5, .5); // ambient colour
 
 // surface reflectance
-vec3 Ks = vec3 (1.0, 1.0, 1.0); // specular light reflectance
+vec3 Ks = vec3 (.1, .1, .1); // specular light reflectance
 vec3 Kd = vec3 (0.75, 0.75, 0.75); // diffuse surface reflectance
 vec3 Ka = vec3 (0.25, 0.25, 0.25); // ambient light reflectance
 float specular_exponent = 100.0; // specular 'power'
@@ -40,7 +41,9 @@ void main() {
     float specular_factor = pow (dot_prod_specular, specular_exponent);
 
     vec3 Is = Ls * Ks * specular_factor; // final specular intensity
+
+    vec4 texel = texture(tex, st);
     
     // final colour
-    frag_colour = vec4 (Is + Id + Ia, 1.0);
+    frag_colour = vec4 (texel.xyz * (Is + Id + Ia), 1.0);
 }
