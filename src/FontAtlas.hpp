@@ -26,15 +26,17 @@ class FontAtlas{ //rename to font atlas?
         int m_font_height;
         unsigned char* m_atlas;
         std::map<int, struct character> m_characters;
-
-        void loadCharacterRange(std::vector<struct character> &characters, uint start, uint end);
-        void loadCharacter(std::vector<struct character> &characters, uint code, bool load_default);
+        std::vector<struct character> m_characters_vec;
     public:
         FontAtlas();
         FontAtlas(uint atlas_size);
         ~FontAtlas();
+        int loadFont(const char* path, int size);
 
-        int createAtlas(const char* path, int size, bool save_png);
+        void loadCharacterRange(uint start, uint end);
+        void loadCharacter(uint code, bool load_default);
+        void createAtlas(bool save_png);
+
         int getCharacter(uint code, const character** the_character) const;
         int getKerning(uint code1, uint code2) const;
         uint getAtlasSize() const;
