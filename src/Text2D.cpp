@@ -4,7 +4,12 @@
 
 Text2D::Text2D(){
     font = new FontAtlas(512);
-    font->createAtlas("/usr/share/fonts/truetype/freefont/FreeSans.ttf", 45, true);
+    font->loadFont("/usr/share/fonts/truetype/freefont/FreeSans.ttf", 45);
+    font->loadCharacterRange(32, 255); // ascii
+    font->loadCharacterRange(913, 1023); // greek and coptic*
+    font->loadCharacter(0, true); // null character
+    font->createAtlas(true);
+
     m_num_vertices = 0;
     m_num_indices = 0;
     m_fb_width = 640;
@@ -16,7 +21,12 @@ Text2D::Text2D(){
 
 Text2D::Text2D(int fb_width, int fb_height, const color& c, uint atlas_size, const char* font_path, int font_size){
     font = new FontAtlas(atlas_size);
-    font->createAtlas(font_path, font_size, true);
+    font->loadFont(font_path, font_size);
+    font->loadCharacterRange(32, 255); // ascii
+    font->loadCharacterRange(913, 1023); // greek and coptic
+    font->loadCharacter(0, true); // null character
+    font->createAtlas(true);
+
     m_num_vertices = 0;
     m_num_indices = 0;
     m_fb_width = fb_width;
