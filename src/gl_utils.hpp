@@ -25,6 +25,7 @@ int create_programme(GLuint vert, GLuint frag, GLuint &programme_index);
 GLuint create_programme_from_files(const char* vert_file_name, const char* frag_file_name);
 int load_scene(const std::string pFile, GLuint& vao, int& point_cout, float& cs_radius, struct bbox& aabb);
 void update_fps_counter(GLFWwindow* window);
+double get_fps();
 struct bbox get_AABB(GLfloat* vbuffer, int n_vert);
 struct bbox get_OBB(GLfloat* vbuffer, int n_vert); // todo
 

@@ -289,6 +289,23 @@ void update_fps_counter(GLFWwindow* window){
 }
 
 
+double get_fps(){
+    static double previous_seconds = glfwGetTime();
+    static int frame_count;
+    double current_seconds = glfwGetTime();
+    double elapsed_seconds = current_seconds - previous_seconds;
+    static double fps;
+    if(elapsed_seconds > 1){
+        previous_seconds = current_seconds;
+        fps = (double)frame_count / elapsed_seconds;
+        frame_count = 0;
+    }
+    frame_count++;
+
+    return fps;
+}
+
+
 struct bbox get_AABB(GLfloat* vbuffer, int n_vert){
     /* I procrastinated a bit and made this unnecessary schematic
 
