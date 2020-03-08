@@ -21,7 +21,9 @@
 #include <stb/stb_image_write.h>
 #include <stb/stb_image.h>
 
-#include <algorithm>
+#define BT_USE_DOUBLE_PRECISION
+#include <bullet/btBulletDynamicsCommon.h>
+
 
 int main(){
 	int model_mat_location, view_mat_location, proj_mat_location, light_pos_location;

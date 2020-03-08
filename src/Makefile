@@ -5,9 +5,10 @@ LDFLAGS = -lfreetype
 OBJPATH = ../bin
 EXECPATH = ../bin
 PARTSPAHT = parts/
-GLFLAGS = -lGL -lGLEW -lglfw -lz
-INC = -I../include/ -I/usr/include/freetype2 
-LIBS = ../lib/libassimp.a ../lib/libIrrXML.a
+GLFLAGS = -lGL -lGLEW -lglfw -lz -fopenmp
+INC = -I../include/ -I../include/bullet/ -I/usr/include/freetype2 
+LIBS = ../lib/libassimp.a ../lib/libIrrXML.a ../lib/libBulletDynamics.a ../lib/libBulletCollision.a ../lib/libLinearMath.a
+
 
 all: opengl output
 
