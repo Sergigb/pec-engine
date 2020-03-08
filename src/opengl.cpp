@@ -22,8 +22,6 @@
 #include <stb/stb_image.h>
 
 #define BT_USE_DOUBLE_PRECISION
-#define BULLET2_MULTITHREADING
-#define BULLET2_USE_OPEN_MP_MULTITHREADING
 #include <bullet/btBulletDynamicsCommon.h>
 
 
