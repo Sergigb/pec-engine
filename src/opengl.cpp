@@ -22,6 +22,8 @@
 #include <stb/stb_image.h>
 
 #define BT_USE_DOUBLE_PRECISION
+#define BULLET2_MULTITHREADING
+#define BULLET2_USE_OPEN_MP_MULTITHREADING
 #include <bullet/btBulletDynamicsCommon.h>
 
 
@@ -149,7 +151,7 @@ int main(){
 		oss2 << (int)get_fps() << " FPS";
 		mbstowcs(buffer, oss2.str().c_str(), 64);
 		text_fps.clearStrings();
-		text_fps.addString(buffer, 75, 15, 1, STRING_DRAW_ABSOLUTE_TR);
+		text_fps.addString(buffer, 75, 25, 1, STRING_DRAW_ABSOLUTE_TR);
 
 		if(camera.projChanged()){
 			int w, h;
