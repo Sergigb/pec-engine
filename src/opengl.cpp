@@ -15,6 +15,7 @@
 #include "WindowHandler.hpp"
 #include "Text2D.hpp"
 #include "Frustum.hpp"
+#include "DebugOverlay.hpp"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
@@ -73,19 +74,11 @@ int main(){
 
 	//////////////////////////////////////
 
-
-	////////////////// text testing /////////////////
-	Text2D text2(gl_width, gl_height, color{1.0, 1.0, 0.0}, 256, "../data/fonts/Liberastika-Regular.ttf", 15);
-	Text2D text_fps(gl_width, gl_height, color{1.0, 1.0, 0.0}, 256, "../data/fonts/Liberastika-Regular.ttf", 15);
-	Text2D* text;
-	debug_info_box(&text, gl_width, gl_height);
-
-	////////////////// text testing /////////////////
-
 	Input input;
 	Camera camera(&inital_position, 67.0f, (float)gl_width / (float)gl_height , 0.1f, 10000000.0f, &input);
 	WindowHandler window_handler(g_window, gl_width, gl_height, &input, &camera);
 	Frustum frustum;
+	DebugOverlay debug_overlay(&camera, &window_handler);
 	camera.setSpeed(10.f);
 	camera.setWindow(window_handler.getWindow());
 
@@ -117,9 +110,6 @@ int main(){
 		// rendering
 		glUseProgram(shader_programme);
 		
-		/*if(camera.hasMoved())
-			glUniform3fv(light_pos_location, 1, camera.getCamPosition().v); // as a test, the light is on the camera*/
-
 		if(camera.hasMoved())
 			glUniformMatrix4fv(view_mat_location, 1, GL_FALSE, camera.getViewMatrix().m);
 		if(camera.projChanged())
@@ -137,35 +127,9 @@ int main(){
 			}
 		}
 
-		//text rendering test
-		glDisable(GL_DEPTH_TEST);
+		debug_overlay.setRenderedObjects(num_rendered);
+		debug_overlay.render();
 
-		wchar_t buffer[64];
-		text2.clearStrings();
-		std::ostringstream oss2;
-		oss2 << "Num rendered ducks: " << num_rendered;
-		mbstowcs(buffer, oss2.str().c_str(), 64);
-		text2.addString(buffer, 15, 15, 1, STRING_DRAW_ABSOLUTE_BL);
-
-		oss2.str("");
-		oss2.clear();
-		oss2 << (int)get_fps() << " FPS";
-		mbstowcs(buffer, oss2.str().c_str(), 64);
-		text_fps.clearStrings();
-		text_fps.addString(buffer, 75, 25, 1, STRING_DRAW_ABSOLUTE_TR);
-
-		if(camera.projChanged()){
-			int w, h;
-			window_handler.getFramebufferSize(w, h);
-			text->onFramebufferSizeUpdate(w, h);
-			text2.onFramebufferSizeUpdate(w, h);
-			text_fps.onFramebufferSizeUpdate(w, h);
-		}
-		text->render();
-		text2.render();
-		text_fps.render();
-		glEnable(GL_DEPTH_TEST);
-		
 		glfwSwapBuffers(window_handler.getWindow());
 	}
 
