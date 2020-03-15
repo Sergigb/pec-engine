@@ -50,6 +50,12 @@ void DebugOverlay::render(){
 
     m_text_debug->render();
 
+    oss2.str("");
+    oss2.clear();
+    m_text_rendered_objects->clearStrings();
+    oss2 << "Num rendered objects: " << m_rendered_obj;
+    mbstowcs(buffer, oss2.str().c_str(), 64);
+    m_text_rendered_objects->addString(buffer, 15, 15, 1, STRING_DRAW_ABSOLUTE_BL);
     m_text_rendered_objects->render();
     glEnable(GL_DEPTH_TEST);
 
