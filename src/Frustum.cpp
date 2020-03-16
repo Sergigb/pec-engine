@@ -55,7 +55,7 @@ void Frustum::extractPlanes(const math::mat4& proj_mat, const math::mat4& view_m
 }
 
 
-bool Frustum::checkPoint(const math::vec3 p){
+bool Frustum::checkPoint(const math::vec3 p) const{
     for(int i=0; i < 6; i++){
         if(math::dot(m_planes[i], p) < 0.0f)
             return false;
@@ -64,7 +64,7 @@ bool Frustum::checkPoint(const math::vec3 p){
 }
 
 
-bool Frustum::checkSphere(const math::vec3 p, float radius){
+bool Frustum::checkSphere(const math::vec3 p, float radius) const{
     // doesn't seem to be working right
     for(int i=0; i < 6; i++){
         float d = math::dot(m_planes[i], p);
@@ -77,8 +77,7 @@ bool Frustum::checkSphere(const math::vec3 p, float radius){
 }
 
 
-bool Frustum::checkBox(const math::vec3* pts, const math::mat4& model_mat){
-    // not tested yet
+bool Frustum::checkBox(const math::vec3* pts, const math::mat4& model_mat) const{
     int in, out;
     for(int i=0; i < 6; i++){
         in = 0; out = 0;
