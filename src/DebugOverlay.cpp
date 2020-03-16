@@ -30,6 +30,9 @@ void DebugOverlay::setRenderedObjects(int n){
 
 
 void DebugOverlay::render(){
+    wchar_t buffer[64];
+    std::ostringstream oss2;
+    
     if(m_camera->projChanged()){
         int fb_width, fb_height;
         m_window_handler->getFramebufferSize(fb_width, fb_height);
@@ -40,8 +43,6 @@ void DebugOverlay::render(){
     }
 
     glDisable(GL_DEPTH_TEST);
-    wchar_t buffer[64];
-    std::ostringstream oss2;
     oss2 << (int)get_fps() << " FPS";
     mbstowcs(buffer, oss2.str().c_str(), 64);
     m_text_fps->clearStrings();
