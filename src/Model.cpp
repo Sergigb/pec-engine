@@ -76,15 +76,15 @@ int Model::loadScene(const std::string pFile){
     if(mesh->HasPositions()){
         points = new GLfloat[num_vertices * 3];
         float norm;
-        m_cs_radious = 0;
+        m_cs_radius = 0;
         for(int i = 0; i < num_vertices; i++){
             const aiVector3D *vp = &(mesh->mVertices[i]);
             points[i * 3] = (GLfloat)vp->x;
             points[i * 3 + 1] = (GLfloat)vp->y;
             points[i * 3 + 2] = (GLfloat)vp->z;
             norm = std::sqrt(vp->x * vp->x + vp->y * vp->y + vp->z * vp->z);
-            if(norm > m_cs_radious)
-                m_cs_radious = norm;
+            if(norm > m_cs_radius)
+                m_cs_radius = norm;
         }
         m_aabb = get_AABB(points, num_vertices);
     }
