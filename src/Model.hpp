@@ -26,7 +26,7 @@ class Model{
         const Frustum* m_frustum;
         int loadScene(const std::string pFile);
     public:
-        Model(const char* path_to_mesh, const char* path_to_texture, GLuint shader_programme, const Frustum* frustum);
+        Model(const char* path_to_mesh, const char* path_to_texture, GLuint shader_programme, const Frustum* frustum, const math::vec3& mesh_color);
         ~Model();
 
         void setMeshColor(const math::vec3& mesh_color);

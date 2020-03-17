@@ -1,14 +1,14 @@
 #include "Model.hpp"
 
 
-Model::Model(const char* path_to_mesh, const char* path_to_texture, GLuint shader_programme, const Frustum* frustum){
+Model::Model(const char* path_to_mesh, const char* path_to_texture, GLuint shader_programme, const Frustum* frustum, const math::vec3& mesh_color){
     m_frustum = frustum;
     m_shader_programme = shader_programme;
 
     m_model_mat_location = glGetUniformLocation(m_shader_programme, "model");
     m_color_location = glGetUniformLocation(m_shader_programme, "color");
 
-    m_mesh_color = math::vec3(1.0, 1.0, 1.0);
+    m_mesh_color = mesh_color;
 
     loadScene(std::string(path_to_mesh));
 
@@ -17,7 +17,7 @@ Model::Model(const char* path_to_mesh, const char* path_to_texture, GLuint shade
 
         m_has_texture = true;
 
-        data = stbi_load("../data/duck_tex.png", &m_tex_x, &m_tex_y, &m_n_channels, 0);
+        data = stbi_load(path_to_texture, &m_tex_x, &m_tex_y, &m_n_channels, 0);
 
         glGenTextures(1, &m_tex_id);
         glActiveTexture(GL_TEXTURE0);
@@ -116,7 +116,7 @@ int Model::loadScene(const std::string pFile){
     
     glGenVertexArrays(1, &m_vao);
     glBindVertexArray(m_vao);
-    glUniform3fv(m_color_location, 1, math::vec3(1.0, 1.0, 1.0).v); // set mesh color to white
+    glUniform3fv(m_color_location, 1, m_mesh_color.v); // set mesh color to white
 
     if(mesh->HasPositions()){
         glGenBuffers(1, &m_vbo_vert);
