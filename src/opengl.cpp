@@ -5,6 +5,7 @@
 #include <string>
 #include <cmath>
 #include <sstream>
+#include <algorithm>
 
 #include "log.hpp"
 #include "utils.hpp"
@@ -17,6 +18,8 @@
 #include "Frustum.hpp"
 #include "DebugOverlay.hpp"
 #include "Model.hpp"
+#include "BtWrapper.hpp"
+#include "Object.hpp"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
@@ -29,7 +32,7 @@
 
 int main(){
 	int view_mat_location, proj_mat_location, light_pos_location;
-	math::vec3 inital_position = math::vec3(0.0f, 0.0f, 5.0f);
+	math::vec3 inital_position = math::vec3(-0.0f, 50.0f, 50.0f);
 	GLFWwindow *g_window = nullptr;
 	int gl_width = 640, gl_height = 480;
 
@@ -66,22 +69,47 @@ int main(){
 
 	//////////////////////////////////////
 
-	Model* duck = new Model("../data/duck.dae", nullptr, shader_programme, &frustum);
-    duck->setMeshColor(math::vec3(0.8, 0.6, 0.05));
-	Model* terrain = new Model("../data/terrain.dae", nullptr, shader_programme, &frustum);
-    terrain->setMeshColor(math::vec3(0.75, 0.75, 0.75));
+	Model* cube_model = new Model("../data/cube.dae", nullptr, shader_programme, &frustum, math::vec3(0.5, 0.0, 0.5));
+	Model* terrain_model = new Model("../data/bigcube.dae", nullptr, shader_programme, &frustum, math::vec3(0.75, 0.75, 0.75));
+    Model* sphere_model = new Model("../data/sphere.dae", nullptr, shader_programme, &frustum, math::vec3(0.75, 0.75, 0.75));
+
+    ////////////// bullet test //////////////
+
+    BtWrapper bt_wrapper(btVector3(0, -9.81, 0));
+    btQuaternion quat;
+
+    btCollisionShape* cube_shape_ground = new btBoxShape(btVector3(btScalar(25.), btScalar(25.), btScalar(25.))); // box for now, we need to try a mesh
+    btCollisionShape* cube_shape = new btBoxShape(btVector3(1,1,1));
+    btCollisionShape* sphere_shape = new btSphereShape(btScalar(1));
+
+    btAlignedObjectArray<btCollisionShape*> collisionShapes;
+    collisionShapes.push_back(cube_shape);
+    collisionShapes.push_back(cube_shape_ground);
+    collisionShapes.push_back(sphere_shape);
+
+    quat.setEuler(0, 0, 0);
+    Object* ground = new Object(terrain_model, &bt_wrapper, cube_shape_ground, btVector3(0.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(0.0));
+
+    quat.setEuler(20, 50, 0);
+    Object* cube1 = new Object(cube_model, &bt_wrapper, cube_shape, btVector3(0.0, 40.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(1.0));
+    cube1->setColor(math::vec3(1.0, 0.0, 0.0));
+
+    quat.setEuler(45, 25, 0);
+    Object* cube2 = new Object(cube_model, &bt_wrapper, cube_shape, btVector3(0.0, 45.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(1.0));
+    cube2->setColor(math::vec3(0.0, 1.0, 0.0));
+
+    quat.setEuler(0, 0, 0);
+    Object* sphere1 = new Object(sphere_model, &bt_wrapper, sphere_shape, btVector3(0.0, 50.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(1.0));
+    sphere1->setColor(math::vec3(0.0, 0.0, 1.0));
+
+    Object* sphere2 = new Object(sphere_model, &bt_wrapper, sphere_shape, btVector3(0.0, 55.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(1.0));
+    sphere2->setColor(math::vec3(1.0, 0.0, 1.0));
+
+    ///////////////////////////////////////
+
 
 	glClearColor(0.2, 0.2, 0.2, 1.0);
-
-	float rotation_angle = -90.f;
-	mat4 loc[10];
-	mat4 rotation = rotate_x_deg(identity_mat4(), rotation_angle);
-    mat4 terrain_rotation = rotate_x_deg(identity_mat4(), rotation_angle);
-	for(int i = 0; i < 10; i++){
-		loc[i] = translate(identity_mat4(), math::vec3(0., 5., i*std::sin(i*0.75)));
-		loc[i] = translate(loc[i], math::vec3(i*std::cos(i*0.75), 0., 0.)) * rotation;
-	}
-
+    bool physics_pause = true;
 	while (!glfwWindowShouldClose(window_handler.getWindow())){
 		input.update();
 		camera.update();
@@ -91,6 +119,15 @@ int main(){
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		glClearColor(0.2, 0.2, 0.2, 1.0);
 
+        /// bullet simulation step
+        // this way we tie the simulation update rate to the framerate, should be 60hz if we limit it to 60 fps. We should manage the physics in a different thread and limit it to 60 hz
+        // to test this we can unlock the fps and see what happens
+        if(input.pressed_keys[GLFW_KEY_P]){
+            physics_pause = !physics_pause;
+        }
+        if(!physics_pause)
+            bt_wrapper.stepSimulation(1.f / 60.f, 1);
+
 		// rendering
         glUseProgram(shader_programme);
 		if(camera.hasMoved())
@@ -98,11 +135,14 @@ int main(){
 		if(camera.projChanged())
 			glUniformMatrix4fv(proj_mat_location, 1, GL_FALSE, camera.getProjMatrix().m);
 		int num_rendered = 0;
-		for(int i=0; i < 10; i++){
-			num_rendered += duck->render(loc[i]);
-		}
 
-        terrain->render(terrain_rotation);
+        num_rendered += ground->render();
+        num_rendered += cube1->render();
+        num_rendered += cube2->render();
+        num_rendered += sphere1->render();
+        num_rendered += sphere2->render();
+
+        /////////////////////////////
 
 		debug_overlay.setRenderedObjects(num_rendered);
 		debug_overlay.render();
@@ -110,8 +150,25 @@ int main(){
 		glfwSwapBuffers(window_handler.getWindow());
 	}
 
-    delete terrain;
-    delete duck;
+    delete ground;
+    delete cube1;
+    delete cube2;
+    delete sphere1;
+    delete sphere2;
+    
+    delete terrain_model;
+    delete cube_model;
+    delete sphere_model;
+
+    //delete collision shapes
+    for (int j = 0; j < collisionShapes.size(); j++)
+    {
+        btCollisionShape* shape = collisionShapes[j];
+        collisionShapes[j] = 0;
+        delete shape;
+    }
+
+    /////////////
 
 	log("Terminating GLFW and exiting");
 	std::cout << "Terminating GLFW and exiting" << std::endl;
