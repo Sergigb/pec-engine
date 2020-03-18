@@ -59,7 +59,7 @@ int init_gl(GLFWwindow** g_window, int gl_width, int gl_height){
     glFrontFace(GL_CCW);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
-    glfwSwapInterval(0);
+    //glfwSwapInterval(0);
 
     return EXIT_SUCCESS;
 }
