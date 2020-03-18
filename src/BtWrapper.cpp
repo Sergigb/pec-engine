@@ -13,16 +13,8 @@ BtWrapper::BtWrapper(const btVector3& gravity){
 
 
 BtWrapper::~BtWrapper(){
-    for(int i = m_dynamicsWorld->getNumCollisionObjects() - 1; i >= 0; i--){
-        btCollisionObject* obj = m_dynamicsWorld->getCollisionObjectArray()[i];
-        btRigidBody* body = btRigidBody::upcast(obj);
-        if(body && body->getMotionState()){
-            delete body->getMotionState();
-        }
-        m_dynamicsWorld->removeCollisionObject(obj);
-        delete obj;
-    }
-
+    // the deletion of the body from the dynamics world and the deletion of the rigid bodies and their motion states is handled in the object class
+    
     delete m_dynamicsWorld;
     delete m_solver;
     delete m_overlappingPairCache;
