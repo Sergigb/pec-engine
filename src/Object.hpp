@@ -18,11 +18,14 @@ class Object{
         btRigidBody* m_body;
         BtWrapper* m_bt_wrapper;
         math::vec3 m_mesh_color;
+        math::mat4 m_scale_transform;
+        float m_scale;
     public:
         Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, const btVector3& origin, const btVector3& local_inertia, const btQuaternion& initial_rotation, btScalar mass);
         ~Object();
 
         void setColor(math::vec3 color);
+        void setMeshScale(float scale);
         int render();
 };
 

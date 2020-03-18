@@ -8,6 +8,7 @@ Object::Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape,
     m_mesh_color = math::vec3(1.0, 1.0, 1.0);
     m_bt_wrapper = bt_wrapper;
     m_model = model;
+    m_scale = 1.0;
 
     /// Create Dynamic Objects
     btTransform start_transform;
@@ -45,6 +46,11 @@ int Object::render(){
     m_body->getMotionState()->getWorldTransform(trans);
     trans.getOpenGLMatrix(body_transform_double);
     std::copy(body_transform_double, body_transform_double + 16, body_transform.m); // implicit cast, maybe some compilers will complain?
+
+    if(m_scale != 1.0){
+        body_transform = body_transform * m_scale_transform;
+    }
+
     m_model->setMeshColor(m_mesh_color);
     return m_model->render(body_transform);
 }
@@ -52,5 +58,14 @@ int Object::render(){
 
 void Object::setColor(math::vec3 color){
     m_mesh_color = color;
+}
+
+
+void Object::setMeshScale(float scale){
+    m_scale_transform = math::identity_mat4();
+    m_scale = scale;
+    m_scale_transform.m[0] = scale;
+    m_scale_transform.m[5] = scale;
+    m_scale_transform.m[10] = scale;
 }
 
