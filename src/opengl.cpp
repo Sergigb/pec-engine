@@ -81,17 +81,20 @@ int main(){
     btCollisionShape* cube_shape_ground = new btBoxShape(btVector3(btScalar(25.), btScalar(25.), btScalar(25.))); // box for now, we need to try a mesh
     btCollisionShape* cube_shape = new btBoxShape(btVector3(1,1,1));
     btCollisionShape* sphere_shape = new btSphereShape(btScalar(1));
+    btCollisionShape* cube3m = new btBoxShape(btVector3(3,3,3));
 
     btAlignedObjectArray<btCollisionShape*> collisionShapes;
     collisionShapes.push_back(cube_shape);
     collisionShapes.push_back(cube_shape_ground);
     collisionShapes.push_back(sphere_shape);
+    collisionShapes.push_back(cube3m);
 
     quat.setEuler(0, 0, 0);
     Object* ground = new Object(terrain_model, &bt_wrapper, cube_shape_ground, btVector3(0.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(0.0));
 
     quat.setEuler(20, 50, 0);
-    Object* cube1 = new Object(cube_model, &bt_wrapper, cube_shape, btVector3(0.0, 40.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(1.0));
+    Object* cube1 = new Object(cube_model, &bt_wrapper, cube3m, btVector3(0.0, 40.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(1.0));
+    cube1->setMeshScale(3.0);
     cube1->setColor(math::vec3(1.0, 0.0, 0.0));
 
     quat.setEuler(45, 25, 0);
@@ -102,7 +105,7 @@ int main(){
     Object* sphere1 = new Object(sphere_model, &bt_wrapper, sphere_shape, btVector3(0.0, 50.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(1.0));
     sphere1->setColor(math::vec3(0.0, 0.0, 1.0));
 
-    Object* sphere2 = new Object(sphere_model, &bt_wrapper, sphere_shape, btVector3(0.0, 55.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(1.0));
+    Object* sphere2 = new Object(sphere_model, &bt_wrapper, sphere_shape, btVector3(0.0, 55.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(10.0));
     sphere2->setColor(math::vec3(1.0, 0.0, 1.0));
 
     ///////////////////////////////////////
