@@ -39,8 +39,8 @@ $(OBJPATH)/ResourceContainer.o: $(PARTSPAHT)ResourceContainer.cpp $(PARTSPAHT)Re
 $(OBJPATH)/Engine.o: $(PARTSPAHT)Engine.cpp $(PARTSPAHT)Engine.hpp
 	$(CXX) -c $(PARTSPAHT)Engine.cpp -o $(OBJPATH)/Engine.o  $(CFLAGS)
 
-opengl: $(OBJPATH)/opengl.o $(OBJPATH)/log.o $(OBJPATH)/utils.o $(OBJPATH)/gl_utils.o $(OBJPATH)/maths_funcs.o $(OBJPATH)/Camera.o $(OBJPATH)/Input.o $(OBJPATH)/WindowHandler.o $(OBJPATH)/FontAtlas.o $(OBJPATH)/Text2D.o $(OBJPATH)/Frustum.o $(OBJPATH)/DebugOverlay.o $(OBJPATH)/Model.o
-	$(CXX) $(CFLAGS) $(INC) $(OBJPATH)/opengl.o $(OBJPATH)/log.o $(OBJPATH)/utils.o $(OBJPATH)/gl_utils.o $(OBJPATH)/maths_funcs.o $(OBJPATH)/Camera.o $(OBJPATH)/Input.o $(OBJPATH)/WindowHandler.o $(OBJPATH)/FontAtlas.o  $(OBJPATH)/Text2D.o $(OBJPATH)/Frustum.o $(OBJPATH)/DebugOverlay.o $(OBJPATH)/Model.o $(LIBS) $(GLFLAGS) $(LDFLAGS) -o $(EXECPATH)/opengl
+opengl: $(OBJPATH)/opengl.o $(OBJPATH)/log.o $(OBJPATH)/utils.o $(OBJPATH)/gl_utils.o $(OBJPATH)/maths_funcs.o $(OBJPATH)/Camera.o $(OBJPATH)/Input.o $(OBJPATH)/WindowHandler.o $(OBJPATH)/FontAtlas.o $(OBJPATH)/Text2D.o $(OBJPATH)/Frustum.o $(OBJPATH)/DebugOverlay.o $(OBJPATH)/Model.o $(OBJPATH)/BtWrapper.o $(OBJPATH)/Object.o
+	$(CXX) $(CFLAGS) $(INC) $(OBJPATH)/opengl.o $(OBJPATH)/log.o $(OBJPATH)/utils.o $(OBJPATH)/gl_utils.o $(OBJPATH)/maths_funcs.o $(OBJPATH)/Camera.o $(OBJPATH)/Input.o $(OBJPATH)/WindowHandler.o $(OBJPATH)/FontAtlas.o  $(OBJPATH)/Text2D.o $(OBJPATH)/Frustum.o $(OBJPATH)/DebugOverlay.o $(OBJPATH)/Model.o $(OBJPATH)/BtWrapper.o  $(OBJPATH)/Object.o $(LIBS) $(GLFLAGS) $(LDFLAGS) -o $(EXECPATH)/opengl
 
 $(OBJPATH)/opengl.o: opengl.cpp
 	$(CXX) -c opengl.cpp -o $(OBJPATH)/opengl.o $(CFLAGS) $(INC)
@@ -80,6 +80,12 @@ $(OBJPATH)/DebugOverlay.o: DebugOverlay.cpp DebugOverlay.hpp
 
 $(OBJPATH)/Model.o: Model.cpp Model.hpp 
 	$(CXX) -c Model.cpp -o $(OBJPATH)/Model.o $(CFLAGS) $(INC)
+
+$(OBJPATH)/BtWrapper.o: BtWrapper.cpp BtWrapper.hpp 
+	$(CXX) -c BtWrapper.cpp -o $(OBJPATH)/BtWrapper.o $(CFLAGS) $(INC)
+
+$(OBJPATH)/Object.o: Object.cpp Object.hpp 
+	$(CXX) -c Object.cpp -o $(OBJPATH)/Object.o $(CFLAGS) $(INC)
 
 clean: 
 	rm $(OBJPATH)/*.o $(EXECPATH)/output
