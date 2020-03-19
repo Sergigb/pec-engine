@@ -36,4 +36,4 @@ $(OBJPATH)/%.o: %.cpp %.hpp
 
 
 clean: 
-	rm $(OBJPATH)/*.o $(EXECPATH)/output $(EXECPATH)/opengl
+	rm $(OBJPATH)/*.o $(EXECPATH)/main $(EXECPATH)/opengl
