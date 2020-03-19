@@ -1,6 +1,12 @@
 #include "Model.hpp"
 
 
+Model::Model(){
+    m_has_texture = false;
+    m_frustum = nullptr;
+}
+
+
 Model::Model(const char* path_to_mesh, const char* path_to_texture, GLuint shader_programme, const Frustum* frustum, const math::vec3& mesh_color){
     m_frustum = frustum;
     m_shader_programme = shader_programme;
