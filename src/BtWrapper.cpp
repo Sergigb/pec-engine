@@ -1,6 +1,17 @@
 #include "BtWrapper.hpp"
 
 
+BtWrapper::BtWrapper(){
+    m_collisionConfiguration = new btDefaultCollisionConfiguration();
+    m_dispatcher = new btCollisionDispatcher(m_collisionConfiguration);
+    m_overlappingPairCache = new btDbvtBroadphase();
+    m_solver = new btSequentialImpulseConstraintSolver;
+    m_dynamicsWorld = new btDiscreteDynamicsWorld(m_dispatcher, m_overlappingPairCache, m_solver, m_collisionConfiguration);
+
+    m_dynamicsWorld->setGravity(btVector3(0.0, -9.81, 0.0));
+}
+
+
 BtWrapper::BtWrapper(const btVector3& gravity){
     m_collisionConfiguration = new btDefaultCollisionConfiguration();
     m_dispatcher = new btCollisionDispatcher(m_collisionConfiguration);

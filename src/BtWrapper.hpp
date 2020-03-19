@@ -12,6 +12,7 @@ class BtWrapper{
         btSequentialImpulseConstraintSolver* m_solver;
         btDiscreteDynamicsWorld* m_dynamicsWorld;
     public:
+        BtWrapper();
         BtWrapper(const btVector3& gravity);
         ~BtWrapper();
 
