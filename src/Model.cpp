@@ -12,7 +12,7 @@ Model::Model(const char* path_to_mesh, const char* path_to_texture, GLuint shade
     m_shader_programme = shader_programme;
 
     m_model_mat_location = glGetUniformLocation(m_shader_programme, "model");
-    m_color_location = glGetUniformLocation(m_shader_programme, "color");
+    m_color_location = glGetUniformLocation(m_shader_programme, "object_color");
 
     m_mesh_color = mesh_color;
 
