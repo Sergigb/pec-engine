@@ -1,7 +1,7 @@
 CXX = g++
 CC = gcc
-INC = -I../include/ -I../include/bullet/ -I/usr/include/freetype2 
-CXXFLAGS = $(INC) -Wall -Wextra -Werror -pedantic 
+INC = -I../include/ -I../include/bullet/ -I/usr/include/freetype2
+CXXFLAGS = $(INC) -Wall -Wextra -Werror -pedantic
 LDFLAGS = -L../lib/
 LDLIBS =  -lGL -lGLEW -lglfw -lz -fopenmp -lfreetype -lassimp -lIrrXML -lBulletDynamics -lBulletCollision -lLinearMath
 OBJPATH = ../bin
@@ -11,13 +11,13 @@ PARTSPAHT = parts
 MAINSRCS = main.cpp Ship.cpp BasePart.cpp CommandModule.cpp ServiceModule.cpp LaunchEscapeAssembly.cpp ResourceContainer.cpp Engine.cpp
 MAINOBJS = $(foreach source, $(MAINSRCS), $(OBJPATH)/$(source:.cpp=.o))
 
-OPENGLSRCS = opengl.cpp log.cpp utils.cpp gl_utils.cpp maths_funcs.cpp Camera.cpp Input.cpp WindowHandler.cpp Text2D.cpp FontAtlas.cpp Frustum.cpp DebugOverlay.cpp Model.cpp BtWrapper.cpp Object.cpp
+OPENGLSRCS = opengl.cpp log.cpp utils.cpp gl_utils.cpp maths_funcs.cpp Camera.cpp Input.cpp WindowHandler.cpp Text2D.cpp FontAtlas.cpp Frustum.cpp DebugOverlay.cpp Model.cpp BtWrapper.cpp Object.cpp RenderContext.cpp
 OPENGLOBJS = $(foreach source, $(OPENGLSRCS), $(OBJPATH)/$(source:.cpp=.o))
 
 all: opengl main
 
 main: $(MAINOBJS)
-	$(CXX)  $(CXXFLAGS) $(MAINOBJS) -o $(EXECPATH)/main
+	$(CXX) $(CXXFLAGS) $(MAINOBJS) -o $(EXECPATH)/main
 
 $(OBJPATH)/main.o: main.cpp
 	$(CXX) $(CXXFLAGS) -c main.cpp -o $(OBJPATH)/main.o
