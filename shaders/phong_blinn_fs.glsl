@@ -5,7 +5,7 @@ in vec2 st;
 out vec4 frag_colour;
 
 uniform mat4 view;
-uniform vec3 light_position_world;
+uniform vec3 light_pos, object_color;
 uniform sampler2D tex;
 
 // fixed point light properties
@@ -25,7 +25,7 @@ void main() {
 
     vec3 n_eye = normalize(normal_eye);
 
-    vec3 light_position_eye = vec3(view * vec4(light_position_world, 1.0));
+    vec3 light_position_eye = vec3(view * vec4(light_pos, 1.0));
     vec3 distance_to_light_eye = light_position_eye - position_eye;
     vec3 direction_to_light_eye = normalize(distance_to_light_eye);
     float dot_prod = dot(direction_to_light_eye, n_eye);
@@ -45,5 +45,5 @@ void main() {
     vec4 texel = texture(tex, st);
     
     // final colour
-    frag_colour = vec4 (texel.xyz * (Is + Id + Ia), 1.0);
+    frag_colour = vec4 (object_color * texel.xyz * (Is + Id + Ia), 1.0);
 }
