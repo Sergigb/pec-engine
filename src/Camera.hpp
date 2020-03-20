@@ -30,7 +30,7 @@ class Camera{
         void updateViewMatrix();
     public:
         Camera();
-        Camera(const vec3* pos, float fovy, float ar, float near, float far, const Input* input_ptr);
+        Camera(const vec3& pos, float fovy, float ar, float near, float far, const Input* input_ptr);
         ~Camera(); 
 
         void setCameraOrientation(const versor* orientation);

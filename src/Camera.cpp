@@ -27,8 +27,8 @@ Camera::Camera(){
 }
 
 
-Camera::Camera(const vec3* pos, float fovy, float ar, float near, float far, const Input* input_ptr){
-    m_cam_pos = *pos;
+Camera::Camera(const vec3& pos, float fovy, float ar, float near, float far, const Input* input_ptr){
+    m_cam_pos = pos;
     m_cam_translation = vec3(0.0f, 0.0f, 0.0f);
     m_fwd = vec4(0.0f, 0.0f, -1.0f, 0.0f);
     m_rgt = vec4(1.0f, 0.0f, 0.0f, 0.0f);
