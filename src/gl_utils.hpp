@@ -16,7 +16,6 @@
 #include "maths_funcs.hpp"
 
 
-int init_gl(GLFWwindow** g_window, int gl_width, int gl_height);
 void log_shader_info(GLuint shader_index);
 void log_programme_info(GLuint program_index);
 int log_validate_programme(GLuint program_index);
