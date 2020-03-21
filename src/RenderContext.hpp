@@ -3,10 +3,13 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
+#include <vector>
+
 #include "gl_utils.hpp"
 #include "Camera.hpp"
 #include "WindowHandler.hpp"
 #include "DebugOverlay.hpp"
+#include "Object.hpp"
 
 
 #define SHADER_PHONG_BLINN 1
@@ -30,7 +33,12 @@ class RenderContext{
 
         const Camera* m_camera;
         const WindowHandler* m_window_handler;
+
+        void initGl();
     public:
+        // also we shouldn't declare this here vvvvvv it should be decalred in the app (or whatever we call it) class
+        std::vector<Object*> m_objects; // we will handle this better later
+
         RenderContext(const Camera* camera, const WindowHandler* window_handler);
         ~RenderContext();
 

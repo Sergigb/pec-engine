@@ -4,6 +4,9 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
     m_camera = camera;
     m_window_handler = window_handler;
 
+    initGl();
+    log_gl_params();
+
     // shader setup
 
     m_debug_overlay = new DebugOverlay(m_camera, m_window_handler);
@@ -47,6 +50,39 @@ RenderContext::~RenderContext(){
     glDeleteShader(m_pb_shader);
 }
 
+
+void RenderContext::initGl(){
+    log("Starting GLEW");
+    glewExperimental = GL_TRUE;
+    glewInit();
+
+    // get version info
+    const GLubyte* renderer = glGetString(GL_RENDERER);
+    const GLubyte* version = glGetString(GL_VERSION);
+    std::cout << "Renderer: " << renderer << std::endl;
+    std::cout << "OpenGL version supported: " << version << std::endl;
+    log("Renderer: ", renderer, ", using OpenGL version: ", version);
+
+    // general gl setup
+    glEnable(GL_MULTISAMPLE);
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    glEnable(GL_CULL_FACE);
+    glCullFace(GL_BACK);
+    glFrontFace(GL_CCW);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    glEnable(GL_BLEND);
+    //glfwSwapInterval(0);
+
+    int samples;
+    glGetIntegerv(GL_SAMPLES, &samples);
+    if (samples)
+        log("MSAA is available with ", samples, " samples");
+    else
+        log("MSAA is unavailable");
+}
+
+
 void RenderContext::render(){
     int num_rendered = 0;
 
@@ -66,10 +102,12 @@ void RenderContext::render(){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(m_bg_r, m_bg_g, m_bg_b, m_bg_a);
 
+    for(uint i=0; i<m_objects.size(); i++){
+        num_rendered += m_objects.at(i)->render();
+    }
+
     m_debug_overlay->setRenderedObjects(num_rendered);
     m_debug_overlay->render();
-
-    // render the stuff    
 }
 
 
