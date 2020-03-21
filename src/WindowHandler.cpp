@@ -11,22 +11,63 @@ WindowHandler::WindowHandler(){
 }
 
 
-WindowHandler::WindowHandler(GLFWwindow* window, int width, int height, Input* input, Camera* camera){
-    m_window = window;
+WindowHandler::WindowHandler(int width, int height, Input* input, Camera* camera){
+    //m_window = window;
     m_gl_width = width;
     m_gl_height = height;
     m_input = input;
     m_camera = camera;
+
+    initGlfw();
+}
+
+
+WindowHandler::~WindowHandler(){
+}
+
+
+void glfw_error_callback(int error, const char* description){
+    std::cout << "GLFW error " << error << "(" << description << ")" << std::endl;
+    log("GLFW error number ", error, " (", description, ")");
+}
+
+
+void WindowHandler::initGlfw(){
+    log("Starting GLFW ", glfwGetVersionString());
+
+    glfwSetErrorCallback(glfw_error_callback);
+    if(!glfwInit()){
+        std::cerr << "ERROR: could not start GLFW3, check the log" << std::endl;
+        log("ERROR: could not start GLFW3");
+    }
+
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    //glfwWindowHint(GLFW_SAMPLES, 4); //x4 MSAA, we should add a function to change it
+
+//    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+    /*GLFWmonitor* mon = glfwGetPrimaryMonitor ();
+    const GLFWvidmode* vmode = glfwGetVideoMode (mon);
+    m_window = glfwCreateWindow (
+                    vmode->width, vmode->height, "Extended GL Init", mon, NULL
+);*/
+
+    m_window = glfwCreateWindow(m_gl_width, m_gl_height, "The window with no name", NULL, NULL);
+    if(!m_window){
+        std::cerr << "ERROR: could not open window with GLFW3, check the log" << std::endl;
+        log("ERROR: could not open window with GLFW3");
+        glfwTerminate();
+    }
+
+    glfwMakeContextCurrent(m_window);
 
     glfwSetWindowUserPointer(m_window, this);
     glfwSetKeyCallback(m_window, WindowHandler::glfwKeyCallback);
     glfwSetFramebufferSizeCallback(m_window, WindowHandler::glfwFramebufferSizeCallback);
     glfwSetMouseButtonCallback(m_window, WindowHandler::glfwMouseButtonCallback);
     glfwSetCursorPosCallback(m_window, WindowHandler::glfwMousePosCallback);
-}
-
-
-WindowHandler::~WindowHandler(){
 }
 
 

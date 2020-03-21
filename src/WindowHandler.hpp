@@ -16,9 +16,11 @@ class WindowHandler{
         int m_gl_width, m_gl_height;
         Input* m_input;
         Camera* m_camera;
+
+        void initGlfw();
     public:
         WindowHandler();
-        WindowHandler(GLFWwindow* window, int width, int height, Input* input, Camera* camera);
+        WindowHandler(int width, int height, Input* input, Camera* camera);
         ~WindowHandler();
 
         void handleKeyboardInput(int key, int scancode, int action, int mods);
