@@ -1,17 +1,16 @@
 #include "DebugOverlay.hpp"
 
 
-DebugOverlay::DebugOverlay(const Camera* camera, const WindowHandler* window_handler){
+DebugOverlay::DebugOverlay(const WindowHandler* window_handler, GLuint shader){
     int fb_width, fb_height;
 
-    m_camera = camera;
     m_window_handler = window_handler;
 
     m_window_handler->getFramebufferSize(fb_width, fb_height);
 
-    m_text_fps = new Text2D(fb_width, fb_height, color{1.0, 1.0, 0.0}, 256, "../data/fonts/Liberastika-Regular.ttf", 15);
-    m_text_rendered_objects = new Text2D(fb_width, fb_height, color{1.0, 1.0, 0.0}, 256, "../data/fonts/Liberastika-Regular.ttf", 15);
-    debug_info_box(&m_text_debug, fb_width, fb_height);
+    m_text_fps = new Text2D(fb_width, fb_height, color{1.0, 1.0, 0.0}, 256, "../data/fonts/Liberastika-Regular.ttf", 15, shader);
+    m_text_rendered_objects = new Text2D(fb_width, fb_height, color{1.0, 1.0, 0.0}, 256, "../data/fonts/Liberastika-Regular.ttf", 15, shader);
+    debug_info_box(&m_text_debug, fb_width, fb_height, shader);
 
     m_rendered_obj = 0;
 }
@@ -29,19 +28,17 @@ void DebugOverlay::setRenderedObjects(int n){
 }
 
 
+void DebugOverlay::onFramebufferSizeUpdate(int fb_width, int fb_height){
+    m_text_fps->onFramebufferSizeUpdate(fb_width, fb_height);
+    m_text_debug->onFramebufferSizeUpdate(fb_width, fb_height);
+    m_text_rendered_objects->onFramebufferSizeUpdate(fb_width, fb_height);
+}
+
+
 void DebugOverlay::render(){
     wchar_t buffer[64];
     std::ostringstream oss2;
     
-    if(m_camera->projChanged()){
-        int fb_width, fb_height;
-        m_window_handler->getFramebufferSize(fb_width, fb_height);
-
-        m_text_debug->onFramebufferSizeUpdate(fb_width, fb_height);
-        m_text_fps->onFramebufferSizeUpdate(fb_width, fb_height);
-        m_text_rendered_objects->onFramebufferSizeUpdate(fb_width, fb_height);
-    }
-
     glDisable(GL_DEPTH_TEST);
     oss2 << (int)get_fps() << " FPS";
     mbstowcs(buffer, oss2.str().c_str(), 64);

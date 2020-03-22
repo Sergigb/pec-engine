@@ -14,14 +14,15 @@ class DebugOverlay{
         Text2D* m_text_debug;
         Text2D* m_text_fps;
         Text2D* m_text_rendered_objects;
-        const Camera* m_camera;
         const WindowHandler* m_window_handler;
         int m_rendered_obj;        
     public:
-        DebugOverlay(const Camera* camera, const WindowHandler* window_handler);
+        DebugOverlay(const WindowHandler* window_handler, GLuint shader);
         ~DebugOverlay();
 
         void setRenderedObjects(int n);
+        void onFramebufferSizeUpdate(int fb_width, int fb_height);
+        
         void render();
 };
 
