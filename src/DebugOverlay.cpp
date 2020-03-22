@@ -1,13 +1,7 @@
 #include "DebugOverlay.hpp"
 
 
-DebugOverlay::DebugOverlay(const WindowHandler* window_handler, GLuint shader){
-    int fb_width, fb_height;
-
-    m_window_handler = window_handler;
-
-    m_window_handler->getFramebufferSize(fb_width, fb_height);
-
+DebugOverlay::DebugOverlay(int fb_width, int fb_height, GLuint shader){
     m_text_fps = new Text2D(fb_width, fb_height, color{1.0, 1.0, 0.0}, 256, "../data/fonts/Liberastika-Regular.ttf", 15, shader);
     m_text_rendered_objects = new Text2D(fb_width, fb_height, color{1.0, 1.0, 0.0}, 256, "../data/fonts/Liberastika-Regular.ttf", 15, shader);
     debug_info_box(&m_text_debug, fb_width, fb_height, shader);
