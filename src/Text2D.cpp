@@ -14,12 +14,11 @@ Text2D::Text2D(){
     m_num_indices = 0;
     m_fb_width = 640;
     m_fb_height = 480;
-
-    initgl(m_fb_width, m_fb_height, color{1.0, 1.0, 1.0});
+    m_update_buffer = false;
 }
 
 
-Text2D::Text2D(int fb_width, int fb_height, const color& c, uint atlas_size, const char* font_path, int font_size){
+Text2D::Text2D(int fb_width, int fb_height, const color& c, uint atlas_size, const char* font_path, int font_size, GLuint shader){
     font = new FontAtlas(atlas_size);
     font->loadFont(font_path, font_size);
     font->loadCharacterRange(32, 255); // ascii
@@ -31,12 +30,14 @@ Text2D::Text2D(int fb_width, int fb_height, const color& c, uint atlas_size, con
     m_num_indices = 0;
     m_fb_width = fb_width;
     m_fb_height = fb_height;
+    m_update_buffer = true;
+    m_shader_programme = shader;
 
-    initgl(m_fb_width, m_fb_height, c);
+    initgl(c);
 }
 
 
-void Text2D::initgl(int fb_width, int fb_height, const color& c){
+void Text2D::initgl(const color& c){
     glGenVertexArrays(1, &m_vao);
     glBindVertexArray(m_vao);
 
@@ -55,15 +56,10 @@ void Text2D::initgl(int fb_width, int fb_height, const color& c){
     glVertexAttribPointer(2, 3, GL_UNSIGNED_SHORT, GL_FALSE, 0, NULL);
     glEnableVertexAttribArray(2);
 
-    m_shader_programme = create_programme_from_files("../shaders/text_vs.glsl",
-                                                     "../shaders/text_fs.glsl");
     glUseProgram(m_shader_programme);
 
-    m_projection = math::orthographic(fb_width, 0, fb_height , 0, 1.0f , -1.0f);
-    m_proj_mat_location = glGetUniformLocation(m_shader_programme, "projection");
     m_color_location = glGetUniformLocation(m_shader_programme, "text_color");
     glUniform3f(m_color_location, c.r, c.g, c.b);
-    glUniformMatrix4fv(m_proj_mat_location, 1, GL_FALSE, m_projection.m);
 
     glGenTextures(1, &m_texture_id);
     glActiveTexture(GL_TEXTURE0);
@@ -82,7 +78,6 @@ Text2D::~Text2D(){
     glDeleteBuffers(1, &m_vbo_ind);
     glDeleteVertexArrays(1, &m_vao);
     glDeleteTextures(1, &m_texture_id);
-    glDeleteShader(m_shader_programme); // doesn't seem to be deleting the shaders or the programme right, it leaks
 }
 
 
@@ -227,15 +222,12 @@ void Text2D::clearStrings(){
 void Text2D::onFramebufferSizeUpdate(int fb_width, int fb_height){
     m_fb_width = fb_width;
     m_fb_height = fb_height;
-    glUseProgram(m_shader_programme);
-    m_projection = math::orthographic(fb_width, 0, fb_height, 0, 1.0f , -1.0f);
-    glUniformMatrix4fv(m_proj_mat_location, 1, GL_FALSE, m_projection.m);
     m_update_buffer = true;
 }
 
 
-void debug_info_box(Text2D** t, int fb_width, int fb_height){
-    *t = new Text2D(fb_width, fb_height, color{1.0, 1.0, 0.0}, 256, "../data/fonts/Liberastika-Regular.ttf", 15);
+void debug_info_box(Text2D** t, int fb_width, int fb_height, GLuint shader){
+    *t = new Text2D(fb_width, fb_height, color{1.0, 1.0, 0.0}, 256, "../data/fonts/Liberastika-Regular.ttf", 15, shader);
     
     const GLubyte* vendor = glGetString(GL_VENDOR); // Returns the vendor
     const GLubyte* renderer = glGetString(GL_RENDERER); // Returns a hint to the model
