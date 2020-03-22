@@ -37,6 +37,7 @@ class WindowHandler{
         static void glfwMousePosCallback(GLFWwindow *window, double posx, double posy);
 
         void update();
+        void terminate();
 };
 
 

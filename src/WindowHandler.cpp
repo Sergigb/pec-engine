@@ -135,3 +135,12 @@ void WindowHandler::glfwMousePosCallback(GLFWwindow *window, double posx, double
     WindowHandler* wh = reinterpret_cast<WindowHandler*>(glfwGetWindowUserPointer(window));
     wh->handleMousePos(posx, posy);
 }
+
+
+void WindowHandler::terminate(){
+    log("Terminating GLFW and exiting");
+    std::cout << "Terminating GLFW and exiting" << std::endl;
+    glfwTerminate();
+}
+
+
