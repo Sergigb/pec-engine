@@ -25,6 +25,10 @@ class RenderContext{
 
         GLint m_pb_view_mat, m_pb_proj_mat, m_pb_light_pos, m_pb_light_color;
         GLuint m_pb_shader;
+
+        GLint m_text_proj_mat;
+        GLuint m_text_shader;
+
         // shaders //
 
         DebugOverlay* m_debug_overlay;

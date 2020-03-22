@@ -1,6 +1,9 @@
 #include "RenderContext.hpp"
 
 RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_handler){
+    int fb_width, fb_height;
+    window_handler->getFramebufferSize(fb_width, fb_height);
+
     m_camera = camera;
     m_window_handler = window_handler;
 
@@ -8,8 +11,6 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
     log_gl_params();
 
     // shader setup
-
-    m_debug_overlay = new DebugOverlay(m_camera, m_window_handler);
 
     m_pb_notex_shader = create_programme_from_files("../shaders/phong_blinn_color_vs.glsl",
                                                     "../shaders/phong_blinn_color_fs.glsl");
@@ -35,6 +36,17 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
     glUniformMatrix4fv(m_pb_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
     glUniform3fv(m_pb_light_pos, 1, math::vec3(0.0, 0.0, 0.0).v);
 
+    m_text_shader = create_programme_from_files("../shaders/text_vs.glsl",
+                                                "../shaders/text_fs.glsl");
+    m_text_proj_mat = glGetUniformLocation(m_text_shader, "projection");
+
+    math::mat4 text_orto_proj = math::orthographic(fb_width, 0, fb_height , 0, 1.0f , -1.0f);
+    glUseProgram(m_text_shader);
+    glUniformMatrix4fv(m_text_proj_mat, 1, GL_FALSE, text_orto_proj.m);
+
+    // debug overlay
+    m_debug_overlay = new DebugOverlay(m_window_handler, m_text_shader);
+
     // other gl stuff
     m_bg_r = 0.2;
     m_bg_g = 0.2;
@@ -44,10 +56,12 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
     glClearColor(m_bg_r, m_bg_g, m_bg_b, m_bg_a);
 }
 
+
 RenderContext::~RenderContext(){
     delete m_debug_overlay;
     glDeleteShader(m_pb_notex_shader);
     glDeleteShader(m_pb_shader);
+    glDeleteShader(m_text_shader);
 }
 
 
@@ -86,6 +100,8 @@ void RenderContext::initGl(){
 void RenderContext::render(){
     int num_rendered = 0;
 
+    //clean up this shit
+
     glUseProgram(m_pb_notex_shader);
     if(m_camera->hasMoved())
         glUniformMatrix4fv(m_pb_notex_view_mat, 1, GL_FALSE, m_camera->getViewMatrix().m);
@@ -98,6 +114,17 @@ void RenderContext::render(){
         glUniformMatrix4fv(m_pb_view_mat, 1, GL_FALSE, m_camera->getViewMatrix().m);
     if(m_camera->projChanged())
         glUniformMatrix4fv(m_pb_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
+
+    if(m_camera->projChanged()){
+        int fb_width, fb_height;
+        m_window_handler->getFramebufferSize(fb_width, fb_height);
+
+        glUseProgram(m_text_shader);
+        math::mat4 projection = math::orthographic(fb_width, 0, fb_height, 0, 1.0f , -1.0f);
+        glUniformMatrix4fv(m_text_proj_mat, 1, GL_FALSE, projection.m);
+
+        m_debug_overlay->onFramebufferSizeUpdate(fb_width, fb_height);
+    }
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(m_bg_r, m_bg_g, m_bg_b, m_bg_a);
@@ -117,6 +144,7 @@ void RenderContext::setLightPosition(const math::vec3& pos) const{
     glUseProgram(m_pb_shader);
     glUniform3fv(m_pb_light_pos, 1, pos.v);
 }
+
 
 GLuint RenderContext::getShader(int shader) const{
     if(shader == SHADER_PHONG_BLINN){
