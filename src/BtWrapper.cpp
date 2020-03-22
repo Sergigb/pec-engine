@@ -19,6 +19,9 @@ BtWrapper::BtWrapper(const btVector3& gravity){
     m_solver = new btSequentialImpulseConstraintSolver;
     m_dynamicsWorld = new btDiscreteDynamicsWorld(m_dispatcher, m_overlappingPairCache, m_solver, m_collisionConfiguration);
 
+    log("Starting dynamics world");
+    std::cout << "Starting dynamics world" << std::endl;
+    
     m_dynamicsWorld->setGravity(gravity);
 }
 
@@ -45,6 +48,7 @@ void BtWrapper::stepSimulation(btScalar time_step, int max_sub_steps){
 
 
 void BtWrapper::deleteBody(btRigidBody* body){
+    // this leaks vvvv, not sure why
     m_dynamicsWorld->removeRigidBody(body);  // the instance of the object still has to be deleted
 }
 
