@@ -12,7 +12,10 @@ BtWrapper::BtWrapper(){
 }
 
 
-BtWrapper::BtWrapper(const btVector3& gravity){
+BtWrapper::BtWrapper(const btVector3& gravity, const WindowHandler* window_handler, const Input* input){
+    m_window_handler = window_handler;
+    m_input = input;
+
     m_collisionConfiguration = new btDefaultCollisionConfiguration();
     m_dispatcher = new btCollisionDispatcher(m_collisionConfiguration);
     m_overlappingPairCache = new btDbvtBroadphase();

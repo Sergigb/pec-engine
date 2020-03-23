@@ -7,6 +7,9 @@
 #include <bullet/btBulletDynamicsCommon.h>
 
 #include "log.hpp"
+#include "Input.hpp"
+#include "WindowHandler.hpp"
+
 
 class BtWrapper{
     private:
@@ -15,13 +18,17 @@ class BtWrapper{
         btBroadphaseInterface* m_overlappingPairCache;
         btSequentialImpulseConstraintSolver* m_solver;
         btDiscreteDynamicsWorld* m_dynamicsWorld;
+
+        const WindowHandler* m_window_handler;
+        const Input* m_input;
     public:
         BtWrapper();
-        BtWrapper(const btVector3& gravity);
+        BtWrapper(const btVector3& gravity, const WindowHandler* window_handler, const Input* input);
         ~BtWrapper();
 
         void addRigidBody(btRigidBody* body);
         void deleteBody(btRigidBody* body);
+        //void 
 
         void stepSimulation(btScalar time_step, int max_sub_steps);
         
