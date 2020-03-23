@@ -7,9 +7,10 @@
 #include <bullet/btBulletDynamicsCommon.h>
 
 #include "log.hpp"
-#include "Input.hpp"
-#include "WindowHandler.hpp"
+#include "maths_funcs.hpp"
 
+
+class Object;
 
 class BtWrapper{
     private:
@@ -19,16 +20,14 @@ class BtWrapper{
         btSequentialImpulseConstraintSolver* m_solver;
         btDiscreteDynamicsWorld* m_dynamicsWorld;
 
-        const WindowHandler* m_window_handler;
-        const Input* m_input;
     public:
         BtWrapper();
-        BtWrapper(const btVector3& gravity, const WindowHandler* window_handler, const Input* input);
+        BtWrapper(const btVector3& gravity);
         ~BtWrapper();
 
         void addRigidBody(btRigidBody* body);
         void deleteBody(btRigidBody* body);
-        //void 
+        Object* testMousePick(float fb_width, float fb_heigth, float mouse_x, float mouse_y, const math::mat4& proj_matrix, const math::mat4& view_matrix, double dist);
 
         void stepSimulation(btScalar time_step, int max_sub_steps);
         

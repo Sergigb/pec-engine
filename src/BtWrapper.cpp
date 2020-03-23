@@ -12,10 +12,7 @@ BtWrapper::BtWrapper(){
 }
 
 
-BtWrapper::BtWrapper(const btVector3& gravity, const WindowHandler* window_handler, const Input* input){
-    m_window_handler = window_handler;
-    m_input = input;
-
+BtWrapper::BtWrapper(const btVector3& gravity){
     m_collisionConfiguration = new btDefaultCollisionConfiguration();
     m_dispatcher = new btCollisionDispatcher(m_collisionConfiguration);
     m_overlappingPairCache = new btDbvtBroadphase();
@@ -53,5 +50,49 @@ void BtWrapper::stepSimulation(btScalar time_step, int max_sub_steps){
 void BtWrapper::deleteBody(btRigidBody* body){
     // this leaks vvvv, not sure why
     m_dynamicsWorld->removeRigidBody(body);  // the instance of the object still has to be deleted
+}
+
+
+Object* BtWrapper::testMousePick(float fb_width, float fb_heigth, float mouse_x, float mouse_y, const math::mat4& proj_matrix, const math::mat4& view_matrix, double dist){
+    math::vec4 ray_start, ray_start_world;
+    math::vec4 ray_end, ray_end_world;
+    math::mat4 M;
+    math::vec3 ray_dir, ray_end_world_ext;
+
+    // the extraction of the ray could be a method in the camera class at some point, if we need it
+
+    ray_start = math::vec4((mouse_x/fb_width - 0.5) * 2.0,
+                           (mouse_y/fb_heigth - 0.5) * 2.0,
+                           -1.0, 1.0);
+    ray_end = math::vec4((mouse_x/fb_width - 0.5) * 2.0,
+                         (mouse_y/fb_heigth - 0.5) * 2.0,
+                         0.0, 1.0);
+
+    M = math::inverse(proj_matrix * view_matrix);
+
+    ray_start_world = M * ray_start;
+    ray_start_world = ray_start_world / ray_start_world.v[3];
+    ray_end_world = M * ray_end;
+    ray_end_world = ray_end_world / ray_end_world.v[3];
+
+    ray_dir = math::normalise(ray_end_world - ray_start_world);
+
+    ray_end_world_ext = math::vec3(ray_start_world) + ray_dir * dist; // ray end extended according to dist (in meters)
+
+
+    btCollisionWorld::ClosestRayResultCallback ray_callback(
+            btVector3(ray_start_world.v[0], ray_start_world.v[1], ray_start_world.v[2]),
+            btVector3(ray_end_world_ext.v[0], ray_end_world_ext.v[1], ray_end_world_ext.v[2]));
+    m_dynamicsWorld->rayTest(
+            btVector3(ray_start_world.v[0], ray_start_world.v[1], ray_start_world.v[2]), 
+            btVector3(ray_end_world_ext.v[0], ray_end_world_ext.v[1], ray_end_world_ext.v[2]),
+            ray_callback);
+
+    if(ray_callback.hasHit()) {
+        Object* obj = static_cast<Object *>(ray_callback.m_collisionObject->getUserPointer());
+        return obj;
+    }else{
+        return nullptr;
+    }
 }
 
