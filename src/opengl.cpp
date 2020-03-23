@@ -89,13 +89,13 @@ int main(){
     Object* sphere2 = new Object(sphere_model, &bt_wrapper, sphere_shape, btVector3(0.0, 55.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(10.0));
     sphere2->setColor(math::vec3(1.0, 0.0, 1.0));
 
-    for(int i=0; i<100; i++){
+    for(int i=0; i<10; i++){
         Object* cube = new Object(cube_model, &bt_wrapper, cube_shape, btVector3(0.0, 55.0 + (i+1)*5, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(10.0));
         cube->setColor(math::vec3(1.0, 0.0, 0.0));
         render_context.m_objects.push_back(cube);
     }
 
-    for(int i=0; i<100; i++){
+    for(int i=0; i<10; i++){
         Object* sphere = new Object(sphere_model, &bt_wrapper, sphere_shape, btVector3(5.0, 55.0 + (i+1)*5, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(10.0));
         sphere->setColor(math::vec3(0.0, 1.0, 0.0));
         render_context.m_objects.push_back(sphere);
@@ -117,6 +117,21 @@ int main(){
 		window_handler.update();
 		frustum.extractPlanes(camera.getViewMatrix(), camera.getProjMatrix(), false);
 
+        // mouse pick test
+        if(input.mButtonPressed() && input.pressed_mbuttons[GLFW_MOUSE_BUTTON_1]){
+            int w, h;
+            double mousey, mousex;
+            input.getMousePos(mousex, mousey);
+            window_handler.getFramebufferSize(w, h);
+            Object* obj;
+            obj = bt_wrapper.testMousePick((float)w, (float)h, (float)mousex, (float)h - (float)mousey, camera.getProjMatrix(), camera.getViewMatrix(), 1000.0f);
+            if(obj){
+                //obj->setColor(math::vec3(1.0, 0.0, 1.0));
+                obj->applyTorque(btVector3(500.0, 0.0, 0.0));
+                obj->applyCentralForce(btVector3(0.0, 10000.0, 0.0));
+            }
+        }
+
         /// bullet simulation step
         // this way we tie the simulation update rate to the framerate, should be 60hz if we limit it to 60 fps. We should manage the physics in a different thread and limit it to 60 hz
         // to test this we can unlock the fps and see what happens
@@ -124,7 +139,7 @@ int main(){
             physics_pause = !physics_pause;
         }
         if(!physics_pause)
-            bt_wrapper.stepSimulation(1.f / 60.f, 1);
+            bt_wrapper.stepSimulation(1.f / 60.f, 0);
 
 		// rendering
         render_context.render();
@@ -145,16 +160,13 @@ int main(){
     }
 
     for(uint i=0; i<render_context.m_objects.size(); i++){
-        std::cout << "deleted element at " << i << std::endl;
         delete render_context.m_objects.at(i);
     }
     render_context.m_objects.clear();
 
     /////////////
 
-	log("Terminating GLFW and exiting");
-	std::cout << "Terminating GLFW and exiting" << std::endl;
-	glfwTerminate();
+    window_handler.terminate();
 
 	return EXIT_SUCCESS;
 }
