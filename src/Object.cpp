@@ -28,6 +28,7 @@ Object::Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape,
     m_body = new btRigidBody(rb_info);
 
     m_bt_wrapper->addRigidBody(m_body);
+    m_body->setUserPointer((void*)this);
 }
 
 Object::~Object(){
@@ -67,5 +68,17 @@ void Object::setMeshScale(float scale){
     m_scale_transform.m[0] = scale;
     m_scale_transform.m[5] = scale;
     m_scale_transform.m[10] = scale;
+}
+
+
+void Object::applyCentralForce(const btVector3& force){
+    m_body->activate(true);
+    m_body->applyCentralForce(force);
+}
+
+
+void Object::applyTorque(const btVector3& torque){
+    m_body->activate(true);
+    m_body->applyTorque(torque);
 }
 

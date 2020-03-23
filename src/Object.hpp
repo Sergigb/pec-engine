@@ -24,6 +24,8 @@ class Object{
         Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, const btVector3& origin, const btVector3& local_inertia, const btQuaternion& initial_rotation, btScalar mass);
         ~Object();
 
+        void applyCentralForce(const btVector3& force);
+        void applyTorque(const btVector3& torque);
         void setColor(math::vec3 color);
         void setMeshScale(float scale);
         int render();
