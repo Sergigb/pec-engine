@@ -256,6 +256,60 @@ math::vec3 &math::vec3::operator=( const vec3 &rhs ) {
     return *this;
 }
 
+math::vec4 math::vec4::operator/( float rhs ) const {
+    math::vec4 vc;
+    vc.v[0] = v[0] / rhs;
+    vc.v[1] = v[1] / rhs;
+    vc.v[2] = v[2] / rhs;
+    vc.v[3] = v[3] / rhs;
+    return vc;
+}
+
+math::vec4 math::vec4::operator*( float rhs ) const {
+    math::vec4 vc;
+    vc.v[0] = v[0] * rhs;
+    vc.v[1] = v[1] * rhs;
+    vc.v[2] = v[2] * rhs;
+    vc.v[3] = v[3] * rhs;
+    return vc;
+}
+
+math::vec4 math::vec4::operator+( float rhs ) const {
+    math::vec4 vc;
+    vc.v[0] = v[0] + rhs;
+    vc.v[1] = v[1] + rhs;
+    vc.v[2] = v[2] + rhs;
+    vc.v[3] = v[3] + rhs;
+    return vc;
+}
+
+math::vec4 math::vec4::operator+( const vec4 &rhs ) const{
+    math::vec4 vc;
+    vc.v[0] = v[0] + rhs.v[0];
+    vc.v[1] = v[1] + rhs.v[1];
+    vc.v[2] = v[2] + rhs.v[2];
+    vc.v[3] = v[3] + rhs.v[3];
+    return vc;
+}
+
+math::vec4 math::vec4::operator-( float rhs ) const {
+    math::vec4 vc;
+    vc.v[0] = v[0] - rhs;
+    vc.v[1] = v[1] - rhs;
+    vc.v[2] = v[2] - rhs;
+    vc.v[3] = v[3] - rhs;
+    return vc;
+}
+
+math::vec4 math::vec4::operator-( const vec4 &rhs ) const{
+    math::vec4 vc;
+    vc.v[0] = v[0] - rhs.v[0];
+    vc.v[1] = v[1] - rhs.v[1];
+    vc.v[2] = v[2] - rhs.v[2];
+    vc.v[3] = v[3] - rhs.v[3];
+    return vc;
+}
+
 float math::dot( const vec3 &a, const vec3 &b ) {
     return a.v[0] * b.v[0] + a.v[1] * b.v[1] + a.v[2] * b.v[2];
 }

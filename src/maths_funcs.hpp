@@ -66,6 +66,13 @@ namespace math{
         vec4( float x, float y, float z, float w );
         vec4( const vec2 &vv, float z, float w );
         vec4( const vec3 &vv, float w );
+        vec4 operator/( float rhs ) const;
+        vec4 operator*( float rhs ) const;
+        vec4 operator+( float rhs ) const;
+        vec4 operator+( const vec4 &rhs ) const;
+        vec4 operator-( float rhs ) const;
+        vec4 operator-( const vec4 &rhs ) const;
+
         float v[4];
     };
 
