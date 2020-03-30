@@ -82,3 +82,8 @@ void Object::applyTorque(const btVector3& torque){
     m_body->applyTorque(torque);
 }
 
+
+btRigidBody* Object::getRigidBody(){
+    return m_body;
+}
+
