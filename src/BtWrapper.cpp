@@ -96,3 +96,8 @@ Object* BtWrapper::testMousePick(float fb_width, float fb_heigth, float mouse_x,
     }
 }
 
+
+void BtWrapper::addConstraint(btTypedConstraint *constraint, bool disable_collision_between_bodies){
+    m_dynamicsWorld->addConstraint(constraint, disable_collision_between_bodies);
+}
+

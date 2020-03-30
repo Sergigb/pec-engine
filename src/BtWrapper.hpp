@@ -26,6 +26,7 @@ class BtWrapper{
         ~BtWrapper();
 
         void addRigidBody(btRigidBody* body);
+        void addConstraint(btTypedConstraint *constraint, bool disable_collision_between_bodies);
         void deleteBody(btRigidBody* body);
         Object* testMousePick(float fb_width, float fb_heigth, float mouse_x, float mouse_y, const math::mat4& proj_matrix, const math::mat4& view_matrix, double dist);
 
