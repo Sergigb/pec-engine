@@ -80,8 +80,8 @@ void Camera::createProjMat(float near, float far, float fovy, float ar){
     m_proj_mat = perspective(m_fovy, m_ar, m_near, m_far);
 }
 
-void Camera::onFramebufferSizeUpdate(int width, int heigth){
-    m_proj_mat = perspective(m_fovy, (float)width/(float)heigth, m_near, m_far);
+void Camera::onFramebufferSizeUpdate(int width, int height){
+    m_proj_mat = perspective(m_fovy, (float)width/(float)height, m_near, m_far);
     m_fb_callback = true;
 }
 
@@ -277,5 +277,38 @@ vec3 Camera::getCamPosition() const{
 
 void Camera::setWindow(GLFWwindow* g_window){
     m_g_window = g_window;
+}
+
+
+void Camera::castRayMousePos(float fb_width, float fb_height, float dist, math::vec3& ray_start_world, math::vec3& ray_end_world_ext) const{
+    // ray_end_world_ext is ray_start_world + ray_direction * dist
+    // in the future we're gonna have a window handler pointer so we won't have to pass
+    // fb_width and fb_height
+    math::vec4 ray_start, ray_end, ray_end_world, ray_start_world_vec4;
+    math::mat4 M;
+    math::vec3 ray_dir;
+    double mouse_x, mouse_y;
+
+    input->getMousePos(mouse_x, mouse_y);
+    mouse_y = fb_height - mouse_y; // y is inverted
+    
+    ray_start = math::vec4(((float)mouse_x/fb_width - 0.5) * 2.0,
+                           (mouse_y/fb_height - 0.5) * 2.0,
+                           -1.0, 1.0);
+    ray_end = math::vec4(((float)mouse_x/fb_width - 0.5) * 2.0,
+                         (mouse_y/fb_height - 0.5) * 2.0,
+                         0.0, 1.0);
+
+    M = math::inverse(m_proj_mat * m_view_matrix);
+
+    ray_start_world_vec4 = M * ray_start;
+    ray_start_world_vec4 = ray_start_world_vec4 / ray_start_world_vec4.v[3];
+    ray_end_world = M * ray_end;
+    ray_end_world = ray_end_world / ray_end_world.v[3];
+
+    ray_dir = math::normalise(ray_end_world - ray_start_world_vec4);
+
+    ray_start_world = math::vec3(ray_start_world_vec4);
+    ray_end_world_ext = ray_start_world + ray_dir * dist; // ray end extended according to dist (in meters)
 }
 

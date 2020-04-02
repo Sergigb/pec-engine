@@ -52,6 +52,7 @@ class Camera{
         mat4 getViewMatrix() const;
         mat4 getProjMatrix() const;
         vec3 getCamPosition() const;
+        void castRayMousePos(float fb_width, float fb_height, float dist, math::vec3& ray_start_world, math::vec3& ray_end_world_ext) const;
 
         void update();
 };
