@@ -133,7 +133,8 @@ int main(){
     ///////////////////////////////////////
 
     render_context.setLightPosition(math::vec3(150.0, 100.0, 0.0));
-    bool physics_pause = true;
+    bool physics_pause = true, last_rmb = false;
+    Object* picked_obj = nullptr;
 	while (!glfwWindowShouldClose(window_handler.getWindow())){
 		input.update();
 		camera.update();
@@ -142,22 +143,41 @@ int main(){
 
         // mouse pick test
         if(input.mButtonPressed() && input.pressed_mbuttons[GLFW_MOUSE_BUTTON_1]){
-            int w, h;
-            double mousey, mousex;
-            math::vec3 ray_start_world, ray_end_world;
-            Object* obj;
+            if(!picked_obj && !last_rmb){
+                int w, h;
+                double mousey, mousex;
+                math::vec3 ray_start_world, ray_end_world;
+                Object* obj;
 
-            input.getMousePos(mousex, mousey);
-            window_handler.getFramebufferSize(w, h);
-            camera.castRayMousePos((float)w, (float)h - mousey, 1000.f, ray_start_world, ray_end_world);
+                input.getMousePos(mousex, mousey);
+                window_handler.getFramebufferSize(w, h);
+                camera.castRayMousePos((float)w, (float)h, 1000.f, ray_start_world, ray_end_world);
 
-            obj = bt_wrapper.testRay(ray_start_world, ray_end_world);
-            
-            if(obj){
-                obj->setColor(math::vec3(1.0, 0.0, 1.0));
-                //obj->applyTorque(btVector3(500.0, 0.0, 0.0));
-                //obj->applyCentralForce(btVector3(0.0, 10000.0, 0.0));
+                obj = bt_wrapper.testRay(ray_start_world, ray_end_world);
+                if(obj)
+                    picked_obj = obj;
             }
+            else if(!last_rmb){
+                picked_obj->activate(true);
+                picked_obj = nullptr;
+            }
+            last_rmb = true; // we should we do something to avoid this in the input class
+        }
+        else
+            last_rmb = false;
+
+        if(picked_obj){
+            int w, h;
+            math::vec3 ray_start_world, ray_end_world;
+            btQuaternion rotation;
+            btVector3 ray_end_world_btv3;
+            
+            window_handler.getFramebufferSize(w, h);
+            camera.castRayMousePos((float)w, (float)h, 25.f, ray_start_world, ray_end_world);
+
+            ray_end_world_btv3 = btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]);
+            rotation.setEuler(0, 0, 0);
+            picked_obj->setMotionState(ray_end_world_btv3, rotation);
         }
 
         /// bullet simulation step
