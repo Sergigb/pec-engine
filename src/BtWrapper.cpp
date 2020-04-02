@@ -53,7 +53,7 @@ void BtWrapper::deleteBody(btRigidBody* body){
 }
 
 
-Object* BtWrapper::testMousePick(float fb_width, float fb_heigth, float mouse_x, float mouse_y, const math::mat4& proj_matrix, const math::mat4& view_matrix, double dist){
+Object* BtWrapper::testMousePick(float fb_width, float fb_height, float mouse_x, float mouse_y, const math::mat4& proj_matrix, const math::mat4& view_matrix, double dist){
     math::vec4 ray_start, ray_start_world;
     math::vec4 ray_end, ray_end_world;
     math::mat4 M;
@@ -62,10 +62,10 @@ Object* BtWrapper::testMousePick(float fb_width, float fb_heigth, float mouse_x,
     // the extraction of the ray could be a method in the camera class at some point, if we need it
 
     ray_start = math::vec4((mouse_x/fb_width - 0.5) * 2.0,
-                           (mouse_y/fb_heigth - 0.5) * 2.0,
+                           (mouse_y/fb_height - 0.5) * 2.0,
                            -1.0, 1.0);
     ray_end = math::vec4((mouse_x/fb_width - 0.5) * 2.0,
-                         (mouse_y/fb_heigth - 0.5) * 2.0,
+                         (mouse_y/fb_height - 0.5) * 2.0,
                          0.0, 1.0);
 
     M = math::inverse(proj_matrix * view_matrix);
