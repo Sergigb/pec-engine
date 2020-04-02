@@ -78,16 +78,40 @@ int main(){
     cube1->setMeshScale(3.0);
     cube1->setColor(math::vec3(1.0, 0.0, 0.0));
 
-    quat.setEuler(45, 25, 0);
-    Object* cube2 = new Object(cube_model, &bt_wrapper, cube_shape, btVector3(0.0, 45.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(1.0));
-    cube2->setColor(math::vec3(0.0, 1.0, 0.0));
+    quat.setEuler(0, 0, 0);
+    Object* cube2 = new Object(cube_model, &bt_wrapper, cube_shape, btVector3(10.5, 30.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(30.0));
+    cube2->setColor(math::vec3(0.5, 0.75, 0.0));
 
     quat.setEuler(0, 0, 0);
-    Object* sphere1 = new Object(sphere_model, &bt_wrapper, sphere_shape, btVector3(0.0, 50.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(1.0));
-    sphere1->setColor(math::vec3(0.0, 0.0, 1.0));
+    Object* cube3 = new Object(cube_model, &bt_wrapper, cube_shape, btVector3(12.5, 30.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(30.0));
+    cube3->setColor(math::vec3(0.5, 0.75, 0.0));
 
-    Object* sphere2 = new Object(sphere_model, &bt_wrapper, sphere_shape, btVector3(0.0, 55.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(10.0));
-    sphere2->setColor(math::vec3(1.0, 0.0, 1.0));
+    // trying constraints
+    btVector3 pivot_a(1.0f, 0.0f, 0.0f);
+    btVector3 pivot_b(-1.0f, 0.0f, -0.0f);
+
+    btVector3 axis_a(0.0f, 1.0f, 0.0f );
+    btVector3 axis_b(0.0f, 1.0f, 0.0f );
+
+    btHingeConstraint* hingeConstraint = new btHingeConstraint(*cube2->getRigidBody(), *cube3->getRigidBody(), pivot_a, pivot_b, axis_a, axis_b, false);
+
+    hingeConstraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 0);
+    hingeConstraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 1);
+    hingeConstraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 2);
+    hingeConstraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 3);
+    hingeConstraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 4);
+    hingeConstraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 5);
+
+    hingeConstraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 0);
+    hingeConstraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 1);
+    hingeConstraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 2);
+    hingeConstraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 3);
+    hingeConstraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 4);
+    hingeConstraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 5);
+
+    hingeConstraint->setLimit(-0, 0);
+
+    bt_wrapper.addConstraint(hingeConstraint, true);
 
     for(int i=0; i<10; i++){
         Object* cube = new Object(cube_model, &bt_wrapper, cube_shape, btVector3(0.0, 55.0 + (i+1)*5, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(10.0));
@@ -104,8 +128,7 @@ int main(){
     render_context.m_objects.push_back(ground);
     render_context.m_objects.push_back(cube1);
     render_context.m_objects.push_back(cube2);
-    render_context.m_objects.push_back(sphere1);
-    render_context.m_objects.push_back(sphere2);
+    render_context.m_objects.push_back(cube3);
 
     ///////////////////////////////////////
 
@@ -121,14 +144,19 @@ int main(){
         if(input.mButtonPressed() && input.pressed_mbuttons[GLFW_MOUSE_BUTTON_1]){
             int w, h;
             double mousey, mousex;
+            math::vec3 ray_start_world, ray_end_world;
+            Object* obj;
+
             input.getMousePos(mousex, mousey);
             window_handler.getFramebufferSize(w, h);
-            Object* obj;
-            obj = bt_wrapper.testMousePick((float)w, (float)h, (float)mousex, (float)h - (float)mousey, camera.getProjMatrix(), camera.getViewMatrix(), 1000.0f);
+            camera.castRayMousePos((float)w, (float)h - mousey, 1000.f, ray_start_world, ray_end_world);
+
+            obj = bt_wrapper.testRay(ray_start_world, ray_end_world);
+            
             if(obj){
-                //obj->setColor(math::vec3(1.0, 0.0, 1.0));
-                obj->applyTorque(btVector3(500.0, 0.0, 0.0));
-                obj->applyCentralForce(btVector3(0.0, 10000.0, 0.0));
+                obj->setColor(math::vec3(1.0, 0.0, 1.0));
+                //obj->applyTorque(btVector3(500.0, 0.0, 0.0));
+                //obj->applyCentralForce(btVector3(0.0, 10000.0, 0.0));
             }
         }
 
