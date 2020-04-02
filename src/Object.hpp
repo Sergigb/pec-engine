@@ -30,6 +30,8 @@ class Object{
         void applyTorque(const btVector3& torque);
         void setColor(math::vec3 color);
         void setMeshScale(float scale);
+        void setMotionState(const btVector3& origin, const btQuaternion& initial_rotation);
+        void activate(bool activate);
         int render();
 };
 

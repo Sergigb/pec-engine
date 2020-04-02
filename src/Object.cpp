@@ -87,3 +87,20 @@ btRigidBody* Object::getRigidBody(){
     return m_body;
 }
 
+
+void Object::setMotionState(const btVector3& origin, const btQuaternion& initial_rotation){
+    btTransform transform;
+    transform.setIdentity();
+    transform.setOrigin(origin);
+    transform.setRotation(initial_rotation);
+
+    btDefaultMotionState* motion_state = new btDefaultMotionState(transform);
+
+    m_body->setMotionState(motion_state);
+}
+
+
+void Object::activate(bool activate){
+    m_body->activate(activate);
+}
+
