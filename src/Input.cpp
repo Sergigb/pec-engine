@@ -2,8 +2,8 @@
 
 
 Input::Input(){
-    std::memset(pressed_keys, 0, GLFW_KEY_LAST);
-    std::memset(pressed_mbuttons, 0, GLFW_MOUSE_BUTTON_LAST + 1);
+    std::memset(pressed_keys, 0, GLFW_KEY_LAST + 1);
+    std::memset(pressed_mbuttons, 0, GLFW_MOUSE_BUTTON_LAST + 1 * sizeof(int));
     m_num_pressed_keys = 0;
     m_mouse_posx = 0;
     m_mouse_posy = 0;
@@ -34,12 +34,11 @@ void Input::onKeyboardInput(int key, int scancode, int action, int mods){
 void Input::onMouseButton(int button, int action, int mods){
     UNUSED(mods);
 
-    if(button == GLFW_KEY_UNKNOWN) return;
     if(action == GLFW_PRESS){
-        pressed_mbuttons[button] = true;
+        pressed_mbuttons[button] = INPUT_MBUTTON_PRESS;
     }
-    else{
-        pressed_mbuttons[button] = false;
+    else if(action == GLFW_RELEASE){
+        pressed_mbuttons[button] = INPUT_MBUTTON_RELEASE;
     }
 }
 
@@ -53,7 +52,14 @@ void Input::onMouseButtonPos(double posx, double posy){
 
 void Input::update(){
     m_mouse_moved = false;
-    glfwPollEvents();
+
+    // update mbutton repeat/release
+    for(int i=0; i < GLFW_MOUSE_BUTTON_LAST + 1; i++){
+        if(pressed_mbuttons[i] == INPUT_MBUTTON_PRESS)
+            pressed_mbuttons[i] = INPUT_MBUTTON_REPEAT;
+        else if(pressed_mbuttons[i] == INPUT_MBUTTON_RELEASE)
+            pressed_mbuttons[i] = 0;
+    }
 }
 
 

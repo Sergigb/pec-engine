@@ -7,7 +7,11 @@
 
 #include "common.hpp"
 
-//TODO: const correctness
+
+#define INPUT_MBUTTON_PRESS 1
+#define INPUT_MBUTTON_REPEAT 2
+#define INPUT_MBUTTON_RELEASE 3
+
 
 class Input{
     private:
@@ -16,8 +20,8 @@ class Input{
         double m_mouse_posx, m_mouse_posy;
         bool m_mouse_moved = false;
     public:
-        bool pressed_keys[GLFW_KEY_LAST];
-        bool pressed_mbuttons[GLFW_MOUSE_BUTTON_LAST + 1];
+        bool pressed_keys[GLFW_KEY_LAST + 1];
+        int pressed_mbuttons[GLFW_MOUSE_BUTTON_LAST + 1];
 
         Input();
         //Input();
