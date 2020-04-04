@@ -51,7 +51,7 @@ void App::init(int gl_width, int gl_height){
     m_camera = new Camera(math::vec3(-0.0f, 50.0f, 50.0f), 67.0f, (float)gl_width / (float)gl_height , 0.1f, 100000.0f, m_input);
     m_camera->setSpeed(10.f);
     m_window_handler = new WindowHandler(gl_width, gl_height, m_input, m_camera);
-    m_camera->setWindow(m_window_handler->getWindow());
+    m_camera->setWindowHandler(m_window_handler);
     m_frustum = new Frustum();
     m_render_context = new RenderContext(m_camera, m_window_handler);
     m_bt_wrapper = new BtWrapper(btVector3(0, -9.81, 0));
@@ -154,14 +154,12 @@ void App::run(){
         // mouse pick test
         if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] == INPUT_MBUTTON_PRESS){
             if(!m_picked_obj){
-                int w, h;
                 double mousey, mousex;
                 math::vec3 ray_start_world, ray_end_world;
                 Object* obj;
 
                 m_input->getMousePos(mousex, mousey);
-                m_window_handler->getFramebufferSize(w, h);
-                m_camera->castRayMousePos((float)w, (float)h, 1000.f, ray_start_world, ray_end_world);
+                m_camera->castRayMousePos(1000.f, ray_start_world, ray_end_world);
 
                 obj = m_bt_wrapper->testRay(ray_start_world, ray_end_world);
                 if(obj)
@@ -174,14 +172,11 @@ void App::run(){
         }
 
         if(m_picked_obj){
-            int w, h;
             math::vec3 ray_start_world, ray_end_world;
             btQuaternion rotation;
             btVector3 ray_end_world_btv3;
             
-            m_window_handler->getFramebufferSize(w, h);
-            m_camera->castRayMousePos((float)w, (float)h, 25.f, ray_start_world, ray_end_world);
-
+            m_camera->castRayMousePos(25.f, ray_start_world, ray_end_world);
             ray_end_world_btv3 = btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]);
             rotation.setEuler(0, 0, 0);
             m_picked_obj->setMotionState(ray_end_world_btv3, rotation);
