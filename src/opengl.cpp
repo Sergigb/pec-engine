@@ -133,17 +133,17 @@ int main(){
     ///////////////////////////////////////
 
     render_context.setLightPosition(math::vec3(150.0, 100.0, 0.0));
-    bool physics_pause = true, last_rmb = false;
+    bool physics_pause = true;
     Object* picked_obj = nullptr;
 	while (!glfwWindowShouldClose(window_handler.getWindow())){
 		input.update();
-		camera.update();
 		window_handler.update();
+        camera.update();
 		frustum.extractPlanes(camera.getViewMatrix(), camera.getProjMatrix(), false);
 
         // mouse pick test
-        if(input.mButtonPressed() && input.pressed_mbuttons[GLFW_MOUSE_BUTTON_1]){
-            if(!picked_obj && !last_rmb){
+        if(input.pressed_mbuttons[GLFW_MOUSE_BUTTON_1] == INPUT_MBUTTON_PRESS){
+            if(!picked_obj){
                 int w, h;
                 double mousey, mousex;
                 math::vec3 ray_start_world, ray_end_world;
@@ -157,14 +157,11 @@ int main(){
                 if(obj)
                     picked_obj = obj;
             }
-            else if(!last_rmb){
+            else{
                 picked_obj->activate(true);
                 picked_obj = nullptr;
             }
-            last_rmb = true; // we should we do something to avoid this in the input class
         }
-        else
-            last_rmb = false;
 
         if(picked_obj){
             int w, h;
@@ -178,6 +175,8 @@ int main(){
             ray_end_world_btv3 = btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]);
             rotation.setEuler(0, 0, 0);
             picked_obj->setMotionState(ray_end_world_btv3, rotation);
+
+            bt_wrapper.updateCollisionWorldSingleAABB(picked_obj->getRigidBody());
         }
 
         /// bullet simulation step
