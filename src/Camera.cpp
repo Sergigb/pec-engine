@@ -1,4 +1,5 @@
 #include "Camera.hpp"
+#include "WindowHandler.hpp"
 
 
 Camera::Camera(){
@@ -9,7 +10,7 @@ Camera::Camera(){
     m_cam_pos = vec3(0.f, 0.f, 5.0f);
     m_cam_orientation = quat_from_axis_rad(0.0f, 0.0f, 1.0f, 0.0f);
     m_proj_mat = perspective(67.0f, 1.0, 0.1f, 1000.0f);
-    input = nullptr;
+    m_input = nullptr;
     m_cam_speed = 3.5f;
     m_cam_heading_speed = 3.5f;
     m_previous_frame_time = glfwGetTime();
@@ -35,7 +36,7 @@ Camera::Camera(const vec3& pos, float fovy, float ar, float near, float far, con
     m_up = vec4(0.0f, 1.0f, 0.0f, 0.0f);
     m_cam_orientation = quat_from_axis_rad(0.0f, 0.0f, 0.0f, 0.0f);
     m_proj_mat = perspective(fovy, ar, near, far);
-    input = input_ptr;
+    m_input = input_ptr;
     m_cam_speed = 3.5f;
     m_cam_heading_speed = 3.5f;
     m_previous_frame_time = glfwGetTime();
@@ -168,25 +169,25 @@ void Camera::update(){
         m_proj_change = false;
     
 
-    if(!input->keyboardPressed() && !input->mouseMoved()){
+    if(!m_input->keyboardPressed() && !m_input->mouseMoved()){
         m_has_moved = false;
         return;
     }
 
     // we should be able to reduce the number of comparisons and other stuff
-    if(input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2] && m_cam_input_mode == GLFW_CURSOR_NORMAL){
-        glfwSetInputMode(m_g_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2] && m_cam_input_mode == GLFW_CURSOR_NORMAL){
+        glfwSetInputMode(m_window_handler->getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         m_cam_input_mode = GLFW_CURSOR_DISABLED;
-        input->getMousePos(m_mouse_posx_last, m_mouse_posy_last);
+        m_input->getMousePos(m_mouse_posx_last, m_mouse_posy_last);
     }
-    else if(!input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2] && m_cam_input_mode == GLFW_CURSOR_DISABLED){
-        glfwSetInputMode(m_g_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+    else if(!m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2] && m_cam_input_mode == GLFW_CURSOR_DISABLED){
+        glfwSetInputMode(m_window_handler->getWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         m_cam_input_mode = GLFW_CURSOR_NORMAL;
     }
 
-    if(input->mouseMoved() && input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2]){
+    if(m_input->mouseMoved() && m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2]){
         double dif_x, dif_y, posx, posy;
-        input->getMousePos(posx, posy);
+        m_input->getMousePos(posx, posy);
         dif_x = m_mouse_posx_last - posx;
         dif_y = m_mouse_posy_last - posy;
         
@@ -200,48 +201,48 @@ void Camera::update(){
         m_mouse_posy_last = posy;
     }
 
-    if(input->pressed_keys[GLFW_KEY_LEFT_SHIFT])
+    if(m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT])
         speed_mult = 4.0f;
 
-    if(input->pressed_keys[GLFW_KEY_A]){
+    if(m_input->pressed_keys[GLFW_KEY_A]){
         m_cam_translation.v[0] -= m_cam_speed * speed_mult * elapsed_time;
     }
-    if(input->pressed_keys[GLFW_KEY_D]){
+    if(m_input->pressed_keys[GLFW_KEY_D]){
         m_cam_translation.v[0] += m_cam_speed * speed_mult * elapsed_time;
     }
-    if(input->pressed_keys[GLFW_KEY_Z]){
+    if(m_input->pressed_keys[GLFW_KEY_Z]){
         m_cam_translation.v[1] -= m_cam_speed * elapsed_time;
     }
-    if(input->pressed_keys[GLFW_KEY_C]){
+    if(m_input->pressed_keys[GLFW_KEY_C]){
         m_cam_translation.v[1] += m_cam_speed * elapsed_time;
     }
-    if(input->pressed_keys[GLFW_KEY_W]){
+    if(m_input->pressed_keys[GLFW_KEY_W]){
         m_cam_translation.v[2] -= m_cam_speed * speed_mult * elapsed_time;
     }
-    if(input->pressed_keys[GLFW_KEY_S]){
+    if(m_input->pressed_keys[GLFW_KEY_S]){
         m_cam_translation.v[2] += m_cam_speed * speed_mult * elapsed_time;
     }
-    if(input->pressed_keys[GLFW_KEY_LEFT]){
+    if(m_input->pressed_keys[GLFW_KEY_LEFT]){
         cam_yaw += m_cam_heading_speed * elapsed_time;
         rotateCameraYaw(cam_yaw);
     }
-    if(input->pressed_keys[GLFW_KEY_RIGHT]){
+    if(m_input->pressed_keys[GLFW_KEY_RIGHT]){
         cam_yaw -= m_cam_heading_speed * elapsed_time;
         rotateCameraYaw(cam_yaw);
     }
-    if(input->pressed_keys[GLFW_KEY_UP]){
+    if(m_input->pressed_keys[GLFW_KEY_UP]){
         cam_pitch += m_cam_heading_speed * elapsed_time;
         rotateCameraPitch(cam_pitch);
     }
-    if(input->pressed_keys[GLFW_KEY_DOWN]){
+    if(m_input->pressed_keys[GLFW_KEY_DOWN]){
         cam_pitch -= m_cam_heading_speed * elapsed_time;
         rotateCameraPitch(cam_pitch);
     }
-    if(input->pressed_keys[GLFW_KEY_Q]){
+    if(m_input->pressed_keys[GLFW_KEY_Q]){
         cam_roll -= m_cam_heading_speed * elapsed_time;
         rotateCameraRoll(cam_roll);
     }
-    if(input->pressed_keys[GLFW_KEY_E]){
+    if(m_input->pressed_keys[GLFW_KEY_E]){
         cam_roll += m_cam_heading_speed * elapsed_time;
         rotateCameraRoll(cam_roll);
     }
@@ -275,28 +276,29 @@ vec3 Camera::getCamPosition() const{
 }
 
 
-void Camera::setWindow(GLFWwindow* g_window){
-    m_g_window = g_window;
+void Camera::setWindowHandler(const WindowHandler* window_handler){
+    m_window_handler = window_handler;
 }
 
 
-void Camera::castRayMousePos(float fb_width, float fb_height, float dist, math::vec3& ray_start_world, math::vec3& ray_end_world_ext) const{
+void Camera::castRayMousePos(float dist, math::vec3& ray_start_world, math::vec3& ray_end_world_ext) const{
     // ray_end_world_ext is ray_start_world + ray_direction * dist
-    // in the future we're gonna have a window handler pointer so we won't have to pass
-    // fb_width and fb_height
     math::vec4 ray_start, ray_end, ray_end_world, ray_start_world_vec4;
     math::mat4 M;
     math::vec3 ray_dir;
     double mouse_x, mouse_y;
+    int fb_width, fb_height;
 
-    input->getMousePos(mouse_x, mouse_y);
+    m_window_handler->getFramebufferSize(fb_width, fb_height);
+
+    m_input->getMousePos(mouse_x, mouse_y);
     mouse_y = fb_height - mouse_y; // y is inverted
     
     ray_start = math::vec4(((float)mouse_x/fb_width - 0.5) * 2.0,
-                           (mouse_y/fb_height - 0.5) * 2.0,
+                           (mouse_y/(float)fb_height - 0.5) * 2.0,
                            -1.0, 1.0);
     ray_end = math::vec4(((float)mouse_x/fb_width - 0.5) * 2.0,
-                         (mouse_y/fb_height - 0.5) * 2.0,
+                         (mouse_y/(float)fb_height - 0.5) * 2.0,
                          0.0, 1.0);
 
     M = math::inverse(m_proj_mat * m_view_matrix);

@@ -12,6 +12,10 @@
 
 using namespace math;
 
+
+class WindowHandler;
+
+
 class Camera{
     private:
         vec3 m_cam_pos, m_cam_translation;
@@ -24,8 +28,8 @@ class Camera{
         double m_mouse_posx_last, m_mouse_posy_last;
         int m_cam_input_mode;
 
-        GLFWwindow* m_g_window;
-        const Input* input;
+        const WindowHandler* m_window_handler;
+        const Input* m_input;
 
         void updateViewMatrix();
     public:
@@ -38,7 +42,7 @@ class Camera{
         void setCameraOrientationFromAxisDeg(float cam_heading, const vec3* axis);
         void setSpeed(float speed);
         void setAngularSpeed(float speed);
-        void setWindow(GLFWwindow* g_window);
+        void setWindowHandler(const WindowHandler* window_handler);
         void createProjMat(float near, float far, float fovy, float ar);
         void onFramebufferSizeUpdate(int width, int heigth);
 
@@ -52,7 +56,7 @@ class Camera{
         mat4 getViewMatrix() const;
         mat4 getProjMatrix() const;
         vec3 getCamPosition() const;
-        void castRayMousePos(float fb_width, float fb_height, float dist, math::vec3& ray_start_world, math::vec3& ray_end_world_ext) const;
+        void castRayMousePos(float dist, math::vec3& ray_start_world, math::vec3& ray_end_world_ext) const;
 
         void update();
 };
