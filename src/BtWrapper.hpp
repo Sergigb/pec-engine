@@ -29,6 +29,7 @@ class BtWrapper{
         void addConstraint(btTypedConstraint *constraint, bool disable_collision_between_bodies);
         void deleteBody(btRigidBody* body);
         Object* testRay(const math::vec3& ray_start_world, const math::vec3& ray_end_world) const;
+        void updateCollisionWorldSingleAABB(btRigidBody* body);
 
         void stepSimulation(btScalar time_step, int max_sub_steps);
         

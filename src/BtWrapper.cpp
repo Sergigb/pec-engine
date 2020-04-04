@@ -75,3 +75,8 @@ void BtWrapper::addConstraint(btTypedConstraint *constraint, bool disable_collis
     m_dynamicsWorld->addConstraint(constraint, disable_collision_between_bodies);
 }
 
+
+void BtWrapper::updateCollisionWorldSingleAABB(btRigidBody* body){
+    m_dynamicsWorld->getCollisionWorld()->updateSingleAabb(body);
+}
+
