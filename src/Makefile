@@ -11,7 +11,7 @@ PARTSPAHT = parts
 MAINSRCS = main.cpp Ship.cpp BasePart.cpp CommandModule.cpp ServiceModule.cpp LaunchEscapeAssembly.cpp ResourceContainer.cpp Engine.cpp
 MAINOBJS = $(foreach source, $(MAINSRCS), $(OBJPATH)/$(source:.cpp=.o))
 
-OPENGLSRCS = opengl.cpp log.cpp utils.cpp gl_utils.cpp maths_funcs.cpp Camera.cpp Input.cpp WindowHandler.cpp Text2D.cpp FontAtlas.cpp Frustum.cpp DebugOverlay.cpp Model.cpp BtWrapper.cpp Object.cpp RenderContext.cpp
+OPENGLSRCS = opengl.cpp log.cpp utils.cpp gl_utils.cpp maths_funcs.cpp Camera.cpp Input.cpp WindowHandler.cpp Text2D.cpp FontAtlas.cpp Frustum.cpp DebugOverlay.cpp Model.cpp BtWrapper.cpp Object.cpp RenderContext.cpp App.cpp
 OPENGLOBJS = $(foreach source, $(OPENGLSRCS), $(OBJPATH)/$(source:.cpp=.o))
 
 all: opengl main
