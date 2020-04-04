@@ -38,17 +38,18 @@ class RenderContext{
         const Camera* m_camera;
         const WindowHandler* m_window_handler;
 
+        std::vector<Object*>* m_objects;
+
         void initGl();
     public:
-        // also we shouldn't declare this here vvvvvv it should be decalred in the app (or whatever we call it) class
-        std::vector<Object*> m_objects; // we will handle this better later
-
         RenderContext(const Camera* camera, const WindowHandler* window_handler);
         ~RenderContext();
 
         void render();
 
         void setLightPosition(const math::vec3& pos) const;
+        void setObjectVector(std::vector<Object*>* objects);
+
         GLuint getShader(int shader) const;
 };
 

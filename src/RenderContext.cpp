@@ -129,8 +129,8 @@ void RenderContext::render(){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(m_bg_r, m_bg_g, m_bg_b, m_bg_a);
 
-    for(uint i=0; i<m_objects.size(); i++){
-        num_rendered += m_objects.at(i)->render();
+    for(uint i=0; i<m_objects->size(); i++){
+        num_rendered += m_objects->at(i)->render();
     }
 
     m_debug_overlay->setRenderedObjects(num_rendered);
@@ -154,5 +154,10 @@ GLuint RenderContext::getShader(int shader) const{
         return m_pb_notex_shader;
     }
     return 0;
+}
+
+
+void RenderContext::setObjectVector(std::vector<Object*>* objects){
+    m_objects = objects;
 }
 
