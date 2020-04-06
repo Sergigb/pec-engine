@@ -125,7 +125,7 @@ void App::objectsInit(){
 
     m_bt_wrapper->addConstraint(hingeConstraint, true);
 
-    for(int i=0; i<10; i++){
+    for(int i=0; i<10000; i++){
         Object* cube = new Object(m_cube_model, m_bt_wrapper, cube_shape, btVector3(0.0, 55.0 + (i+1)*5, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(10.0));
         cube->setColor(math::vec3(1.0, 0.0, 0.0));
         m_objects.push_back(cube);
@@ -145,6 +145,7 @@ void App::objectsInit(){
 
 
 void App::run(){
+    m_bt_wrapper->startSimulation(1.f / 60.f, 0);
     while (!glfwWindowShouldClose(m_window_handler->getWindow())){
         m_input->update();
         m_window_handler->update();
@@ -189,15 +190,15 @@ void App::run(){
         // to test this we can unlock the fps and see what happens
         if(m_input->pressed_keys[GLFW_KEY_P]){
             m_physics_pause = !m_physics_pause;
+            m_bt_wrapper->pauseSimulation(m_physics_pause);
         }
-        if(!m_physics_pause)
-            m_bt_wrapper->stepSimulation(1.f / 60.f, 0);
 
         // rendering
         m_render_context->render();
 
         glfwSwapBuffers(m_window_handler->getWindow());
     }
+    m_bt_wrapper->stopSimulation();
     m_window_handler->terminate();
 }
 
