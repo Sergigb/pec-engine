@@ -2,6 +2,7 @@
 #define BT_WRAPPER_HPP
 
 #include <iostream>
+#include <thread>
 
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/btBulletDynamicsCommon.h>
@@ -20,6 +21,10 @@ class BtWrapper{
         btSequentialImpulseConstraintSolver* m_solver;
         btDiscreteDynamicsWorld* m_dynamicsWorld;
 
+        void runSimulation(btScalar time_step, int max_sub_steps);
+
+        std::thread m_thread_simulation;
+        bool m_simulation_paused, m_end_simulation;
     public:
         BtWrapper();
         BtWrapper(const btVector3& gravity);
@@ -31,8 +36,9 @@ class BtWrapper{
         Object* testRay(const math::vec3& ray_start_world, const math::vec3& ray_end_world) const;
         void updateCollisionWorldSingleAABB(btRigidBody* body);
 
-        void stepSimulation(btScalar time_step, int max_sub_steps);
-        
+        void startSimulation(btScalar time_step, int max_sub_steps);
+        void stopSimulation();
+        void pauseSimulation(bool stop_simulation);
 };
 
 

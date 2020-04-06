@@ -7,6 +7,11 @@ BtWrapper::BtWrapper(){
     m_overlappingPairCache = new btDbvtBroadphase();
     m_solver = new btSequentialImpulseConstraintSolver;
     m_dynamicsWorld = new btDiscreteDynamicsWorld(m_dispatcher, m_overlappingPairCache, m_solver, m_collisionConfiguration);
+    m_simulation_paused = true;
+    m_end_simulation = false;
+
+    log("BtWrapper: starting dynamics world");
+    std::cout << "BtWrapper: starting dynamics world" << std::endl;
 
     m_dynamicsWorld->setGravity(btVector3(0.0, -9.81, 0.0));
 }
@@ -18,9 +23,11 @@ BtWrapper::BtWrapper(const btVector3& gravity){
     m_overlappingPairCache = new btDbvtBroadphase();
     m_solver = new btSequentialImpulseConstraintSolver;
     m_dynamicsWorld = new btDiscreteDynamicsWorld(m_dispatcher, m_overlappingPairCache, m_solver, m_collisionConfiguration);
-
-    log("Starting dynamics world");
-    std::cout << "Starting dynamics world" << std::endl;
+    m_simulation_paused = true;
+    m_end_simulation = false;
+    
+    log("BtWrapper: starting dynamics world");
+    std::cout << "BtWrapper: starting dynamics world" << std::endl;
     
     m_dynamicsWorld->setGravity(gravity);
 }
@@ -39,11 +46,6 @@ BtWrapper::~BtWrapper(){
 
 void BtWrapper::addRigidBody(btRigidBody* body){
     m_dynamicsWorld->addRigidBody(body);
-}
-
-
-void BtWrapper::stepSimulation(btScalar time_step, int max_sub_steps){
-    m_dynamicsWorld->stepSimulation(time_step, max_sub_steps);
 }
 
 
@@ -79,4 +81,49 @@ void BtWrapper::addConstraint(btTypedConstraint *constraint, bool disable_collis
 void BtWrapper::updateCollisionWorldSingleAABB(btRigidBody* body){
     m_dynamicsWorld->getCollisionWorld()->updateSingleAabb(body);
 }
+
+
+void BtWrapper::startSimulation(btScalar time_step, int max_sub_steps){
+    m_thread_simulation = std::thread(&BtWrapper::runSimulation, this, time_step, max_sub_steps);
+    log("BtWrapper: starting simulation, thread launched");
+}
+
+
+void BtWrapper::stopSimulation(){
+    m_end_simulation = true;
+    m_thread_simulation.join();
+    log("BtWrapper: simulation stopped, thread joined");
+}
+
+
+void BtWrapper::pauseSimulation(bool stop_simulation){
+    m_simulation_paused = stop_simulation;
+}
+
+
+void BtWrapper::runSimulation(btScalar time_step, int max_sub_steps){
+    std::chrono::system_clock::time_point start_current = std::chrono::system_clock::now();
+    std::chrono::system_clock::time_point start_last = std::chrono::system_clock::now();
+    double max_delta = (1./60.)*1000.;
+
+    while(!m_end_simulation){
+        start_current = std::chrono::system_clock::now();
+        std::chrono::duration<double, std::milli> work_time = start_current - start_last;
+
+        if(work_time.count() < max_delta){
+            std::chrono::duration<double, std::milli> delta_ms(max_delta - work_time.count());
+            auto delta_ms_duration = std::chrono::duration_cast<std::chrono::milliseconds>(delta_ms);
+            std::this_thread::sleep_for(std::chrono::milliseconds(delta_ms_duration.count()));
+        }
+
+        start_last = std::chrono::system_clock::now();
+
+        if(!m_simulation_paused) // deal with this better
+            m_dynamicsWorld->stepSimulation(time_step, max_sub_steps);
+
+        std::chrono::duration<double, std::milli> sleep_time = start_last - start_current;
+//        std::cout << "Work time: " << work_time.count() << " - sleep time: " << sleep_time.count() << std::endl;
+    }
+}
+
 
