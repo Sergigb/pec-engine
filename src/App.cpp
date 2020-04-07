@@ -182,7 +182,8 @@ void App::run(){
             rotation.setEuler(0, 0, 0);
             m_picked_obj->setMotionState(ray_end_world_btv3, rotation);
 
-            m_bt_wrapper->updateCollisionWorldSingleAABB(m_picked_obj->getRigidBody());
+            if(m_physics_pause)
+                m_bt_wrapper->updateCollisionWorldSingleAABB(m_picked_obj->getRigidBody()); // not thread safe
         }
 
         /// bullet simulation step
