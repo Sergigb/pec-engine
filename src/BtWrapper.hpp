@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <thread>
+#include <iomanip>
 
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/btBulletDynamicsCommon.h>
@@ -25,6 +26,7 @@ class BtWrapper{
 
         std::thread m_thread_simulation;
         bool m_simulation_paused, m_end_simulation;
+        double m_average_load, m_average_sleep;
     public:
         BtWrapper();
         BtWrapper(const btVector3& gravity);
@@ -35,6 +37,8 @@ class BtWrapper{
         void deleteBody(btRigidBody* body);
         Object* testRay(const math::vec3& ray_start_world, const math::vec3& ray_end_world) const;
         void updateCollisionWorldSingleAABB(btRigidBody* body);
+        double getAverageLoadTime() const;
+        double getAverageSleepTime() const;
 
         void startSimulation(btScalar time_step, int max_sub_steps);
         void stopSimulation();

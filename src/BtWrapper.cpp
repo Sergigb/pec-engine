@@ -9,6 +9,8 @@ BtWrapper::BtWrapper(){
     m_dynamicsWorld = new btDiscreteDynamicsWorld(m_dispatcher, m_overlappingPairCache, m_solver, m_collisionConfiguration);
     m_simulation_paused = true;
     m_end_simulation = false;
+    m_average_load = 0.0;
+    m_average_sleep = 0.0;
 
     log("BtWrapper: starting dynamics world");
     std::cout << "BtWrapper: starting dynamics world" << std::endl;
@@ -25,6 +27,8 @@ BtWrapper::BtWrapper(const btVector3& gravity){
     m_dynamicsWorld = new btDiscreteDynamicsWorld(m_dispatcher, m_overlappingPairCache, m_solver, m_collisionConfiguration);
     m_simulation_paused = true;
     m_end_simulation = false;
+    m_average_load = 0.0;
+    m_average_sleep = 0.0;
     
     log("BtWrapper: starting dynamics world");
     std::cout << "BtWrapper: starting dynamics world" << std::endl;
@@ -105,13 +109,15 @@ void BtWrapper::runSimulation(btScalar time_step, int max_sub_steps){
     std::chrono::system_clock::time_point start_current = std::chrono::system_clock::now();
     std::chrono::system_clock::time_point start_last = std::chrono::system_clock::now();
     double max_delta = (1./60.)*1000.;
+    double accumulated_load_time = 0.0, accumulated_sleep_time = 0.0;
+    int ticks_since_last_update = 0;
 
     while(!m_end_simulation){
         start_current = std::chrono::system_clock::now();
-        std::chrono::duration<double, std::milli> work_time = start_current - start_last;
+        std::chrono::duration<double, std::milli> load_time = start_current - start_last;
 
-        if(work_time.count() < max_delta){
-            std::chrono::duration<double, std::milli> delta_ms(max_delta - work_time.count());
+        if(load_time.count() < max_delta){
+            std::chrono::duration<double, std::milli> delta_ms(max_delta - load_time.count());
             auto delta_ms_duration = std::chrono::duration_cast<std::chrono::milliseconds>(delta_ms);
             std::this_thread::sleep_for(std::chrono::milliseconds(delta_ms_duration.count()));
         }
@@ -122,8 +128,29 @@ void BtWrapper::runSimulation(btScalar time_step, int max_sub_steps){
             m_dynamicsWorld->stepSimulation(time_step, max_sub_steps);
 
         std::chrono::duration<double, std::milli> sleep_time = start_last - start_current;
-//        std::cout << "Work time: " << work_time.count() << " - sleep time: " << sleep_time.count() << std::endl;
+
+        ticks_since_last_update += 1;
+        accumulated_load_time += load_time.count();
+        accumulated_sleep_time += sleep_time.count();
+
+        if(ticks_since_last_update == 60){
+            ticks_since_last_update = 0;
+            m_average_load = accumulated_load_time / 60.0;
+            m_average_sleep = accumulated_sleep_time / 60.0;
+            accumulated_load_time = 0.0;
+            accumulated_sleep_time = 0.0;
+            //std::cout << "Work time: " << std::setprecision(3) << m_average_load << "ms - sleep time: " << std::setprecision(3) << m_average_sleep << "ms" << std::endl;
+        }
     }
 }
 
+
+double BtWrapper::getAverageLoadTime() const{
+    return m_average_load;
+}
+
+
+double BtWrapper::getAverageSleepTime() const{
+    return m_average_sleep;
+}
 
