@@ -12,9 +12,9 @@
 class DebugOverlay{
     private:
         Text2D* m_text_debug;
-        Text2D* m_text_fps;
-        Text2D* m_text_rendered_objects;
-        int m_rendered_obj;        
+        Text2D* m_text_dynamic_text;
+        int m_rendered_obj;
+        double m_physics_load_time, m_physics_sleep_time;       
     public:
         DebugOverlay(int fb_width, int fb_height, GLuint shader);
         ~DebugOverlay();
