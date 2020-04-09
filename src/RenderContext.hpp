@@ -2,8 +2,8 @@
 #define RENDER_CONTEXT_HPP
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-
 #include <vector>
+#include <memory>
 
 #include "gl_utils.hpp"
 #include "Camera.hpp"
@@ -31,7 +31,7 @@ class RenderContext{
 
         // shaders //
 
-        DebugOverlay* m_debug_overlay;
+        std::unique_ptr<DebugOverlay> m_debug_overlay;
 
         float m_bg_r, m_bg_g, m_bg_b, m_bg_a;
 

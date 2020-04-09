@@ -2,18 +2,17 @@
 
 
 DebugOverlay::DebugOverlay(int fb_width, int fb_height, GLuint shader){
-    m_text_fps = new Text2D(fb_width, fb_height, color{1.0, 1.0, 0.0}, 256, "../data/fonts/Liberastika-Regular.ttf", 15, shader);
-    m_text_rendered_objects = new Text2D(fb_width, fb_height, color{1.0, 1.0, 0.0}, 256, "../data/fonts/Liberastika-Regular.ttf", 15, shader);
-    debug_info_box(&m_text_debug, fb_width, fb_height, shader);
+    m_text_fps.reset(new Text2D(fb_width, fb_height, color{1.0, 1.0, 0.0}, 256, "../data/fonts/Liberastika-Regular.ttf", 15, shader));
+    m_text_rendered_objects.reset(new Text2D(fb_width, fb_height, color{1.0, 1.0, 0.0}, 256, "../data/fonts/Liberastika-Regular.ttf", 15, shader));
+    Text2D* text_debug;
+    debug_info_box(&text_debug, fb_width, fb_height, shader);
+    m_text_debug.reset(text_debug);
 
     m_rendered_obj = 0;
 }
 
 
 DebugOverlay::~DebugOverlay(){
-    delete m_text_debug;
-    delete m_text_fps;
-    delete m_text_rendered_objects;
 }
 
 

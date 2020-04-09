@@ -7,7 +7,7 @@ FontAtlas::FontAtlas(){
         log("Freetype error: could not initialize the FreeType");
     }
     m_atlas_size = 512;
-    m_atlas = nullptr;
+    m_atlas.reset(nullptr);
 }
 
 
@@ -17,13 +17,11 @@ FontAtlas::FontAtlas(uint atlas_size){
         log("Freetype error: could not initialize FreeType");
     }
     m_atlas_size = atlas_size;
-    m_atlas = nullptr;
+    m_atlas.reset(nullptr);
 }
 
 
 FontAtlas::~FontAtlas(){
-    if(m_atlas != nullptr)
-        delete[] m_atlas;
     FT_Done_FreeType(ft);
 }
 
@@ -95,14 +93,14 @@ void FontAtlas::loadCharacter(uint code, bool load_default){
 
 void FontAtlas::createAtlas(bool save_png){ // check error codes
     uint glyph_index, pen_x = 1, pen_y = 1, max_heigth_row;
-    m_atlas = new unsigned char[m_atlas_size*m_atlas_size];
+    m_atlas.reset(new unsigned char[m_atlas_size*m_atlas_size]);
 
     m_font_height = face->size->metrics.ascender - face->size->metrics.descender;
 
     std::sort(m_characters_vec.begin(), m_characters_vec.end(), comparator);
 
     //let's create the atlas
-    std::memset(m_atlas, 0, m_atlas_size*m_atlas_size);
+    std::memset(m_atlas.get(), 0, m_atlas_size*m_atlas_size);
 
     max_heigth_row = m_characters_vec[0].height;
 
@@ -129,7 +127,7 @@ void FontAtlas::createAtlas(bool save_png){ // check error codes
         for(int j=0; j<m_characters_vec[i].height; j++){
             std::copy(&face->glyph->bitmap.buffer[m_characters_vec[i].width * j],
                       &face->glyph->bitmap.buffer[m_characters_vec[i].width * (j+1)],
-                      m_atlas + pen_y * m_atlas_size + pen_x + m_atlas_size * j);
+                      m_atlas.get() + pen_y * m_atlas_size + pen_x + m_atlas_size * j);
         }
         pen_x += m_characters_vec[i].width + 2;
     }
@@ -138,7 +136,7 @@ void FontAtlas::createAtlas(bool save_png){ // check error codes
         m_characters[m_characters_vec[i].code] = m_characters_vec[i];
 
     if(save_png)
-        if(!stbi_write_png("../data/atlas.png", m_atlas_size, m_atlas_size, 1, m_atlas, m_atlas_size))
+        if(!stbi_write_png("../data/atlas.png", m_atlas_size, m_atlas_size, 1, m_atlas.get(), m_atlas_size))
             std::cerr << "ooopsie woopsie" << std::endl;
 }
 
@@ -165,7 +163,7 @@ int FontAtlas::getKerning(uint code1, uint code2) const{
 
 
 const unsigned char* FontAtlas::getAtlas() const{
-    return m_atlas;
+    return m_atlas.get();
 }
 
 

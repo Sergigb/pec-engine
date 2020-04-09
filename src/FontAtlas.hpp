@@ -10,6 +10,7 @@
 #include <vector>
 #include <algorithm>
 #include <map>
+#include <memory>
 
 #include "common.hpp"
 #include "log.hpp"
@@ -24,7 +25,7 @@ class FontAtlas{ //rename to font atlas?
 
         uint m_atlas_size;
         int m_font_height;
-        unsigned char* m_atlas;
+        std::unique_ptr<unsigned char> m_atlas;
         std::map<int, struct character> m_characters;
         std::vector<struct character> m_characters_vec;
     public:

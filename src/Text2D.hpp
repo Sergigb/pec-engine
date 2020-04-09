@@ -6,9 +6,9 @@
 #include <algorithm>
 #include <iostream>
 #include <list>
-
 #include <vector>
 #include <cstring>
+#include <memory>
 
 #include "common.hpp"
 #include "gl_utils.hpp"
@@ -42,7 +42,7 @@ class Text2D{
         bool m_update_buffer;
         int m_fb_width, m_fb_height;
 
-        FontAtlas* font;
+        std::unique_ptr<FontAtlas> m_font;
 
         void updateBuffers();
         void initgl(const color& c);

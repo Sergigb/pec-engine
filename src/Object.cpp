@@ -23,18 +23,16 @@ Object::Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape,
         col_shape->calculateLocalInertia(mass, local_inertia_);
 
     //using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
-    btDefaultMotionState* motion_state = new btDefaultMotionState(start_transform);
-    btRigidBody::btRigidBodyConstructionInfo rb_info(mass, motion_state, col_shape, local_inertia_);
-    m_body = new btRigidBody(rb_info);
+    m_motion_state.reset(new btDefaultMotionState(start_transform));
+    btRigidBody::btRigidBodyConstructionInfo rb_info(mass, m_motion_state.get(), col_shape, local_inertia_);
+    m_body.reset(new btRigidBody(rb_info));
 
-    m_bt_wrapper->addRigidBody(m_body);
+    m_bt_wrapper->addRigidBody(m_body.get());
     m_body->setUserPointer((void*)this);
 }
 
 Object::~Object(){
-    m_bt_wrapper->deleteBody(m_body);
-    delete m_body->getMotionState();
-    delete m_body;
+    m_bt_wrapper->deleteBody(m_body.get());
 }
 
 
@@ -84,7 +82,7 @@ void Object::applyTorque(const btVector3& torque){
 
 
 btRigidBody* Object::getRigidBody(){
-    return m_body;
+    return m_body.get();
 }
 
 
@@ -94,9 +92,9 @@ void Object::setMotionState(const btVector3& origin, const btQuaternion& initial
     transform.setOrigin(origin);
     transform.setRotation(initial_rotation);
 
-    btDefaultMotionState* motion_state = new btDefaultMotionState(transform);
+    m_motion_state.reset(new btDefaultMotionState(transform));
 
-    m_body->setMotionState(motion_state);
+    m_body->setMotionState(m_motion_state.get());
 }
 
 

@@ -3,12 +3,12 @@
 
 
 Text2D::Text2D(){
-    font = new FontAtlas(512);
-    font->loadFont("/usr/share/fonts/truetype/freefont/FreeSans.ttf", 45);
-    font->loadCharacterRange(32, 255); // ascii
-    font->loadCharacterRange(913, 1023); // greek and coptic*
-    font->loadCharacter(0, true); // null character
-    font->createAtlas(true);
+    m_font.reset(new FontAtlas(512));
+    m_font->loadFont("/usr/share/fonts/truetype/freefont/FreeSans.ttf", 45);
+    m_font->loadCharacterRange(32, 255); // ascii
+    m_font->loadCharacterRange(913, 1023); // greek and coptic*
+    m_font->loadCharacter(0, true); // null character
+    m_font->createAtlas(true);
 
     m_num_vertices = 0;
     m_num_indices = 0;
@@ -19,12 +19,12 @@ Text2D::Text2D(){
 
 
 Text2D::Text2D(int fb_width, int fb_height, const color& c, uint atlas_size, const char* font_path, int font_size, GLuint shader){
-    font = new FontAtlas(atlas_size);
-    font->loadFont(font_path, font_size);
-    font->loadCharacterRange(32, 255); // ascii
-    font->loadCharacterRange(913, 1023); // greek and coptic
-    font->loadCharacter(0, true); // null character
-    font->createAtlas(true);
+    m_font.reset(new FontAtlas(atlas_size));
+    m_font->loadFont(font_path, font_size);
+    m_font->loadCharacterRange(32, 255); // ascii
+    m_font->loadCharacterRange(913, 1023); // greek and coptic
+    m_font->loadCharacter(0, true); // null character
+    m_font->createAtlas(true);
 
     m_num_vertices = 0;
     m_num_indices = 0;
@@ -64,7 +64,7 @@ void Text2D::initgl(const color& c){
     glGenTextures(1, &m_texture_id);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_texture_id);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, font->getAtlasSize(), font->getAtlasSize(), 0, GL_RED, GL_UNSIGNED_BYTE, font->getAtlas());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, m_font->getAtlasSize(), m_font->getAtlasSize(), 0, GL_RED, GL_UNSIGNED_BYTE, m_font->getAtlas());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
@@ -83,18 +83,18 @@ Text2D::~Text2D(){
 
 void Text2D::updateBuffers(){
     uint total_num_characters = 0, acc = 0;
-    GLfloat* vertex_buffer;
-    GLfloat* tex_coords_buffer;
-    GLushort* index_buffer;
+    std::unique_ptr<GLfloat> vertex_buffer;
+    std::unique_ptr<GLfloat> tex_coords_buffer;
+    std::unique_ptr<GLushort> index_buffer;
     for(uint i=0; i < m_strings.size(); i++)
         total_num_characters += m_strings.at(i).strlen;
 
     m_num_vertices = total_num_characters * 4;
     m_num_indices = total_num_characters * 6;
 
-    vertex_buffer = new GLfloat[2 * m_num_vertices];
-    tex_coords_buffer = new GLfloat[2 * m_num_vertices];
-    index_buffer = new GLushort[6 * total_num_characters];
+    vertex_buffer.reset(new GLfloat[2 * m_num_vertices]);
+    tex_coords_buffer.reset(new GLfloat[2 * m_num_vertices]);
+    index_buffer.reset(new GLushort[6 * total_num_characters]);
 
     for(uint i=0; i < m_strings.size(); i++){
         struct string* current_string = &m_strings.at(i);
@@ -116,12 +116,12 @@ void Text2D::updateBuffers(){
         while(current_string->textbuffer[j] != '\0'){
             if(current_string->textbuffer[j] == '\n'){
                 pen_x = current_string->posx; // will not work when the string placement is not bl absolute, to be fixed at some point
-                pen_y -= (font->getHeight() >> 6) * current_string->scale;
+                pen_y -= (m_font->getHeight() >> 6) * current_string->scale;
                 j++;
                 continue;
             }
 
-            font->getCharacter(current_string->textbuffer[j], &ch);
+            m_font->getCharacter(current_string->textbuffer[j], &ch);
 
             xpos = pen_x + (float)ch->bearing_x * current_string->scale;
             ypos = pen_y - (float)(ch->height - ch->bearing_y) * current_string->scale;
@@ -129,33 +129,33 @@ void Text2D::updateBuffers(){
             h = (float)ch->height * current_string->scale;
 
             index = (k + acc) * 8;
-            vertex_buffer[index] = xpos;
-            vertex_buffer[index + 1] = ypos;
-            vertex_buffer[index + 2] = xpos;
-            vertex_buffer[index + 3] = ypos + h;
-            vertex_buffer[index + 4] = xpos + w;
-            vertex_buffer[index + 5] = ypos + h;
-            vertex_buffer[index + 6] = xpos + w;
-            vertex_buffer[index + 7] = ypos;
+            vertex_buffer.get()[index] = xpos;
+            vertex_buffer.get()[index + 1] = ypos;
+            vertex_buffer.get()[index + 2] = xpos;
+            vertex_buffer.get()[index + 3] = ypos + h;
+            vertex_buffer.get()[index + 4] = xpos + w;
+            vertex_buffer.get()[index + 5] = ypos + h;
+            vertex_buffer.get()[index + 6] = xpos + w;
+            vertex_buffer.get()[index + 7] = ypos;
 
             index = (k + acc) * 8;
-            tex_coords_buffer[index] = ch->tex_x_min;
-            tex_coords_buffer[index + 1] = ch->tex_y_max;
-            tex_coords_buffer[index + 2] = ch->tex_x_min;
-            tex_coords_buffer[index + 3] = ch->tex_y_min;
-            tex_coords_buffer[index + 4] = ch->tex_x_max;
-            tex_coords_buffer[index + 5] = ch->tex_y_min;
-            tex_coords_buffer[index + 6] = ch->tex_x_max;
-            tex_coords_buffer[index + 7] = ch->tex_y_max;
+            tex_coords_buffer.get()[index] = ch->tex_x_min;
+            tex_coords_buffer.get()[index + 1] = ch->tex_y_max;
+            tex_coords_buffer.get()[index + 2] = ch->tex_x_min;
+            tex_coords_buffer.get()[index + 3] = ch->tex_y_min;
+            tex_coords_buffer.get()[index + 4] = ch->tex_x_max;
+            tex_coords_buffer.get()[index + 5] = ch->tex_y_min;
+            tex_coords_buffer.get()[index + 6] = ch->tex_x_max;
+            tex_coords_buffer.get()[index + 7] = ch->tex_y_max;
 
             disp = (k + acc) * 4;
             index = (k + acc) * 6;
-            index_buffer[index] = disp;
-            index_buffer[index + 1] = disp + 2;
-            index_buffer[index + 2] = disp + 1;
-            index_buffer[index + 3] = disp;
-            index_buffer[index + 4] = disp + 3;
-            index_buffer[index + 5] = disp + 2;
+            index_buffer.get()[index] = disp;
+            index_buffer.get()[index + 1] = disp + 2;
+            index_buffer.get()[index + 2] = disp + 1;
+            index_buffer.get()[index + 3] = disp;
+            index_buffer.get()[index + 4] = disp + 3;
+            index_buffer.get()[index + 5] = disp + 2;
 
             pen_x += (float)(ch->advance_x >> 6) * current_string->scale;
 
@@ -168,17 +168,13 @@ void Text2D::updateBuffers(){
     glBindVertexArray(m_vao);
 
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo_vert);
-    glBufferData(GL_ARRAY_BUFFER, 2 * m_num_vertices * sizeof(GLfloat), vertex_buffer, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 2 * m_num_vertices * sizeof(GLfloat), vertex_buffer.get(), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo_tex);
-    glBufferData(GL_ARRAY_BUFFER, 2 * m_num_vertices * sizeof(GLfloat), tex_coords_buffer, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 2 * m_num_vertices * sizeof(GLfloat), tex_coords_buffer.get(), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vbo_ind);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * total_num_characters * sizeof(GLushort), index_buffer, GL_STATIC_DRAW);
-
-    delete[] vertex_buffer;
-    delete[] tex_coords_buffer;
-    delete[] index_buffer;
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * total_num_characters * sizeof(GLushort), index_buffer.get(), GL_STATIC_DRAW);
 }
 
 

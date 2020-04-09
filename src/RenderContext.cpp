@@ -45,7 +45,7 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
     glUniformMatrix4fv(m_text_proj_mat, 1, GL_FALSE, text_orto_proj.m);
 
     // debug overlay
-    m_debug_overlay = new DebugOverlay(fb_width, fb_height, m_text_shader);
+    m_debug_overlay.reset(new DebugOverlay(fb_width, fb_height, m_text_shader));
 
     // other gl stuff
     m_bg_r = 0.2;
@@ -58,7 +58,6 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
 
 
 RenderContext::~RenderContext(){
-    delete m_debug_overlay;
     glDeleteShader(m_pb_notex_shader);
     glDeleteShader(m_pb_shader);
     glDeleteShader(m_text_shader);

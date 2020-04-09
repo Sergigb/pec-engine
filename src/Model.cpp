@@ -60,10 +60,11 @@ void Model::setMeshColor(const math::vec3& mesh_color){
 
 
 int Model::loadScene(const std::string& pFile){
-    GLfloat* points = nullptr;
-    GLfloat* normals = nullptr;
-    GLfloat* texcoords = nullptr;
-    GLuint* indices  = nullptr;
+    std::unique_ptr<GLfloat> points;
+    std::unique_ptr<GLfloat> normals;
+    std::unique_ptr<GLfloat> texcoords;
+    std::unique_ptr<GLuint> indices;
+
     int num_vertices;
     const aiMesh* mesh;
     Assimp::Importer importer;
@@ -80,43 +81,43 @@ int Model::loadScene(const std::string& pFile){
     num_vertices = mesh->mNumVertices;
 
     if(mesh->HasPositions()){
-        points = new GLfloat[num_vertices * 3];
+        points.reset(new GLfloat[num_vertices * 3]);
         float norm;
         m_cs_radius = 0;
         for(int i = 0; i < num_vertices; i++){
             const aiVector3D *vp = &(mesh->mVertices[i]);
-            points[i * 3] = (GLfloat)vp->x;
-            points[i * 3 + 1] = (GLfloat)vp->y;
-            points[i * 3 + 2] = (GLfloat)vp->z;
+            points.get()[i * 3] = (GLfloat)vp->x;
+            points.get()[i * 3 + 1] = (GLfloat)vp->y;
+            points.get()[i * 3 + 2] = (GLfloat)vp->z;
             norm = std::sqrt(vp->x * vp->x + vp->y * vp->y + vp->z * vp->z);
             if(norm > m_cs_radius)
                 m_cs_radius = norm;
         }
-        m_aabb = get_AABB(points, num_vertices);
+        m_aabb = get_AABB(points.get(), num_vertices);
     }
     if(mesh->HasNormals()){
-        normals = new GLfloat[num_vertices * 3];
+        normals.reset(new GLfloat[num_vertices * 3]);
         for(int i = 0; i < num_vertices; i++){
             const aiVector3D *vn = &(mesh->mNormals[i]);
-            normals[i * 3] = (GLfloat)vn->x;
-            normals[i * 3 + 1] = (GLfloat)vn->y;
-            normals[i * 3 + 2] = (GLfloat)vn->z;
+            normals.get()[i * 3] = (GLfloat)vn->x;
+            normals.get()[i * 3 + 1] = (GLfloat)vn->y;
+            normals.get()[i * 3 + 2] = (GLfloat)vn->z;
         }
     }
     if(mesh->HasTextureCoords(0)){
-        texcoords = new GLfloat[num_vertices * 2];
+        texcoords.reset(new GLfloat[num_vertices * 2]);
         for(int i = 0; i < num_vertices; i++){
             const aiVector3D* vt = &(mesh->mTextureCoords[0][i]);
-            texcoords[i * 2] = (GLfloat)vt->x;
-            texcoords[i * 2 + 1] = (GLfloat)vt->y;
+            texcoords.get()[i * 2] = (GLfloat)vt->x;
+            texcoords.get()[i * 2 + 1] = (GLfloat)vt->y;
         }
     }
     if(mesh->HasFaces()){
-        indices = new unsigned int[m_num_faces * 3];
+        indices.reset(new unsigned int[m_num_faces * 3]);
         for(int i = 0; i < m_num_faces; i++){
-            indices[i * 3] = mesh->mFaces[i].mIndices[0];
-            indices[i * 3 + 1] = mesh->mFaces[i].mIndices[1];
-            indices[i * 3 + 2] = mesh->mFaces[i].mIndices[2];
+            indices.get()[i * 3] = mesh->mFaces[i].mIndices[0];
+            indices.get()[i * 3 + 1] = mesh->mFaces[i].mIndices[1];
+            indices.get()[i * 3 + 2] = mesh->mFaces[i].mIndices[2];
         }
     }
     
@@ -127,34 +128,30 @@ int Model::loadScene(const std::string& pFile){
     if(mesh->HasPositions()){
         glGenBuffers(1, &m_vbo_vert);
         glBindBuffer(GL_ARRAY_BUFFER, m_vbo_vert);
-        glBufferData(GL_ARRAY_BUFFER, 3 * num_vertices * sizeof(GLfloat), points, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, 3 * num_vertices * sizeof(GLfloat), points.get(), GL_STATIC_DRAW);
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
         glEnableVertexAttribArray(0);
-        delete[] points;
     }
     if(mesh->HasNormals()){
         glGenBuffers(1, &m_vbo_norm);
         glBindBuffer(GL_ARRAY_BUFFER, m_vbo_norm);
-        glBufferData(GL_ARRAY_BUFFER, 3 * num_vertices * sizeof(GLfloat), normals, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, 3 * num_vertices * sizeof(GLfloat), normals.get(), GL_STATIC_DRAW);
         glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
         glEnableVertexAttribArray(1);
-        delete[] normals;
     }
     if(mesh->HasTextureCoords(0)){
         glGenBuffers(1, &m_vbo_tex);
         glBindBuffer(GL_ARRAY_BUFFER, m_vbo_tex);
-        glBufferData(GL_ARRAY_BUFFER, 2 * num_vertices * sizeof(GLfloat), texcoords, GL_STATIC_DRAW);
+        glBufferData(GL_ARRAY_BUFFER, 2 * num_vertices * sizeof(GLfloat), texcoords.get(), GL_STATIC_DRAW);
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 0, NULL);
         glEnableVertexAttribArray(2);
-        delete[] texcoords;
     }
     if(mesh->HasFaces()){
         glGenBuffers(1, &m_vbo_ind);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vbo_ind);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * m_num_faces * sizeof(GLuint), indices, GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * m_num_faces * sizeof(GLuint), indices.get(), GL_STATIC_DRAW);
         glVertexAttribPointer(3, 3, GL_UNSIGNED_INT, GL_FALSE, 0, NULL);
         glEnableVertexAttribArray(3);
-        delete[] indices;
     }
 
     if(mesh->HasTangentsAndBitangents()){

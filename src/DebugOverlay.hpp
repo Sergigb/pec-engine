@@ -3,6 +3,7 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <memory>
 
 #include "Text2D.hpp"
 #include "Camera.hpp"
@@ -11,9 +12,9 @@
 
 class DebugOverlay{
     private:
-        Text2D* m_text_debug;
-        Text2D* m_text_fps;
-        Text2D* m_text_rendered_objects;
+        std::unique_ptr<Text2D> m_text_debug;
+        std::unique_ptr<Text2D> m_text_fps;
+        std::unique_ptr<Text2D> m_text_rendered_objects;
         int m_rendered_obj;        
     public:
         DebugOverlay(int fb_width, int fb_height, GLuint shader);

@@ -2,6 +2,7 @@
 #define OBJECT_HPP
 
 #include <algorithm>
+#include <memory>
 
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/btBulletDynamicsCommon.h>
@@ -15,8 +16,10 @@
 class Object{
     private:
         Model* m_model;
-        btRigidBody* m_body;
         BtWrapper* m_bt_wrapper;
+        
+        std::unique_ptr<btRigidBody> m_body;
+        std::unique_ptr<btMotionState> m_motion_state;
         math::vec3 m_mesh_color;
         math::mat4 m_scale_transform;
         float m_scale;
