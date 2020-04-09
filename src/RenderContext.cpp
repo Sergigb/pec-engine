@@ -130,7 +130,7 @@ void RenderContext::render(){
     glClearColor(m_bg_r, m_bg_g, m_bg_b, m_bg_a);
 
     for(uint i=0; i<m_objects->size(); i++){
-        num_rendered += m_objects->at(i)->render();
+        num_rendered += m_objects->at(i).get()->render();
     }
 
     m_debug_overlay->setRenderedObjects(num_rendered);
@@ -157,7 +157,7 @@ GLuint RenderContext::getShader(int shader) const{
 }
 
 
-void RenderContext::setObjectVector(std::vector<Object*>* objects){
+void RenderContext::setObjectVector(std::vector<std::unique_ptr<Object>>* objects){
     m_objects = objects;
 }
 

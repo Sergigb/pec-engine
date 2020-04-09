@@ -38,7 +38,7 @@ class RenderContext{
         const Camera* m_camera;
         const WindowHandler* m_window_handler;
 
-        std::vector<Object*>* m_objects;
+        std::vector<std::unique_ptr<Object>>* m_objects;
 
         void initGl();
     public:
@@ -48,7 +48,7 @@ class RenderContext{
         void render();
 
         void setLightPosition(const math::vec3& pos) const;
-        void setObjectVector(std::vector<Object*>* objects);
+        void setObjectVector(std::vector<std::unique_ptr<Object>>* objects);
 
         GLuint getShader(int shader) const;
 };
