@@ -76,7 +76,6 @@ void App::objectsInit(){
     btCollisionShape* sphere_shape = new btSphereShape(btScalar(1));
     btCollisionShape* cube3m = new btBoxShape(btVector3(3,3,3));
 
-    btAlignedObjectArray<btCollisionShape*> m_collision_shapes;
     m_collision_shapes.push_back(cube_shape);
     m_collision_shapes.push_back(cube_shape_ground);
     m_collision_shapes.push_back(sphere_shape);
@@ -125,7 +124,7 @@ void App::objectsInit(){
 
     m_bt_wrapper->addConstraint(hingeConstraint, true);
 
-    for(int i=0; i<10000; i++){
+    for(int i=0; i<10; i++){
         Object* cube = new Object(m_cube_model, m_bt_wrapper, cube_shape, btVector3(0.0, 55.0 + (i+1)*5, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(10.0));
         cube->setColor(math::vec3(1.0, 0.0, 0.0));
         m_objects.push_back(cube);
@@ -195,6 +194,7 @@ void App::run(){
         }
 
         // rendering
+        m_render_context->setDebugOverlayPhysicsTimes(m_bt_wrapper->getAverageLoadTime(), m_bt_wrapper->getAverageSleepTime());
         m_render_context->render();
 
         glfwSwapBuffers(m_window_handler->getWindow());
