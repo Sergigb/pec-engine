@@ -59,7 +59,7 @@ void Model::setMeshColor(const math::vec3& mesh_color){
 }
 
 
-int Model::loadScene(const std::string pFile){
+int Model::loadScene(const std::string& pFile){
     GLfloat* points = nullptr;
     GLfloat* normals = nullptr;
     GLfloat* texcoords = nullptr;
