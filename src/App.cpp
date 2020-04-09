@@ -22,39 +22,18 @@ App::App(int gl_width, int gl_height){
 
 
 App::~App(){
-    for (int j = 0; j < m_collision_shapes.size(); j++){
-        btCollisionShape* shape = m_collision_shapes[j];
-        m_collision_shapes[j] = 0;
-        delete shape;
-    }
-
-    for(uint i=0; i < m_objects.size(); i++){
-        delete m_objects.at(i);
-    }
-    m_objects.clear();
-
-    delete m_input;
-    delete m_camera;
-    delete m_window_handler;
-    delete m_frustum;
-    delete m_render_context;
-    delete m_bt_wrapper;
-
-    delete m_cube_model;
-    delete m_terrain_model;
-    delete m_sphere_model;
 }
 
 
 void App::init(int gl_width, int gl_height){
-    m_input = new Input();
-    m_camera = new Camera(math::vec3(-0.0f, 50.0f, 50.0f), 67.0f, (float)gl_width / (float)gl_height , 0.1f, 100000.0f, m_input);
+    m_input.reset(new Input());
+    m_camera.reset(new Camera(math::vec3(-0.0f, 50.0f, 50.0f), 67.0f, (float)gl_width / (float)gl_height , 0.1f, 100000.0f, m_input.get()));
     m_camera->setSpeed(10.f);
-    m_window_handler = new WindowHandler(gl_width, gl_height, m_input, m_camera);
-    m_camera->setWindowHandler(m_window_handler);
-    m_frustum = new Frustum();
-    m_render_context = new RenderContext(m_camera, m_window_handler);
-    m_bt_wrapper = new BtWrapper(btVector3(0, -9.81, 0));
+    m_window_handler.reset(new WindowHandler(gl_width, gl_height, m_input.get(), m_camera.get()));
+    m_camera->setWindowHandler(m_window_handler.get());
+    m_frustum.reset(new Frustum());
+    m_render_context.reset(new RenderContext(m_camera.get(), m_window_handler.get()));
+    m_bt_wrapper.reset(new BtWrapper(btVector3(0, -9.81, 0)));
 
     m_physics_pause = true;
     m_picked_obj = nullptr;
@@ -62,41 +41,40 @@ void App::init(int gl_width, int gl_height){
 
 
 void App::modelsInit(){
-    m_cube_model = new Model("../data/cube.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum, math::vec3(0.5, 0.0, 0.5));
-    m_terrain_model = new Model("../data/bigcube.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum, math::vec3(0.75, 0.75, 0.75));
-    m_sphere_model = new Model("../data/sphere.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum, math::vec3(0.75, 0.75, 0.75));
+    m_cube_model.reset(new Model("../data/cube.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum.get(), math::vec3(0.5, 0.0, 0.5)));
+    m_terrain_model.reset(new Model("../data/bigcube.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum.get(), math::vec3(0.75, 0.75, 0.75)));
+    m_sphere_model.reset(new Model("../data/sphere.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum.get(), math::vec3(0.75, 0.75, 0.75)));
 }
 
 
 void App::objectsInit(){
     btQuaternion quat;
 
-    btCollisionShape* cube_shape_ground = new btBoxShape(btVector3(btScalar(25.), btScalar(25.), btScalar(25.))); // box for now, we need to try a mesh
-    btCollisionShape* cube_shape = new btBoxShape(btVector3(1,1,1));
-    btCollisionShape* sphere_shape = new btSphereShape(btScalar(1));
-    btCollisionShape* cube3m = new btBoxShape(btVector3(3,3,3));
-
-    btAlignedObjectArray<btCollisionShape*> m_collision_shapes;
-    m_collision_shapes.push_back(cube_shape);
-    m_collision_shapes.push_back(cube_shape_ground);
-    m_collision_shapes.push_back(sphere_shape);
-    m_collision_shapes.push_back(cube3m);
+    std::unique_ptr<btCollisionShape> cube_shape_ground(new btBoxShape(btVector3(btScalar(25.), btScalar(25.), btScalar(25.))));
+    std::unique_ptr<btCollisionShape> cube_shape(new btBoxShape(btVector3(1,1,1)));
+    std::unique_ptr<btCollisionShape> sphere_shape(new btSphereShape(btScalar(1)));
+    std::unique_ptr<btCollisionShape> cube3m(new btBoxShape(btVector3(3,3,3)));
 
     quat.setEuler(0, 0, 0);
-    Object* ground = new Object(m_terrain_model, m_bt_wrapper, cube_shape_ground, btVector3(0.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(0.0));
+    Object* ground = new Object(m_terrain_model.get(), m_bt_wrapper.get(), cube_shape_ground.get(), btVector3(0.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(0.0));
 
     quat.setEuler(20, 50, 0);
-    Object* cube1 = new Object(m_cube_model, m_bt_wrapper, cube3m, btVector3(0.0, 40.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(1.0));
+    Object* cube1 = new Object(m_cube_model.get(), m_bt_wrapper.get(), cube3m.get(), btVector3(0.0, 40.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(1.0));
     cube1->setMeshScale(3.0);
     cube1->setColor(math::vec3(1.0, 0.0, 0.0));
 
     quat.setEuler(0, 0, 0);
-    Object* cube2 = new Object(m_cube_model, m_bt_wrapper, cube_shape, btVector3(10.5, 30.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(30.0));
+    Object* cube2 = new Object(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btVector3(10.5, 30.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(30.0));
     cube2->setColor(math::vec3(0.5, 0.75, 0.0));
 
     quat.setEuler(0, 0, 0);
-    Object* cube3 = new Object(m_cube_model, m_bt_wrapper, cube_shape, btVector3(12.5, 30.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(30.0));
+    Object* cube3 = new Object(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btVector3(12.5, 30.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(30.0));
     cube3->setColor(math::vec3(0.5, 0.75, 0.0));
+
+    m_objects.push_back(std::move(std::unique_ptr<Object>(ground)));
+    m_objects.push_back(std::move(std::unique_ptr<Object>(cube1)));
+    m_objects.push_back(std::move(std::unique_ptr<Object>(cube2)));
+    m_objects.push_back(std::move(std::unique_ptr<Object>(cube3)));
 
     // trying constraints
     btVector3 pivot_a(1.0f, 0.0f, 0.0f);
@@ -126,21 +104,21 @@ void App::objectsInit(){
     m_bt_wrapper->addConstraint(hingeConstraint, true);
 
     for(int i=0; i<10; i++){
-        Object* cube = new Object(m_cube_model, m_bt_wrapper, cube_shape, btVector3(0.0, 55.0 + (i+1)*5, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(10.0));
+        Object* cube = new Object(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btVector3(0.0, 55.0 + (i+1)*5, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(10.0));
         cube->setColor(math::vec3(1.0, 0.0, 0.0));
-        m_objects.push_back(cube);
+        m_objects.push_back(std::move(std::unique_ptr<Object>(cube)));
     }
 
     for(int i=0; i<10; i++){
-        Object* sphere = new Object(m_sphere_model, m_bt_wrapper, sphere_shape, btVector3(5.0, 55.0 + (i+1)*5, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(10.0));
+        Object* sphere = new Object(m_sphere_model.get(), m_bt_wrapper.get(), sphere_shape.get(), btVector3(5.0, 55.0 + (i+1)*5, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(10.0));
         sphere->setColor(math::vec3(0.0, 1.0, 0.0));
-        m_objects.push_back(sphere);
+        m_objects.push_back(std::move(std::unique_ptr<Object>(sphere)));
     }
 
-    m_objects.push_back(ground);
-    m_objects.push_back(cube1);
-    m_objects.push_back(cube2);
-    m_objects.push_back(cube3);
+    m_collision_shapes.push_back(std::move(cube_shape_ground));
+    m_collision_shapes.push_back(std::move(cube_shape));
+    m_collision_shapes.push_back(std::move(sphere_shape));
+    m_collision_shapes.push_back(std::move(cube3m));
 }
 
 
@@ -181,7 +159,10 @@ void App::run(){
             rotation.setEuler(0, 0, 0);
             m_picked_obj->setMotionState(ray_end_world_btv3, rotation);
 
-            m_bt_wrapper->updateCollisionWorldSingleAABB(m_picked_obj->getRigidBody());
+            // aabb update only needed when the physics are paused. when we parallelize the engine it may not
+            // be possible to move an object when the engine is not paused (as stepSimulation might be running)
+            if(m_physics_pause)
+                m_bt_wrapper->updateCollisionWorldSingleAABB(m_picked_obj->getRigidBody());
         }
 
         /// bullet simulation step

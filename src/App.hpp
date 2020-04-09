@@ -1,6 +1,8 @@
 #ifndef APP_HPP
 #define APP_HPP
 
+#include <memory>
+
 #include "maths_funcs.hpp"
 #include "Camera.hpp"
 #include "Input.hpp"
@@ -18,20 +20,20 @@
 
 class App{
     private:
-        Input* m_input;
-        Camera* m_camera;
-        WindowHandler* m_window_handler;
-        Frustum* m_frustum;
-        RenderContext* m_render_context;
-        BtWrapper* m_bt_wrapper;
+        std::unique_ptr<Input> m_input;
+        std::unique_ptr<Camera> m_camera;
+        std::unique_ptr<WindowHandler> m_window_handler;
+        std::unique_ptr<Frustum> m_frustum;
+        std::unique_ptr<RenderContext> m_render_context;
+        std::unique_ptr<BtWrapper> m_bt_wrapper;
 
         // some models for testing
-        Model* m_cube_model;
-        Model* m_terrain_model;
-        Model* m_sphere_model;
+        std::unique_ptr<Model> m_cube_model;
+        std::unique_ptr<Model> m_terrain_model;
+        std::unique_ptr<Model> m_sphere_model;
 
-        btAlignedObjectArray<btCollisionShape*> m_collision_shapes;
-        std::vector<Object*> m_objects;
+        std::vector<std::unique_ptr<btCollisionShape>> m_collision_shapes;
+        std::vector<std::unique_ptr<Object>> m_objects;
 
         // game state
         bool m_physics_pause;

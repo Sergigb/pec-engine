@@ -2,6 +2,7 @@
 #define BT_WRAPPER_HPP
 
 #include <iostream>
+#include <memory>
 
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/btBulletDynamicsCommon.h>
@@ -14,12 +15,13 @@ class Object;
 
 class BtWrapper{
     private:
-        btDefaultCollisionConfiguration* m_collisionConfiguration;
-        btCollisionDispatcher* m_dispatcher;
-        btBroadphaseInterface* m_overlappingPairCache;
-        btSequentialImpulseConstraintSolver* m_solver;
-        btDiscreteDynamicsWorld* m_dynamicsWorld;
+        std::unique_ptr<btDefaultCollisionConfiguration> m_collision_configuration;
+        std::unique_ptr<btCollisionDispatcher> m_dispatcher;
+        std::unique_ptr<btBroadphaseInterface> m_overlapping_pair_cache;
+        std::unique_ptr<btSequentialImpulseConstraintSolver> m_solver;
+        std::unique_ptr<btDiscreteDynamicsWorld> m_dynamics_world;
 
+        void init(const btVector3& gravity);
     public:
         BtWrapper();
         BtWrapper(const btVector3& gravity);
