@@ -6,8 +6,8 @@ DebugOverlay::DebugOverlay(int fb_width, int fb_height, GLuint shader){
     debug_info_box(&m_text_debug, fb_width, fb_height, shader);
 
     m_rendered_obj = 0;
-    m_physics_load_time = 0;
-    m_physics_sleep_time = 0;
+    m_physics_load_time = 0.0;
+    m_physics_sleep_time = 0.0;
 }
 
 
@@ -28,6 +28,13 @@ void DebugOverlay::onFramebufferSizeUpdate(int fb_width, int fb_height){
 }
 
 
+void DebugOverlay::setPhysicsTimes(double physics_load_time, double physics_sleep_time){
+    m_physics_load_time = physics_load_time;
+    m_physics_sleep_time = physics_sleep_time;
+
+}
+
+
 void DebugOverlay::render(){
     wchar_t buffer[64];
     std::ostringstream oss2;
@@ -43,6 +50,13 @@ void DebugOverlay::render(){
     oss2 << "Num rendered objects: " << m_rendered_obj;
     mbstowcs(buffer, oss2.str().c_str(), 64);
     m_text_dynamic_text->addString(buffer, 15, 15, 1, STRING_DRAW_ABSOLUTE_BL);
+
+    oss2.str("");
+    oss2.clear();
+    oss2 << "Physics delta-t: " << std::setprecision(3) << m_physics_load_time << "ms - Sleep time: " << std::setprecision(3) << m_physics_sleep_time << "ms";
+    mbstowcs(buffer, oss2.str().c_str(), 64);
+    m_text_dynamic_text->addString(buffer, 15, 125, 1, STRING_DRAW_ABSOLUTE_TL);
+
     m_text_dynamic_text->render();
 
     m_text_debug->render();

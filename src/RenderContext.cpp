@@ -161,3 +161,8 @@ void RenderContext::setObjectVector(std::vector<Object*>* objects){
     m_objects = objects;
 }
 
+
+void RenderContext::setDebugOverlayPhysicsTimes(double physics_load_time, double physics_sleep_time){
+    m_debug_overlay->setPhysicsTimes(physics_load_time, physics_sleep_time);
+}
+
