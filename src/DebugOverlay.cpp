@@ -53,7 +53,7 @@ void DebugOverlay::render(){
 
     oss2.str("");
     oss2.clear();
-    oss2 << "Physics delta-t: " << std::setprecision(3) << m_physics_load_time << "ms - Sleep time: " << std::setprecision(3) << m_physics_sleep_time << "ms";
+    oss2 << "Physics load: " << std::setprecision(3) << m_physics_load_time << "ms - Sleep time: " << std::setprecision(3) << m_physics_sleep_time << "ms";
     mbstowcs(buffer, oss2.str().c_str(), 64);
     m_text_dynamic_text->addString(buffer, 15, 125, 1, STRING_DRAW_ABSOLUTE_TL);
 

@@ -27,6 +27,7 @@ class BtWrapper{
         std::thread m_thread_simulation;
         bool m_simulation_paused, m_end_simulation;
         double m_average_load, m_average_sleep;
+        std::chrono::duration<double, std::milli> m_simulation_time;
     public:
         BtWrapper();
         BtWrapper(const btVector3& gravity);
