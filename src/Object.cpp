@@ -51,6 +51,10 @@ int Object::render(){
 
 
 int Object::render(math::mat4 body_transform){
+    if(m_scale != 1.0){
+        body_transform = body_transform * m_scale_transform;
+    }
+
     m_model->setMeshColor(m_mesh_color);
     return m_model->render(body_transform);
 }
