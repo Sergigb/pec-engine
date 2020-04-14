@@ -25,6 +25,8 @@ class Object{
         ~Object();
 
         btRigidBody* getRigidBody();
+        math::mat4 getRigidBodyTransformSingle() const;
+        void getRigidBodyTransformDouble(double* mat4) const;
 
         void applyCentralForce(const btVector3& force);
         void applyTorque(const btVector3& torque);
@@ -33,6 +35,7 @@ class Object{
         void setMotionState(const btVector3& origin, const btQuaternion& initial_rotation);
         void activate(bool activate);
         int render();
+        int render(math::mat4 body_transform);
 };
 
 
