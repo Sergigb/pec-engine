@@ -53,11 +53,12 @@ void App::init(int gl_width, int gl_height){
     m_window_handler = new WindowHandler(gl_width, gl_height, m_input, m_camera);
     m_camera->setWindowHandler(m_window_handler);
     m_frustum = new Frustum();
-    m_render_context = new RenderContext(m_camera, m_window_handler);
-    m_bt_wrapper = new BtWrapper(btVector3(0, -9.81, 0));
+    m_render_context = new RenderContext(m_camera, m_window_handler, &m_buffer1, &m_buffer2, &m_buffer1_lock, &m_buffer2_lock, &m_manager_lock, &m_last_updated);
+    m_bt_wrapper = new BtWrapper(btVector3(0, -9.81, 0), &m_buffer1, &m_buffer2, &m_buffer1_lock, &m_buffer2_lock, &m_manager_lock, &m_last_updated);
 
     m_physics_pause = true;
     m_picked_obj = nullptr;
+    m_last_updated = none;
 }
 
 
@@ -124,7 +125,7 @@ void App::objectsInit(){
 
     m_bt_wrapper->addConstraint(hingeConstraint, true);
 
-    for(int i=0; i<10; i++){
+    for(int i=0; i<4000; i++){
         Object* cube = new Object(m_cube_model, m_bt_wrapper, cube_shape, btVector3(0.0, 55.0 + (i+1)*5, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(10.0));
         cube->setColor(math::vec3(1.0, 0.0, 0.0));
         m_objects.push_back(cube);
@@ -144,7 +145,7 @@ void App::objectsInit(){
 
 
 void App::run(){
-    m_bt_wrapper->startSimulation(1.f / 60.f, 0);
+    m_bt_wrapper->startSimulation(1.f / 60.f, 2);
     while (!glfwWindowShouldClose(m_window_handler->getWindow())){
         m_input->update();
         m_window_handler->update();
@@ -185,9 +186,6 @@ void App::run(){
                 m_bt_wrapper->updateCollisionWorldSingleAABB(m_picked_obj->getRigidBody()); // not thread safe
         }
 
-        /// bullet simulation step
-        // this way we tie the simulation update rate to the framerate, should be 60hz if we limit it to 60 fps. We should manage the physics in a different thread and limit it to 60 hz
-        // to test this we can unlock the fps and see what happens
         if(m_input->pressed_keys[GLFW_KEY_P]){
             m_physics_pause = !m_physics_pause;
             m_bt_wrapper->pauseSimulation(m_physics_pause);
@@ -195,7 +193,11 @@ void App::run(){
 
         // rendering
         m_render_context->setDebugOverlayPhysicsTimes(m_bt_wrapper->getAverageLoadTime(), m_bt_wrapper->getAverageSleepTime());
-        m_render_context->render();
+
+        if(m_physics_pause)
+            m_render_context->render(true);
+        else
+            m_render_context->render(true);
 
         glfwSwapBuffers(m_window_handler->getWindow());
     }

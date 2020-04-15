@@ -4,18 +4,23 @@
 #include <iostream>
 #include <thread>
 #include <iomanip>
+#include <vector>
+#include <mutex>
 
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/btBulletDynamicsCommon.h>
 
 #include "log.hpp"
 #include "maths_funcs.hpp"
+#include "common.hpp"
 
 
 class Object;
 
 class BtWrapper{
     private:
+        using buffer = std::vector<object_transform>;
+
         btDefaultCollisionConfiguration* m_collisionConfiguration;
         btCollisionDispatcher* m_dispatcher;
         btBroadphaseInterface* m_overlappingPairCache;
@@ -23,14 +28,25 @@ class BtWrapper{
         btDiscreteDynamicsWorld* m_dynamicsWorld;
 
         void runSimulation(btScalar time_step, int max_sub_steps);
+        void updateBuffers();
+        void updateBuffer(buffer* buffer_);
 
         std::thread m_thread_simulation;
         bool m_simulation_paused, m_end_simulation;
         double m_average_load, m_average_sleep;
-        std::chrono::duration<double, std::milli> m_simulation_time;
+        std::chrono::duration<double, std::milli> m_elapsed_time;
+
+        // synchronization
+        buffer* m_buffer1;
+        buffer* m_buffer2;
+        std::mutex* m_buffer1_lock;
+        std::mutex* m_buffer2_lock;
+        std::mutex* m_manager_lock;
+        buffer_manager* m_last_updated;
     public:
         BtWrapper();
-        BtWrapper(const btVector3& gravity);
+        BtWrapper(const btVector3& gravity, buffer* buffer1, buffer* buffer2, std::mutex* buff1_lock,
+                  std::mutex* buff2_lock, std::mutex* manager_lock, buffer_manager* manager);
         ~BtWrapper();
 
         void addRigidBody(btRigidBody* body);

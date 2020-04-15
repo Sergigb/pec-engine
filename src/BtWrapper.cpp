@@ -1,4 +1,5 @@
 #include "BtWrapper.hpp"
+#include "Object.hpp"
 
 
 BtWrapper::BtWrapper(){
@@ -18,8 +19,15 @@ BtWrapper::BtWrapper(){
     m_dynamicsWorld->setGravity(btVector3(0.0, -9.81, 0.0));
 }
 
+BtWrapper::BtWrapper(const btVector3& gravity, buffer* buffer1, buffer* buffer2, std::mutex* buff1_lock,
+                     std::mutex* buff2_lock, std::mutex* manager_lock, buffer_manager* manager){
+    m_buffer1 = buffer1;
+    m_buffer2 = buffer2;
+    m_buffer1_lock = buff1_lock;
+    m_buffer2_lock = buff2_lock;
+    m_manager_lock = manager_lock;
+    m_last_updated = manager;
 
-BtWrapper::BtWrapper(const btVector3& gravity){
     m_collisionConfiguration = new btDefaultCollisionConfiguration();
     m_dispatcher = new btCollisionDispatcher(m_collisionConfiguration);
     m_overlappingPairCache = new btDbvtBroadphase();
@@ -124,10 +132,12 @@ void BtWrapper::runSimulation(btScalar time_step, int max_sub_steps){
 
         loop_start_load = std::chrono::system_clock::now();
 
-        if(!m_simulation_paused)
+        if(!m_simulation_paused){
             m_dynamicsWorld->stepSimulation(time_step , max_sub_steps);
+            updateBuffers();
+        }
 
-        m_simulation_time += loop_start - previous_loop_start;
+        m_elapsed_time += loop_start - previous_loop_start;
 
         ticks_since_last_update++;
         accumulated_load_time += load_time.count();
@@ -140,9 +150,9 @@ void BtWrapper::runSimulation(btScalar time_step, int max_sub_steps){
             accumulated_load_time = 0.0;
             accumulated_sleep_time = 0.0;
 
-            std::cout << std::setfill('0') << std::setw(2) << (int(m_simulation_time.count()) / 60000*60) % 60 
-                      << ":" << std::setfill('0') << std::setw(2) << (int(m_simulation_time.count()) / 60000) % 60
-                      << ":" << std::setfill('0') << std::setw(2) << (int(m_simulation_time.count()) / 1000) % 60 << std::endl;
+            std::cout << std::setfill('0') << std::setw(2) << (int(m_elapsed_time.count()) / 60000*60) % 60 
+                      << ":" << std::setfill('0') << std::setw(2) << (int(m_elapsed_time.count()) / 60000) % 60
+                      << ":" << std::setfill('0') << std::setw(2) << (int(m_elapsed_time.count()) / 1000) % 60 << std::endl;
         }
         previous_loop_start = loop_start;
     }
@@ -158,3 +168,51 @@ double BtWrapper::getAverageSleepTime() const{
     return m_average_sleep;
 }
 
+
+void BtWrapper::updateBuffer(buffer* buffer_){
+    const btCollisionObjectArray& col_object_array = m_dynamicsWorld->getCollisionObjectArray();
+
+    buffer_->clear();
+    for(int i=0; i<col_object_array.size(); i++){
+        Object* obj = static_cast<Object *>(col_object_array.at(i)->getUserPointer());
+        buffer_->emplace_back(object_transform{obj, obj->getRigidBodyTransformSingle()});
+    }
+}
+
+
+void BtWrapper::updateBuffers(){
+    /*std::chrono::duration<double, std::micro> time;
+    std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
+    std::chrono::system_clock::time_point end;*/
+    
+
+    if(*m_last_updated == buffer_2 || *m_last_updated == none){
+        if(m_buffer1_lock->try_lock()){
+            updateBuffer(m_buffer1);
+            *m_last_updated = buffer_1;
+            m_buffer1_lock->unlock();
+        }
+        else{
+            m_buffer2_lock->lock(); // very unlikely to not get the lock
+            updateBuffer(m_buffer2);
+            *m_last_updated = buffer_2;
+            m_buffer2_lock->unlock();
+        }
+    }
+    else{
+        if(m_buffer2_lock->try_lock()){
+            updateBuffer(m_buffer2);
+            *m_last_updated = buffer_2;
+            m_buffer2_lock->unlock();
+        }
+        else{
+            m_buffer1_lock->lock();
+            updateBuffer(m_buffer1);
+            *m_last_updated = buffer_1;
+            m_buffer1_lock->unlock();
+        }
+    }
+    /*end = std::chrono::system_clock::now();
+    time = end - start;
+    std::cout << "copy time: " << time.count() << std::endl;*/
+}
