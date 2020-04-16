@@ -45,13 +45,12 @@ class RenderContext{
         const buffer* m_buffer2;
         std::mutex* m_buffer1_lock;
         std::mutex* m_buffer2_lock;
-        std::mutex* m_manager_lock;
         const buffer_manager* m_last_updated;
 
         void initGl();
     public:
         RenderContext(const Camera* camera, const WindowHandler* window_handler, const buffer* buffer1, const buffer* buffer2,
-                      std::mutex* buff1_lock, std::mutex* buff2_lock, std::mutex* manager_lock, const buffer_manager* manager);
+                      std::mutex* buff1_lock, std::mutex* buff2_lock, const buffer_manager* manager);
         ~RenderContext();
 
         void render(bool render_asynch);

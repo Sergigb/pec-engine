@@ -41,12 +41,11 @@ class BtWrapper{
         buffer* m_buffer2;
         std::mutex* m_buffer1_lock;
         std::mutex* m_buffer2_lock;
-        std::mutex* m_manager_lock;
         buffer_manager* m_last_updated;
     public:
         BtWrapper();
         BtWrapper(const btVector3& gravity, buffer* buffer1, buffer* buffer2, std::mutex* buff1_lock,
-                  std::mutex* buff2_lock, std::mutex* manager_lock, buffer_manager* manager);
+                  std::mutex* buff2_lock, buffer_manager* manager);
         ~BtWrapper();
 
         void addRigidBody(btRigidBody* body);

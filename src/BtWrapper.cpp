@@ -20,12 +20,11 @@ BtWrapper::BtWrapper(){
 }
 
 BtWrapper::BtWrapper(const btVector3& gravity, buffer* buffer1, buffer* buffer2, std::mutex* buff1_lock,
-                     std::mutex* buff2_lock, std::mutex* manager_lock, buffer_manager* manager){
+                     std::mutex* buff2_lock, buffer_manager* manager){
     m_buffer1 = buffer1;
     m_buffer2 = buffer2;
     m_buffer1_lock = buff1_lock;
     m_buffer2_lock = buff2_lock;
-    m_manager_lock = manager_lock;
     m_last_updated = manager;
 
     m_collisionConfiguration = new btDefaultCollisionConfiguration();

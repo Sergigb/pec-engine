@@ -42,7 +42,6 @@ class App{
         std::vector<object_transform> m_buffer2;
         std::mutex m_buffer1_lock;
         std::mutex m_buffer2_lock;
-        std::mutex m_manager_lock;
         buffer_manager m_last_updated;
 
         // game state

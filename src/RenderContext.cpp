@@ -1,7 +1,7 @@
 #include "RenderContext.hpp"
 
 RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_handler, const buffer* buffer1, const buffer* buffer2,
-                             std::mutex* buff1_lock, std::mutex* buff2_lock, std::mutex* manager_lock, const buffer_manager* manager){
+                             std::mutex* buff1_lock, std::mutex* buff2_lock, const buffer_manager* manager){
     int fb_width, fb_height;
     window_handler->getFramebufferSize(fb_width, fb_height);
 
@@ -12,7 +12,6 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
     m_buffer2 = buffer2;
     m_buffer1_lock = buff1_lock;
     m_buffer2_lock = buff2_lock;
-    m_manager_lock = manager_lock;
     m_last_updated = manager;
 
     initGl();
@@ -145,7 +144,6 @@ void RenderContext::render(bool render_asynch){
     else{
         if(*m_last_updated == buffer_1){
             m_buffer1_lock->lock(); // extremely unlikely to not get the lock
-            std::cout << m_buffer1->size() << std::endl;
             for(uint i=0; i<m_buffer1->size(); i++){
                 num_rendered += m_buffer1->at(i).object_ptr->render(m_buffer1->at(i).transform);
             }
@@ -153,7 +151,6 @@ void RenderContext::render(bool render_asynch){
         }
         else{
             m_buffer2_lock->lock();
-            std::cout << m_buffer2->size() << std::endl;
             for(uint i=0; i<m_buffer2->size(); i++){
                 num_rendered += m_buffer2->at(i).object_ptr->render(m_buffer2->at(i).transform);
             }

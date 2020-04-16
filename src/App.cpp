@@ -53,8 +53,8 @@ void App::init(int gl_width, int gl_height){
     m_window_handler = new WindowHandler(gl_width, gl_height, m_input, m_camera);
     m_camera->setWindowHandler(m_window_handler);
     m_frustum = new Frustum();
-    m_render_context = new RenderContext(m_camera, m_window_handler, &m_buffer1, &m_buffer2, &m_buffer1_lock, &m_buffer2_lock, &m_manager_lock, &m_last_updated);
-    m_bt_wrapper = new BtWrapper(btVector3(0, -9.81, 0), &m_buffer1, &m_buffer2, &m_buffer1_lock, &m_buffer2_lock, &m_manager_lock, &m_last_updated);
+    m_render_context = new RenderContext(m_camera, m_window_handler, &m_buffer1, &m_buffer2, &m_buffer1_lock, &m_buffer2_lock, &m_last_updated);
+    m_bt_wrapper = new BtWrapper(btVector3(0, -9.81, 0), &m_buffer1, &m_buffer2, &m_buffer1_lock, &m_buffer2_lock, &m_last_updated);
 
     m_physics_pause = true;
     m_picked_obj = nullptr;
@@ -125,7 +125,7 @@ void App::objectsInit(){
 
     m_bt_wrapper->addConstraint(hingeConstraint, true);
 
-    for(int i=0; i<4000; i++){
+    for(int i=0; i<2000; i++){
         Object* cube = new Object(m_cube_model, m_bt_wrapper, cube_shape, btVector3(0.0, 55.0 + (i+1)*5, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(10.0));
         cube->setColor(math::vec3(1.0, 0.0, 0.0));
         m_objects.push_back(cube);
@@ -197,7 +197,7 @@ void App::run(){
         if(m_physics_pause)
             m_render_context->render(true);
         else
-            m_render_context->render(true);
+            m_render_context->render(false);
 
         glfwSwapBuffers(m_window_handler->getWindow());
     }
