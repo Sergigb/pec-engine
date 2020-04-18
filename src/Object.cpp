@@ -37,15 +37,18 @@ Object::~Object(){
 
 
 int Object::render(){
-    btTransform trans;
-    math::mat4 body_transform;
-    double body_transform_double[16];
+    math::mat4 body_transform = getRigidBodyTransformSingle();
+ 
+    if(m_scale != 1.0){
+        body_transform = body_transform * m_scale_transform;
+    }
 
-    // at some point we should try going far away from the origin and check how the precision loss affects the rendering
-    m_body->getMotionState()->getWorldTransform(trans);
-    trans.getOpenGLMatrix(body_transform_double);
-    std::copy(body_transform_double, body_transform_double + 16, body_transform.m); // implicit cast, maybe some compilers will complain?
+    m_model->setMeshColor(m_mesh_color);
+    return m_model->render(body_transform);
+}
 
+
+int Object::render(math::mat4 body_transform){
     if(m_scale != 1.0){
         body_transform = body_transform * m_scale_transform;
     }
@@ -102,3 +105,23 @@ void Object::activate(bool activate){
     m_body->activate(activate);
 }
 
+
+math::mat4 Object::getRigidBodyTransformSingle() const{
+    btTransform trans;
+    math::mat4 body_transform;
+    double body_transform_double[16];
+
+    m_body->getMotionState()->getWorldTransform(trans);
+    trans.getOpenGLMatrix(body_transform_double);
+    std::copy(body_transform_double, body_transform_double + 16, body_transform.m);
+
+    return body_transform;
+}
+
+
+void Object::getRigidBodyTransformDouble(double* mat4) const{
+    btTransform trans;
+
+    m_body->getMotionState()->getWorldTransform(trans);
+    trans.getOpenGLMatrix(mat4);
+}

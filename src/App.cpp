@@ -37,6 +37,7 @@ void App::init(int gl_width, int gl_height){
 
     m_physics_pause = true;
     m_picked_obj = nullptr;
+    m_last_updated = none;
 }
 
 
@@ -123,6 +124,7 @@ void App::objectsInit(){
 
 
 void App::run(){
+    m_bt_wrapper->startSimulation(1.f / 60.f, 2);
     while (!glfwWindowShouldClose(m_window_handler->getWindow())){
         m_input->update();
         m_window_handler->update();
@@ -159,26 +161,26 @@ void App::run(){
             rotation.setEuler(0, 0, 0);
             m_picked_obj->setMotionState(ray_end_world_btv3, rotation);
 
-            // aabb update only needed when the physics are paused. when we parallelize the engine it may not
-            // be possible to move an object when the engine is not paused (as stepSimulation might be running)
             if(m_physics_pause)
-                m_bt_wrapper->updateCollisionWorldSingleAABB(m_picked_obj->getRigidBody());
+                m_bt_wrapper->updateCollisionWorldSingleAABB(m_picked_obj->getRigidBody()); // not thread safe
         }
 
-        /// bullet simulation step
-        // this way we tie the simulation update rate to the framerate, should be 60hz if we limit it to 60 fps. We should manage the physics in a different thread and limit it to 60 hz
-        // to test this we can unlock the fps and see what happens
         if(m_input->pressed_keys[GLFW_KEY_P]){
             m_physics_pause = !m_physics_pause;
+            m_bt_wrapper->pauseSimulation(m_physics_pause);
         }
-        if(!m_physics_pause)
-            m_bt_wrapper->stepSimulation(1.f / 60.f, 0);
 
         // rendering
-        m_render_context->render();
+        m_render_context->setDebugOverlayPhysicsTimes(m_bt_wrapper->getAverageLoadTime(), m_bt_wrapper->getAverageSleepTime());
+
+        if(m_physics_pause)
+            m_render_context->render(true);
+        else
+            m_render_context->render(false);
 
         glfwSwapBuffers(m_window_handler->getWindow());
     }
+    m_bt_wrapper->stopSimulation();
     m_window_handler->terminate();
 }
 

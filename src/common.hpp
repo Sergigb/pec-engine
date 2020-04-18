@@ -3,6 +3,7 @@
 #include <map>
 
 #include "BasePart.hpp"
+#include "maths_funcs.hpp"
 
 typedef unsigned int EntityId;
 typedef std::map<const std::string, BasePart *> partsMap;
@@ -14,6 +15,16 @@ struct color{
     float g;
     float b;
 };
+
+
+class Object;
+
+struct object_transform{
+    Object* object_ptr;
+    math::mat4 transform;
+};
+
+enum buffer_manager: char{none = 0, buffer_1 = 1, buffer_2 = 2};
 
 #define OPTION_INVALID -1
 #define OPTION_EXIT 0
