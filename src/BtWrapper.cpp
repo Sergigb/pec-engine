@@ -118,7 +118,7 @@ void BtWrapper::runSimulation(btScalar time_step, int max_sub_steps){
         loop_start_load = std::chrono::system_clock::now();
 
         if(!m_simulation_paused){
-            m_dynamicsWorld->stepSimulation(time_step , max_sub_steps);
+            m_dynamics_world->stepSimulation(time_step , max_sub_steps);
             updateBuffers();
         }
 
@@ -155,7 +155,7 @@ double BtWrapper::getAverageSleepTime() const{
 
 
 void BtWrapper::updateBuffer(buffer* buffer_){
-    const btCollisionObjectArray& col_object_array = m_dynamicsWorld->getCollisionObjectArray();
+    const btCollisionObjectArray& col_object_array = m_dynamics_world->getCollisionObjectArray();
 
     buffer_->clear();
     for(int i=0; i<col_object_array.size(); i++){
