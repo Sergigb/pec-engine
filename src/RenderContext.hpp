@@ -42,17 +42,11 @@ class RenderContext{
         std::vector<std::unique_ptr<Object>>* m_objects;
 
         // synchronization
-        using buffer = std::vector<object_transform>;
-        const buffer* m_buffer1;
-        const buffer* m_buffer2;
-        std::mutex* m_buffer1_lock;
-        std::mutex* m_buffer2_lock;
-        const buffer_manager* m_last_updated;
+        struct trans_dbl_buffers* m_buffers;
 
         void initGl();
     public:
-        RenderContext(const Camera* camera, const WindowHandler* window_handler, const buffer* buffer1, const buffer* buffer2,
-                      std::mutex* buff1_lock, std::mutex* buff2_lock, const buffer_manager* manager);
+        RenderContext(const Camera* camera, const WindowHandler* window_handler, trans_dbl_buffers* buff_manager);
         ~RenderContext();
 
         void render(bool render_asynch);

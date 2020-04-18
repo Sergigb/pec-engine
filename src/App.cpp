@@ -32,12 +32,12 @@ void App::init(int gl_width, int gl_height){
     m_window_handler.reset(new WindowHandler(gl_width, gl_height, m_input.get(), m_camera.get()));
     m_camera->setWindowHandler(m_window_handler.get());
     m_frustum.reset(new Frustum());
-    m_render_context.reset(new RenderContext(m_camera.get(), m_window_handler.get(), &m_buffer1, &m_buffer2, &m_buffer1_lock, &m_buffer2_lock, &m_last_updated));
-    m_bt_wrapper.reset(new BtWrapper(btVector3(0, -9.81, 0), &m_buffer1, &m_buffer2, &m_buffer1_lock, &m_buffer2_lock, &m_last_updated));
+    m_render_context.reset(new RenderContext(m_camera.get(), m_window_handler.get(), &m_buffers));
+    m_bt_wrapper.reset(new BtWrapper(btVector3(0, -9.81, 0), &m_buffers));
 
     m_physics_pause = true;
     m_picked_obj = nullptr;
-    m_last_updated = none;
+    m_buffers.last_updated = none;
 }
 
 

@@ -13,14 +13,13 @@
 
 #include "log.hpp"
 #include "maths_funcs.hpp"
-#include "common.hpp"
+#include "buffers.hpp"
 
 
 class Object;
 
 class BtWrapper{
-        using buffer = std::vector<object_transform>;
-
+    private:
         std::unique_ptr<btDefaultCollisionConfiguration> m_collision_configuration;
         std::unique_ptr<btCollisionDispatcher> m_dispatcher;
         std::unique_ptr<btBroadphaseInterface> m_overlapping_pair_cache;
@@ -31,7 +30,7 @@ class BtWrapper{
 
         void runSimulation(btScalar time_step, int max_sub_steps);
         void updateBuffers();
-        void updateBuffer(buffer* buffer_);
+        void updateBuffer(std::vector<object_transform>* buffer_);
 
         std::thread m_thread_simulation;
         bool m_simulation_paused, m_end_simulation;
@@ -39,15 +38,10 @@ class BtWrapper{
         std::chrono::duration<double, std::milli> m_elapsed_time;
 
         // synchronization
-        buffer* m_buffer1;
-        buffer* m_buffer2;
-        std::mutex* m_buffer1_lock;
-        std::mutex* m_buffer2_lock;
-        buffer_manager* m_last_updated;
+        struct trans_dbl_buffers* m_buffers;
     public:
         BtWrapper();
-        BtWrapper(const btVector3& gravity, buffer* buffer1, buffer* buffer2, std::mutex* buff1_lock,
-                  std::mutex* buff2_lock, buffer_manager* manager);
+        BtWrapper(const btVector3& gravity, trans_dbl_buffers* buff_manager);
         ~BtWrapper();
 
         void addRigidBody(btRigidBody* body);

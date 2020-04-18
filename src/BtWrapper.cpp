@@ -6,13 +6,8 @@ BtWrapper::BtWrapper(){
     init(btVector3(0.0, -9.81, 0.0));
 }
 
-BtWrapper::BtWrapper(const btVector3& gravity, buffer* buffer1, buffer* buffer2, std::mutex* buff1_lock,
-                     std::mutex* buff2_lock, buffer_manager* manager){
-    m_buffer1 = buffer1;
-    m_buffer2 = buffer2;
-    m_buffer1_lock = buff1_lock;
-    m_buffer2_lock = buff2_lock;
-    m_last_updated = manager;
+BtWrapper::BtWrapper(const btVector3& gravity, trans_dbl_buffers* buff_manager){
+    m_buffers = buff_manager;
 
     init(gravity);
 }
@@ -154,7 +149,7 @@ double BtWrapper::getAverageSleepTime() const{
 }
 
 
-void BtWrapper::updateBuffer(buffer* buffer_){
+void BtWrapper::updateBuffer(std::vector<object_transform>* buffer_){
     const btCollisionObjectArray& col_object_array = m_dynamics_world->getCollisionObjectArray();
 
     buffer_->clear();
@@ -171,30 +166,30 @@ void BtWrapper::updateBuffers(){
     std::chrono::system_clock::time_point end;*/
     
 
-    if(*m_last_updated == buffer_2 || *m_last_updated == none){
-        if(m_buffer1_lock->try_lock()){
-            updateBuffer(m_buffer1);
-            *m_last_updated = buffer_1;
-            m_buffer1_lock->unlock();
+    if(m_buffers->last_updated == buffer_2 || m_buffers->last_updated == none){
+        if(m_buffers->buffer1_lock.try_lock()){
+            updateBuffer(&m_buffers->buffer1);
+            m_buffers->last_updated = buffer_1;
+            m_buffers->buffer1_lock.unlock();
         }
         else{
-            m_buffer2_lock->lock(); // very unlikely to not get the lock
-            updateBuffer(m_buffer2);
-            *m_last_updated = buffer_2;
-            m_buffer2_lock->unlock();
+            m_buffers->buffer2_lock.lock(); // very unlikely to not get the lock
+            updateBuffer(&m_buffers->buffer2);
+            m_buffers->last_updated = buffer_2;
+            m_buffers->buffer2_lock.unlock();
         }
     }
     else{
-        if(m_buffer2_lock->try_lock()){
-            updateBuffer(m_buffer2);
-            *m_last_updated = buffer_2;
-            m_buffer2_lock->unlock();
+        if(m_buffers->buffer2_lock.try_lock()){
+            updateBuffer(&m_buffers->buffer2);
+            m_buffers->last_updated = buffer_2;
+            m_buffers->buffer2_lock.unlock();
         }
         else{
-            m_buffer1_lock->lock();
-            updateBuffer(m_buffer1);
-            *m_last_updated = buffer_1;
-            m_buffer1_lock->unlock();
+            m_buffers->buffer1_lock.lock();
+            updateBuffer(&m_buffers->buffer1);
+            m_buffers->last_updated = buffer_1;
+            m_buffers->buffer1_lock.unlock();
         }
     }
     /*end = std::chrono::system_clock::now();

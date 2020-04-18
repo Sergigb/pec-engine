@@ -15,7 +15,7 @@
 #include "BtWrapper.hpp"
 #include "Object.hpp"
 #include "RenderContext.hpp"
-#include "common.hpp"
+#include "buffers.hpp"
 
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/btBulletDynamicsCommon.h>
@@ -39,11 +39,7 @@ class App{
         std::vector<std::unique_ptr<Object>> m_objects;
 
         // buffers used to synchronize the physics and rendering
-        std::vector<object_transform> m_buffer1;
-        std::vector<object_transform> m_buffer2;
-        std::mutex m_buffer1_lock;
-        std::mutex m_buffer2_lock;
-        buffer_manager m_last_updated;
+        struct trans_dbl_buffers m_buffers;
 
         // game state
         bool m_physics_pause;

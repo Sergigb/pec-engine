@@ -1,18 +1,12 @@
 #include "RenderContext.hpp"
 
-RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_handler, const buffer* buffer1, const buffer* buffer2,
-                             std::mutex* buff1_lock, std::mutex* buff2_lock, const buffer_manager* manager){
+RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_handler, trans_dbl_buffers* buff_manager){
     int fb_width, fb_height;
     window_handler->getFramebufferSize(fb_width, fb_height);
 
     m_camera = camera;
     m_window_handler = window_handler;
-
-    m_buffer1 = buffer1;
-    m_buffer2 = buffer2;
-    m_buffer1_lock = buff1_lock;
-    m_buffer2_lock = buff2_lock;
-    m_last_updated = manager;
+    m_buffers = buff_manager;
 
     initGl();
     log_gl_params();
@@ -135,25 +129,25 @@ void RenderContext::render(bool render_asynch){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(m_bg_r, m_bg_g, m_bg_b, m_bg_a);
 
-    if(render_asynch || *m_last_updated == none){
+    if(render_asynch || m_buffers->last_updated == none){
         for(uint i=0; i<m_objects->size(); i++){
             num_rendered += m_objects->at(i)->render();
         }
     }
     else{
-        if(*m_last_updated == buffer_1){
-            m_buffer1_lock->lock(); // extremely unlikely to not get the lock
-            for(uint i=0; i<m_buffer1->size(); i++){
-                num_rendered += m_buffer1->at(i).object_ptr->render(m_buffer1->at(i).transform);
+        if(m_buffers->last_updated == buffer_1){
+            m_buffers->buffer1_lock.lock(); // extremely unlikely to not get the lock
+            for(uint i=0; i<m_buffers->buffer1.size(); i++){
+                num_rendered += m_buffers->buffer1.at(i).object_ptr->render(m_buffers->buffer1.at(i).transform);
             }
-            m_buffer1_lock->unlock();
+            m_buffers->buffer1_lock.unlock();
         }
         else{
-            m_buffer2_lock->lock();
-            for(uint i=0; i<m_buffer2->size(); i++){
-                num_rendered += m_buffer2->at(i).object_ptr->render(m_buffer2->at(i).transform);
+            m_buffers->buffer2_lock.lock();
+            for(uint i=0; i<m_buffers->buffer2.size(); i++){
+                num_rendered += m_buffers->buffer2.at(i).object_ptr->render(m_buffers->buffer2.at(i).transform);
             }
-            m_buffer2_lock->unlock();
+            m_buffers->buffer2_lock.unlock();
         }
     }
 
