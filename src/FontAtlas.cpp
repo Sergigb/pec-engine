@@ -23,6 +23,7 @@ FontAtlas::FontAtlas(uint atlas_size){
 
 FontAtlas::~FontAtlas(){
     FT_Done_FreeType(ft);
+    glDeleteTextures(1, &m_texture_id);
 }
 
 
@@ -138,6 +139,15 @@ void FontAtlas::createAtlas(bool save_png){ // check error codes
     if(save_png)
         if(!stbi_write_png("../data/atlas.png", m_atlas_size, m_atlas_size, 1, m_atlas.get(), m_atlas_size))
             std::cerr << "ooopsie woopsie" << std::endl;
+
+    glGenTextures(1, &m_texture_id);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_texture_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, m_atlas_size, m_atlas_size, 0, GL_RED, GL_UNSIGNED_BYTE, m_atlas.get());
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 }
 
 
@@ -176,4 +186,9 @@ int FontAtlas::getHeight() const{
     return m_font_height;
 }
 
+
+void FontAtlas::bindTexture() const{
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_texture_id);
+}
 

@@ -3,29 +3,11 @@
 
 
 Text2D::Text2D(){
-    m_font.reset(new FontAtlas(512));
-    m_font->loadFont("/usr/share/fonts/truetype/freefont/FreeSans.ttf", 45);
-    m_font->loadCharacterRange(32, 255); // ascii
-    m_font->loadCharacterRange(913, 1023); // greek and coptic*
-    m_font->loadCharacter(0, true); // null character
-    m_font->createAtlas(true);
-
-    m_num_vertices = 0;
-    m_num_indices = 0;
-    m_fb_width = 640;
-    m_fb_height = 480;
-    m_update_buffer = false;
 }
 
 
-Text2D::Text2D(int fb_width, int fb_height, const color& c, uint atlas_size, const char* font_path, int font_size, GLuint shader){
-    m_font.reset(new FontAtlas(atlas_size));
-    m_font->loadFont(font_path, font_size);
-    m_font->loadCharacterRange(32, 255); // ascii
-    m_font->loadCharacterRange(913, 1023); // greek and coptic
-    m_font->loadCharacter(0, true); // null character
-    m_font->createAtlas(true);
-
+Text2D::Text2D(int fb_width, int fb_height, const color& c, const FontAtlas* font, GLuint shader){
+    m_font_atlas = font;
     m_num_vertices = 0;
     m_num_indices = 0;
     m_fb_width = fb_width;
@@ -60,15 +42,6 @@ void Text2D::initgl(const color& c){
 
     m_color_location = glGetUniformLocation(m_shader_programme, "text_color");
     glUniform3f(m_color_location, c.r, c.g, c.b);
-
-    glGenTextures(1, &m_texture_id);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_texture_id);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, m_font->getAtlasSize(), m_font->getAtlasSize(), 0, GL_RED, GL_UNSIGNED_BYTE, m_font->getAtlas());
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 }
 
 
@@ -77,7 +50,6 @@ Text2D::~Text2D(){
     glDeleteBuffers(1, &m_vbo_tex);
     glDeleteBuffers(1, &m_vbo_ind);
     glDeleteVertexArrays(1, &m_vao);
-    glDeleteTextures(1, &m_texture_id);
 }
 
 
@@ -116,12 +88,12 @@ void Text2D::updateBuffers(){
         while(current_string->textbuffer[j] != '\0'){
             if(current_string->textbuffer[j] == '\n'){
                 pen_x = current_string->posx; // will not work when the string placement is not bl absolute, to be fixed at some point
-                pen_y -= (m_font->getHeight() >> 6) * current_string->scale;
+                pen_y -= (m_font_atlas->getHeight() >> 6) * current_string->scale;
                 j++;
                 continue;
             }
 
-            m_font->getCharacter(current_string->textbuffer[j], &ch);
+            m_font_atlas->getCharacter(current_string->textbuffer[j], &ch);
 
             xpos = pen_x + (float)ch->bearing_x * current_string->scale;
             ypos = pen_y - (float)(ch->height - ch->bearing_y) * current_string->scale;
@@ -185,8 +157,7 @@ void Text2D::render(){
     }
     glUseProgram(m_shader_programme);
     glBindVertexArray(m_vao);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, m_texture_id);
+    m_font_atlas->bindTexture();
     glDrawElements(GL_TRIANGLES, m_num_indices, GL_UNSIGNED_SHORT, NULL);
 }
 

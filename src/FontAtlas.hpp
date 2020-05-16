@@ -6,6 +6,8 @@
 
 #include <stb/stb_image_write.h>
 
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 #include <cstring>
 #include <vector>
 #include <algorithm>
@@ -28,6 +30,7 @@ class FontAtlas{ //rename to font atlas?
         std::unique_ptr<unsigned char> m_atlas;
         std::map<int, struct character> m_characters;
         std::vector<struct character> m_characters_vec;
+        GLuint m_texture_id;
     public:
         FontAtlas();
         FontAtlas(uint atlas_size);
@@ -43,6 +46,7 @@ class FontAtlas{ //rename to font atlas?
         uint getAtlasSize() const;
         int getHeight() const;
         const unsigned char* getAtlas() const;
+        void bindTexture() const;
 
         // new function to calculate the width of a string?
 };
