@@ -1,6 +1,6 @@
 #include "RenderContext.hpp"
 
-RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_handler, trans_dbl_buffers* buff_manager){
+RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_handler, render_buffers* buff_manager){
     int fb_width, fb_height;
     window_handler->getFramebufferSize(fb_width, fb_height);
 

@@ -42,11 +42,11 @@ class RenderContext{
         std::vector<std::unique_ptr<Object>>* m_objects;
 
         // synchronization
-        struct trans_dbl_buffers* m_buffers;
+        struct render_buffers* m_buffers;
 
         void initGl();
     public:
-        RenderContext(const Camera* camera, const WindowHandler* window_handler, trans_dbl_buffers* buff_manager);
+        RenderContext(const Camera* camera, const WindowHandler* window_handler, render_buffers* buff_manager);
         ~RenderContext();
 
         void render(bool render_asynch);

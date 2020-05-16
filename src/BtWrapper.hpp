@@ -38,10 +38,10 @@ class BtWrapper{
         std::chrono::duration<double, std::milli> m_elapsed_time;
 
         // synchronization
-        struct trans_dbl_buffers* m_buffers;
+        struct render_buffers* m_buffers;
     public:
         BtWrapper();
-        BtWrapper(const btVector3& gravity, trans_dbl_buffers* buff_manager);
+        BtWrapper(const btVector3& gravity, render_buffers* buff_manager);
         ~BtWrapper();
 
         void addRigidBody(btRigidBody* body);

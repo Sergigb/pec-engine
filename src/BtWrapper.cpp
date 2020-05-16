@@ -6,7 +6,7 @@ BtWrapper::BtWrapper(){
     init(btVector3(0.0, -9.81, 0.0));
 }
 
-BtWrapper::BtWrapper(const btVector3& gravity, trans_dbl_buffers* buff_manager){
+BtWrapper::BtWrapper(const btVector3& gravity, render_buffers* buff_manager){
     m_buffers = buff_manager;
 
     init(gravity);
@@ -57,7 +57,7 @@ Object* BtWrapper::testRay(const math::vec3& ray_start_world, const math::vec3& 
             ray_callback);
 
     if(ray_callback.hasHit()) {
-        Object* obj = static_cast<Object *>(ray_callback.m_collisionObject->getUserPointer());
+        Object* obj = static_cast<Object*>(ray_callback.m_collisionObject->getUserPointer());
         return obj;
     }else{
         return nullptr;

@@ -39,7 +39,7 @@ class App{
         std::vector<std::unique_ptr<Object>> m_objects;
 
         // buffers used to synchronize the physics and rendering
-        struct trans_dbl_buffers m_buffers;
+        struct render_buffers m_buffers;
 
         // game state
         bool m_physics_pause;
