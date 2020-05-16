@@ -25,6 +25,8 @@ class Object{
         float m_scale;
     public:
         Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, const btVector3& origin, const btVector3& local_inertia, const btQuaternion& initial_rotation, btScalar mass);
+        Object();
+        Object(const Object& obj);
         ~Object();
 
         btRigidBody* getRigidBody();

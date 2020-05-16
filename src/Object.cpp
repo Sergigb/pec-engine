@@ -1,6 +1,10 @@
 #include "Object.hpp"
 
 
+Object::Object(){
+}
+
+
 Object::Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, const btVector3& origin, const btVector3& local_inertia, const btQuaternion& initial_rotation, btScalar mass){
     //btCollisionShape* colShape = new btBoxShape(btVector3(1,1,1));
     btVector3 local_inertia_ = local_inertia;
@@ -10,19 +14,16 @@ Object::Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape,
     m_model = model;
     m_scale = 1.0;
 
-    /// Create Dynamic Objects
     btTransform start_transform;
     start_transform.setIdentity();
     start_transform.setOrigin(origin);
     start_transform.setRotation(initial_rotation);
 
-    //rigidbody is dynamic if and only if mass is non zero, otherwise static
-    bool isDynamic = (mass != 0.f);
+    bool is_dynamic = (mass != 0.f);
 
-    if (isDynamic)
+    if(is_dynamic)
         col_shape->calculateLocalInertia(mass, local_inertia_);
 
-    //using motionstate is recommended, it provides interpolation capabilities, and only synchronizes 'active' objects
     m_motion_state.reset(new btDefaultMotionState(start_transform));
     btRigidBody::btRigidBodyConstructionInfo rb_info(mass, m_motion_state.get(), col_shape, local_inertia_);
     m_body.reset(new btRigidBody(rb_info));
@@ -30,6 +31,26 @@ Object::Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape,
     m_bt_wrapper->addRigidBody(m_body.get());
     m_body->setUserPointer((void*)this);
 }
+
+
+Object::Object(const Object& obj){
+    m_model = obj.m_model;
+    m_bt_wrapper = obj.m_bt_wrapper;
+    m_mesh_color = obj.m_mesh_color;
+    m_scale_transform = obj.m_scale_transform;
+    m_scale = obj.m_scale;
+
+    btTransform start_transform;
+    obj.m_motion_state.get()->getWorldTransform(start_transform);
+    m_motion_state.reset(new btDefaultMotionState(start_transform));
+
+    btRigidBody::btRigidBodyConstructionInfo rb_info(1/obj.m_body.get()->getInvMass(), m_motion_state.get(), obj.m_body.get()->getCollisionShape(), obj.m_body.get()->getLocalInertia());
+    m_body.reset(new btRigidBody(rb_info));
+    
+    m_bt_wrapper->addRigidBody(m_body.get());
+    m_body->setUserPointer((void*)this);
+}
+
 
 Object::~Object(){
     m_bt_wrapper->deleteBody(m_body.get());
