@@ -115,9 +115,8 @@ void BtWrapper::runSimulation(btScalar time_step, int max_sub_steps){
         if(!m_simulation_paused){
             m_dynamics_world->stepSimulation(time_step , max_sub_steps);
             updateBuffers();
+            m_elapsed_time += loop_start - previous_loop_start;
         }
-
-        m_elapsed_time += loop_start - previous_loop_start;
 
         ticks_since_last_update++;
         accumulated_load_time += load_time.count();
@@ -130,9 +129,9 @@ void BtWrapper::runSimulation(btScalar time_step, int max_sub_steps){
             accumulated_load_time = 0.0;
             accumulated_sleep_time = 0.0;
 
-            std::cout << std::setfill('0') << std::setw(2) << (int(m_elapsed_time.count()) / 60000*60) % 60 
+            /*std::cout << std::setfill('0') << std::setw(2) << (int(m_elapsed_time.count()) / 60000*60) % 60 
                       << ":" << std::setfill('0') << std::setw(2) << (int(m_elapsed_time.count()) / 60000) % 60
-                      << ":" << std::setfill('0') << std::setw(2) << (int(m_elapsed_time.count()) / 1000) % 60 << std::endl;
+                      << ":" << std::setfill('0') << std::setw(2) << (int(m_elapsed_time.count()) / 1000) % 60 << std::endl;*/
         }
         previous_loop_start = loop_start;
     }
