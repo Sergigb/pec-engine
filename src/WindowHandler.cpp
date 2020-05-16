@@ -91,7 +91,7 @@ void WindowHandler::handleMouseButton(int button, int action, int mods){
 
 
 void WindowHandler::handleMousePos(double posx, double posy){
-    m_input->onMouseButtonPos(posx, posy);
+    m_input->onMousePos(posx, posy);
 }
 
 

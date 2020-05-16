@@ -43,7 +43,7 @@ void Input::onMouseButton(int button, int action, int mods){
 }
 
 
-void Input::onMouseButtonPos(double posx, double posy){
+void Input::onMousePos(double posx, double posy){
     m_mouse_moved = true;
     m_mouse_posx = posx;
     m_mouse_posy = posy;

@@ -36,7 +36,7 @@ class Input{
 
         void onKeyboardInput(int key, int scancode, int action, int mods);
         void onMouseButton(int button, int action, int mods);
-        void onMouseButtonPos(double posx, double posy);
+        void onMousePos(double posx, double posy);
 };
 
 
