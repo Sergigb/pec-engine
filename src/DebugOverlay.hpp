@@ -28,4 +28,6 @@ class DebugOverlay{
         void render();
 };
 
+void debug_info_box(Text2D** t, int fb_width, int fb_height, GLuint shader);
+
 #endif
