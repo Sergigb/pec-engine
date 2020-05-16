@@ -35,7 +35,7 @@ class BtWrapper{
         std::thread m_thread_simulation;
         bool m_simulation_paused, m_end_simulation;
         double m_average_load, m_average_sleep;
-        std::chrono::duration<double, std::milli> m_elapsed_time;
+        std::chrono::duration<double, std::micro> m_elapsed_time;
 
         // synchronization
         struct render_buffers* m_buffers;

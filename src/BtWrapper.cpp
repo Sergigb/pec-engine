@@ -94,23 +94,23 @@ void BtWrapper::pauseSimulation(bool stop_simulation){
 
 
 void BtWrapper::runSimulation(btScalar time_step, int max_sub_steps){
-    std::chrono::system_clock::time_point loop_start = std::chrono::system_clock::now();
-    std::chrono::system_clock::time_point loop_start_load = std::chrono::system_clock::now();
-    std::chrono::system_clock::time_point previous_loop_start = std::chrono::system_clock::now();
-    double accumulated_load_time = 0.0, accumulated_sleep_time = 0.0, max_delta = (1./60.)*1000.;
+    std::chrono::steady_clock::time_point loop_start = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point loop_start_load = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point previous_loop_start = std::chrono::steady_clock::now();
+    double accumulated_load_time = 0.0, accumulated_sleep_time = 0.0, max_delta = time_step*1000000.;
     int ticks_since_last_update = 0;
 
     while(!m_end_simulation){
-        loop_start = std::chrono::system_clock::now();
-        std::chrono::duration<double, std::milli> load_time = loop_start - loop_start_load;
+        loop_start = std::chrono::steady_clock::now();
+        std::chrono::duration<double, std::micro> load_time = loop_start - loop_start_load;
 
         if(load_time.count() < max_delta){
-            std::chrono::duration<double, std::milli> delta_ms(max_delta - load_time.count());
+            std::chrono::duration<double, std::micro> delta_ms(max_delta - load_time.count());
             auto delta_ms_duration = std::chrono::duration_cast<std::chrono::milliseconds>(delta_ms);
             std::this_thread::sleep_for(std::chrono::milliseconds(delta_ms_duration.count()));
         }
 
-        loop_start_load = std::chrono::system_clock::now();
+        loop_start_load = std::chrono::steady_clock::now();
 
         if(!m_simulation_paused){
             m_dynamics_world->stepSimulation(time_step , max_sub_steps);
@@ -124,8 +124,8 @@ void BtWrapper::runSimulation(btScalar time_step, int max_sub_steps){
 
         if(ticks_since_last_update == 60){
             ticks_since_last_update = 0;
-            m_average_load = accumulated_load_time / 60.0;
-            m_average_sleep = accumulated_sleep_time / 60.0;
+            m_average_load = accumulated_load_time / 60000.0;
+            m_average_sleep = accumulated_sleep_time / 60000.0;
             accumulated_load_time = 0.0;
             accumulated_sleep_time = 0.0;
 
@@ -161,8 +161,8 @@ void BtWrapper::updateBuffer(std::vector<object_transform>* buffer_){
 
 void BtWrapper::updateBuffers(){
     /*std::chrono::duration<double, std::micro> time;
-    std::chrono::system_clock::time_point start = std::chrono::system_clock::now();
-    std::chrono::system_clock::time_point end;*/
+    std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
+    std::chrono::steady_clock::time_point end;*/
     
 
     if(m_buffers->last_updated == buffer_2 || m_buffers->last_updated == none){
@@ -191,7 +191,7 @@ void BtWrapper::updateBuffers(){
             m_buffers->buffer1_lock.unlock();
         }
     }
-    /*end = std::chrono::system_clock::now();
+    /*end = std::chrono::steady_clock::now();
     time = end - start;
     std::cout << "copy time: " << time.count() << std::endl;*/
 }
