@@ -109,7 +109,7 @@ GLFWwindow* WindowHandler::getWindow() const{
 void WindowHandler::update(){
     glfwPollEvents();
     
-    if(m_input->pressed_keys[GLFW_KEY_ESCAPE]){
+    if(m_input->pressed_keys[GLFW_KEY_ESCAPE] == INPUT_KEY_DOWN){
         glfwSetWindowShouldClose(m_window, 1);
         return;
     }

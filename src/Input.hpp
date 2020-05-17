@@ -4,13 +4,19 @@
 #include <GLFW/glfw3.h>
 #include <iostream>
 #include <cstring>
+#include <vector>
 
 #include "common.hpp"
 
+#define INPUT_MBUTTON_UP        0x00
+#define INPUT_MBUTTON_PRESS     0x01
+#define INPUT_MBUTTON_REPEAT    0x02
+#define INPUT_MBUTTON_RELEASE   0x04
 
-#define INPUT_MBUTTON_PRESS 1
-#define INPUT_MBUTTON_REPEAT 2
-#define INPUT_MBUTTON_RELEASE 3
+#define INPUT_KEY_UP        0x00
+#define INPUT_KEY_DOWN      0x01
+#define INPUT_KEY_REPEAT    0x02
+#define INPUT_KEY_RELEASE   0x04
 
 
 class Input{
@@ -19,9 +25,10 @@ class Input{
         int m_num_pressed_mbuttons;
         double m_mouse_posx, m_mouse_posy;
         bool m_mouse_moved = false;
+        std::vector<int> m_keys_pressed;
     public:
-        bool pressed_keys[GLFW_KEY_LAST + 1];
-        int pressed_mbuttons[GLFW_MOUSE_BUTTON_LAST + 1];
+        char pressed_keys[GLFW_KEY_LAST + 1];
+        char pressed_mbuttons[GLFW_MOUSE_BUTTON_LAST + 1];
 
         Input();
         //Input();
