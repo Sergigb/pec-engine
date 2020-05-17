@@ -41,10 +41,10 @@ Object::Object(const Object& obj){
     m_has_transform = obj.m_has_transform;
 
     btTransform start_transform;
-    obj.m_motion_state.get()->getWorldTransform(start_transform);
+    obj.m_motion_state->getWorldTransform(start_transform);
     m_motion_state.reset(new btDefaultMotionState(start_transform));
 
-    btRigidBody::btRigidBodyConstructionInfo rb_info(1/obj.m_body.get()->getInvMass(), m_motion_state.get(), obj.m_body.get()->getCollisionShape(), obj.m_body.get()->getLocalInertia());
+    btRigidBody::btRigidBodyConstructionInfo rb_info(1/obj.m_body->getInvMass(), m_motion_state.get(), obj.m_body->getCollisionShape(), obj.m_body->getLocalInertia());
     m_body.reset(new btRigidBody(rb_info));
     
     m_bt_wrapper->addRigidBody(m_body.get());
@@ -102,7 +102,7 @@ void Object::setMeshScale(float scale){
 }
 
 
-void setMeshTransform(const math::mat4& transform){
+void Object::setMeshTransform(const math::mat4& transform){
     m_mesh_transform = transform;
 }
 
