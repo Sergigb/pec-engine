@@ -45,6 +45,7 @@ void App::modelsInit(){
     m_cube_model.reset(new Model("../data/cube.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum.get(), math::vec3(0.5, 0.0, 0.5)));
     m_terrain_model.reset(new Model("../data/bigcube.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum.get(), math::vec3(0.75, 0.75, 0.75)));
     m_sphere_model.reset(new Model("../data/sphere.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum.get(), math::vec3(0.75, 0.75, 0.75)));
+    m_cylinder_model.reset(new Model("../data/cylinder.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum.get(), math::vec3(0.25, 0.25, 0.25)));
 }
 
 
@@ -55,6 +56,7 @@ void App::objectsInit(){
     std::unique_ptr<btCollisionShape> cube_shape(new btBoxShape(btVector3(1,1,1)));
     std::unique_ptr<btCollisionShape> sphere_shape(new btSphereShape(btScalar(1)));
     std::unique_ptr<btCollisionShape> cube3m(new btBoxShape(btVector3(3,3,3)));
+    std::unique_ptr<btCollisionShape> cylinder_shape(new btCylinderShape(btVector3(1,1,1)));
 
     quat.setEuler(0, 0, 0);
     Object* ground = new Object(m_terrain_model.get(), m_bt_wrapper.get(), cube_shape_ground.get(), btVector3(0.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(0.0));
@@ -72,10 +74,19 @@ void App::objectsInit(){
     Object* cube3 = new Object(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btVector3(12.5, 30.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(30.0));
     cube3->setColor(math::vec3(0.5, 0.75, 0.0));
 
+    Object* copy_of_cube_1 = new Object(*cube1);
+    copy_of_cube_1->setColor(math::vec3(0.0, 0.5, 0.1));
+
+    quat.setEuler(0, 0, 0);
+    Object* cylinder = new Object(m_cylinder_model.get(), m_bt_wrapper.get(), cylinder_shape.get(), btVector3(15, 30.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(5.0));
+    cylinder->setColor(math::vec3(0.25, 0.25, 0.5));
+
     m_objects.push_back(std::move(std::unique_ptr<Object>(ground)));
     m_objects.push_back(std::move(std::unique_ptr<Object>(cube1)));
     m_objects.push_back(std::move(std::unique_ptr<Object>(cube2)));
     m_objects.push_back(std::move(std::unique_ptr<Object>(cube3)));
+    m_objects.push_back(std::move(std::unique_ptr<Object>(copy_of_cube_1)));
+    m_objects.push_back(std::move(std::unique_ptr<Object>(cylinder)));
 
     // trying constraints
     btVector3 pivot_a(1.0f, 0.0f, 0.0f);
@@ -120,6 +131,7 @@ void App::objectsInit(){
     m_collision_shapes.push_back(std::move(cube_shape));
     m_collision_shapes.push_back(std::move(sphere_shape));
     m_collision_shapes.push_back(std::move(cube3m));
+    m_collision_shapes.push_back(std::move(cylinder_shape));
 }
 
 
@@ -159,13 +171,13 @@ void App::run(){
             m_camera->castRayMousePos(25.f, ray_start_world, ray_end_world);
             ray_end_world_btv3 = btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]);
             rotation.setEuler(0, 0, 0);
-            m_picked_obj->setMotionState(ray_end_world_btv3, rotation);
+            m_picked_obj->setMotionState(ray_end_world_btv3, rotation); // WARNING: MOST LIKELY NOT THREAD SAFE (sometimes throws "pure virtual method called")
 
             if(m_physics_pause)
                 m_bt_wrapper->updateCollisionWorldSingleAABB(m_picked_obj->getRigidBody()); // not thread safe
         }
 
-        if(m_input->pressed_keys[GLFW_KEY_P]){
+        if(m_input->pressed_keys[GLFW_KEY_P] == INPUT_KEY_DOWN){
             m_physics_pause = !m_physics_pause;
             m_bt_wrapper->pauseSimulation(m_physics_pause);
         }

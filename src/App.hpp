@@ -34,6 +34,7 @@ class App{
         std::unique_ptr<Model> m_cube_model;
         std::unique_ptr<Model> m_terrain_model;
         std::unique_ptr<Model> m_sphere_model;
+        std::unique_ptr<Model> m_cylinder_model;
 
         std::vector<std::unique_ptr<btCollisionShape>> m_collision_shapes;
         std::vector<std::unique_ptr<Object>> m_objects;
