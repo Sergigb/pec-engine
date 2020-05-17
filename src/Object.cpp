@@ -12,7 +12,7 @@ Object::Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape,
     m_mesh_color = math::vec3(1.0, 1.0, 1.0);
     m_bt_wrapper = bt_wrapper;
     m_model = model;
-    m_scale = 1.0;
+    m_has_transform = false;
 
     btTransform start_transform;
     start_transform.setIdentity();
@@ -37,8 +37,8 @@ Object::Object(const Object& obj){
     m_model = obj.m_model;
     m_bt_wrapper = obj.m_bt_wrapper;
     m_mesh_color = obj.m_mesh_color;
-    m_scale_transform = obj.m_scale_transform;
-    m_scale = obj.m_scale;
+    m_mesh_transform = obj.m_mesh_transform;
+    m_has_transform = obj.m_has_transform;
 
     btTransform start_transform;
     obj.m_motion_state.get()->getWorldTransform(start_transform);
@@ -60,8 +60,8 @@ Object::~Object(){
 int Object::render(){
     math::mat4 body_transform = getRigidBodyTransformSingle();
  
-    if(m_scale != 1.0){
-        body_transform = body_transform * m_scale_transform;
+    if(m_has_transform){
+        body_transform = body_transform * m_mesh_transform;
     }
 
     m_model->setMeshColor(m_mesh_color);
@@ -70,8 +70,8 @@ int Object::render(){
 
 
 int Object::render(math::mat4 body_transform){
-    if(m_scale != 1.0){
-        body_transform = body_transform * m_scale_transform;
+    if(m_has_transform){
+        body_transform = body_transform * m_mesh_transform;
     }
 
     m_model->setMeshColor(m_mesh_color);
@@ -84,12 +84,26 @@ void Object::setColor(math::vec3 color){
 }
 
 
+void Object::setMeshScale(const math::vec3& scale){
+    m_mesh_transform = math::identity_mat4();
+    m_has_transform = true;
+    m_mesh_transform.m[0] = scale.v[0];
+    m_mesh_transform.m[5] = scale.v[1];
+    m_mesh_transform.m[10] = scale.v[2];
+}
+
+
 void Object::setMeshScale(float scale){
-    m_scale_transform = math::identity_mat4();
-    m_scale = scale;
-    m_scale_transform.m[0] = scale;
-    m_scale_transform.m[5] = scale;
-    m_scale_transform.m[10] = scale;
+    m_mesh_transform = math::identity_mat4();
+    m_has_transform = true;
+    m_mesh_transform.m[0] = scale;
+    m_mesh_transform.m[5] = scale;
+    m_mesh_transform.m[10] = scale;
+}
+
+
+void setMeshTransform(const math::mat4& transform){
+    m_mesh_transform = transform;
 }
 
 
