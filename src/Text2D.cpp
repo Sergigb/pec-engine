@@ -55,9 +55,9 @@ Text2D::~Text2D(){
 
 void Text2D::updateBuffers(){
     uint total_num_characters = 0, acc = 0;
-    std::unique_ptr<GLfloat> vertex_buffer;
-    std::unique_ptr<GLfloat> tex_coords_buffer;
-    std::unique_ptr<GLushort> index_buffer;
+    std::unique_ptr<GLfloat[]> vertex_buffer;
+    std::unique_ptr<GLfloat[]> tex_coords_buffer;
+    std::unique_ptr<GLushort[]> index_buffer;
     for(uint i=0; i < m_strings.size(); i++)
         total_num_characters += m_strings.at(i).strlen;
 

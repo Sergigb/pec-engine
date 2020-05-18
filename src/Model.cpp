@@ -60,10 +60,10 @@ void Model::setMeshColor(const math::vec3& mesh_color){
 
 
 int Model::loadScene(const std::string& pFile){
-    std::unique_ptr<GLfloat> points;
-    std::unique_ptr<GLfloat> normals;
-    std::unique_ptr<GLfloat> texcoords;
-    std::unique_ptr<GLuint> indices;
+    std::unique_ptr<GLfloat[]> points;
+    std::unique_ptr<GLfloat[]> normals;
+    std::unique_ptr<GLfloat[]> texcoords;
+    std::unique_ptr<GLuint[]> indices;
 
     int num_vertices;
     const aiMesh* mesh;

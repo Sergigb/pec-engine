@@ -27,7 +27,7 @@ class FontAtlas{ //rename to font atlas?
 
         uint m_atlas_size;
         int m_font_height;
-        std::unique_ptr<unsigned char> m_atlas;
+        std::unique_ptr<unsigned char[]> m_atlas;
         std::map<int, struct character> m_characters;
         std::vector<struct character> m_characters_vec;
         GLuint m_texture_id;
