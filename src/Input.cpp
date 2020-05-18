@@ -4,9 +4,10 @@
 Input::Input(){
     std::memset(pressed_keys, 0, (GLFW_KEY_LAST + 1));
     std::memset(pressed_mbuttons, 0, (GLFW_MOUSE_BUTTON_LAST + 1));
-    m_num_pressed_keys = 0;
     m_mouse_posx = 0;
     m_mouse_posy = 0;
+    m_mouse_posx_prev = 0;
+    m_mouse_posy_prev = 0;
     m_mouse_moved = false;
 }
 
@@ -22,11 +23,9 @@ void Input::onKeyboardInput(int key, int scancode, int action, int mods){
     if(action == GLFW_PRESS){
         pressed_keys[key] = INPUT_KEY_DOWN;
         m_keys_pressed.push_back(key);
-        m_num_pressed_keys += 1;
     }
     else if(action == GLFW_RELEASE){
         pressed_keys[key] = INPUT_KEY_RELEASE;
-        m_num_pressed_keys -= 1;
     }
 }
 
@@ -48,11 +47,14 @@ void Input::onMousePos(double posx, double posy){
     m_mouse_posx = posx;
     m_mouse_posy = posy;
 }
-#include <bitset>
+
 
 void Input::update(){
     // This function is used to update the status of the keyboard/mouse before calling the poll
     // events function. It deals mostly with the key/mbutton down/repeat/release
+
+    m_mouse_posx_prev = m_mouse_posx;
+    m_mouse_posy_prev = m_mouse_posy;
 
     // update mbutton repeat/release
     for(int i=0; i < GLFW_MOUSE_BUTTON_LAST + 1; i++){
@@ -80,7 +82,7 @@ void Input::update(){
 
 
 bool Input::keyboardPressed() const{
-    return (m_num_pressed_keys > 0);
+    return (m_keys_pressed.size() > 0);
 }
 
 
@@ -100,5 +102,11 @@ bool Input::mouseMoved() const{
 void Input::getMousePos(double& posx, double& posy) const{
     posx = m_mouse_posx;
     posy = m_mouse_posy;
+}
+
+
+void Input::getMousePosPrev(double& posx, double& posy) const{
+    posx = m_mouse_posx_prev;
+    posy = m_mouse_posy_prev;
 }
 

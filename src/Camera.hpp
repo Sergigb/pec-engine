@@ -25,7 +25,6 @@ class Camera{
         float m_cam_speed, m_cam_heading_speed, m_near, m_far, m_fovy, m_ar;
         double m_previous_frame_time;
         bool m_has_moved, m_proj_change, m_fb_callback;
-        double m_mouse_posx_last, m_mouse_posy_last;
         int m_cam_input_mode;
 
         const WindowHandler* m_window_handler;
