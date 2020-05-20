@@ -45,6 +45,12 @@ math::vec3::vec3( const vec4 &vv ) {
     v[2] = vv.v[2];
 }
 
+math::vec3::vec3( const vec3 &rhs ){
+    v[0] = rhs.v[0];
+    v[1] = rhs.v[1];
+    v[2] = rhs.v[2];
+}
+
 math::vec4::vec4() {}
 
 math::vec4::vec4( float x, float y, float z, float w ) {
@@ -66,6 +72,12 @@ math::vec4::vec4( const vec3 &vv, float w ) {
     v[1] = vv.v[1];
     v[2] = vv.v[2];
     v[3] = w;
+}
+
+math::mat4::mat4( const mat4 &rhs ) {
+    for ( int i = 0; i < 16; i++ ) {
+        m[i] = rhs.m[i];
+    }
 }
 
 math::mat3::mat3() {}

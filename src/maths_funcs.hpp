@@ -36,6 +36,8 @@ namespace math{
         vec3( const vec2 &vv, float z );
         // create from truncated vec4
         vec3( const vec4 &vv );
+        // fix for Wdeprecated-copy warning in g++9/clang
+        vec3( const vec3 &rhs );
         // add vector to vector
         vec3 operator+( const vec3 &rhs ) const;
         // add scalar to vector
@@ -97,6 +99,7 @@ namespace math{
         // note! this is entering components in ROW-major order
         mat4( float a, float b, float c, float d, float e, float f, float g, float h,
                     float i, float j, float k, float l, float mm, float n, float o, float p );
+        mat4( const mat4 &rhs );
         vec4 operator*( const vec4 &rhs ) const;
         mat4 operator*( const mat4 &rhs ) const;
         mat4 &operator=( const mat4 &rhs );
