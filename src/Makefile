@@ -8,32 +8,20 @@ OBJPATH = ../bin
 EXECPATH = ../bin
 PARTSPAHT = parts
 
-MAINSRCS = main.cpp Ship.cpp BasePart.cpp CommandModule.cpp ServiceModule.cpp LaunchEscapeAssembly.cpp ResourceContainer.cpp Engine.cpp
+MAINSRCS = main.cpp log.cpp utils.cpp gl_utils.cpp maths_funcs.cpp Camera.cpp Input.cpp WindowHandler.cpp Text2D.cpp FontAtlas.cpp Frustum.cpp DebugOverlay.cpp Model.cpp BtWrapper.cpp Object.cpp RenderContext.cpp App.cpp BaseApp.cpp
 MAINOBJS = $(foreach source, $(MAINSRCS), $(OBJPATH)/$(source:.cpp=.o))
 
-OPENGLSRCS = opengl.cpp log.cpp utils.cpp gl_utils.cpp maths_funcs.cpp Camera.cpp Input.cpp WindowHandler.cpp Text2D.cpp FontAtlas.cpp Frustum.cpp DebugOverlay.cpp Model.cpp BtWrapper.cpp Object.cpp RenderContext.cpp App.cpp BaseApp.cpp
-OPENGLOBJS = $(foreach source, $(OPENGLSRCS), $(OBJPATH)/$(source:.cpp=.o))
-
-all: opengl main
+all: main
 
 main: $(MAINOBJS)
-	$(CXX) $(CXXFLAGS) $(MAINOBJS) -o $(EXECPATH)/main
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(MAINOBJS) -o $(EXECPATH)/main $(LDLIBS)
 
 $(OBJPATH)/main.o: main.cpp
 	$(CXX) $(CXXFLAGS) -c main.cpp -o $(OBJPATH)/main.o
-
-$(OBJPATH)/%.o: $(PARTSPAHT)/%.cpp $(PARTSPAHT)/%.hpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
-opengl: $(OPENGLOBJS)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(OPENGLOBJS) -o $(EXECPATH)/opengl $(LDLIBS)
-
-$(OBJPATH)/opengl.o: opengl.cpp
-	$(CXX) $(CXXFLAGS) -c opengl.cpp -o $(OBJPATH)/opengl.o
 
 $(OBJPATH)/%.o: %.cpp %.hpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 
 clean: 
-	rm $(OBJPATH)/*.o $(EXECPATH)/main $(EXECPATH)/opengl
+	rm $(OBJPATH)/*.o $(EXECPATH)/main

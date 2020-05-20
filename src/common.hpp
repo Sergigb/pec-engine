@@ -2,11 +2,10 @@
 #define COMMON_HPP
 #include <map>
 
-#include "BasePart.hpp"
 #include "maths_funcs.hpp"
 
 typedef unsigned int EntityId;
-typedef std::map<const std::string, BasePart *> partsMap;
+//typedef std::map<const std::string, BasePart *> partsMap;
 
 #define UNUSED(expr) do { (void)(expr); } while (0)  //to avoid unused parameter warnings in callbacks
 
