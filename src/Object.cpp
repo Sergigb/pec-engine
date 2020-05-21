@@ -119,11 +119,6 @@ void Object::applyTorque(const btVector3& torque){
 }
 
 
-btRigidBody* Object::getRigidBody(){
-    return m_body.get();
-}
-
-
 void Object::setMotionState(const btVector3& origin, const btQuaternion& initial_rotation){
     btTransform transform;
     transform.setIdentity();
