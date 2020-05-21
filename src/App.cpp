@@ -83,7 +83,7 @@ void App::objectsInit(){
     btVector3 axis_a(0.0f, 1.0f, 0.0f );
     btVector3 axis_b(0.0f, 1.0f, 0.0f );
 
-    btHingeConstraint* hingeConstraint = new btHingeConstraint(*cube2->getRigidBody(), *cube3->getRigidBody(), pivot_a, pivot_b, axis_a, axis_b, false);
+    btHingeConstraint* hingeConstraint = new btHingeConstraint(*cube2->m_body, *cube3->m_body, pivot_a, pivot_b, axis_a, axis_b, false);
 
     hingeConstraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 0);
     hingeConstraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 1);
@@ -153,16 +153,18 @@ void App::run(){
 
         if(m_picked_obj){
             math::vec3 ray_start_world, ray_end_world;
-            btQuaternion rotation;
             btVector3 ray_end_world_btv3;
+            btQuaternion rotation;
+            btTransform transform;
             
             m_camera->castRayMousePos(25.f, ray_start_world, ray_end_world);
             ray_end_world_btv3 = btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]);
-            rotation.setEuler(0, 0, 0);
+            m_picked_obj->m_body->getMotionState()->getWorldTransform(transform);
+            rotation = transform.getRotation();
             m_picked_obj->setMotionState(ray_end_world_btv3, rotation); // WARNING: MOST LIKELY NOT THREAD SAFE (sometimes throws "pure virtual method called")
 
             if(m_physics_pause)
-                m_bt_wrapper->updateCollisionWorldSingleAABB(m_picked_obj->getRigidBody()); // not thread safe
+                m_bt_wrapper->updateCollisionWorldSingleAABB(m_picked_obj->m_body.get()); // not thread safe
         }
 
         if(m_input->pressed_keys[GLFW_KEY_P] == INPUT_KEY_DOWN){
