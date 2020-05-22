@@ -11,6 +11,11 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
     initGl();
     log_gl_params();
 
+    m_att_point_scale = math::identity_mat4();
+    m_att_point_scale.m[0] = 0.25;
+    m_att_point_scale.m[5] = 0.25;
+    m_att_point_scale.m[10] = 0.25;
+
     // shader setup
 
     m_pb_notex_shader = create_programme_from_files("../shaders/phong_blinn_color_vs.glsl",
@@ -133,6 +138,19 @@ void RenderContext::render(bool render_asynch){
         for(uint i=0; i<m_objects->size(); i++){
             num_rendered += m_objects->at(i)->render();
         }
+        for(uint i=0; i<m_parts->size(); i++){
+            const std::vector<struct attachment_point>* att_points = m_parts->at(i)->getAttachmentPoints();
+
+            if(att_points->size()){
+                math::mat4 body_transform = m_parts->at(i)->getRigidBodyTransformSingle();
+                for(uint j=0; j<att_points->size(); j++){
+                    btVector3 point = att_points->at(j).point;
+                    math::mat4 att_transform = body_transform * math::translate(math::identity_mat4(), math::vec3(point.getX(), point.getY(), point.getZ()));
+                    num_rendered += m_att_point_model->render(att_transform * m_att_point_scale);
+                }
+            }
+            num_rendered += m_parts->at(i)->render();
+        }
     }
     else{
         if(m_buffers->last_updated == buffer_1){
@@ -180,7 +198,16 @@ void RenderContext::setObjectVector(std::vector<std::unique_ptr<Object>>* object
 }
 
 
+void RenderContext::setPartVector(std::vector<std::unique_ptr<BasePart>>* parts){
+    m_parts = parts;
+}
+
+
 void RenderContext::setDebugOverlayPhysicsTimes(double physics_load_time, double physics_sleep_time){
     m_debug_overlay->setPhysicsTimes(physics_load_time, physics_sleep_time);
 }
 
+
+void RenderContext::setAttPointModel(std::unique_ptr<Model>* att_point_model){
+    m_att_point_model = std::move(*att_point_model);
+}
