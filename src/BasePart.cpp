@@ -16,9 +16,14 @@ BasePart::~BasePart(){
 }
 
 
-void BasePart::addAttachmentPoint(const btVector3 point, const btVector3 orientation){
+void BasePart::addAttachmentPoint(const btVector3& point, const btVector3& orientation){
     attachment_point att = {point, orientation};
     m_attachment_points.push_back(att);
+}
+
+
+void BasePart::setParentAttachmentPoint(const btVector3& point, const btVector3& orientation){
+    m_parent_att_point = {point, orientation};
 }
 
 
@@ -39,5 +44,10 @@ void BasePart::removeParentConstraint(){
 
 btTypedConstraint* BasePart::getParentConstraint() const{
     return m_parent_constraint.get();
+}
+
+
+const struct attachment_point* BasePart::getParentAttachmentPoint(){
+    return &m_parent_att_point;
 }
 

@@ -60,6 +60,7 @@ void App::objectsInit(){
         // testing attachment points
         BasePart* cube = new BasePart(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btVector3(2.5, 30.0+i*2.5, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(10.0));
         cube->setColor(math::vec3(0.0, 0.0, 1.0));
+        cube->setParentAttachmentPoint(btVector3(0.0, 1.0, 0.0), btVector3(0.0, 0.0, 0.0));
         cube->addAttachmentPoint(btVector3(1.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0));
         cube->addAttachmentPoint(btVector3(0.0, -1.0, 0.0), btVector3(0.0, 0.0, 0.0));
         cube->addAttachmentPoint(btVector3(1.0, 0.0, 1.0), btVector3(0.0, 0.0, 0.0));

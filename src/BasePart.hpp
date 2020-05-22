@@ -10,8 +10,15 @@
 #include "Object.hpp"
 
 
+struct attachment_point{
+    btVector3 point; // attachment point translation wrt the center of the object
+    btVector3 orientation; // orientation of the attachment point
+};
+
+
 class BasePart : public Object{
     private:
+        struct attachment_point m_parent_att_point;
         std::vector<struct attachment_point> m_attachment_points;  // the attachment points of the part
         std::unique_ptr<btTypedConstraint> m_parent_constraint; // the constraint between this part and the parent
     public:
@@ -19,18 +26,14 @@ class BasePart : public Object{
         BasePart();
         ~BasePart();
 
-        void addAttachmentPoint(const btVector3 point, const btVector3 orientation);
+        void addAttachmentPoint(const btVector3& point, const btVector3& orientation);
+        void setParentAttachmentPoint(const btVector3& point, const btVector3& orientation);
         void setParentConstraint(btTypedConstraint* constraint);
         void removeParentConstraint();
 
         const std::vector<struct attachment_point>* getAttachmentPoints() const;
         btTypedConstraint* getParentConstraint() const;
-};
-
-
-struct attachment_point{
-    btVector3 point; // attachment point translation wrt the center of the object
-    btVector3 orientation; // orientation of the attachment point
+        const struct attachment_point* getParentAttachmentPoint();
 };
 
 

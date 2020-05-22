@@ -142,13 +142,23 @@ void RenderContext::render(bool render_asynch){
             const std::vector<struct attachment_point>* att_points = m_parts->at(i)->getAttachmentPoints();
 
             if(att_points->size()){
-                math::mat4 body_transform = m_parts->at(i)->getRigidBodyTransformSingle();
+                math::mat4 body_transform, att_transform;
+                btVector3 point;
+
+                body_transform = m_parts->at(i)->getRigidBodyTransformSingle();
+                point = m_parts->at(i)->getParentAttachmentPoint()->point;
+                att_transform = body_transform * math::translate(math::identity_mat4(), math::vec3(point.getX(), point.getY(), point.getZ()));
+                m_att_point_model->setMeshColor(math::vec3(0.0, 1.0, 0.0));
+                num_rendered += m_att_point_model->render(att_transform * m_att_point_scale);
+
                 for(uint j=0; j<att_points->size(); j++){
-                    btVector3 point = att_points->at(j).point;
-                    math::mat4 att_transform = body_transform * math::translate(math::identity_mat4(), math::vec3(point.getX(), point.getY(), point.getZ()));
+                    point = att_points->at(j).point;
+                    att_transform = body_transform * math::translate(math::identity_mat4(), math::vec3(point.getX(), point.getY(), point.getZ()));
+                    m_att_point_model->setMeshColor(math::vec3(1.0, 0.0, 0.0));
                     num_rendered += m_att_point_model->render(att_transform * m_att_point_scale);
                 }
             }
+
             num_rendered += m_parts->at(i)->render();
         }
     }
