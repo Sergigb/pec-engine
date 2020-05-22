@@ -3,13 +3,11 @@
 
 BaseApp::BaseApp(){
     init(640, 480);
-    m_render_context->setObjectVector(&m_objects);
 }
 
 
 BaseApp::BaseApp(int gl_width, int gl_height){
     init(gl_width, gl_height);
-    m_render_context->setObjectVector(&m_objects);
 }
 
 
@@ -26,6 +24,12 @@ void BaseApp::init(int gl_width, int gl_height){
     m_frustum.reset(new Frustum());
     m_render_context.reset(new RenderContext(m_camera.get(), m_window_handler.get(), &m_buffers));
     m_bt_wrapper.reset(new BtWrapper(btVector3(0, -9.81, 0), &m_buffers));
+
+    m_render_context->setObjectVector(&m_objects);
+    m_render_context->setPartVector(&m_parts);
+
+    std::unique_ptr<Model> att_model(new Model("../data/sphere.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum.get(), math::vec3(1.0, 0.0, 0.0)));
+    m_render_context->setAttPointModel(&att_model);
 
     m_buffers.last_updated = none;
 }
