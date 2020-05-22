@@ -48,71 +48,22 @@ void App::objectsInit(){
 
     quat.setEuler(0, 0, 0);
     Object* ground = new Object(m_terrain_model.get(), m_bt_wrapper.get(), cube_shape_ground.get(), btVector3(0.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(0.0));
-
-    quat.setEuler(20, 50, 0);
-    Object* cube1 = new Object(m_cube_model.get(), m_bt_wrapper.get(), cube3m.get(), btVector3(0.0, 40.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(1.0));
-    cube1->setMeshScale(3.0);
-    cube1->setColor(math::vec3(1.0, 0.0, 0.0));
-
-    quat.setEuler(0, 0, 0);
-    Object* cube2 = new Object(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btVector3(10.5, 30.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(30.0));
-    cube2->setColor(math::vec3(0.5, 0.75, 0.0));
-
-    quat.setEuler(0, 0, 0);
-    Object* cube3 = new Object(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btVector3(12.5, 30.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(30.0));
-    cube3->setColor(math::vec3(0.5, 0.75, 0.0));
-
-    Object* copy_of_cube_1 = new Object(*cube1);
-    copy_of_cube_1->setColor(math::vec3(0.0, 0.5, 0.1));
-
-    quat.setEuler(0, 0, 0);
-    Object* cylinder = new Object(m_cylinder_model.get(), m_bt_wrapper.get(), cylinder_shape.get(), btVector3(15, 30.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(5.0));
-    cylinder->setColor(math::vec3(0.25, 0.25, 0.5));
-
     m_objects.push_back(std::move(std::unique_ptr<Object>(ground)));
-    m_objects.push_back(std::move(std::unique_ptr<Object>(cube1)));
-    m_objects.push_back(std::move(std::unique_ptr<Object>(cube2)));
-    m_objects.push_back(std::move(std::unique_ptr<Object>(cube3)));
-    m_objects.push_back(std::move(std::unique_ptr<Object>(copy_of_cube_1)));
-    m_objects.push_back(std::move(std::unique_ptr<Object>(cylinder)));
-
-    // trying constraints
-    btVector3 pivot_a(1.0f, 0.0f, 0.0f);
-    btVector3 pivot_b(-1.0f, 0.0f, -0.0f);
-
-    btVector3 axis_a(0.0f, 1.0f, 0.0f );
-    btVector3 axis_b(0.0f, 1.0f, 0.0f );
-
-    btHingeConstraint* hingeConstraint = new btHingeConstraint(*cube2->m_body, *cube3->m_body, pivot_a, pivot_b, axis_a, axis_b, false);
-
-    hingeConstraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 0);
-    hingeConstraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 1);
-    hingeConstraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 2);
-    hingeConstraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 3);
-    hingeConstraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 4);
-    hingeConstraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 5);
-
-    hingeConstraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 0);
-    hingeConstraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 1);
-    hingeConstraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 2);
-    hingeConstraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 3);
-    hingeConstraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 4);
-    hingeConstraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 5);
-
-    hingeConstraint->setLimit(-0, 0);
-
-    m_bt_wrapper->addConstraint(hingeConstraint, true);
 
     for(int i=0; i<10; i++){
-        Object* cube = new Object(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btVector3(0.0, 55.0 + (i+1)*5, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(10.0));
-        cube->setColor(math::vec3(1.0, 0.0, 0.0));
+        Object* cube = new Object(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btVector3(0.0, 30.0+i*2.5, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(10.0));
+        cube->setColor(math::vec3(0.0, 1.0, 0.0));
         m_objects.push_back(std::move(std::unique_ptr<Object>(cube)));
     }
 
     for(int i=0; i<10; i++){
-        Object* sphere = new Object(m_sphere_model.get(), m_bt_wrapper.get(), sphere_shape.get(), btVector3(5.0, 55.0 + (i+1)*5, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(10.0));
-        sphere->setColor(math::vec3(0.0, 1.0, 0.0));
-        m_objects.push_back(std::move(std::unique_ptr<Object>(sphere)));
+        // testing attachment points
+        BasePart* cube = new BasePart(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btVector3(2.5, 30.0+i*2.5, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(10.0));
+        cube->setColor(math::vec3(0.0, 0.0, 1.0));
+        cube->addAttachmentPoint(btVector3(1.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0));
+        cube->addAttachmentPoint(btVector3(0.0, -1.0, 0.0), btVector3(0.0, 0.0, 0.0));
+        cube->addAttachmentPoint(btVector3(1.0, 0.0, 1.0), btVector3(0.0, 0.0, 0.0));
+        m_parts.push_back(std::move(std::unique_ptr<BasePart>(cube)));
     }
 
     m_collision_shapes.push_back(std::move(cube_shape_ground));
