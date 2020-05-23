@@ -133,6 +133,9 @@ namespace math{
     float get_squared_dist( vec3 from, vec3 to );
     float direction_to_heading( vec3 d );
     vec3 heading_to_direction( float degrees );
+    float distance(const vec2 &a, const vec2 &b);
+    float distance(const vec3 &a, const vec3 &b);
+    float distance(const vec4 &a, const vec4 &b);
     // matrix functions
     mat3 zero_mat3();
     mat3 identity_mat3();

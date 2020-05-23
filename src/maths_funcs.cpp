@@ -356,6 +356,33 @@ math::vec3 math::heading_to_direction( float degrees ) {
     return math::vec3( -sinf( rad ), 0.0f, -cosf( rad ) );
 }
 
+
+float math::distance( const vec2 &a, const vec2 &b ) {
+    float x_diff = a.v[0] - b.v[0];
+    float y_diff = a.v[1] - b.v[1];
+
+    return sqrt( x_diff * x_diff + y_diff * y_diff );
+}
+
+
+float math::distance( const vec3 &a, const vec3 &b ) {
+    float x_diff = a.v[0] - b.v[0];
+    float y_diff = a.v[1] - b.v[1];
+    float z_diff = a.v[2] - b.v[2];
+
+    return sqrt( x_diff * x_diff + y_diff * y_diff + z_diff * z_diff );
+}
+
+
+float math::distance( const vec4 &a, const vec4 &b ) {
+    float x_diff = a.v[0] - b.v[0];
+    float y_diff = a.v[1] - b.v[1];
+    float z_diff = a.v[2] - b.v[2];
+    float w_diff = a.v[3] - b.v[3];
+
+    return sqrt( x_diff * x_diff + y_diff * y_diff + z_diff * z_diff + w_diff * w_diff );
+}
+
 /*-----------------------------MATRIX FUNCTIONS-------------------------------*/
 math::mat3 math::zero_mat3() {
     return math::mat3( 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f );
