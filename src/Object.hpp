@@ -28,7 +28,7 @@ class Object{
         Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, const btVector3& origin, const btVector3& local_inertia, const btQuaternion& initial_rotation, btScalar mass);
         Object();
         Object(const Object& obj);
-        ~Object();
+        virtual ~Object();
 
         math::mat4 getRigidBodyTransformSingle() const;
         void getRigidBodyTransformDouble(double* mat4) const;
