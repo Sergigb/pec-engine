@@ -58,7 +58,7 @@ void App::objectsInit(){
 
     for(int i=0; i<10; i++){
         // testing attachment points
-        BasePart* cube = new BasePart(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btVector3(2.5, 30.0+i*2.5, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(10.0));
+        BasePart* cube = new BasePart(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btVector3(2.5, 30.0+i*5., 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(10.0));
         cube->setColor(math::vec3(0.0, 0.0, 1.0));
         cube->setParentAttachmentPoint(btVector3(0.0, 1.0, 0.0), btVector3(0.0, 0.0, 0.0));
         cube->addAttachmentPoint(btVector3(1.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0));
@@ -108,12 +108,68 @@ void App::run(){
             btVector3 ray_end_world_btv3;
             btQuaternion rotation;
             btTransform transform;
+            BasePart* part;
             
             m_camera->castRayMousePos(25.f, ray_start_world, ray_end_world);
             ray_end_world_btv3 = btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]);
-            m_picked_obj->m_body->getMotionState()->getWorldTransform(transform);
-            rotation = transform.getRotation();
-            m_picked_obj->setMotionState(ray_end_world_btv3, rotation); // WARNING: MOST LIKELY NOT THREAD SAFE (sometimes throws "pure virtual method called")
+
+            // some spaghetti code testing the attachments
+            // disorganized as fuck
+            part = dynamic_cast<BasePart*>(m_picked_obj);
+            if(part){
+                const math::mat4 proj_mat = m_camera->getProjMatrix();
+                const math::mat4 view_mat = m_camera->getViewMatrix();
+
+                double mousey, mousex;
+                int w, h;
+                m_input->getMousePos(mousex, mousey);
+                m_window_handler->getFramebufferSize(w, h);
+                mousey = ((mousey / h) * 2 - 1) * -1;
+                mousex = (mousex / w) * 2 - 1;
+
+                float closest_dist = 99999999999.9;
+                math::vec4 closest_att_point_loc;
+                //const BasePart* closest;
+
+                for(uint i=0; i<m_parts.size(); i++){
+                    if(part == m_parts.at(i).get()){
+                        continue;
+                    }
+
+                    const std::vector<struct attachment_point>* att_points = m_parts.at(i)->getAttachmentPoints();
+
+                    for(uint j=0; j<att_points->size(); j++){
+                        const btVector3 att_point = att_points->at(j).point;
+                        math::mat4 att_transform = math::translate(math::identity_mat4(), math::vec3(att_point.getX(), att_point.getY(), att_point.getZ()));
+                        att_transform = m_parts.at(i)->getRigidBodyTransformSingle() * att_transform;
+                        math::vec4 att_point_loc_world = math::vec4(att_transform.m[12], att_transform.m[13], att_transform.m[14], 1.0);
+                        math::vec4 att_point_loc_screen;
+
+                        att_point_loc_screen = proj_mat * view_mat * att_point_loc_world;
+                        att_point_loc_screen = att_point_loc_screen / att_point_loc_screen.v[3];
+
+                        float distance = math::distance(math::vec2(mousex, mousey),
+                                                        math::vec2(att_point_loc_screen.v[0], att_point_loc_screen.v[1]));
+                        
+                        if(distance < closest_dist){
+                            closest_dist = distance;
+                            closest_att_point_loc = att_point_loc_world;
+                            //closest = m_parts.at(i).get();
+                        }
+                    }
+                }
+
+                btTransform transform(btQuaternion::getIdentity(), -part->getParentAttachmentPoint()->point);
+                btTransform transform_att_parent(btQuaternion::getIdentity(), btVector3(closest_att_point_loc.v[0], closest_att_point_loc.v[1], closest_att_point_loc.v[2]));
+                transform = transform * transform_att_parent;
+
+                m_picked_obj->setMotionState(transform.getOrigin(), transform.getRotation());
+            }
+            else{
+                m_picked_obj->m_body->getMotionState()->getWorldTransform(transform);
+                rotation = transform.getRotation();
+                m_picked_obj->setMotionState(ray_end_world_btv3, rotation); // WARNING: MOST LIKELY NOT THREAD SAFE (sometimes throws "pure virtual method called")
+            }
 
             if(m_physics_pause)
                 m_bt_wrapper->updateCollisionWorldSingleAABB(m_picked_obj->m_body.get()); // not thread safe
