@@ -46,7 +46,8 @@ class BtWrapper{
 
         void addRigidBody(btRigidBody* body);
         void addConstraint(btTypedConstraint *constraint, bool disable_collision_between_bodies);
-        void deleteBody(btRigidBody* body);
+        void removeConstraint(btTypedConstraint *constraint);
+        void removeBody(btRigidBody* body);
         Object* testRay(const math::vec3& ray_start_world, const math::vec3& ray_end_world) const;
         void updateCollisionWorldSingleAABB(btRigidBody* body);
         double getAverageLoadTime() const;

@@ -41,7 +41,7 @@ void BtWrapper::addRigidBody(btRigidBody* body){
 }
 
 
-void BtWrapper::deleteBody(btRigidBody* body){
+void BtWrapper::removeBody(btRigidBody* body){
     // this leaks vvvv, not sure why
     m_dynamics_world->removeRigidBody(body);  // the instance of the object still has to be deleted
 }
@@ -67,6 +67,11 @@ Object* BtWrapper::testRay(const math::vec3& ray_start_world, const math::vec3& 
 
 void BtWrapper::addConstraint(btTypedConstraint *constraint, bool disable_collision_between_bodies){
     m_dynamics_world->addConstraint(constraint, disable_collision_between_bodies);
+}
+
+
+void BtWrapper::removeConstraint(btTypedConstraint *constraint){
+    m_dynamics_world->removeConstraint(constraint);
 }
 
 
@@ -101,6 +106,7 @@ void BtWrapper::runSimulation(btScalar time_step, int max_sub_steps){
     int ticks_since_last_update = 0;
 
     while(!m_end_simulation){
+        // possible improvement: we use the load from the previous thread to sleep, we should first load, then sleep
         loop_start = std::chrono::steady_clock::now();
         std::chrono::duration<double, std::micro> load_time = loop_start - loop_start_load;
 

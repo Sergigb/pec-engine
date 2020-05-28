@@ -53,7 +53,7 @@ Object::Object(const Object& obj){
 
 
 Object::~Object(){
-    m_bt_wrapper->deleteBody(m_body.get());
+    m_bt_wrapper->removeBody(m_body.get());
 }
 
 
