@@ -16,6 +16,8 @@
 #include "FontAtlas.hpp"
 #include "utils.hpp"
 
+class RenderContext;
+
 #define STRING_MAX_LEN 256
 #define STRING_DRAW_ABSOLUTE_BL 1
 #define STRING_DRAW_ABSOLUTE_TL 2
@@ -43,12 +45,13 @@ class Text2D{
         int m_fb_width, m_fb_height;
 
         const FontAtlas* m_font_atlas;
+        const RenderContext* m_render_context;
 
         void updateBuffers();
         void initgl(const color& c);
     public:
         Text2D();
-        Text2D(int fb_width, int fb_height, const color& , const FontAtlas* font, GLuint shader);
+        Text2D(int fb_width, int fb_height, const color& , const FontAtlas* font, GLuint shader, const RenderContext* render_context);
         ~Text2D();
 
         void addString(const wchar_t* string, uint x, uint y, float scale, int placement);

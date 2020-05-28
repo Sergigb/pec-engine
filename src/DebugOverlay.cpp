@@ -1,7 +1,8 @@
 #include "DebugOverlay.hpp"
+#include "RenderContext.hpp"
 
 
-DebugOverlay::DebugOverlay(int fb_width, int fb_height, GLuint shader){
+DebugOverlay::DebugOverlay(int fb_width, int fb_height, GLuint shader, const RenderContext* render_context){
     m_font_atlas.reset(new FontAtlas(256));
     m_font_atlas->loadFont("../data/fonts/Liberastika-Regular.ttf", 15);
     m_font_atlas->loadCharacterRange(32, 255); // ascii
@@ -9,9 +10,9 @@ DebugOverlay::DebugOverlay(int fb_width, int fb_height, GLuint shader){
     m_font_atlas->loadCharacter(0, true); // null character
     m_font_atlas->createAtlas(true);
 
-    m_text_dynamic_text.reset(new Text2D(fb_width, fb_height, color{1.0, 1.0, 0.0}, m_font_atlas.get(), shader));
+    m_text_dynamic_text.reset(new Text2D(fb_width, fb_height, color{1.0, 1.0, 0.0}, m_font_atlas.get(), shader, render_context));
     Text2D* text_debug;
-    debug_info_box(&text_debug, fb_width, fb_height, shader, m_font_atlas.get());
+    debug_info_box(&text_debug, fb_width, fb_height, shader, m_font_atlas.get(), render_context);
     m_text_debug.reset(text_debug);
 
     m_rendered_obj = 0;
@@ -73,8 +74,8 @@ void DebugOverlay::render(){
 }
 
 
-void debug_info_box(Text2D** t, int fb_width, int fb_height, GLuint shader, const FontAtlas* font_atlas){
-    *t = new Text2D(fb_width, fb_height, color{1.0, 1.0, 0.0}, font_atlas, shader);
+void debug_info_box(Text2D** t, int fb_width, int fb_height, GLuint shader, const FontAtlas* font_atlas, const RenderContext* render_context){
+    *t = new Text2D(fb_width, fb_height, color{1.0, 1.0, 0.0}, font_atlas, shader, render_context);
     
     const GLubyte* vendor = glGetString(GL_VENDOR); // Returns the vendor
     const GLubyte* renderer = glGetString(GL_RENDERER); // Returns a hint to the model

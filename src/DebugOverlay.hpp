@@ -12,6 +12,9 @@
 #include "gl_utils.hpp"
 #include "FontAtlas.hpp"
 
+
+class RenderContext;
+
 class DebugOverlay{
     private:
         std::unique_ptr<Text2D> m_text_debug;
@@ -20,7 +23,7 @@ class DebugOverlay{
         int m_rendered_obj;        
         double m_physics_load_time, m_physics_sleep_time;
     public:
-        DebugOverlay(int fb_width, int fb_height, GLuint shader);
+        DebugOverlay(int fb_width, int fb_height, GLuint shader, const RenderContext* render_context);
         ~DebugOverlay();
 
         void setRenderedObjects(int n);
@@ -30,6 +33,6 @@ class DebugOverlay{
         void render();
 };
 
-void debug_info_box(Text2D** t, int fb_width, int fb_height, GLuint shader, const FontAtlas* font_atlas);
+void debug_info_box(Text2D** t, int fb_width, int fb_height, GLuint shader, const FontAtlas* font_atlas, const RenderContext* render_context);
 
 #endif

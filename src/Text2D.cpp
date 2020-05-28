@@ -1,12 +1,12 @@
- #include "Text2D.hpp"
-
+#include "Text2D.hpp"
+#include "RenderContext.hpp"
 
 
 Text2D::Text2D(){
 }
 
 
-Text2D::Text2D(int fb_width, int fb_height, const color& c, const FontAtlas* font, GLuint shader){
+Text2D::Text2D(int fb_width, int fb_height, const color& c, const FontAtlas* font, GLuint shader, const RenderContext* render_context){
     m_font_atlas = font;
     m_num_vertices = 0;
     m_num_indices = 0;
@@ -14,6 +14,7 @@ Text2D::Text2D(int fb_width, int fb_height, const color& c, const FontAtlas* fon
     m_fb_height = fb_height;
     m_update_buffer = true;
     m_shader_programme = shader;
+    m_render_context = render_context;
 
     initgl(c);
 }
@@ -155,8 +156,9 @@ void Text2D::render(){
         updateBuffers();
         m_update_buffer = false;
     }
-    glUseProgram(m_shader_programme);
-    glBindVertexArray(m_vao);
+    m_render_context->useProgram(m_shader_programme);
+    m_render_context->bindVao(m_vao);
+
     m_font_atlas->bindTexture();
     glDrawElements(GL_TRIANGLES, m_num_indices, GL_UNSIGNED_SHORT, NULL);
 }

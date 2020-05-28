@@ -1,4 +1,5 @@
 #include "Model.hpp"
+#include "RenderContext.hpp"
 
 
 Model::Model(){
@@ -7,9 +8,10 @@ Model::Model(){
 }
 
 
-Model::Model(const char* path_to_mesh, const char* path_to_texture, GLuint shader_programme, const Frustum* frustum, const math::vec3& mesh_color){
+Model::Model(const char* path_to_mesh, const char* path_to_texture, GLuint shader_programme, const Frustum* frustum, const RenderContext* render_context, const math::vec3& mesh_color){
     m_frustum = frustum;
     m_shader_programme = shader_programme;
+    m_render_context = render_context;
 
     m_model_mat_location = glGetUniformLocation(m_shader_programme, "model");
     m_color_location = glGetUniformLocation(m_shader_programme, "object_color");
@@ -164,14 +166,8 @@ int Model::loadScene(const std::string& pFile){
 
 int Model::render(const math::mat4& transform) const{
     if(m_frustum->checkBox(m_aabb.vert, transform)){
-        GLint bound_programme, bound_vao; // they will have to be casted
-        glGetIntegerv(GL_CURRENT_PROGRAM, &bound_programme);
-        glGetIntegerv(GL_VERTEX_ARRAY_BINDING, &bound_vao);
-
-        if((GLuint)bound_programme != m_shader_programme)
-            glUseProgram(m_shader_programme);
-        if((GLuint)bound_vao != m_vao)
-            glBindVertexArray(m_vao);
+        m_render_context->useProgram(m_shader_programme);
+        m_render_context->bindVao(m_vao);
 
         if(m_has_texture){
             glActiveTexture(GL_TEXTURE0);

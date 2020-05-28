@@ -12,6 +12,8 @@
 #include "Frustum.hpp"
 
 
+class RenderContext;
+
 class Model{
     private:
         int m_model_mat_location, m_color_location;
@@ -25,10 +27,12 @@ class Model{
         math::vec3 m_mesh_color;
 
         const Frustum* m_frustum;
+        const RenderContext* m_render_context;
+
         int loadScene(const std::string& pFile);
     public:
         Model();
-        Model(const char* path_to_mesh, const char* path_to_texture, GLuint shader_programme, const Frustum* frustum, const math::vec3& mesh_color);
+        Model(const char* path_to_mesh, const char* path_to_texture, GLuint shader_programme, const Frustum* frustum, const RenderContext* render_context, const math::vec3& mesh_color);
         ~Model();
 
         void setMeshColor(const math::vec3& mesh_color);
