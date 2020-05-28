@@ -149,6 +149,16 @@ math::mat4 Object::getRigidBodyTransformSingle() const{
 }
 
 
+void Object::getRigidBodyTransformSingle(math::mat4& body_transform) const{
+    btTransform trans;
+    double body_transform_double[16];
+
+    m_body->getMotionState()->getWorldTransform(trans);
+    trans.getOpenGLMatrix(body_transform_double);
+    std::copy(body_transform_double, body_transform_double + 16, body_transform.m);
+}
+
+
 void Object::getRigidBodyTransformDouble(double* mat4) const{
     btTransform trans;
 

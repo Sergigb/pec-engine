@@ -31,6 +31,7 @@ class Object{
         virtual ~Object();
 
         math::mat4 getRigidBodyTransformSingle() const;
+        void getRigidBodyTransformSingle(math::mat4& body_transform) const;
         void getRigidBodyTransformDouble(double* mat4) const;
 
         void applyCentralForce(const btVector3& force);
