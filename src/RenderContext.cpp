@@ -19,6 +19,9 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
     m_bound_vao = 0;
     m_bound_programme = 0;
 
+    m_objects = nullptr;
+    m_parts = nullptr;
+
     // shader setup
 
     m_pb_notex_shader = create_programme_from_files("../shaders/phong_blinn_color_vs.glsl",
@@ -138,31 +141,35 @@ void RenderContext::render(bool render_asynch){
     glClearColor(m_bg_r, m_bg_g, m_bg_b, m_bg_a);
 
     if(render_asynch || m_buffers->last_updated == none){
-        for(uint i=0; i<m_objects->size(); i++){
-            num_rendered += m_objects->at(i)->render();
-        }
-        for(uint i=0; i<m_parts->size(); i++){
-            const std::vector<struct attachment_point>* att_points = m_parts->at(i)->getAttachmentPoints();
-
-            if(att_points->size()){
-                math::mat4 body_transform, att_transform;
-                btVector3 point;
-
-                body_transform = m_parts->at(i)->getRigidBodyTransformSingle();
-                point = m_parts->at(i)->getParentAttachmentPoint()->point;
-                att_transform = body_transform * math::translate(math::identity_mat4(), math::vec3(point.getX(), point.getY(), point.getZ()));
-                m_att_point_model->setMeshColor(math::vec3(0.0, 1.0, 0.0));
-                num_rendered += m_att_point_model->render(att_transform * m_att_point_scale);
-
-                for(uint j=0; j<att_points->size(); j++){
-                    point = att_points->at(j).point;
-                    att_transform = body_transform * math::translate(math::identity_mat4(), math::vec3(point.getX(), point.getY(), point.getZ()));
-                    m_att_point_model->setMeshColor(math::vec3(1.0, 0.0, 0.0));
-                    num_rendered += m_att_point_model->render(att_transform * m_att_point_scale);
-                }
+        if(m_objects){
+            for(uint i=0; i<m_objects->size(); i++){
+                num_rendered += m_objects->at(i)->render();
             }
+        }
+        if(m_parts){
+            for(uint i=0; i<m_parts->size(); i++){
+                const std::vector<struct attachment_point>* att_points = m_parts->at(i)->getAttachmentPoints();
 
-            num_rendered += m_parts->at(i)->render();
+                if(att_points->size()){
+                    math::mat4 body_transform, att_transform;
+                    btVector3 point;
+
+                    body_transform = m_parts->at(i)->getRigidBodyTransformSingle();
+                    point = m_parts->at(i)->getParentAttachmentPoint()->point;
+                    att_transform = body_transform * math::translate(math::identity_mat4(), math::vec3(point.getX(), point.getY(), point.getZ()));
+                    m_att_point_model->setMeshColor(math::vec3(0.0, 1.0, 0.0));
+                    num_rendered += m_att_point_model->render(att_transform * m_att_point_scale);
+
+                    for(uint j=0; j<att_points->size(); j++){
+                        point = att_points->at(j).point;
+                        att_transform = body_transform * math::translate(math::identity_mat4(), math::vec3(point.getX(), point.getY(), point.getZ()));
+                        m_att_point_model->setMeshColor(math::vec3(1.0, 0.0, 0.0));
+                        num_rendered += m_att_point_model->render(att_transform * m_att_point_scale);
+                    }
+                }
+
+                num_rendered += m_parts->at(i)->render();
+            }
         }
     }
     else{

@@ -10,6 +10,9 @@ App::App() : BaseApp(){
     m_physics_pause = true;
     m_picked_obj = nullptr;
     m_buffers.last_updated = none;
+
+    m_render_context->setObjectVector(&m_objects);
+    m_render_context->setPartVector(&m_parts);
 }
 
 
@@ -22,6 +25,9 @@ App::App(int gl_width, int gl_height) : BaseApp(gl_width, gl_height){
     m_physics_pause = true;
     m_picked_obj = nullptr;
     m_buffers.last_updated = none;
+
+    m_render_context->setObjectVector(&m_objects);
+    m_render_context->setPartVector(&m_parts);
 }
 
 
