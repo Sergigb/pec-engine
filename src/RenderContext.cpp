@@ -16,6 +16,9 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
     m_att_point_scale.m[5] = 0.25;
     m_att_point_scale.m[10] = 0.25;
 
+    m_bound_vao = 0;
+    m_bound_programme = 0;
+
     // shader setup
 
     m_pb_notex_shader = create_programme_from_files("../shaders/phong_blinn_color_vs.glsl",
@@ -51,7 +54,7 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
     glUniformMatrix4fv(m_text_proj_mat, 1, GL_FALSE, text_orto_proj.m);
 
     // debug overlay
-    m_debug_overlay.reset(new DebugOverlay(fb_width, fb_height, m_text_shader));
+    m_debug_overlay.reset(new DebugOverlay(fb_width, fb_height, m_text_shader, this));
 
     // other gl stuff
     m_bg_r = 0.2;
@@ -221,3 +224,28 @@ void RenderContext::setDebugOverlayPhysicsTimes(double physics_load_time, double
 void RenderContext::setAttPointModel(std::unique_ptr<Model>* att_point_model){
     m_att_point_model = std::move(*att_point_model);
 }
+
+
+GLuint RenderContext::getBoundShader() const{
+    return m_bound_vao;
+}
+
+
+GLuint RenderContext::getBoundVao() const{
+    return m_bound_programme;
+}
+
+
+void RenderContext::useProgram(GLuint program) const{
+    if(program != m_bound_programme){
+        glUseProgram(program);
+    }
+}
+
+
+void RenderContext::bindVao(GLuint vao) const{
+    if(vao != m_bound_vao){
+        glBindVertexArray(vao);
+    }
+}
+

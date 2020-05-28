@@ -35,8 +35,10 @@ class RenderContext{
 
         GLint m_text_proj_mat;
         GLuint m_text_shader;
-
         // shaders //
+
+        GLuint m_bound_vao;
+        GLuint m_bound_programme;
 
         std::unique_ptr<DebugOverlay> m_debug_overlay;
 
@@ -65,8 +67,12 @@ class RenderContext{
         void setPartVector(std::vector<std::unique_ptr<BasePart>>* parts);
         void setDebugOverlayPhysicsTimes(double physics_load_time, double physics_sleep_time);
         void setAttPointModel(std::unique_ptr<Model>* att_point_model);
+        void useProgram(GLuint program) const;
+        void bindVao(GLuint vao) const;
 
         GLuint getShader(int shader) const;
+        GLuint getBoundShader() const;
+        GLuint getBoundVao() const;
 };
 
 
