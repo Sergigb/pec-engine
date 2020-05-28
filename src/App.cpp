@@ -66,10 +66,10 @@ void App::objectsInit(){
         // testing attachment points
         BasePart* cube = new BasePart(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btVector3(2.5, 30.0+i*5., 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(10.0));
         cube->setColor(math::vec3(0.0, 0.0, 1.0));
-        cube->setParentAttachmentPoint(btVector3(0.0, 1.0, 0.0), btVector3(0.0, 0.0, 0.0));
-        cube->addAttachmentPoint(btVector3(1.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0));
-        cube->addAttachmentPoint(btVector3(0.0, -1.0, 0.0), btVector3(0.0, 0.0, 0.0));
-        cube->addAttachmentPoint(btVector3(1.0, 0.0, 1.0), btVector3(0.0, 0.0, 0.0));
+        cube->setParentAttachmentPoint(math::vec3(0.0, 1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
+        cube->addAttachmentPoint(math::vec3(1.0, 0.0, 0.0), math::vec3(0.0, 0.0, 0.0));
+        cube->addAttachmentPoint(math::vec3(0.0, -1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
+        cube->addAttachmentPoint(math::vec3(1.0, 0.0, 1.0), math::vec3(0.0, 0.0, 0.0));
         m_parts.push_back(std::move(std::unique_ptr<BasePart>(cube)));
     }
 
@@ -145,8 +145,8 @@ void App::run(){
                     const std::vector<struct attachment_point>* att_points = m_parts.at(i)->getAttachmentPoints();
 
                     for(uint j=0; j<att_points->size(); j++){
-                        const btVector3 att_point = att_points->at(j).point;
-                        math::mat4 att_transform = math::translate(math::identity_mat4(), math::vec3(att_point.getX(), att_point.getY(), att_point.getZ()));
+                        const math::vec3 att_point = att_points->at(j).point;
+                        math::mat4 att_transform = math::translate(math::identity_mat4(), att_point);
                         att_transform = m_parts.at(i)->getRigidBodyTransformSingle() * att_transform;
                         math::vec4 att_point_loc_world = math::vec4(att_transform.m[12], att_transform.m[13], att_transform.m[14], 1.0);
                         math::vec4 att_point_loc_screen;
@@ -165,7 +165,9 @@ void App::run(){
                     }
                 }
 
-                btTransform transform(btQuaternion::getIdentity(), -part->getParentAttachmentPoint()->point);
+                btTransform transform(btQuaternion::getIdentity(), -btVector3(part->getParentAttachmentPoint()->point.v[0],
+                                                                              part->getParentAttachmentPoint()->point.v[1],
+                                                                              part->getParentAttachmentPoint()->point.v[2]));
                 btTransform transform_att_parent(btQuaternion::getIdentity(), btVector3(closest_att_point_loc.v[0], closest_att_point_loc.v[1], closest_att_point_loc.v[2]));
                 transform = transform * transform_att_parent;
 

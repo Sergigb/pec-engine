@@ -16,13 +16,13 @@ BasePart::~BasePart(){
 }
 
 
-void BasePart::addAttachmentPoint(const btVector3& point, const btVector3& orientation){
+void BasePart::addAttachmentPoint(const math::vec3& point, const math::vec3& orientation){
     attachment_point att = {point, orientation};
     m_attachment_points.push_back(att);
 }
 
 
-void BasePart::setParentAttachmentPoint(const btVector3& point, const btVector3& orientation){
+void BasePart::setParentAttachmentPoint(const math::vec3& point, const math::vec3& orientation){
     m_parent_att_point = {point, orientation};
 }
 

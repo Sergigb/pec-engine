@@ -8,11 +8,12 @@
 #include <bullet/btBulletDynamicsCommon.h>
 
 #include "Object.hpp"
+#include "maths_funcs.hpp"
 
 
 struct attachment_point{
-    btVector3 point; // attachment point translation wrt the center of the object
-    btVector3 orientation; // orientation of the attachment point
+    math::vec3 point; // attachment point translation wrt the center of the object
+    math::vec3 orientation; // orientation of the attachment point
 };
 
 
@@ -26,8 +27,8 @@ class BasePart : public Object{
         BasePart();
         ~BasePart();
 
-        void addAttachmentPoint(const btVector3& point, const btVector3& orientation);
-        void setParentAttachmentPoint(const btVector3& point, const btVector3& orientation);
+        void addAttachmentPoint(const math::vec3& point, const math::vec3& orientation);
+        void setParentAttachmentPoint(const math::vec3& point, const math::vec3& orientation);
         void setParentConstraint(btTypedConstraint* constraint);
         void removeParentConstraint();
 
