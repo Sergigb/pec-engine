@@ -22,6 +22,12 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
     m_objects = nullptr;
     m_parts = nullptr;
 
+    m_pause = false;
+    m_stop = false;
+
+    m_update_fb = false;
+    m_update_projection = false;
+
     // shader setup
 
     m_pb_notex_shader = create_programme_from_files("../shaders/phong_blinn_color_vs.glsl",
@@ -114,19 +120,14 @@ void RenderContext::render(bool render_asynch){
     //clean up this shit
 
     glUseProgram(m_pb_notex_shader);
-    if(m_camera->hasMoved())
-        glUniformMatrix4fv(m_pb_notex_view_mat, 1, GL_FALSE, m_camera->getViewMatrix().m);
-    if(m_camera->projChanged())
-        glUniformMatrix4fv(m_pb_notex_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
+    glUniformMatrix4fv(m_pb_notex_view_mat, 1, GL_FALSE, m_camera->getViewMatrix().m);
+    glUniformMatrix4fv(m_pb_notex_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
 
-    // I evaluate this again to avoid changing the bound shader too many times, not sure if matters at all
     glUseProgram(m_pb_shader);
-    if(m_camera->hasMoved())
-        glUniformMatrix4fv(m_pb_view_mat, 1, GL_FALSE, m_camera->getViewMatrix().m);
-    if(m_camera->projChanged())
-        glUniformMatrix4fv(m_pb_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
+    glUniformMatrix4fv(m_pb_view_mat, 1, GL_FALSE, m_camera->getViewMatrix().m);
+    glUniformMatrix4fv(m_pb_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
 
-    if(m_camera->projChanged()){
+    if(m_update_projection){
         int fb_width, fb_height;
         m_window_handler->getFramebufferSize(fb_width, fb_height);
 
@@ -135,6 +136,8 @@ void RenderContext::render(bool render_asynch){
         glUniformMatrix4fv(m_text_proj_mat, 1, GL_FALSE, projection.m);
 
         m_debug_overlay->onFramebufferSizeUpdate(fb_width, fb_height);
+
+        m_update_projection = false;
     }
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -254,5 +257,48 @@ void RenderContext::bindVao(GLuint vao) const{
     if(vao != m_bound_vao){
         glBindVertexArray(vao);
     }
+}
+
+
+void RenderContext::onFramebufferSizeUpdate(int width, int height){
+    m_fb_width = width;
+    m_fb_height = height;
+    m_update_fb = true;
+}
+
+
+void RenderContext::start(bool render_asynch){
+    m_render_thread = std::thread(&RenderContext::run, this, render_asynch);
+    log("RenderContext: starting rendering thread");
+}
+
+
+void RenderContext::run(bool render_asynch){
+    // this should be enough to transfer the opengl context to the current thread
+    glfwMakeContextCurrent(m_window_handler->getWindow());
+
+    while(!m_stop){
+        if(m_update_fb){
+            m_update_fb = false;
+            m_update_projection = true;
+            glViewport(0, 0, m_fb_width, m_fb_height);
+        }
+
+        render(render_asynch);
+        glfwSwapBuffers(m_window_handler->getWindow());
+        // timing stuff?
+    }
+}
+
+
+void RenderContext::stop(){
+    m_stop = true;
+    m_render_thread.join();
+    log("RenderContext: stopping rendering thread");
+}
+
+
+void RenderContext::pause(bool pause){
+    m_pause = pause;
 }
 

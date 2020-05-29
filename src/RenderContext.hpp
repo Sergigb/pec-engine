@@ -5,6 +5,7 @@
 #include <vector>
 #include <memory>
 #include <mutex>
+#include <thread>
 
 #include "gl_utils.hpp"
 #include "Camera.hpp"
@@ -52,15 +53,25 @@ class RenderContext{
         std::unique_ptr<Model> m_att_point_model;
         math::mat4 m_att_point_scale;
 
+        std::thread m_render_thread;
+        bool m_pause, m_stop;
+
+        int m_fb_width, m_fb_height;
+        bool m_update_fb, m_update_projection;
+
         // synchronization
         struct render_buffers* m_buffers;
 
         void initGl();
+        void run(bool render_asynch);
+        void render(bool render_asynch);
     public:
         RenderContext(const Camera* camera, const WindowHandler* window_handler, render_buffers* buff_manager);
         ~RenderContext();
-
-        void render(bool render_asynch);
+        
+        void start(bool render_asynch);
+        void stop();
+        void pause(bool pause);
 
         void setLightPosition(const math::vec3& pos) const;
         void setObjectVector(std::vector<std::unique_ptr<Object>>* objects);
@@ -69,6 +80,7 @@ class RenderContext{
         void setAttPointModel(std::unique_ptr<Model>* att_point_model);
         void useProgram(GLuint program) const;
         void bindVao(GLuint vao) const;
+        void onFramebufferSizeUpdate(int width, int height);
 
         GLuint getShader(int shader) const;
         GLuint getBoundShader() const;
