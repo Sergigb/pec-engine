@@ -83,6 +83,7 @@ void App::objectsInit(){
 
 void App::run(){
     m_bt_wrapper->startSimulation(1.f / 60.f, 2);
+    m_render_context->start(false);
     while (!glfwWindowShouldClose(m_window_handler->getWindow())){
         m_input->update();
         m_window_handler->update();
@@ -191,11 +192,10 @@ void App::run(){
         // rendering
         m_render_context->setDebugOverlayPhysicsTimes(m_bt_wrapper->getAverageLoadTime(), m_bt_wrapper->getAverageSleepTime());
 
-        m_render_context->render(m_physics_pause);
-
-        glfwSwapBuffers(m_window_handler->getWindow());
+        //m_render_context->render(m_physics_pause);
     }
     m_bt_wrapper->stopSimulation();
+    m_render_context->stop();
     m_window_handler->terminate();
 }
 

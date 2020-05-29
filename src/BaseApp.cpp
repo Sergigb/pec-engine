@@ -23,6 +23,7 @@ void BaseApp::init(int gl_width, int gl_height){
     m_camera->setWindowHandler(m_window_handler.get());
     m_frustum.reset(new Frustum());
     m_render_context.reset(new RenderContext(m_camera.get(), m_window_handler.get(), &m_buffers));
+    m_window_handler->setRenderContext(m_render_context.get());
     m_bt_wrapper.reset(new BtWrapper(btVector3(0, -9.81, 0), &m_buffers));
 
     std::unique_ptr<Model> att_model(new Model("../data/sphere.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum.get(), m_render_context.get(), math::vec3(1.0, 0.0, 0.0)));
@@ -36,8 +37,8 @@ void BaseApp::run(){
     while (!glfwWindowShouldClose(m_window_handler->getWindow())){
         m_input->update();
         m_window_handler->update();
-        m_render_context->render(true);
-        glfwSwapBuffers(m_window_handler->getWindow());
+        //m_render_context->render(true);
+       // glfwSwapBuffers(m_window_handler->getWindow());
     }
     m_window_handler->terminate();
 }
