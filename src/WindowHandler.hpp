@@ -10,18 +10,24 @@
 #include "log.hpp"
 
 
+class RenderContext;
+
+
 class WindowHandler{
     private:
         GLFWwindow* m_window;
         int m_gl_width, m_gl_height;
         Input* m_input;
         Camera* m_camera;
+        RenderContext* m_render_context;
 
         void initGlfw();
     public:
         WindowHandler();
         WindowHandler(int width, int height, Input* input, Camera* camera);
         ~WindowHandler();
+
+        void setRenderContext(RenderContext* render_context);
 
         void handleKeyboardInput(int key, int scancode, int action, int mods);
         void handleFramebufferSizeUpdate(int width, int height);

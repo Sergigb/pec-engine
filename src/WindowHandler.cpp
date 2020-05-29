@@ -1,5 +1,5 @@
 #include "WindowHandler.hpp"
-
+#include "RenderContext.hpp"
 
 
 WindowHandler::WindowHandler(){
@@ -23,6 +23,11 @@ WindowHandler::WindowHandler(int width, int height, Input* input, Camera* camera
 
 
 WindowHandler::~WindowHandler(){
+}
+
+
+void WindowHandler::setRenderContext(RenderContext* render_context){
+    m_render_context = render_context;
 }
 
 
@@ -79,8 +84,8 @@ void WindowHandler::handleKeyboardInput(int key, int scancode, int action, int m
 void WindowHandler::handleFramebufferSizeUpdate(int width, int height){
     m_gl_width = width;
     m_gl_height = height;
-    log("Screen resolution set to ", width, 'x', m_gl_height);
-    glViewport(0, 0, m_gl_width, m_gl_height);
+    log("Screen resolution set to ", width, 'x', height);
+    m_render_context->onFramebufferSizeUpdate(m_gl_width, m_gl_height);
     m_camera->onFramebufferSizeUpdate(m_gl_width, m_gl_height);
 }
 
