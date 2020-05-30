@@ -6,7 +6,8 @@ BtWrapper::BtWrapper(){
     init(btVector3(0.0, -9.81, 0.0));
 }
 
-BtWrapper::BtWrapper(const btVector3& gravity, render_buffers* buff_manager){
+BtWrapper::BtWrapper(const btVector3& gravity, render_buffers* buff_manager, thread_monitor* thread_monitor){
+    m_thread_monitor = thread_monitor;
     m_buffers = buff_manager;
 
     init(gravity);
