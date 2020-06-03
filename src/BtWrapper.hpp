@@ -32,11 +32,12 @@ class BtWrapper{
         void runSimulation(btScalar time_step, int max_sub_steps);
         void updateBuffers();
         void updateBuffer(std::vector<object_transform>* buffer_);
+        void noticeLogic();
+        void waitLogic();
 
         std::thread m_thread_simulation;
         bool m_simulation_paused, m_end_simulation;
         double m_average_load, m_average_sleep;
-        std::chrono::duration<double, std::micro> m_elapsed_time;
         struct thread_monitor* m_thread_monitor;
 
         // synchronization

@@ -92,6 +92,11 @@ void App::run(){
     m_render_context->start(false);
     while (!glfwWindowShouldClose(m_window_handler->getWindow())){
         loop_start_load = std::chrono::steady_clock::now();
+        {  //wake up physics thread
+            std::unique_lock<std::mutex> lck2(m_thread_monitor.mtx_start);
+            m_thread_monitor.worker_start = true;
+            m_thread_monitor.cv_start.notify_all();
+        }
 
         m_input->update();
         m_window_handler->update();
@@ -112,6 +117,16 @@ void App::run(){
                       << std::setfill('0') << std::setw(2) << (int(m_elapsed_time.count() / 1e6) / 60) % 60 << ":" 
                       << std::setfill('0') << std::setw(2) << int(m_elapsed_time.count() / 1e6) % 60 << std::endl;
         }*/
+
+        { // wait for physics thread
+            std::unique_lock<std::mutex> lck(m_thread_monitor.mtx_end);
+            while(!m_thread_monitor.worker_ended){
+                m_thread_monitor.cv_end.wait(lck);
+            }
+            m_thread_monitor.worker_ended = false;
+        }
+
+        // load ends here
 
         loop_end_load = std::chrono::steady_clock::now();
         std::chrono::duration<double, std::micro> load_time = loop_end_load - loop_start_load;
