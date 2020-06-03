@@ -82,120 +82,151 @@ void App::objectsInit(){
 
 
 void App::run(){
+    std::chrono::steady_clock::time_point loop_start_load;
+    std::chrono::steady_clock::time_point previous_loop_start_load = std::chrono::steady_clock::now();;
+    std::chrono::steady_clock::time_point loop_end_load;
+    double delta_t = (1. / 60.) * 1000000.;
+    //int ticks_since_last_update = 0;
+
     m_bt_wrapper->startSimulation(1.f / 60.f, 2);
     m_render_context->start(false);
     while (!glfwWindowShouldClose(m_window_handler->getWindow())){
+        loop_start_load = std::chrono::steady_clock::now();
+
         m_input->update();
         m_window_handler->update();
         m_camera->update();
         m_frustum->extractPlanes(m_camera->getViewMatrix(), m_camera->getProjMatrix(), false);
 
-        // mouse pick test
-        if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] == INPUT_MBUTTON_PRESS){
-            if(!m_picked_obj){
-                double mousey, mousex;
-                math::vec3 ray_start_world, ray_end_world;
-                Object* obj;
+        logic();
 
-                m_input->getMousePos(mousex, mousey);
-                m_camera->castRayMousePos(1000.f, ray_start_world, ray_end_world);
-
-                obj = m_bt_wrapper->testRay(ray_start_world, ray_end_world);
-                if(obj)
-                    m_picked_obj = obj;
-            }
-            else{
-                m_picked_obj->activate(true);
-                m_picked_obj = nullptr;
-            }
-        }
-
-        if(m_picked_obj){
-            math::vec3 ray_start_world, ray_end_world;
-            btVector3 ray_end_world_btv3;
-            btQuaternion rotation;
-            btTransform transform;
-            BasePart* part;
-            
-            m_camera->castRayMousePos(25.f, ray_start_world, ray_end_world);
-            ray_end_world_btv3 = btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]);
-
-            // some spaghetti code testing the attachments
-            // disorganized as fuck
-            part = dynamic_cast<BasePart*>(m_picked_obj);
-            if(part){
-                const math::mat4 proj_mat = m_camera->getProjMatrix();
-                const math::mat4 view_mat = m_camera->getViewMatrix();
-
-                double mousey, mousex;
-                int w, h;
-                m_input->getMousePos(mousex, mousey);
-                m_window_handler->getFramebufferSize(w, h);
-                mousey = ((mousey / h) * 2 - 1) * -1;
-                mousex = (mousex / w) * 2 - 1;
-
-                float closest_dist = 99999999999.9;
-                math::vec4 closest_att_point_loc;
-                //const BasePart* closest;
-
-                for(uint i=0; i<m_parts.size(); i++){
-                    if(part == m_parts.at(i).get()){
-                        continue;
-                    }
-
-                    const std::vector<struct attachment_point>* att_points = m_parts.at(i)->getAttachmentPoints();
-
-                    for(uint j=0; j<att_points->size(); j++){
-                        const math::vec3 att_point = att_points->at(j).point;
-                        math::mat4 att_transform = math::translate(math::identity_mat4(), att_point);
-                        att_transform = m_parts.at(i)->getRigidBodyTransformSingle() * att_transform;
-                        math::vec4 att_point_loc_world = math::vec4(att_transform.m[12], att_transform.m[13], att_transform.m[14], 1.0);
-                        math::vec4 att_point_loc_screen;
-
-                        att_point_loc_screen = proj_mat * view_mat * att_point_loc_world;
-                        att_point_loc_screen = att_point_loc_screen / att_point_loc_screen.v[3];
-
-                        float distance = math::distance(math::vec2(mousex, mousey),
-                                                        math::vec2(att_point_loc_screen.v[0], att_point_loc_screen.v[1]));
-                        
-                        if(distance < closest_dist){
-                            closest_dist = distance;
-                            closest_att_point_loc = att_point_loc_world;
-                            //closest = m_parts.at(i).get();
-                        }
-                    }
-                }
-
-                btTransform transform(btQuaternion::getIdentity(), -btVector3(part->getParentAttachmentPoint()->point.v[0],
-                                                                              part->getParentAttachmentPoint()->point.v[1],
-                                                                              part->getParentAttachmentPoint()->point.v[2]));
-                btTransform transform_att_parent(btQuaternion::getIdentity(), btVector3(closest_att_point_loc.v[0], closest_att_point_loc.v[1], closest_att_point_loc.v[2]));
-                transform = transform * transform_att_parent;
-
-                m_picked_obj->setMotionState(transform.getOrigin(), transform.getRotation());
-            }
-            else{
-                m_picked_obj->m_body->getMotionState()->getWorldTransform(transform);
-                rotation = transform.getRotation();
-                m_picked_obj->setMotionState(ray_end_world_btv3, rotation); // WARNING: MOST LIKELY NOT THREAD SAFE (sometimes throws "pure virtual method called")
-            }
-
-            if(m_physics_pause)
-                m_bt_wrapper->updateCollisionWorldSingleAABB(m_picked_obj->m_body.get()); // not thread safe
-        }
-
-        if(m_input->pressed_keys[GLFW_KEY_P] == INPUT_KEY_DOWN){
-            m_physics_pause = !m_physics_pause;
-            m_bt_wrapper->pauseSimulation(m_physics_pause);
-        }
-
-        // rendering
         m_render_context->setDebugOverlayPhysicsTimes(m_bt_wrapper->getAverageLoadTime(), m_bt_wrapper->getAverageSleepTime());
+        
+        m_elapsed_time += loop_start_load - previous_loop_start_load;
+        previous_loop_start_load = loop_start_load;
+        
+        /*ticks_since_last_update++;
+        if(ticks_since_last_update == 60){
+            ticks_since_last_update = 0;
+            std::cout << std::setfill('0') << std::setw(2) << int(m_elapsed_time.count() / 1e12) / 60*60 << ":" 
+                      << std::setfill('0') << std::setw(2) << (int(m_elapsed_time.count() / 1e6) / 60) % 60 << ":" 
+                      << std::setfill('0') << std::setw(2) << int(m_elapsed_time.count() / 1e6) % 60 << std::endl;
+        }*/
 
-        //m_render_context->render(m_physics_pause);
+        loop_end_load = std::chrono::steady_clock::now();
+        std::chrono::duration<double, std::micro> load_time = loop_end_load - loop_start_load;
+
+        if(load_time.count() < delta_t){
+            std::chrono::duration<double, std::micro> delta_ms(delta_t - load_time.count());
+            std::this_thread::sleep_for(delta_ms);
+        }
     }
     m_bt_wrapper->stopSimulation();
     m_render_context->stop();
     m_window_handler->terminate();
+}
+
+
+void App::logic(){
+    // temporal method with the game logic
+
+    // mouse pick test
+    if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] == INPUT_MBUTTON_PRESS){
+        if(!m_picked_obj){
+            double mousey, mousex;
+            math::vec3 ray_start_world, ray_end_world;
+            Object* obj;
+
+            m_input->getMousePos(mousex, mousey);
+            m_camera->castRayMousePos(1000.f, ray_start_world, ray_end_world);
+
+            obj = m_bt_wrapper->testRay(ray_start_world, ray_end_world);
+            if(obj)
+                m_picked_obj = obj;
+        }
+        else{
+            m_picked_obj->activate(true);
+            m_picked_obj = nullptr;
+        }
+    }
+
+    if(m_picked_obj){
+        math::vec3 ray_start_world, ray_end_world;
+        btVector3 ray_end_world_btv3;
+        btQuaternion rotation;
+        btTransform transform;
+        BasePart* part;
+        
+        m_camera->castRayMousePos(25.f, ray_start_world, ray_end_world);
+        ray_end_world_btv3 = btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]);
+
+        // some spaghetti code testing the attachments
+        // disorganized as fuck
+        part = dynamic_cast<BasePart*>(m_picked_obj);
+        if(part){
+            const math::mat4 proj_mat = m_camera->getProjMatrix();
+            const math::mat4 view_mat = m_camera->getViewMatrix();
+
+            double mousey, mousex;
+            int w, h;
+            m_input->getMousePos(mousex, mousey);
+            m_window_handler->getFramebufferSize(w, h);
+            mousey = ((mousey / h) * 2 - 1) * -1;
+            mousex = (mousex / w) * 2 - 1;
+
+            float closest_dist = 99999999999.9;
+            math::vec4 closest_att_point_loc;
+            //const BasePart* closest;
+
+            for(uint i=0; i<m_parts.size(); i++){
+                if(part == m_parts.at(i).get()){
+                    continue;
+                }
+
+                const std::vector<struct attachment_point>* att_points = m_parts.at(i)->getAttachmentPoints();
+
+                for(uint j=0; j<att_points->size(); j++){
+                    const math::vec3 att_point = att_points->at(j).point;
+                    math::mat4 att_transform = math::translate(math::identity_mat4(), att_point);
+                    att_transform = m_parts.at(i)->getRigidBodyTransformSingle() * att_transform;
+                    math::vec4 att_point_loc_world = math::vec4(att_transform.m[12], att_transform.m[13], att_transform.m[14], 1.0);
+                    math::vec4 att_point_loc_screen;
+
+                    att_point_loc_screen = proj_mat * view_mat * att_point_loc_world;
+                    att_point_loc_screen = att_point_loc_screen / att_point_loc_screen.v[3];
+
+                    float distance = math::distance(math::vec2(mousex, mousey),
+                                                    math::vec2(att_point_loc_screen.v[0], att_point_loc_screen.v[1]));
+                    
+                    if(distance < closest_dist){
+                        closest_dist = distance;
+                        closest_att_point_loc = att_point_loc_world;
+                        //closest = m_parts.at(i).get();
+                    }
+                }
+            }
+
+            btTransform transform(btQuaternion::getIdentity(), -btVector3(part->getParentAttachmentPoint()->point.v[0],
+                                                                          part->getParentAttachmentPoint()->point.v[1],
+                                                                          part->getParentAttachmentPoint()->point.v[2]));
+            btTransform transform_att_parent(btQuaternion::getIdentity(), btVector3(closest_att_point_loc.v[0], closest_att_point_loc.v[1], closest_att_point_loc.v[2]));
+            transform = transform * transform_att_parent;
+
+            m_picked_obj->setMotionState(transform.getOrigin(), transform.getRotation());
+        }
+        else{
+            m_picked_obj->m_body->getMotionState()->getWorldTransform(transform);
+            rotation = transform.getRotation();
+            m_picked_obj->setMotionState(ray_end_world_btv3, rotation); // WARNING: MOST LIKELY NOT THREAD SAFE (sometimes throws "pure virtual method called")
+        }
+
+        if(m_physics_pause)
+            m_bt_wrapper->updateCollisionWorldSingleAABB(m_picked_obj->m_body.get()); // not thread safe
+    }
+
+    if(m_input->pressed_keys[GLFW_KEY_P] == INPUT_KEY_DOWN){
+        m_physics_pause = !m_physics_pause;
+        m_bt_wrapper->pauseSimulation(m_physics_pause);
+    }
 }
 

@@ -42,8 +42,11 @@ class App : public BaseApp{
         complex crap.*/
         std::vector<std::unique_ptr<BasePart>> m_parts;
 
+        std::chrono::duration<double, std::micro> m_elapsed_time;
+
         void modelsInit();
         void objectsInit();
+        void logic();
     public:
         App();
         App(int gl_width, int gl_height);
