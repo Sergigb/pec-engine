@@ -92,6 +92,15 @@ void App::run(){
     m_render_context->start();
     while (!glfwWindowShouldClose(m_window_handler->getWindow())){
         loop_start_load = std::chrono::steady_clock::now();
+
+        // process queues
+
+        for(uint i=0; i < m_set_motion_state_queue.size(); i++){
+            struct set_motion_state_msg& msg = m_set_motion_state_queue.at(i);
+            msg.object->setMotionState(msg.origin, msg.initial_rotation);
+        }
+        m_set_motion_state_queue.clear();
+
         {  //wake up physics thread
             std::unique_lock<std::mutex> lck2(m_thread_monitor.mtx_start);
             m_thread_monitor.worker_start = true;
@@ -227,13 +236,12 @@ void App::logic(){
             btTransform transform_att_parent(btQuaternion::getIdentity(), btVector3(closest_att_point_loc.v[0], closest_att_point_loc.v[1], closest_att_point_loc.v[2]));
             transform = transform * transform_att_parent;
 
-            // this is definitely NOT thread safe, will be fixed soon with the queue system
-            m_picked_obj->setMotionState(transform.getOrigin(), transform.getRotation());
+            m_set_motion_state_queue.emplace_back(set_motion_state_msg{m_picked_obj, transform.getOrigin(),transform.getRotation()}); // thread safe :)))
         }
         else{
             m_picked_obj->m_body->getMotionState()->getWorldTransform(transform);
             rotation = transform.getRotation();
-            m_picked_obj->setMotionState(ray_end_world_btv3, rotation); // WARNING: MOST LIKELY NOT THREAD SAFE (sometimes throws "pure virtual method called")
+            m_set_motion_state_queue.emplace_back(set_motion_state_msg{m_picked_obj, transform.getOrigin(),transform.getRotation()});
         }
 
         if(m_physics_pause)

@@ -14,6 +14,13 @@
 #include <bullet/btBulletDynamicsCommon.h>
 
 
+struct set_motion_state_msg{
+    Object* object;
+    btVector3 origin;
+    btQuaternion initial_rotation;
+};
+
+
 class App : public BaseApp{
     private:
         // some models for testing
@@ -41,6 +48,9 @@ class App : public BaseApp{
         This will change when we add the object trees, kinematic objects, and other more 
         complex crap.*/
         std::vector<std::unique_ptr<BasePart>> m_parts;
+
+        // queues
+        std::vector<struct set_motion_state_msg> m_set_motion_state_queue;
 
         std::chrono::duration<double, std::micro> m_elapsed_time;
 
