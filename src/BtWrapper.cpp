@@ -105,7 +105,7 @@ void BtWrapper::pauseSimulation(bool stop_simulation){
 
 
 void BtWrapper::noticeLogic(){
-    // logic thread wait
+    // logic thread notice
     std::unique_lock<std::mutex> lck2(m_thread_monitor->mtx_end);
     m_thread_monitor->worker_ended = true;
     m_thread_monitor->cv_end.notify_all();
@@ -113,7 +113,7 @@ void BtWrapper::noticeLogic(){
 
 
 void BtWrapper::waitLogic(){
-    // logic thread notice
+    // logic thread wait
     std::unique_lock<std::mutex> lck(m_thread_monitor->mtx_start);
     while(!m_thread_monitor->worker_start){
         m_thread_monitor->cv_start.wait(lck);
@@ -137,8 +137,8 @@ void BtWrapper::runSimulation(btScalar time_step, int max_sub_steps){
 
         if(!m_simulation_paused){
             m_dynamics_world->stepSimulation(time_step , max_sub_steps);
-            updateBuffers();
         }
+        updateBuffers();
 
         ticks_since_last_update++;
         accumulated_load_time += load_time.count();

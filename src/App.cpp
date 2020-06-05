@@ -89,7 +89,7 @@ void App::run(){
     //int ticks_since_last_update = 0;
 
     m_bt_wrapper->startSimulation(1.f / 60.f, 2);
-    m_render_context->start(false);
+    m_render_context->start();
     while (!glfwWindowShouldClose(m_window_handler->getWindow())){
         loop_start_load = std::chrono::steady_clock::now();
         {  //wake up physics thread
@@ -227,6 +227,7 @@ void App::logic(){
             btTransform transform_att_parent(btQuaternion::getIdentity(), btVector3(closest_att_point_loc.v[0], closest_att_point_loc.v[1], closest_att_point_loc.v[2]));
             transform = transform * transform_att_parent;
 
+            // this is definitely NOT thread safe, will be fixed soon with the queue system
             m_picked_obj->setMotionState(transform.getOrigin(), transform.getRotation());
         }
         else{

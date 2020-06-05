@@ -63,13 +63,14 @@ class RenderContext{
         struct render_buffers* m_buffers;
 
         void initGl();
-        void run(bool render_asynch);
-        void render(bool render_asynch);
+        void run();
+        void render();
+        void renderAttPoints(const BasePart* part, int& num_rendered, const math::mat4& body_transform);
     public:
         RenderContext(const Camera* camera, const WindowHandler* window_handler, render_buffers* buff_manager);
         ~RenderContext();
         
-        void start(bool render_asynch);
+        void start();
         void stop();
         void pause(bool pause);
 
