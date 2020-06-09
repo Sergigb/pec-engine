@@ -14,6 +14,7 @@
 #include "log.hpp"
 #include "maths_funcs.hpp"
 #include "buffers.hpp"
+#include "multithreading.hpp"
 
 
 class Object;
@@ -31,17 +32,19 @@ class BtWrapper{
         void runSimulation(btScalar time_step, int max_sub_steps);
         void updateBuffers();
         void updateBuffer(std::vector<object_transform>* buffer_);
+        void noticeLogic();
+        void waitLogic();
 
         std::thread m_thread_simulation;
         bool m_simulation_paused, m_end_simulation;
         double m_average_load, m_average_sleep;
-        std::chrono::duration<double, std::micro> m_elapsed_time;
+        struct thread_monitor* m_thread_monitor;
 
         // synchronization
         struct render_buffers* m_buffers;
     public:
         BtWrapper();
-        BtWrapper(const btVector3& gravity, render_buffers* buff_manager);
+        BtWrapper(const btVector3& gravity, render_buffers* buff_manager, thread_monitor* thread_monitor);
         ~BtWrapper();
 
         void addRigidBody(btRigidBody* body);

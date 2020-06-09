@@ -16,6 +16,7 @@
 #include "BasePart.hpp"
 #include "Model.hpp"
 #include "maths_funcs.hpp"
+#include "multithreading.hpp"
 
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/btBulletDynamicsCommon.h>
@@ -35,6 +36,7 @@ class BaseApp{
 
         // buffers used to synchronize the physics and rendering
         struct render_buffers m_buffers;
+        struct thread_monitor m_thread_monitor;
     public:
         BaseApp();
         BaseApp(int gl_width, int gl_height);

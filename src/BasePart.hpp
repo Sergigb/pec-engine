@@ -34,7 +34,7 @@ class BasePart : public Object{
 
         const std::vector<struct attachment_point>* getAttachmentPoints() const;
         btTypedConstraint* getParentConstraint() const;
-        const struct attachment_point* getParentAttachmentPoint();
+        const struct attachment_point* getParentAttachmentPoint() const;
 };
 
 

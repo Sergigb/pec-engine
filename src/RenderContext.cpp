@@ -22,6 +22,12 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
     m_objects = nullptr;
     m_parts = nullptr;
 
+    m_pause = false;
+    m_stop = false;
+
+    m_update_fb = false;
+    m_update_projection = false;
+
     // shader setup
 
     m_pb_notex_shader = create_programme_from_files("../shaders/phong_blinn_color_vs.glsl",
@@ -108,25 +114,42 @@ void RenderContext::initGl(){
 }
 
 
-void RenderContext::render(bool render_asynch){
+void RenderContext::renderAttPoints(const BasePart* part, int& num_rendered, const math::mat4& body_transform){
+    const std::vector<struct attachment_point>* att_points = part->getAttachmentPoints();
+
+    if(att_points->size()){
+        math::mat4 att_transform;
+        math::vec3 point;
+
+        point = part->getParentAttachmentPoint()->point;
+        att_transform = body_transform * math::translate(math::identity_mat4(), point);
+        m_att_point_model->setMeshColor(math::vec3(0.0, 1.0, 0.0));
+        num_rendered += m_att_point_model->render(att_transform * m_att_point_scale);
+
+        for(uint j=0; j<att_points->size(); j++){
+            point = att_points->at(j).point;
+            att_transform = body_transform * math::translate(math::identity_mat4(), point);
+            m_att_point_model->setMeshColor(math::vec3(1.0, 0.0, 0.0));
+            num_rendered += m_att_point_model->render(att_transform * m_att_point_scale);
+        }
+    }
+}
+
+
+void RenderContext::render(){
     int num_rendered = 0;
 
     //clean up this shit
 
     glUseProgram(m_pb_notex_shader);
-    if(m_camera->hasMoved())
-        glUniformMatrix4fv(m_pb_notex_view_mat, 1, GL_FALSE, m_camera->getViewMatrix().m);
-    if(m_camera->projChanged())
-        glUniformMatrix4fv(m_pb_notex_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
+    glUniformMatrix4fv(m_pb_notex_view_mat, 1, GL_FALSE, m_camera->getViewMatrix().m);
+    glUniformMatrix4fv(m_pb_notex_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
 
-    // I evaluate this again to avoid changing the bound shader too many times, not sure if matters at all
     glUseProgram(m_pb_shader);
-    if(m_camera->hasMoved())
-        glUniformMatrix4fv(m_pb_view_mat, 1, GL_FALSE, m_camera->getViewMatrix().m);
-    if(m_camera->projChanged())
-        glUniformMatrix4fv(m_pb_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
+    glUniformMatrix4fv(m_pb_view_mat, 1, GL_FALSE, m_camera->getViewMatrix().m);
+    glUniformMatrix4fv(m_pb_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
 
-    if(m_camera->projChanged()){
+    if(m_update_projection){
         int fb_width, fb_height;
         m_window_handler->getFramebufferSize(fb_width, fb_height);
 
@@ -135,47 +158,21 @@ void RenderContext::render(bool render_asynch){
         glUniformMatrix4fv(m_text_proj_mat, 1, GL_FALSE, projection.m);
 
         m_debug_overlay->onFramebufferSizeUpdate(fb_width, fb_height);
+
+        m_update_projection = false;
     }
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(m_bg_r, m_bg_g, m_bg_b, m_bg_a);
 
-    if(render_asynch || m_buffers->last_updated == none){
-        if(m_objects){
-            for(uint i=0; i<m_objects->size(); i++){
-                num_rendered += m_objects->at(i)->render();
-            }
-        }
-        if(m_parts){
-            for(uint i=0; i<m_parts->size(); i++){
-                const std::vector<struct attachment_point>* att_points = m_parts->at(i)->getAttachmentPoints();
-
-                if(att_points->size()){
-                    math::mat4 body_transform, att_transform;
-                    math::vec3 point;
-
-                    body_transform = m_parts->at(i)->getRigidBodyTransformSingle();
-                    point = m_parts->at(i)->getParentAttachmentPoint()->point;
-                    att_transform = body_transform * math::translate(math::identity_mat4(), point);
-                    m_att_point_model->setMeshColor(math::vec3(0.0, 1.0, 0.0));
-                    num_rendered += m_att_point_model->render(att_transform * m_att_point_scale);
-
-                    for(uint j=0; j<att_points->size(); j++){
-                        point = att_points->at(j).point;
-                        att_transform = body_transform * math::translate(math::identity_mat4(), point);
-                        m_att_point_model->setMeshColor(math::vec3(1.0, 0.0, 0.0));
-                        num_rendered += m_att_point_model->render(att_transform * m_att_point_scale);
-                    }
-                }
-
-                num_rendered += m_parts->at(i)->render();
-            }
-        }
-    }
-    else{
+    if(m_buffers->last_updated != none){
         if(m_buffers->last_updated == buffer_1){
             m_buffers->buffer1_lock.lock(); // extremely unlikely to not get the lock
             for(uint i=0; i<m_buffers->buffer1.size(); i++){
+                BasePart* part = dynamic_cast<BasePart*>(m_buffers->buffer1.at(i).object_ptr);
+                if(part){
+                    renderAttPoints(part, num_rendered, m_buffers->buffer1.at(i).transform);
+                }
                 num_rendered += m_buffers->buffer1.at(i).object_ptr->render(m_buffers->buffer1.at(i).transform);
             }
             m_buffers->buffer1_lock.unlock();
@@ -183,6 +180,10 @@ void RenderContext::render(bool render_asynch){
         else{
             m_buffers->buffer2_lock.lock();
             for(uint i=0; i<m_buffers->buffer2.size(); i++){
+                BasePart* part = dynamic_cast<BasePart*>(m_buffers->buffer2.at(i).object_ptr);
+                if(part){
+                    renderAttPoints(part, num_rendered, m_buffers->buffer2.at(i).transform);
+                }
                 num_rendered += m_buffers->buffer2.at(i).object_ptr->render(m_buffers->buffer2.at(i).transform);
             }
             m_buffers->buffer2_lock.unlock();
@@ -254,5 +255,48 @@ void RenderContext::bindVao(GLuint vao) const{
     if(vao != m_bound_vao){
         glBindVertexArray(vao);
     }
+}
+
+
+void RenderContext::onFramebufferSizeUpdate(int width, int height){
+    m_fb_width = width;
+    m_fb_height = height;
+    m_update_fb = true;
+}
+
+
+void RenderContext::start(){
+    m_render_thread = std::thread(&RenderContext::run, this);
+    log("RenderContext: starting rendering thread");
+}
+
+
+void RenderContext::run(){
+    // this should be enough to transfer the opengl context to the current thread
+    glfwMakeContextCurrent(m_window_handler->getWindow());
+
+    while(!m_stop){
+        if(m_update_fb){
+            m_update_fb = false;
+            m_update_projection = true;
+            glViewport(0, 0, m_fb_width, m_fb_height);
+        }
+
+        render();
+        glfwSwapBuffers(m_window_handler->getWindow());
+        // timing stuff?
+    }
+}
+
+
+void RenderContext::stop(){
+    m_stop = true;
+    m_render_thread.join();
+    log("RenderContext: stopping rendering thread");
+}
+
+
+void RenderContext::pause(bool pause){
+    m_pause = pause;
 }
 

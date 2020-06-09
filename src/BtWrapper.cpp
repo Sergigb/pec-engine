@@ -6,7 +6,8 @@ BtWrapper::BtWrapper(){
     init(btVector3(0.0, -9.81, 0.0));
 }
 
-BtWrapper::BtWrapper(const btVector3& gravity, render_buffers* buff_manager){
+BtWrapper::BtWrapper(const btVector3& gravity, render_buffers* buff_manager, thread_monitor* thread_monitor){
+    m_thread_monitor = thread_monitor;
     m_buffers = buff_manager;
 
     init(gravity);
@@ -88,6 +89,11 @@ void BtWrapper::startSimulation(btScalar time_step, int max_sub_steps){
 
 void BtWrapper::stopSimulation(){
     m_end_simulation = true;
+    {
+        std::unique_lock<std::mutex> lck2(m_thread_monitor->mtx_start);
+        m_thread_monitor->worker_start = true;
+        m_thread_monitor->cv_start.notify_all();
+    }
     m_thread_simulation.join();
     log("BtWrapper: simulation stopped, thread joined");
 }
@@ -98,31 +104,41 @@ void BtWrapper::pauseSimulation(bool stop_simulation){
 }
 
 
+void BtWrapper::noticeLogic(){
+    // logic thread notice
+    std::unique_lock<std::mutex> lck2(m_thread_monitor->mtx_end);
+    m_thread_monitor->worker_ended = true;
+    m_thread_monitor->cv_end.notify_all();
+}
+
+
+void BtWrapper::waitLogic(){
+    // logic thread wait
+    std::unique_lock<std::mutex> lck(m_thread_monitor->mtx_start);
+    while(!m_thread_monitor->worker_start){
+        m_thread_monitor->cv_start.wait(lck);
+    }
+    m_thread_monitor->worker_start = false;
+}
+
+
 void BtWrapper::runSimulation(btScalar time_step, int max_sub_steps){
     std::chrono::steady_clock::time_point loop_start = std::chrono::steady_clock::now();
     std::chrono::steady_clock::time_point loop_start_load = std::chrono::steady_clock::now();
-    std::chrono::steady_clock::time_point previous_loop_start = std::chrono::steady_clock::now();
     double accumulated_load_time = 0.0, accumulated_sleep_time = 0.0, max_delta = time_step*1000000.;
     int ticks_since_last_update = 0;
 
+    waitLogic();
     while(!m_end_simulation){
-        // possible improvement: we use the load from the previous thread to sleep, we should first load, then sleep
         loop_start = std::chrono::steady_clock::now();
         std::chrono::duration<double, std::micro> load_time = loop_start - loop_start_load;
-
-        if(load_time.count() < max_delta){
-            std::chrono::duration<double, std::micro> delta_ms(max_delta - load_time.count());
-            auto delta_ms_duration = std::chrono::duration_cast<std::chrono::milliseconds>(delta_ms);
-            std::this_thread::sleep_for(std::chrono::milliseconds(delta_ms_duration.count()));
-        }
 
         loop_start_load = std::chrono::steady_clock::now();
 
         if(!m_simulation_paused){
             m_dynamics_world->stepSimulation(time_step , max_sub_steps);
-            updateBuffers();
-            m_elapsed_time += loop_start - previous_loop_start;
         }
+        updateBuffers();
 
         ticks_since_last_update++;
         accumulated_load_time += load_time.count();
@@ -134,12 +150,10 @@ void BtWrapper::runSimulation(btScalar time_step, int max_sub_steps){
             m_average_sleep = accumulated_sleep_time / 60000.0;
             accumulated_load_time = 0.0;
             accumulated_sleep_time = 0.0;
-
-            /*std::cout << std::setfill('0') << std::setw(2) << (int(m_elapsed_time.count()) / 60000*60) % 60 
-                      << ":" << std::setfill('0') << std::setw(2) << (int(m_elapsed_time.count()) / 60000) % 60
-                      << ":" << std::setfill('0') << std::setw(2) << (int(m_elapsed_time.count()) / 1000) % 60 << std::endl;*/
         }
-        previous_loop_start = loop_start;
+
+        noticeLogic();
+        waitLogic();
     }
 }
 

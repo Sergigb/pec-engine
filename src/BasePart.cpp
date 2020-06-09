@@ -47,7 +47,7 @@ btTypedConstraint* BasePart::getParentConstraint() const{
 }
 
 
-const struct attachment_point* BasePart::getParentAttachmentPoint(){
+const struct attachment_point* BasePart::getParentAttachmentPoint() const{
     return &m_parent_att_point;
 }
 
