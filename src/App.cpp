@@ -94,12 +94,17 @@ void App::run(){
         loop_start_load = std::chrono::steady_clock::now();
 
         // process queues
-
         for(uint i=0; i < m_set_motion_state_queue.size(); i++){
             struct set_motion_state_msg& msg = m_set_motion_state_queue.at(i);
             msg.object->setMotionState(msg.origin, msg.initial_rotation);
         }
         m_set_motion_state_queue.clear();
+
+        for(uint i=0; i < m_add_constraint_queue.size(); i++){
+            struct add_contraint_msg& msg = m_add_constraint_queue.at(i);
+            msg.part->setParentConstraint(msg.constraint_uptr);
+        }
+        m_add_constraint_queue.clear();
 
         {  //wake up physics thread
             std::unique_lock<std::mutex> lck2(m_thread_monitor.mtx_start);
@@ -153,32 +158,12 @@ void App::run(){
 
 void App::logic(){
     // temporal method with the game logic
+    //bool first_lmb_click = false;
 
     // mouse pick test
-    if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] == INPUT_MBUTTON_PRESS){
-        if(!m_picked_obj){
-            double mousey, mousex;
-            math::vec3 ray_start_world, ray_end_world;
-            Object* obj;
-
-            m_input->getMousePos(mousex, mousey);
-            m_camera->castRayMousePos(1000.f, ray_start_world, ray_end_world);
-
-            obj = m_bt_wrapper->testRay(ray_start_world, ray_end_world);
-            if(obj)
-                m_picked_obj = obj;
-        }
-        else{
-            m_picked_obj->activate(true);
-            m_picked_obj = nullptr;
-        }
-    }
-
     if(m_picked_obj){
         math::vec3 ray_start_world, ray_end_world;
         btVector3 ray_end_world_btv3;
-        btQuaternion rotation;
-        btTransform transform;
         BasePart* part;
         
         m_camera->castRayMousePos(25.f, ray_start_world, ray_end_world);
@@ -199,8 +184,9 @@ void App::logic(){
             mousex = (mousex / w) * 2 - 1;
 
             float closest_dist = 99999999999.9;
-            math::vec4 closest_att_point_loc;
-            //const BasePart* closest;
+            math::vec4 closest_att_point_world;
+            math::vec3 closest_att_point;
+            const BasePart* closest;
 
             for(uint i=0; i<m_parts.size(); i++){
                 if(part == m_parts.at(i).get()){
@@ -224,28 +210,121 @@ void App::logic(){
                     
                     if(distance < closest_dist){
                         closest_dist = distance;
-                        closest_att_point_loc = att_point_loc_world;
-                        //closest = m_parts.at(i).get();
+                        closest_att_point_world = att_point_loc_world;
+                        closest_att_point = att_point;
+                        closest = m_parts.at(i).get();
                     }
                 }
             }
-
-            btTransform transform(btQuaternion::getIdentity(), -btVector3(part->getParentAttachmentPoint()->point.v[0],
-                                                                          part->getParentAttachmentPoint()->point.v[1],
-                                                                          part->getParentAttachmentPoint()->point.v[2]));
-            btTransform transform_att_parent(btQuaternion::getIdentity(), btVector3(closest_att_point_loc.v[0], closest_att_point_loc.v[1], closest_att_point_loc.v[2]));
-            transform = transform * transform_att_parent;
-
-            m_set_motion_state_queue.emplace_back(set_motion_state_msg{m_picked_obj, transform.getOrigin(),transform.getRotation()}); // thread safe :)))
-        }
-        else{
+            btTransform transform;
+            btQuaternion rotation;
             m_picked_obj->m_body->getMotionState()->getWorldTransform(transform);
             rotation = transform.getRotation();
-            m_set_motion_state_queue.emplace_back(set_motion_state_msg{m_picked_obj, transform.getOrigin(),transform.getRotation()});
+
+            if(closest_dist < 0.05){
+                btTransform transform2;
+                btVector3 btv3_parent_att(part->getParentAttachmentPoint()->point.v[0],
+                                          part->getParentAttachmentPoint()->point.v[1],
+                                          part->getParentAttachmentPoint()->point.v[2]);
+                btVector3 btv3_closest_att_world(closest_att_point_world.v[0],
+                                                 closest_att_point_world.v[1],
+                                                 closest_att_point_world.v[2]);
+
+                transform2 = btTransform(btQuaternion::getIdentity(), -btv3_parent_att);
+
+                btTransform object_R = btTransform(rotation, btVector3(0.0, 0.0, 0.0));
+                btTransform object_T = btTransform(btQuaternion::getIdentity(), btv3_closest_att_world);
+
+                transform2 = object_T * object_R * transform2; // rotated and traslated attachment point
+
+                m_set_motion_state_queue.emplace_back(set_motion_state_msg{m_picked_obj, transform2.getOrigin(), transform2.getRotation()}); // thread safe :)))
+
+                if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){
+                    btVector3 axis_a(0.0f, 1.0f, 0.0f);
+                    btVector3 axis_b(0.0f, 1.0f, 0.0f);
+                    btVector3 btv3_closest_att(closest_att_point.v[0],
+                                               closest_att_point.v[1],
+                                               closest_att_point.v[2]);
+
+
+                    btHingeConstraint* hinge_constraint = new btHingeConstraint(*m_picked_obj->m_body, *closest->m_body, btv3_parent_att,
+                                                                                btv3_closest_att, axis_a, axis_b, false);
+
+                    hinge_constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 0);
+                    hinge_constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 1);
+                    hinge_constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 2);
+                    hinge_constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 3);
+                    hinge_constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 4);
+                    hinge_constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 5);
+
+                    hinge_constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 0);
+                    hinge_constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 1);
+                    hinge_constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 2);
+                    hinge_constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 3);
+                    hinge_constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 4);
+                    hinge_constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 5);
+
+                    hinge_constraint->setLimit(-0, 0);
+
+                    m_add_constraint_queue.emplace_back(add_contraint_msg{part, std::unique_ptr<btTypedConstraint>(hinge_constraint)});
+                }
+            }
+            else{
+                if(m_input->keyboardPressed()){
+                    btQuaternion rotation2(0.0, 0.0, 0.0);
+                    if(m_input->pressed_keys[GLFW_KEY_U] & INPUT_KEY_DOWN){
+                        rotation2.setEuler(M_PI/2.0, 0., 0.);
+                    }
+                    else if(m_input->pressed_keys[GLFW_KEY_O] & INPUT_KEY_DOWN){
+                        rotation2.setEuler(-M_PI/2.0, 0., 0.);
+                    }
+                    else if(m_input->pressed_keys[GLFW_KEY_I] & INPUT_KEY_DOWN){
+                        rotation2.setEuler(0., M_PI/2.0, 0.);
+                    }
+                    else if(m_input->pressed_keys[GLFW_KEY_K] & INPUT_KEY_DOWN){
+                        rotation2.setEuler(0., -M_PI/2.0, 0.);
+                    }
+                    else if(m_input->pressed_keys[GLFW_KEY_J] & INPUT_KEY_DOWN){
+                        rotation2.setEuler(0., 0., M_PI/2.0);
+                    }
+                    else if(m_input->pressed_keys[GLFW_KEY_L] & INPUT_KEY_DOWN){
+                        rotation2.setEuler(0., 0., -M_PI/2.0);
+                    }
+                    rotation = rotation * rotation2;
+                }
+                
+                btVector3 origin(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]);
+                m_set_motion_state_queue.emplace_back(set_motion_state_msg{m_picked_obj, origin, rotation});
+            }
+        }
+        else{
+            btTransform transform;
+            btVector3 origin(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]);
+            m_picked_obj->m_body->getMotionState()->getWorldTransform(transform);
+            m_set_motion_state_queue.emplace_back(set_motion_state_msg{m_picked_obj, origin, transform.getRotation()});
         }
 
         if(m_physics_pause)
             m_bt_wrapper->updateCollisionWorldSingleAABB(m_picked_obj->m_body.get()); // not thread safe
+    }
+
+    if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){
+        if(!m_picked_obj){
+            double mousey, mousex;
+            math::vec3 ray_start_world, ray_end_world;
+            Object* obj;
+
+            m_input->getMousePos(mousex, mousey);
+            m_camera->castRayMousePos(1000.f, ray_start_world, ray_end_world);
+
+            obj = m_bt_wrapper->testRay(ray_start_world, ray_end_world);
+            if(obj)
+                m_picked_obj = obj;
+        }
+        else{
+            m_picked_obj->activate(true);
+            m_picked_obj = nullptr;
+        }
     }
 
     if(m_input->pressed_keys[GLFW_KEY_P] == INPUT_KEY_DOWN){

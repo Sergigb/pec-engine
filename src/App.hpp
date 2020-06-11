@@ -21,6 +21,12 @@ struct set_motion_state_msg{
 };
 
 
+struct add_contraint_msg{
+    BasePart* part;
+    std::unique_ptr<btTypedConstraint> constraint_uptr;
+};
+
+
 class App : public BaseApp{
     private:
         // some models for testing
@@ -51,6 +57,8 @@ class App : public BaseApp{
 
         // queues
         std::vector<struct set_motion_state_msg> m_set_motion_state_queue;
+        std::vector<BasePart*> m_remove_part_constraint_queue;
+        std::vector<struct add_contraint_msg> m_add_constraint_queue;
 
         std::chrono::duration<double, std::micro> m_elapsed_time;
 
