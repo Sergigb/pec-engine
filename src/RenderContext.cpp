@@ -103,7 +103,7 @@ void RenderContext::initGl(){
     glFrontFace(GL_CCW);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
     glEnable(GL_BLEND);
-    glfwSwapInterval(0);
+    //glfwSwapInterval(0);
 
     int samples;
     glGetIntegerv(GL_SAMPLES, &samples);

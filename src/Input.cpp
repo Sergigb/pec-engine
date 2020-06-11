@@ -52,6 +52,7 @@ void Input::onMousePos(double posx, double posy){
 void Input::update(){
     // This function is used to update the status of the keyboard/mouse before calling the poll
     // events function. It deals mostly with the key/mbutton down/repeat/release
+    m_mouse_moved = false;
 
     m_mouse_posx_prev = m_mouse_posx;
     m_mouse_posy_prev = m_mouse_posy;
