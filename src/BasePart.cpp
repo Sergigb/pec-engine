@@ -12,7 +12,9 @@ BasePart::BasePart(){
 
 
 BasePart::~BasePart(){
-
+    if(m_parent_constraint.get() != nullptr){
+        m_bt_wrapper->removeConstraint(m_parent_constraint.get());
+    }
 }
 
 
@@ -32,13 +34,21 @@ const std::vector<struct attachment_point>* BasePart::getAttachmentPoints() cons
 }
 
 
-void BasePart::setParentConstraint(btTypedConstraint* constraint){
-    m_parent_constraint.reset(constraint);
+void BasePart::setParentConstraint(std::unique_ptr<btTypedConstraint>& constraint_uptr){
+    if(m_parent_constraint.get() != nullptr){
+        m_bt_wrapper->removeConstraint(m_parent_constraint.get());
+    }
+
+    m_parent_constraint = std::move(constraint_uptr);
+    m_bt_wrapper->addConstraint(m_parent_constraint.get(), true);
 }
 
 
 void BasePart::removeParentConstraint(){
-    m_parent_constraint.reset(nullptr);
+    if(m_parent_constraint.get() != nullptr){
+        m_bt_wrapper->removeConstraint(m_parent_constraint.get());
+        m_parent_constraint.reset(nullptr);
+    }
 }
 
 

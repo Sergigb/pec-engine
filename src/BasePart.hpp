@@ -29,7 +29,7 @@ class BasePart : public Object{
 
         void addAttachmentPoint(const math::vec3& point, const math::vec3& orientation);
         void setParentAttachmentPoint(const math::vec3& point, const math::vec3& orientation);
-        void setParentConstraint(btTypedConstraint* constraint);
+        void setParentConstraint(std::unique_ptr<btTypedConstraint>& constraint_uptr);
         void removeParentConstraint();
 
         const std::vector<struct attachment_point>* getAttachmentPoints() const;
