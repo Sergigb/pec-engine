@@ -223,14 +223,14 @@ void App::logic(){
 
             if(closest_dist < 0.05){
                 btTransform transform2;
-                btVector3 btv3_parent_att(part->getParentAttachmentPoint()->point.v[0],
+                btVector3 btv3_child_att(part->getParentAttachmentPoint()->point.v[0],
                                           part->getParentAttachmentPoint()->point.v[1],
                                           part->getParentAttachmentPoint()->point.v[2]);
                 btVector3 btv3_closest_att_world(closest_att_point_world.v[0],
                                                  closest_att_point_world.v[1],
                                                  closest_att_point_world.v[2]);
 
-                transform2 = btTransform(btQuaternion::getIdentity(), -btv3_parent_att);
+                transform2 = btTransform(btQuaternion::getIdentity(), -btv3_child_att);
 
                 btTransform object_R = btTransform(rotation, btVector3(0.0, 0.0, 0.0));
                 btTransform object_T = btTransform(btQuaternion::getIdentity(), btv3_closest_att_world);
@@ -240,33 +240,49 @@ void App::logic(){
                 m_set_motion_state_queue.emplace_back(set_motion_state_msg{m_picked_obj, transform2.getOrigin(), transform2.getRotation()}); // thread safe :)))
 
                 if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){
-                    btVector3 axis_a(0.0f, 1.0f, 0.0f);
-                    btVector3 axis_b(0.0f, 1.0f, 0.0f);
+                    btTransform parent_transform, frame_parent, frame_child;
                     btVector3 btv3_closest_att(closest_att_point.v[0],
                                                closest_att_point.v[1],
                                                closest_att_point.v[2]);
 
+                    closest->m_body->getMotionState()->getWorldTransform(parent_transform);
 
-                    btHingeConstraint* hinge_constraint = new btHingeConstraint(*m_picked_obj->m_body, *closest->m_body, btv3_parent_att,
-                                                                                btv3_closest_att, axis_a, axis_b, false);
+                    //btTransform parent_R = btTransform(parent_transform.getRotation());
+                    //btTransform child_R = btTransform(rotation);
 
-                    hinge_constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 0);
-                    hinge_constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 1);
-                    hinge_constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 2);
-                    hinge_constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 3);
-                    hinge_constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 4);
-                    hinge_constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 5);
+                    //btTransform parent_att_T = btTransform(btQuaternion::getIdentity(), btv3_closest_att);
+                    //btTransform child_att_T = btTransform(btQuaternion::getIdentity(), btv3_child_att);
 
-                    hinge_constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 0);
-                    hinge_constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 1);
-                    hinge_constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 2);
-                    hinge_constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 3);
-                    hinge_constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 4);
-                    hinge_constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 5);
+                    //frame_parent = parent_att_T * parent_R;
+                    //frame_child = child_att_T * child_R;
+                    
+                    btTransform parent_att_T = btTransform(parent_transform.getRotation(), btv3_closest_att);
+                    btTransform child_att_T = btTransform(rotation, btv3_child_att);
 
-                    hinge_constraint->setLimit(-0, 0);
+                    btGeneric6DofConstraint* constraint = new btGeneric6DofConstraint(*closest->m_body, *m_picked_obj->m_body, 
+                                                                                      parent_att_T, child_att_T, true);
 
-                    m_add_constraint_queue.emplace_back(add_contraint_msg{part, std::unique_ptr<btTypedConstraint>(hinge_constraint)});
+                    constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 0);
+                    constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 1);
+                    constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 2);
+                    constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 3);
+                    constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 4);
+                    constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 5);
+
+                    constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 0);
+                    constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 1);
+                    constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 2);
+                    constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 3);
+                    constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 4);
+                    constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 5);
+
+                    btVector3 limits = btVector3(0, 0, 0);
+                    constraint->setLinearLowerLimit(limits);
+                    constraint->setLinearUpperLimit(limits);
+                    constraint->setAngularLowerLimit(limits);
+                    constraint->setAngularUpperLimit(limits);
+  
+                    m_add_constraint_queue.emplace_back(add_contraint_msg{part, std::unique_ptr<btTypedConstraint>(constraint)});
                 }
             }
             else{
