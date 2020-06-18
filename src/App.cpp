@@ -85,8 +85,8 @@ void App::run(){
     std::chrono::steady_clock::time_point loop_start_load;
     std::chrono::steady_clock::time_point previous_loop_start_load = std::chrono::steady_clock::now();;
     std::chrono::steady_clock::time_point loop_end_load;
-    double delta_t = (1. / 60.) * 1000000.;
-    //int ticks_since_last_update = 0;
+    double delta_t = (1. / 60.) * 1000000., accumulated_load = 0.0, accumulated_sleep = 0.0, average_load = 0.0, average_sleep = 0.0;
+    int ticks_since_last_update = 0;
 
     m_bt_wrapper->startSimulation(1.f / 60.f, 2);
     m_render_context->start();
@@ -119,18 +119,22 @@ void App::run(){
 
         logic();
 
-        m_render_context->setDebugOverlayPhysicsTimes(m_bt_wrapper->getAverageLoadTime(), m_bt_wrapper->getAverageSleepTime());
+        m_render_context->setDebugOverlayTimes(m_bt_wrapper->getAverageLoadTime(), average_load, average_sleep);
         
         m_elapsed_time += loop_start_load - previous_loop_start_load;
         previous_loop_start_load = loop_start_load;
         
-        /*ticks_since_last_update++;
         if(ticks_since_last_update == 60){
             ticks_since_last_update = 0;
-            std::cout << std::setfill('0') << std::setw(2) << int(m_elapsed_time.count() / 1e12) / 60*60 << ":" 
+            average_load = accumulated_load / 60000.0;
+            average_sleep = accumulated_sleep / 60000.0;
+            accumulated_load = 0;
+            accumulated_sleep = 0;
+            /*std::cout << std::setfill('0') << std::setw(2) << int(m_elapsed_time.count() / 1e12) / 60*60 << ":" 
                       << std::setfill('0') << std::setw(2) << (int(m_elapsed_time.count() / 1e6) / 60) % 60 << ":" 
-                      << std::setfill('0') << std::setw(2) << int(m_elapsed_time.count() / 1e6) % 60 << std::endl;
-        }*/
+                      << std::setfill('0') << std::setw(2) << int(m_elapsed_time.count() / 1e6) % 60 << std::endl;*/
+        }
+        ticks_since_last_update++;
 
         { // wait for physics thread
             std::unique_lock<std::mutex> lck(m_thread_monitor.mtx_end);
@@ -144,6 +148,8 @@ void App::run(){
 
         loop_end_load = std::chrono::steady_clock::now();
         std::chrono::duration<double, std::micro> load_time = loop_end_load - loop_start_load;
+        accumulated_load += load_time.count();
+        accumulated_sleep += delta_t - load_time.count();
 
         if(load_time.count() < delta_t){
             std::chrono::duration<double, std::micro> delta_ms(delta_t - load_time.count());
@@ -262,7 +268,7 @@ void App::logic(){
                     constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 4);
                     constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 5);
 
-                     constraint->setOverrideNumSolverIterations(100); // improved stiffness??
+                    constraint->setOverrideNumSolverIterations(100); // improved stiffness??
                     // also add 2 constraints??
 
                     btVector3 limits = btVector3(0, 0, 0);
