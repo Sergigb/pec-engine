@@ -23,7 +23,6 @@ void BtWrapper::init(const btVector3& gravity){
     m_simulation_paused = true;
     m_end_simulation = false;
     m_average_load = 0.0;
-    m_average_sleep = 0.0;
     
     log("BtWrapper: starting dynamics world");
     std::cout << "BtWrapper: starting dynamics world" << std::endl;
@@ -123,16 +122,12 @@ void BtWrapper::waitLogic(){
 
 
 void BtWrapper::runSimulation(btScalar time_step, int max_sub_steps){
-    std::chrono::steady_clock::time_point loop_start = std::chrono::steady_clock::now();
-    std::chrono::steady_clock::time_point loop_start_load = std::chrono::steady_clock::now();
-    double accumulated_load_time = 0.0, accumulated_sleep_time = 0.0, max_delta = time_step*1000000.;
+    std::chrono::steady_clock::time_point loop_start_load, loop_end_load;
+    double accumulated_load_time = 0.0;
     int ticks_since_last_update = 0;
 
     waitLogic();
     while(!m_end_simulation){
-        loop_start = std::chrono::steady_clock::now();
-        std::chrono::duration<double, std::micro> load_time = loop_start - loop_start_load;
-
         loop_start_load = std::chrono::steady_clock::now();
 
         if(!m_simulation_paused){
@@ -140,16 +135,16 @@ void BtWrapper::runSimulation(btScalar time_step, int max_sub_steps){
         }
         updateBuffers();
 
-        ticks_since_last_update++;
+        loop_end_load = std::chrono::steady_clock::now();
+
+        std::chrono::duration<double, std::micro> load_time = loop_end_load - loop_start_load;
         accumulated_load_time += load_time.count();
-        accumulated_sleep_time += max_delta - load_time.count();
+        ticks_since_last_update++;
 
         if(ticks_since_last_update == 60){
             ticks_since_last_update = 0;
             m_average_load = accumulated_load_time / 60000.0;
-            m_average_sleep = accumulated_sleep_time / 60000.0;
             accumulated_load_time = 0.0;
-            accumulated_sleep_time = 0.0;
         }
 
         noticeLogic();
@@ -160,11 +155,6 @@ void BtWrapper::runSimulation(btScalar time_step, int max_sub_steps){
 
 double BtWrapper::getAverageLoadTime() const{
     return m_average_load;
-}
-
-
-double BtWrapper::getAverageSleepTime() const{
-    return m_average_sleep;
 }
 
 

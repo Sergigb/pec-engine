@@ -37,7 +37,7 @@ class BtWrapper{
 
         std::thread m_thread_simulation;
         bool m_simulation_paused, m_end_simulation;
-        double m_average_load, m_average_sleep;
+        double m_average_load;
         struct thread_monitor* m_thread_monitor;
 
         // synchronization
@@ -54,7 +54,6 @@ class BtWrapper{
         Object* testRay(const math::vec3& ray_start_world, const math::vec3& ray_end_world) const;
         void updateCollisionWorldSingleAABB(btRigidBody* body);
         double getAverageLoadTime() const;
-        double getAverageSleepTime() const;
 
         void startSimulation(btScalar time_step, int max_sub_steps);
         void stopSimulation();
