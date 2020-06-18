@@ -65,7 +65,7 @@ void App::objectsInit(){
     for(int i=0; i<10; i++){
         // testing attachment points
         BasePart* cube = new BasePart(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btVector3(2.5, 30.0+i*5., 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(10.0));
-        cube->setColor(math::vec3(0.0, 0.0, 1.0));
+        cube->setColor(math::vec3(1.0-0.1*i, 0.0, 0.1*i));
         cube->setParentAttachmentPoint(math::vec3(0.0, 1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
         cube->addAttachmentPoint(math::vec3(1.0, 0.0, 0.0), math::vec3(0.0, 0.0, 0.0));
         cube->addAttachmentPoint(math::vec3(0.0, -1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
@@ -216,51 +216,37 @@ void App::logic(){
                     }
                 }
             }
-            btTransform transform;
+            btTransform transform_original;
             btQuaternion rotation;
-            m_picked_obj->m_body->getMotionState()->getWorldTransform(transform);
-            rotation = transform.getRotation();
+            m_picked_obj->m_body->getMotionState()->getWorldTransform(transform_original);
+            rotation = transform_original.getRotation();
 
             if(closest_dist < 0.05){
-                btTransform transform2;
+                btTransform transform_final;
                 btVector3 btv3_child_att(part->getParentAttachmentPoint()->point.v[0],
-                                          part->getParentAttachmentPoint()->point.v[1],
-                                          part->getParentAttachmentPoint()->point.v[2]);
+                                         part->getParentAttachmentPoint()->point.v[1],
+                                         part->getParentAttachmentPoint()->point.v[2]);
                 btVector3 btv3_closest_att_world(closest_att_point_world.v[0],
                                                  closest_att_point_world.v[1],
                                                  closest_att_point_world.v[2]);
 
-                transform2 = btTransform(btQuaternion::getIdentity(), -btv3_child_att);
+                transform_final = btTransform(btQuaternion::getIdentity(), -btv3_child_att);
 
                 btTransform object_R = btTransform(rotation, btVector3(0.0, 0.0, 0.0));
                 btTransform object_T = btTransform(btQuaternion::getIdentity(), btv3_closest_att_world);
 
-                transform2 = object_T * object_R * transform2; // rotated and traslated attachment point
+                transform_final = object_T * object_R * transform_final; // rotated and traslated attachment point (world)
 
-                m_set_motion_state_queue.emplace_back(set_motion_state_msg{m_picked_obj, transform2.getOrigin(), transform2.getRotation()}); // thread safe :)))
+                m_set_motion_state_queue.emplace_back(set_motion_state_msg{m_picked_obj, transform_final.getOrigin(), transform_final.getRotation()}); // thread safe :)))
 
-                if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){
-                    btTransform parent_transform, frame_parent, frame_child;
-                    btVector3 btv3_closest_att(closest_att_point.v[0],
-                                               closest_att_point.v[1],
-                                               closest_att_point.v[2]);
+                if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){ // user has decided to attach the object to the parent
+                    btTransform parent_transform, frame_child;
 
                     closest->m_body->getMotionState()->getWorldTransform(parent_transform);
-
-                    //btTransform parent_R = btTransform(parent_transform.getRotation());
-                    //btTransform child_R = btTransform(rotation);
-
-                    //btTransform parent_att_T = btTransform(btQuaternion::getIdentity(), btv3_closest_att);
-                    //btTransform child_att_T = btTransform(btQuaternion::getIdentity(), btv3_child_att);
-
-                    //frame_parent = parent_att_T * parent_R;
-                    //frame_child = child_att_T * child_R;
-                    
-                    btTransform parent_att_T = btTransform(parent_transform.getRotation(), btv3_closest_att);
-                    btTransform child_att_T = btTransform(rotation, btv3_child_att);
+                    frame_child = btTransform(transform_final.inverse() * parent_transform);
 
                     btGeneric6DofConstraint* constraint = new btGeneric6DofConstraint(*closest->m_body, *m_picked_obj->m_body, 
-                                                                                      parent_att_T, child_att_T, true);
+                                                                                      btTransform::getIdentity(), frame_child, false);
 
                     constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 0);
                     constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 1);
@@ -276,6 +262,9 @@ void App::logic(){
                     constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 4);
                     constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 5);
 
+                     constraint->setOverrideNumSolverIterations(100); // improved stiffness??
+                    // also add 2 constraints??
+
                     btVector3 limits = btVector3(0, 0, 0);
                     constraint->setLinearLowerLimit(limits);
                     constraint->setLinearUpperLimit(limits);
@@ -287,7 +276,7 @@ void App::logic(){
             }
             else{
                 if(m_input->keyboardPressed()){
-                    btQuaternion rotation2(0.0, 0.0, 0.0);
+                    btQuaternion rotation2(0.0, 0.0, 0.0); // allows the user to rotate the part
                     if(m_input->pressed_keys[GLFW_KEY_U] & INPUT_KEY_DOWN){
                         rotation2.setEuler(M_PI/2.0, 0., 0.);
                     }
