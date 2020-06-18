@@ -77,7 +77,7 @@ class RenderContext{
         void setLightPosition(const math::vec3& pos) const;
         void setObjectVector(std::vector<std::unique_ptr<Object>>* objects);
         void setPartVector(std::vector<std::unique_ptr<BasePart>>* parts);
-        void setDebugOverlayPhysicsTimes(double physics_load_time, double physics_sleep_time);
+        void setDebugOverlayTimes(double physics_load_time, double logic_load_time, double logic_sleep_time);
         void setAttPointModel(std::unique_ptr<Model>* att_point_model);
         void useProgram(GLuint program) const;
         void bindVao(GLuint vao) const;

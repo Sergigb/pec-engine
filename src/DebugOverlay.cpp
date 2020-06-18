@@ -17,7 +17,8 @@ DebugOverlay::DebugOverlay(int fb_width, int fb_height, GLuint shader, const Ren
 
     m_rendered_obj = 0;
     m_physics_load_time = 0.0;
-    m_physics_sleep_time = 0.0;
+    m_logic_load_time = 0.0;
+    m_logic_sleep_time = 0.0;
 }
 
 
@@ -36,15 +37,15 @@ void DebugOverlay::onFramebufferSizeUpdate(int fb_width, int fb_height){
 }
 
 
-void DebugOverlay::setPhysicsTimes(double physics_load_time, double physics_sleep_time){
+void DebugOverlay::setTimes(double physics_load_time, double logic_load_time, double logic_sleep_time){
     m_physics_load_time = physics_load_time;
-    m_physics_sleep_time = physics_sleep_time;
-
+    m_logic_load_time = logic_load_time;
+    m_logic_sleep_time = logic_sleep_time;
 }
 
 
 void DebugOverlay::render(){
-    wchar_t buffer[64];
+    wchar_t buffer[64], buffer2[128];
     std::ostringstream oss2;
     
     glDisable(GL_DEPTH_TEST);
@@ -61,9 +62,11 @@ void DebugOverlay::render(){
 
     oss2.str("");
     oss2.clear();
-    oss2 << "Physics load: " << std::setprecision(3) << m_physics_load_time << "ms - Sleep time: " << std::setprecision(3) << m_physics_sleep_time << "ms";
-    mbstowcs(buffer, oss2.str().c_str(), 64);
-    m_text_dynamic_text->addString(buffer, 15, 125, 1, STRING_DRAW_ABSOLUTE_TL);
+    oss2 << "Physics load: " << std::setprecision(3) << m_physics_load_time 
+         << "ms - Logic load: " << std::setprecision(3) << m_logic_load_time
+         << "ms - Logic sleep: " << std::setprecision(3) << m_logic_sleep_time << "ms";
+    mbstowcs(buffer2, oss2.str().c_str(), 128);
+    m_text_dynamic_text->addString(buffer2, 15, 125, 1, STRING_DRAW_ABSOLUTE_TL);
 
     m_text_dynamic_text->render();
 

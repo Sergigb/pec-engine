@@ -21,13 +21,13 @@ class DebugOverlay{
         std::unique_ptr<Text2D> m_text_dynamic_text;
         std::unique_ptr<FontAtlas> m_font_atlas;
         int m_rendered_obj;        
-        double m_physics_load_time, m_physics_sleep_time;
+        double m_physics_load_time, m_logic_load_time, m_logic_sleep_time;
     public:
         DebugOverlay(int fb_width, int fb_height, GLuint shader, const RenderContext* render_context);
         ~DebugOverlay();
 
         void setRenderedObjects(int n);
-        void setPhysicsTimes(double physics_load_time, double physics_sleep_time);
+        void setTimes(double physics_load_time, double logic_load_time, double logic_sleep_time);
         void onFramebufferSizeUpdate(int fb_width, int fb_height);
 
         void render();

@@ -224,8 +224,8 @@ void RenderContext::setPartVector(std::vector<std::unique_ptr<BasePart>>* parts)
 }
 
 
-void RenderContext::setDebugOverlayPhysicsTimes(double physics_load_time, double physics_sleep_time){
-    m_debug_overlay->setPhysicsTimes(physics_load_time, physics_sleep_time);
+void RenderContext::setDebugOverlayTimes(double physics_load_time, double logic_load_time, double logic_sleep_time){
+    m_debug_overlay->setTimes(physics_load_time, logic_load_time, logic_sleep_time);
 }
 
 
