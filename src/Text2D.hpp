@@ -41,17 +41,18 @@ class Text2D{
         math::mat4 m_projection;
         struct color m_text_color;
         std::vector<struct string> m_strings;
-        bool m_update_buffer;
+        bool m_update_buffer, m_init;
         int m_fb_width, m_fb_height;
+        color m_color;
 
         const FontAtlas* m_font_atlas;
         const RenderContext* m_render_context;
 
         void updateBuffers();
-        void initgl(const color& c);
+        void initgl();
     public:
         Text2D();
-        Text2D(int fb_width, int fb_height, const color& , const FontAtlas* font, GLuint shader, const RenderContext* render_context);
+        Text2D(int fb_width, int fb_height, color& , const FontAtlas* font, GLuint shader, const RenderContext* render_context);
         ~Text2D();
 
         void addString(const wchar_t* string, uint x, uint y, float scale, int placement);

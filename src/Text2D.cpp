@@ -3,10 +3,11 @@
 
 
 Text2D::Text2D(){
+    m_init = false;
 }
 
 
-Text2D::Text2D(int fb_width, int fb_height, const color& c, const FontAtlas* font, GLuint shader, const RenderContext* render_context){
+Text2D::Text2D(int fb_width, int fb_height, color& c, const FontAtlas* font, GLuint shader, const RenderContext* render_context){
     m_font_atlas = font;
     m_num_vertices = 0;
     m_num_indices = 0;
@@ -15,12 +16,14 @@ Text2D::Text2D(int fb_width, int fb_height, const color& c, const FontAtlas* fon
     m_update_buffer = true;
     m_shader_programme = shader;
     m_render_context = render_context;
+    m_init = true;
+    m_color = c;
 
-    initgl(c);
+    initgl();
 }
 
 
-void Text2D::initgl(const color& c){
+void Text2D::initgl(){
     glGenVertexArrays(1, &m_vao);
     glBindVertexArray(m_vao);
 
@@ -42,15 +45,16 @@ void Text2D::initgl(const color& c){
     glUseProgram(m_shader_programme);
 
     m_color_location = glGetUniformLocation(m_shader_programme, "text_color");
-    glUniform3f(m_color_location, c.r, c.g, c.b);
 }
 
 
 Text2D::~Text2D(){
-    glDeleteBuffers(1, &m_vbo_vert);
-    glDeleteBuffers(1, &m_vbo_tex);
-    glDeleteBuffers(1, &m_vbo_ind);
-    glDeleteVertexArrays(1, &m_vao);
+    if(m_init){
+        glDeleteBuffers(1, &m_vbo_vert);
+        glDeleteBuffers(1, &m_vbo_tex);
+        glDeleteBuffers(1, &m_vbo_ind);
+        glDeleteVertexArrays(1, &m_vao);
+    }
 }
 
 
@@ -158,6 +162,8 @@ void Text2D::render(){
     }
     m_render_context->useProgram(m_shader_programme);
     m_render_context->bindVao(m_vao);
+
+    glUniform3f(m_color_location, m_color.r, m_color.g, m_color.b);
 
     m_font_atlas->bindTexture();
     glDrawElements(GL_TRIANGLES, m_num_indices, GL_UNSIGNED_SHORT, NULL);

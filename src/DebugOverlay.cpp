@@ -10,7 +10,8 @@ DebugOverlay::DebugOverlay(int fb_width, int fb_height, GLuint shader, const Ren
     m_font_atlas->loadCharacter(0, true); // null character
     m_font_atlas->createAtlas(true);
 
-    m_text_dynamic_text.reset(new Text2D(fb_width, fb_height, color{1.0, 1.0, 0.0}, m_font_atlas.get(), shader, render_context));
+    color c{1.0, 1.0, 0.0};
+    m_text_dynamic_text.reset(new Text2D(fb_width, fb_height, c, m_font_atlas.get(), shader, render_context));
     Text2D* text_debug;
     debug_info_box(&text_debug, fb_width, fb_height, shader, m_font_atlas.get(), render_context);
     m_text_debug.reset(text_debug);
@@ -78,7 +79,8 @@ void DebugOverlay::render(){
 
 
 void debug_info_box(Text2D** t, int fb_width, int fb_height, GLuint shader, const FontAtlas* font_atlas, const RenderContext* render_context){
-    *t = new Text2D(fb_width, fb_height, color{1.0, 1.0, 0.0}, font_atlas, shader, render_context);
+    color c{1.0, 1.0, 0.0};
+    *t = new Text2D(fb_width, fb_height, c, font_atlas, shader, render_context);
     
     const GLubyte* vendor = glGetString(GL_VENDOR); // Returns the vendor
     const GLubyte* renderer = glGetString(GL_RENDERER); // Returns a hint to the model
