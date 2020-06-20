@@ -58,6 +58,30 @@ Text2D::~Text2D(){
 }
 
 
+void Text2D::getPenXY(float& pen_x, float& pen_y, struct string* string_){
+    if(string_->placement == STRING_DRAW_RELATIVE){
+        pen_x = std::floor(string_->relative_x * m_fb_width);
+        pen_y = std::floor(string_->relative_y * m_fb_height);
+
+        return;
+    }
+    else{
+        if(string_->placement == STRING_DRAW_ABSOLUTE_BL || string_->placement == STRING_DRAW_ABSOLUTE_TL){
+            pen_x = string_->posx;
+        }
+        else{
+            pen_x = m_fb_width - string_->posx;
+        }
+        if(string_->placement == STRING_DRAW_ABSOLUTE_BL || string_->placement == STRING_DRAW_ABSOLUTE_BR){
+            pen_y = string_->posy;
+        }
+        else{
+            pen_y = m_fb_height - string_->posy;
+        }
+    }
+}
+
+
 void Text2D::updateBuffers(){
     uint total_num_characters = 0, acc = 0;
     std::unique_ptr<GLfloat[]> vertex_buffer;
@@ -78,21 +102,12 @@ void Text2D::updateBuffers(){
         float pen_x = current_string->posx, pen_y = current_string->posy, w, h, xpos, ypos;
         uint index, disp;
         const character* ch;
-
-        if(current_string->placement == STRING_DRAW_ABSOLUTE_BL || current_string->placement == STRING_DRAW_ABSOLUTE_TL)
-            pen_x = current_string->posx;
-        else
-            pen_x = m_fb_width - current_string->posx;
-
-        if(current_string->placement == STRING_DRAW_ABSOLUTE_BL || current_string->placement == STRING_DRAW_ABSOLUTE_BR)
-            pen_y = current_string->posy;
-        else
-            pen_y = m_fb_height - current_string->posy;
-
+        getPenXY(pen_x, pen_y, current_string);
         uint j = 0, k = 0; // k is used to skip the possible line breaks
         while(current_string->textbuffer[j] != '\0'){
             if(current_string->textbuffer[j] == '\n'){
-                pen_x = current_string->posx; // will not work when the string placement is not bl absolute, to be fixed at some point
+                //pen_x = current_string->posx; // will not work when the string placement is not bl absolute, to be fixed at some point
+                getPenXY(pen_x, pen_y, current_string);
                 pen_y -= (m_font_atlas->getHeight() >> 6) * current_string->scale;
                 j++;
                 continue;
@@ -170,21 +185,57 @@ void Text2D::render(){
 }
 
 
-void Text2D::addString(const wchar_t* text, uint x, uint y, float scale, int placement){
-    uint i = m_strings.size(), j = 0;
-    m_strings.push_back(string());
-    m_strings.at(i).posx = x;
-    m_strings.at(i).posy = y;
-    m_strings.at(i).scale = scale;
-    m_strings.at(i).placement = placement;
-    wstrcpy(m_strings.at(i).textbuffer, text, STRING_MAX_LEN);
+void Text2D::addString(const wchar_t* string, float relative_x, float relative_y, float scale){
+    uint i;
 
-    m_strings.at(i).strlen = 0;
-    while(m_strings.at(i).textbuffer[j] != '\0' && j <= STRING_MAX_LEN){
+    addString(string, 0, 0, scale, STRING_DRAW_RELATIVE);
+
+    // dirty dirty...
+    i = m_strings.size();
+    struct string& str = m_strings.at(i-1);
+    str.relative_x = relative_x;
+    str.relative_y = relative_y;
+}
+
+
+void Text2D::addString(const wchar_t* text, uint x, uint y, float scale, int placement){
+    const character* ch;
+    uint i = m_strings.size(), j = 0, w = 0;
+    UNUSED(w);
+
+    m_strings.push_back(string());
+    struct string& str = m_strings.at(i);
+
+    str.posx = x;
+    str.posy = y;
+    str.scale = scale;
+    str.placement = placement;
+    str.width = 0;
+    str.height = (m_font_atlas->getHeight() >> 6) * scale;
+    wstrcpy(str.textbuffer, text, STRING_MAX_LEN);
+
+    str.strlen = 0;
+    while(str.textbuffer[j] != '\0' && j <= STRING_MAX_LEN){
         j++;
-        if(m_strings.at(i).textbuffer[j] != '\n')
-            m_strings.at(i).strlen++;
+
+        m_font_atlas->getCharacter(str.textbuffer[j], &ch);
+        w += (float)(ch->advance_x >> 6) * scale;
+
+        if(str.textbuffer[j] != '\n'){
+            str.strlen++;
+        }
+        else{
+            str.height += (m_font_atlas->getHeight() >> 6) * scale;
+            if(str.width < w){
+                str.width = w;
+            }
+            w = 0;
+        }
     }
+    if(str.width < w){
+        str.width = w;
+    }
+
     m_update_buffer = true;
 }
 

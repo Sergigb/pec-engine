@@ -9,6 +9,7 @@
 #include <vector>
 #include <cstring>
 #include <memory>
+#include <cmath>
 
 #include "common.hpp"
 #include "gl_utils.hpp"
@@ -18,15 +19,22 @@
 
 class RenderContext;
 
+// string placement
 #define STRING_MAX_LEN 256
 #define STRING_DRAW_ABSOLUTE_BL 1
 #define STRING_DRAW_ABSOLUTE_TL 2
 #define STRING_DRAW_ABSOLUTE_TR 3
 #define STRING_DRAW_ABSOLUTE_BR 4
-#define STRING_DRAW_RELATIVE 5 // not implemented
-#define STRING_ALIGN_LEFT 1 // TODO
+#define STRING_DRAW_RELATIVE 5
+
+// string alignment
+#define STRING_ALIGN_LEFT 1
 #define STRING_ALIGN_CENTER 2
-#define STRING_ALIGN_RIGHT 3
+#define STRING_ALIGN_CENTER_W 3
+#define STRING_ALIGN_CENTER_H 4
+#define STRING_ALIGN_CENTER_WH 5
+#define STRING_ALIGN_RIGHT 6
+
 
 class Text2D{
     // used to draw static 2D text. Text should be static (static as in "it's not going to change every few frames") because 
@@ -50,12 +58,14 @@ class Text2D{
 
         void updateBuffers();
         void initgl();
+        void getPenXY(float& pen_x, float& pen_y, struct string* string_);
     public:
         Text2D();
         Text2D(int fb_width, int fb_height, color& , const FontAtlas* font, GLuint shader, const RenderContext* render_context);
         ~Text2D();
 
         void addString(const wchar_t* string, uint x, uint y, float scale, int placement);
+        void addString(const wchar_t* string, float relative_x, float relative_y, float scale);
         void clearStrings();
 
         void onFramebufferSizeUpdate(int fb_width, int fb_height);
@@ -66,8 +76,13 @@ struct string{
     uint posx;
     uint posy;
     uint strlen;  // string len without the \n
-    uint placement;
+    short placement;
+    short alignment;
+    float relative_x;
+    float relative_y;
     float scale;
+    uint width;
+    uint height;
     wchar_t textbuffer[STRING_MAX_LEN];
 };
 
