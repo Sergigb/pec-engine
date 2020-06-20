@@ -34,6 +34,7 @@ int FontAtlas::loadFont(const char* path, int size){
         return EXIT_FAILURE;
     }
     FT_Set_Pixel_Sizes(face, 0, size);
+    loadCharacter(0); // load default
 
     return EXIT_SUCCESS;
 }
@@ -69,7 +70,7 @@ void FontAtlas::loadCharacterRange(uint start, uint end){
 }
 
 
-void FontAtlas::loadCharacter(uint code, bool load_default){
+void FontAtlas::loadCharacter(uint code){
     uint glyph_index, res, index = 0;
 
     if(!m_characters_vec.empty())
@@ -78,7 +79,7 @@ void FontAtlas::loadCharacter(uint code, bool load_default){
     glyph_index = FT_Get_Char_Index(face, code);
     res = FT_Load_Glyph(face, glyph_index, FT_LOAD_RENDER);
 
-    if((!res && glyph_index) || (!res && load_default)){
+    if((!res)){
         m_characters_vec.push_back(character());
         m_characters_vec.at(index).code = code;
         m_characters_vec.at(index).glyph_index = glyph_index;
@@ -109,7 +110,7 @@ void FontAtlas::createAtlas(bool save_png){ // check error codes
         if(pen_x + m_characters_vec[i].width + 2 > m_atlas_size){
             pen_y += max_heigth_row + 2; // new "row"
             max_heigth_row = m_characters_vec[i].height;
-            pen_x = 0;
+            pen_x = 0; // should this be one?
             if(pen_y + max_heigth_row + 2 > m_atlas_size){
                 std::cerr << "Font atlas: no space left (" << m_characters_vec.size() - i << " characters left)" << std::endl;
                 log("Font atlas: no space left (", m_characters_vec.size() - i, " characters left)");

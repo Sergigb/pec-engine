@@ -38,7 +38,7 @@ class FontAtlas{ //rename to font atlas?
         int loadFont(const char* path, int size);
 
         void loadCharacterRange(uint start, uint end);
-        void loadCharacter(uint code, bool load_default);
+        void loadCharacter(uint code);
         void createAtlas(bool save_png);
 
         int getCharacter(uint code, const character** the_character) const;

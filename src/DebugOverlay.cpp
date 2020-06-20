@@ -7,7 +7,6 @@ DebugOverlay::DebugOverlay(int fb_width, int fb_height, GLuint shader, const Ren
     m_font_atlas->loadFont("../data/fonts/Liberastika-Regular.ttf", 15);
     m_font_atlas->loadCharacterRange(32, 255); // ascii
     m_font_atlas->loadCharacterRange(913, 1023); // greek and coptic
-    m_font_atlas->loadCharacter(0, true); // null character
     m_font_atlas->createAtlas(true);
 
     color c{1.0, 1.0, 0.0};
