@@ -19,8 +19,9 @@
 
 class RenderContext;
 
-// string placement
 #define STRING_MAX_LEN 256
+
+// string placement
 #define STRING_DRAW_ABSOLUTE_BL 1
 #define STRING_DRAW_ABSOLUTE_TL 2
 #define STRING_DRAW_ABSOLUTE_TR 3
@@ -29,11 +30,10 @@ class RenderContext;
 
 // string alignment
 #define STRING_ALIGN_LEFT 1
-#define STRING_ALIGN_CENTER 2
-#define STRING_ALIGN_CENTER_W 3
-#define STRING_ALIGN_CENTER_H 4
-#define STRING_ALIGN_CENTER_WH 5
-#define STRING_ALIGN_RIGHT 6
+#define STRING_ALIGN_CENTER_X 2
+#define STRING_ALIGN_CENTER_Y 3
+#define STRING_ALIGN_CENTER_XY 4
+#define STRING_ALIGN_RIGHT 5 // this should be used when the text is drawn relative to the bottom left/top right
 
 
 class Text2D{
@@ -64,8 +64,8 @@ class Text2D{
         Text2D(int fb_width, int fb_height, color& , const FontAtlas* font, GLuint shader, const RenderContext* render_context);
         ~Text2D();
 
-        void addString(const wchar_t* string, uint x, uint y, float scale, int placement);
-        void addString(const wchar_t* string, float relative_x, float relative_y, float scale);
+        void addString(const wchar_t* string, uint x, uint y, float scale, int placement, int alignment);
+        void addString(const wchar_t* string, float relative_x, float relative_y, float scale, int alignment);
         void clearStrings();
 
         void onFramebufferSizeUpdate(int fb_width, int fb_height);

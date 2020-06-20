@@ -62,8 +62,6 @@ void Text2D::getPenXY(float& pen_x, float& pen_y, struct string* string_){
     if(string_->placement == STRING_DRAW_RELATIVE){
         pen_x = std::floor(string_->relative_x * m_fb_width);
         pen_y = std::floor(string_->relative_y * m_fb_height);
-
-        return;
     }
     else{
         if(string_->placement == STRING_DRAW_ABSOLUTE_BL || string_->placement == STRING_DRAW_ABSOLUTE_TL){
@@ -78,6 +76,17 @@ void Text2D::getPenXY(float& pen_x, float& pen_y, struct string* string_){
         else{
             pen_y = m_fb_height - string_->posy;
         }
+    }
+
+    if(string_->alignment == STRING_ALIGN_CENTER_X || string_->alignment == STRING_ALIGN_CENTER_XY){
+        pen_x -= string_->width/2;
+    }
+    if(string_->alignment == STRING_ALIGN_CENTER_Y || string_->alignment == STRING_ALIGN_CENTER_XY){
+        pen_y += (string_->height/2) - ((m_font_atlas->getHeight() >> 6) * string_->scale);
+    }
+
+    if(string_->alignment == STRING_ALIGN_LEFT){
+        pen_x -= string_->width;
     }
 }
 
@@ -106,10 +115,9 @@ void Text2D::updateBuffers(){
         uint j = 0, k = 0; // k is used to skip the possible line breaks
         while(current_string->textbuffer[j] != '\0'){
             if(current_string->textbuffer[j] == '\n'){
-                //pen_x = current_string->posx; // will not work when the string placement is not bl absolute, to be fixed at some point
-                getPenXY(pen_x, pen_y, current_string);
-                pen_y -= (m_font_atlas->getHeight() >> 6) * current_string->scale;
                 j++;
+                getPenXY(pen_x, pen_y, current_string);
+                pen_y -= ((m_font_atlas->getHeight() >> 6) * current_string->scale) * (j - k);
                 continue;
             }
 
@@ -185,10 +193,10 @@ void Text2D::render(){
 }
 
 
-void Text2D::addString(const wchar_t* string, float relative_x, float relative_y, float scale){
+void Text2D::addString(const wchar_t* string, float relative_x, float relative_y, float scale, int alignment){
     uint i;
 
-    addString(string, 0, 0, scale, STRING_DRAW_RELATIVE);
+    addString(string, 0, 0, scale, STRING_DRAW_RELATIVE, alignment);
 
     // dirty dirty...
     i = m_strings.size();
@@ -198,10 +206,9 @@ void Text2D::addString(const wchar_t* string, float relative_x, float relative_y
 }
 
 
-void Text2D::addString(const wchar_t* text, uint x, uint y, float scale, int placement){
+void Text2D::addString(const wchar_t* text, uint x, uint y, float scale, int placement, int alignment){
     const character* ch;
     uint i = m_strings.size(), j = 0, w = 0;
-    UNUSED(w);
 
     m_strings.push_back(string());
     struct string& str = m_strings.at(i);
@@ -210,6 +217,7 @@ void Text2D::addString(const wchar_t* text, uint x, uint y, float scale, int pla
     str.posy = y;
     str.scale = scale;
     str.placement = placement;
+    str.alignment = alignment;
     str.width = 0;
     str.height = (m_font_atlas->getHeight() >> 6) * scale;
     wstrcpy(str.textbuffer, text, STRING_MAX_LEN);

@@ -52,13 +52,13 @@ void DebugOverlay::render(){
     oss2 << (int)get_fps() << " FPS";
     mbstowcs(buffer, oss2.str().c_str(), 64);
     m_text_dynamic_text->clearStrings();
-    m_text_dynamic_text->addString(buffer, 75, 25, 1, STRING_DRAW_ABSOLUTE_TR);
+    m_text_dynamic_text->addString(buffer, 75, 25, 1, STRING_DRAW_ABSOLUTE_TR, STRING_ALIGN_RIGHT);
 
     oss2.str("");
     oss2.clear();
     oss2 << "Num rendered objects: " << m_rendered_obj;
     mbstowcs(buffer, oss2.str().c_str(), 64);
-    m_text_dynamic_text->addString(buffer, 15, 15, 1, STRING_DRAW_ABSOLUTE_BL);
+    m_text_dynamic_text->addString(buffer, 15, 15, 1, STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_RIGHT);
 
     oss2.str("");
     oss2.clear();
@@ -66,7 +66,7 @@ void DebugOverlay::render(){
          << "ms - Logic load: " << std::setprecision(3) << m_logic_load_time
          << "ms - Logic sleep: " << std::setprecision(3) << m_logic_sleep_time << "ms";
     mbstowcs(buffer2, oss2.str().c_str(), 128);
-    m_text_dynamic_text->addString(buffer2, 15, 125, 1, STRING_DRAW_ABSOLUTE_TL);
+    m_text_dynamic_text->addString(buffer2, 15, 125, 1, STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
 
     m_text_dynamic_text->render();
 
@@ -102,19 +102,19 @@ void debug_info_box(Text2D** t, int fb_width, int fb_height, GLuint shader, cons
     ucs2wcs(renderer_w+10, renderer, 128-10);
     ucs2wcs(glversion_w+12, gl_version, 128-12);
     
-    (*t)->addString(vendor_w, 15, 25, 1, STRING_DRAW_ABSOLUTE_TL);
-    (*t)->addString(renderer_w, 15, 45, 1, STRING_DRAW_ABSOLUTE_TL);
-    (*t)->addString(glversion_w, 15, 65, 1, STRING_DRAW_ABSOLUTE_TL);
+    (*t)->addString(vendor_w, 15, 25, 1, STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
+    (*t)->addString(renderer_w, 15, 45, 1, STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
+    (*t)->addString(glversion_w, 15, 65, 1, STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
 
     get_cpu_model(modelname);
     mbstowcs(modelname_w, modelname, 64);
-    (*t)->addString(modelname_w+8, 15, 85, 1, STRING_DRAW_ABSOLUTE_TL);
+    (*t)->addString(modelname_w+8, 15, 85, 1, STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
 
     mem_bytes = get_sys_memory();
     mem_gb = (float)mem_bytes / 0x40000000;
     oss.precision(3);
     oss << "System memory: " << mem_gb << " GB";
     mbstowcs(totalmemory_w, oss.str().c_str(), 64);
-    (*t)->addString(totalmemory_w, 15, 105, 1, STRING_DRAW_ABSOLUTE_TL);
+    (*t)->addString(totalmemory_w, 15, 105, 1, STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
 }
 
