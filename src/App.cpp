@@ -82,6 +82,13 @@ void App::objectsInit(){
 
 
 void App::run(){
+
+    /* THIS SHOULD BE MOVED SOMEWHERE ELSE, THIS IS JUST FOR TESTING*/
+    // font atlas = nullptr because I don't have text there yet
+    m_editor_gui.reset(new EditorGUI(m_window_handler.get(), nullptr, m_render_context->getShader(SHADER_GUI), m_render_context.get()));
+    m_render_context->m_gui = m_editor_gui.get();
+    /* THIS SHOULD BE MOVED SOMEWHERE ELSE, THIS IS JUST FOR TESTING*/
+
     std::chrono::steady_clock::time_point loop_start_load;
     std::chrono::steady_clock::time_point previous_loop_start_load = std::chrono::steady_clock::now();;
     std::chrono::steady_clock::time_point loop_end_load;

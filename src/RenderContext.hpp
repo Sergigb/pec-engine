@@ -15,6 +15,7 @@
 #include "common.hpp"
 #include "BasePart.hpp"
 #include "Model.hpp"
+#include "BaseGUI.hpp"
 
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/btBulletDynamicsCommon.h>
@@ -90,6 +91,10 @@ class RenderContext{
         GLuint getShader(int shader) const;
         GLuint getBoundShader() const;
         GLuint getBoundVao() const;
+
+        /*TEMPORAL*/
+        BaseGUI* m_gui;
+        /*TEMPORAL*/
 };
 
 

@@ -9,6 +9,7 @@
 #include "Model.hpp"
 #include "Object.hpp"
 #include "BaseApp.hpp"
+#include "EditorGUI.hpp"
 
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/btBulletDynamicsCommon.h>
@@ -61,6 +62,9 @@ class App : public BaseApp{
         std::vector<struct add_contraint_msg> m_add_constraint_queue;
 
         std::chrono::duration<double, std::micro> m_elapsed_time;
+
+        // GUI testing
+        std::unique_ptr<EditorGUI> m_editor_gui;
 
         void modelsInit();
         void objectsInit();

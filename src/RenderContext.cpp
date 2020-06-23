@@ -62,8 +62,8 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
     glUseProgram(m_text_shader);
     glUniformMatrix4fv(m_text_proj_mat, 1, GL_FALSE, orto_proj.m);
 
-    m_gui_shader = create_programme_from_files("../shaders/text_vs.glsl",
-                                                "../shaders/text_fs.glsl");
+    m_gui_shader = create_programme_from_files("../shaders/gui_vs.glsl",
+                                                "../shaders/gui_fs.glsl");
     m_gui_proj_mat = glGetUniformLocation(m_text_shader, "projection");
 
     glUseProgram(m_gui_shader);
@@ -160,11 +160,17 @@ void RenderContext::render(){
         int fb_width, fb_height;
         m_window_handler->getFramebufferSize(fb_width, fb_height);
 
-        glUseProgram(m_text_shader);
+        
         math::mat4 projection = math::orthographic(fb_width, 0, fb_height, 0, 1.0f , -1.0f);
+        glUseProgram(m_text_shader);
         glUniformMatrix4fv(m_text_proj_mat, 1, GL_FALSE, projection.m);
+        glUseProgram(m_gui_shader);
+        glUniformMatrix4fv(m_gui_proj_mat, 1, GL_FALSE, projection.m);
+
 
         m_debug_overlay->onFramebufferSizeUpdate(fb_width, fb_height);
+
+        m_gui->onFramebufferSizeUpdate();
 
         m_update_projection = false;
     }
@@ -197,6 +203,10 @@ void RenderContext::render(){
         }
     }
 
+    glDisable(GL_DEPTH_TEST);
+    m_gui->render();
+    glEnable(GL_DEPTH_TEST);
+
     m_debug_overlay->setRenderedObjects(num_rendered);
     m_debug_overlay->render();
 }
@@ -219,7 +229,7 @@ GLuint RenderContext::getShader(int shader) const{
         case SHADER_TEXT:
             return m_pb_notex_shader;
         case SHADER_GUI:
-            return m_pb_notex_shader;
+            return m_gui_shader;
         default:
             return 0;
     }
