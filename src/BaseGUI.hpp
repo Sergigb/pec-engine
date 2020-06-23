@@ -8,8 +8,9 @@
 
 
 class BaseGUI{
-    public:
+    protected:
         const WindowHandler* m_window_handler;
+    public:
 
         BaseGUI(){};
         BaseGUI(const WindowHandler* window_handler): m_window_handler(window_handler){};

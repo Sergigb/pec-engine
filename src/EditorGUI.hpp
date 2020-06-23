@@ -13,7 +13,7 @@
 // not sure if it's a good idea to hardcode this
 #define EDITOR_GUI_VERTEX_NUM 7
 #define EDITOR_GUI_INDEX_NUM 12
-#define EDITOR_GUI_LP_W 150.0
+#define EDITOR_GUI_LP_W 300.0
 #define EDITOR_GUI_TP_H 30.0
 
 
@@ -28,7 +28,6 @@ class EditorGUI : public BaseGUI{
 
         FontAtlas* m_font_atlas;
         const RenderContext* m_render_context;
-        const WindowHandler* m_window_handler;
 
         void updateBuffers();
     public:

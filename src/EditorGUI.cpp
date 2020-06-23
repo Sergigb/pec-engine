@@ -3,13 +3,13 @@
 
 
 EditorGUI::EditorGUI(){
-    m_fb_update = false;
+    m_fb_update = true;
     m_init = false;
 }
 
 
 EditorGUI::EditorGUI(const WindowHandler* window_handler, FontAtlas* atlas, GLuint shader, const RenderContext* render_context): BaseGUI(window_handler){
-    m_fb_update = false;
+    m_fb_update = true;
     m_init = true;
     m_font_atlas = atlas;
     m_shader_programme = shader;
@@ -70,29 +70,29 @@ void EditorGUI::updateBuffers(){
     vertex_buffer.get()[0] = 0.0;             // 0
     vertex_buffer.get()[1] = 0.0;
     vertex_buffer.get()[2] = 0.0;             // 1
-    vertex_buffer.get()[3] = fb_height_f;
+    vertex_buffer.get()[3] = fb_width_f;
     vertex_buffer.get()[4] = EDITOR_GUI_LP_W; // 2
     vertex_buffer.get()[5] = 0.0;
     vertex_buffer.get()[6] = EDITOR_GUI_LP_W; // 3
-    vertex_buffer.get()[7] = fb_height_f;
+    vertex_buffer.get()[7] = fb_width_f;
     vertex_buffer.get()[8] = 0.0;             // 4
-    vertex_buffer.get()[9] = fb_height_f - EDITOR_GUI_TP_H;
-    vertex_buffer.get()[10] = fb_width_f;     // 5
-    vertex_buffer.get()[11] = fb_height_f - EDITOR_GUI_TP_H;
-    vertex_buffer.get()[12] = fb_width_f;     // 6
-    vertex_buffer.get()[13] = fb_height_f;
+    vertex_buffer.get()[9] = fb_width_f - EDITOR_GUI_TP_H;
+    vertex_buffer.get()[10] = fb_height_f;     // 5
+    vertex_buffer.get()[11] = fb_width_f - EDITOR_GUI_TP_H;
+    vertex_buffer.get()[12] = fb_height_f;     // 6
+    vertex_buffer.get()[13] = fb_width_f;
 
     index_buffer.get()[0] = 0;
-    index_buffer.get()[1] = 1;
-    index_buffer.get()[2] = 2;
-    index_buffer.get()[3] = 2;
-    index_buffer.get()[4] = 1;
+    index_buffer.get()[1] = 2;
+    index_buffer.get()[2] = 1;
+    index_buffer.get()[3] = 1;
+    index_buffer.get()[4] = 2;
     index_buffer.get()[5] = 3;
-    index_buffer.get()[6] = 4;
-    index_buffer.get()[7] = 1;
+    index_buffer.get()[6] = 1;
+    index_buffer.get()[7] = 4;
     index_buffer.get()[8] = 5;
-    index_buffer.get()[9] = 5;
-    index_buffer.get()[10] = 1;
+    index_buffer.get()[9] = 1;
+    index_buffer.get()[10] = 5;
     index_buffer.get()[11] = 6;
 
     m_render_context->bindVao(m_vao);
