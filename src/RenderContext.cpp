@@ -28,7 +28,7 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
     m_update_fb = false;
     m_update_projection = false;
 
-    // shader setup
+    // shader setup (I don't like how this is organised)
 
     m_pb_notex_shader = create_programme_from_files("../shaders/phong_blinn_color_vs.glsl",
                                                     "../shaders/phong_blinn_color_fs.glsl");
@@ -58,9 +58,16 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
                                                 "../shaders/text_fs.glsl");
     m_text_proj_mat = glGetUniformLocation(m_text_shader, "projection");
 
-    math::mat4 text_orto_proj = math::orthographic(fb_width, 0, fb_height , 0, 1.0f , -1.0f);
+    math::mat4 orto_proj = math::orthographic(fb_width, 0, fb_height , 0, 1.0f , -1.0f);
     glUseProgram(m_text_shader);
-    glUniformMatrix4fv(m_text_proj_mat, 1, GL_FALSE, text_orto_proj.m);
+    glUniformMatrix4fv(m_text_proj_mat, 1, GL_FALSE, orto_proj.m);
+
+    m_gui_shader = create_programme_from_files("../shaders/text_vs.glsl",
+                                                "../shaders/text_fs.glsl");
+    m_gui_proj_mat = glGetUniformLocation(m_text_shader, "projection");
+
+    glUseProgram(m_gui_shader);
+    glUniformMatrix4fv(m_gui_proj_mat, 1, GL_FALSE, orto_proj.m);
 
     // debug overlay
     m_debug_overlay.reset(new DebugOverlay(fb_width, fb_height, m_text_shader, this));
@@ -204,13 +211,18 @@ void RenderContext::setLightPosition(const math::vec3& pos) const{
 
 
 GLuint RenderContext::getShader(int shader) const{
-    if(shader == SHADER_PHONG_BLINN){
-        return m_pb_shader;
+    switch(shader){
+        case SHADER_PHONG_BLINN:
+            return m_pb_shader;
+        case SHADER_PHONG_BLINN_NO_TEXTURE:
+            return m_pb_notex_shader;
+        case SHADER_TEXT:
+            return m_pb_notex_shader;
+        case SHADER_GUI:
+            return m_pb_notex_shader;
+        default:
+            return 0;
     }
-    if(shader == SHADER_PHONG_BLINN_NO_TEXTURE){
-        return m_pb_notex_shader;
-    }
-    return 0;
 }
 
 

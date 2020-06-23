@@ -23,6 +23,7 @@
 #define SHADER_PHONG_BLINN 1
 #define SHADER_PHONG_BLINN_NO_TEXTURE 2
 #define SHADER_TEXT 3
+#define SHADER_GUI 4
 
 
 class RenderContext{
@@ -36,6 +37,9 @@ class RenderContext{
 
         GLint m_text_proj_mat;
         GLuint m_text_shader;
+
+        GLint m_gui_proj_mat;
+        GLuint m_gui_shader;
         // shaders //
 
         GLuint m_bound_vao;
