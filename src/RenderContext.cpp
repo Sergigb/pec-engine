@@ -19,9 +19,6 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
     m_bound_vao = 0;
     m_bound_programme = 0;
 
-    m_objects = nullptr;
-    m_parts = nullptr;
-
     m_pause = false;
     m_stop = false;
 
@@ -233,16 +230,6 @@ GLuint RenderContext::getShader(int shader) const{
         default:
             return 0;
     }
-}
-
-
-void RenderContext::setObjectVector(std::vector<std::unique_ptr<Object>>* objects){
-    m_objects = objects;
-}
-
-
-void RenderContext::setPartVector(std::vector<std::unique_ptr<BasePart>>* parts){
-    m_parts = parts;
 }
 
 

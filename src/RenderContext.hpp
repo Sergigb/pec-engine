@@ -51,9 +51,6 @@ class RenderContext{
         float m_bg_r, m_bg_g, m_bg_b, m_bg_a;
         const Camera* m_camera;
         const WindowHandler* m_window_handler;
-
-        std::vector<std::unique_ptr<Object>>* m_objects;
-        std::vector<std::unique_ptr<BasePart>>* m_parts;
         
         std::unique_ptr<Model> m_att_point_model;
         math::mat4 m_att_point_scale;
@@ -80,8 +77,6 @@ class RenderContext{
         void pause(bool pause);
 
         void setLightPosition(const math::vec3& pos) const;
-        void setObjectVector(std::vector<std::unique_ptr<Object>>* objects);
-        void setPartVector(std::vector<std::unique_ptr<BasePart>>* parts);
         void setDebugOverlayTimes(double physics_load_time, double logic_load_time, double logic_sleep_time);
         void setAttPointModel(std::unique_ptr<Model>* att_point_model);
         void useProgram(GLuint program) const;
