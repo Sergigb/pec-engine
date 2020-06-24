@@ -24,6 +24,11 @@ EditorGUI::EditorGUI(const WindowHandler* window_handler, FontAtlas* atlas, GLui
     glVertexAttribPointer(0, 2,  GL_FLOAT, GL_FALSE, 0, NULL);
     glEnableVertexAttribArray(0);
 
+    glGenBuffers(1, &m_vbo_clr);
+    glBindBuffer(GL_ARRAY_BUFFER, m_vbo_clr);
+    glVertexAttribPointer(1, 4,  GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(1);
+
     /*glGenBuffers(1, &m_vbo_tex);
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo_tex);
     glVertexAttribPointer(1, 2,  GL_FLOAT, GL_FALSE, 0, NULL); // CHANGE THE ATTRIBUTE LOCATION!!!!
@@ -31,8 +36,20 @@ EditorGUI::EditorGUI(const WindowHandler* window_handler, FontAtlas* atlas, GLui
 
     glGenBuffers(1, &m_vbo_ind);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vbo_ind);
-    glVertexAttribPointer(1, 3, GL_UNSIGNED_SHORT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(2, 3, GL_UNSIGNED_SHORT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(2);
+
+    // color never changes so there's no reason to change it in the updateBuffers method
+    float gui_color[4 * EDITOR_GUI_VERTEX_NUM] = {0.3, 0.3, 0.3, 1.0,
+                                                  0.5, 0.5, 0.5, 1.0,
+                                                  0.3, 0.3, 0.3, 1.0,
+                                                  0.5, 0.5, 0.5, 1.0,
+                                                  0.3, 0.3, 0.3, 1.0,
+                                                  0.3, 0.3, 0.3, 1.0,
+                                                  0.5, 0.5, 0.5, 1.0,};
+
+    glBindBuffer(GL_ARRAY_BUFFER, m_vbo_clr);
+    glBufferData(GL_ARRAY_BUFFER, 4 * EDITOR_GUI_VERTEX_NUM * sizeof(GLfloat), gui_color, GL_STATIC_DRAW);
 }
 
 
@@ -67,19 +84,19 @@ void EditorGUI::updateBuffers(){
     fb_width_f = (float)fb_height;
 
     // uuuhh...
-    vertex_buffer.get()[0] = 0.0;             // 0
+    vertex_buffer.get()[0] = 0.0;
     vertex_buffer.get()[1] = 0.0;
-    vertex_buffer.get()[2] = 0.0;             // 1
+    vertex_buffer.get()[2] = 0.0;
     vertex_buffer.get()[3] = fb_width_f;
-    vertex_buffer.get()[4] = EDITOR_GUI_LP_W; // 2
+    vertex_buffer.get()[4] = EDITOR_GUI_LP_W;
     vertex_buffer.get()[5] = 0.0;
-    vertex_buffer.get()[6] = EDITOR_GUI_LP_W; // 3
+    vertex_buffer.get()[6] = EDITOR_GUI_LP_W;
     vertex_buffer.get()[7] = fb_width_f;
-    vertex_buffer.get()[8] = 0.0;             // 4
+    vertex_buffer.get()[8] = 0.0;
     vertex_buffer.get()[9] = fb_width_f - EDITOR_GUI_TP_H;
-    vertex_buffer.get()[10] = fb_height_f;     // 5
+    vertex_buffer.get()[10] = fb_height_f;
     vertex_buffer.get()[11] = fb_width_f - EDITOR_GUI_TP_H;
-    vertex_buffer.get()[12] = fb_height_f;     // 6
+    vertex_buffer.get()[12] = fb_height_f;
     vertex_buffer.get()[13] = fb_width_f;
 
     index_buffer.get()[0] = 0;

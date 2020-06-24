@@ -21,7 +21,7 @@ class EditorGUI : public BaseGUI{
     private:
         bool m_fb_update, m_init;
 
-        GLuint m_vao, m_vbo_vert, m_vbo_tex, m_vbo_ind;
+        GLuint m_vao, m_vbo_vert, m_vbo_tex, m_vbo_ind, m_vbo_clr;
         GLuint m_shader_programme;
 
         math::mat4 m_projection;
