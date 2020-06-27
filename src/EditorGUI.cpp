@@ -28,6 +28,28 @@ EditorGUI::EditorGUI(const WindowHandler* window_handler, FontAtlas* atlas, GLui
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo_clr);
     glVertexAttribPointer(1, 4,  GL_FLOAT, GL_FALSE, 0, NULL);
     glEnableVertexAttribArray(1);
+    // color never changes so there's no reason to change it in the updateBuffers method
+    float gui_color[4 * EDITOR_GUI_VERTEX_NUM] = {0.4, 0.4, 0.4, 1.0,
+                                                  0.4, 0.4, 0.4, 1.0,
+                                                  0.4, 0.4, 0.4, 1.0,
+                                                  0.4, 0.4, 0.4, 1.0,
+                                                  0.4, 0.4, 0.4, 1.0,
+                                                  0.4, 0.4, 0.4, 1.0,
+                                                  0.4, 0.4, 0.4, 1.0,
+                                                  0.25, 0.25, 0.25, 1.0,
+                                                  0.25, 0.25, 0.25, 1.0,
+                                                  0.25, 0.25, 0.25, 1.0,
+                                                  0.25, 0.25, 0.25, 1.0,
+                                                  0.25, 0.25, 0.25, 1.0,
+                                                  0.25, 0.25, 0.25, 1.0,
+                                                  0.25, 0.25, 0.25, 1.0,
+                                                  0.25, 0.25, 0.25, 1.0,
+                                                  0.25, 0.25, 0.25, 1.0,
+                                                  0.25, 0.25, 0.25, 1.0,
+                                                  0.25, 0.25, 0.25, 1.0,
+                                                  0.25, 0.25, 0.25, 1.0};
+
+    glBufferData(GL_ARRAY_BUFFER, 4 * EDITOR_GUI_VERTEX_NUM * sizeof(GLfloat), gui_color, GL_STATIC_DRAW);
 
     /*glGenBuffers(1, &m_vbo_tex);
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo_tex);
@@ -39,17 +61,32 @@ EditorGUI::EditorGUI(const WindowHandler* window_handler, FontAtlas* atlas, GLui
     glVertexAttribPointer(2, 3, GL_UNSIGNED_SHORT, GL_FALSE, 0, NULL);
     glEnableVertexAttribArray(2);
 
-    // color never changes so there's no reason to change it in the updateBuffers method
-    float gui_color[4 * EDITOR_GUI_VERTEX_NUM] = {0.3, 0.3, 0.3, 1.0,
-                                                  0.5, 0.5, 0.5, 1.0,
-                                                  0.3, 0.3, 0.3, 1.0,
-                                                  0.5, 0.5, 0.5, 1.0,
-                                                  0.3, 0.3, 0.3, 1.0,
-                                                  0.3, 0.3, 0.3, 1.0,
-                                                  0.5, 0.5, 0.5, 1.0,};
+    // same thing for the index buffer
+    GLushort index_buffer[EDITOR_GUI_INDEX_NUM];
+    index_buffer[0] = 0;
+    index_buffer[1] = 2;
+    index_buffer[2] = 1;
+    index_buffer[3] = 1;
+    index_buffer[4] = 2;
+    index_buffer[5] = 3;
+    index_buffer[6] = 1;
+    index_buffer[7] = 4;
+    index_buffer[8] = 5;
+    index_buffer[9] = 1;
+    index_buffer[10] = 5;
+    index_buffer[11] = 6;
 
-    glBindBuffer(GL_ARRAY_BUFFER, m_vbo_clr);
-    glBufferData(GL_ARRAY_BUFFER, 4 * EDITOR_GUI_VERTEX_NUM * sizeof(GLfloat), gui_color, GL_STATIC_DRAW);
+    for(char i=0; i < 3; i++){
+        int disp = i * 4;
+
+        index_buffer[12 + i * 6] = disp + 7;
+        index_buffer[13 + i * 6] = disp + 8;
+        index_buffer[14 + i * 6] = disp + 9;
+        index_buffer[15 + i * 6] = disp + 9;
+        index_buffer[16 + i * 6] = disp + 10;
+        index_buffer[17 + i * 6] = disp + 7;
+    }
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, EDITOR_GUI_INDEX_NUM * sizeof(GLushort), index_buffer, GL_STATIC_DRAW);
 }
 
 
@@ -70,58 +107,51 @@ void EditorGUI::onFramebufferSizeUpdate(){
 
 void EditorGUI::updateBuffers(){
     int fb_height, fb_width;
-    float fb_height_f, fb_width_f;
+    float fb_height_f, fb_width_f, x_start;
 
-    std::unique_ptr<GLfloat[]> vertex_buffer;
-    //std::unique_ptr<GLfloat[]> tex_coords_buffer; // not using textures yet
-    std::unique_ptr<GLushort[]> index_buffer;
-
-    vertex_buffer.reset(new GLfloat[2 * EDITOR_GUI_VERTEX_NUM]);
-    index_buffer.reset(new GLushort[EDITOR_GUI_INDEX_NUM]);
+    GLfloat vertex_buffer[2 * EDITOR_GUI_VERTEX_NUM];
 
     m_window_handler->getFramebufferSize(fb_width, fb_height);
-    fb_height_f = (float)fb_width;
-    fb_width_f = (float)fb_height;
+    fb_width_f = (float)fb_width;
+    fb_height_f= (float)fb_height;
 
-    // uuuhh...
-    vertex_buffer.get()[0] = 0.0;
-    vertex_buffer.get()[1] = 0.0;
-    vertex_buffer.get()[2] = 0.0;
-    vertex_buffer.get()[3] = fb_width_f;
-    vertex_buffer.get()[4] = EDITOR_GUI_LP_W;
-    vertex_buffer.get()[5] = 0.0;
-    vertex_buffer.get()[6] = EDITOR_GUI_LP_W;
-    vertex_buffer.get()[7] = fb_width_f;
-    vertex_buffer.get()[8] = 0.0;
-    vertex_buffer.get()[9] = fb_width_f - EDITOR_GUI_TP_H;
-    vertex_buffer.get()[10] = fb_height_f;
-    vertex_buffer.get()[11] = fb_width_f - EDITOR_GUI_TP_H;
-    vertex_buffer.get()[12] = fb_height_f;
-    vertex_buffer.get()[13] = fb_width_f;
+    // base panels
+    vertex_buffer[0] = 0.0;
+    vertex_buffer[1] = 0.0;
+    vertex_buffer[2] = 0.0;
+    vertex_buffer[3] = fb_height_f;
+    vertex_buffer[4] = EDITOR_GUI_LP_W;
+    vertex_buffer[5] = 0.0;
+    vertex_buffer[6] = EDITOR_GUI_LP_W;
+    vertex_buffer[7] = fb_height_f;
+    vertex_buffer[8] = 0.0;
+    vertex_buffer[9] = fb_height_f - EDITOR_GUI_TP_H;
+    vertex_buffer[10] = fb_width_f;
+    vertex_buffer[11] = fb_height_f - EDITOR_GUI_TP_H;
+    vertex_buffer[12] = fb_width_f;
+    vertex_buffer[13] = fb_height_f;
+    // buttons
 
-    index_buffer.get()[0] = 0;
-    index_buffer.get()[1] = 2;
-    index_buffer.get()[2] = 1;
-    index_buffer.get()[3] = 1;
-    index_buffer.get()[4] = 2;
-    index_buffer.get()[5] = 3;
-    index_buffer.get()[6] = 1;
-    index_buffer.get()[7] = 4;
-    index_buffer.get()[8] = 5;
-    index_buffer.get()[9] = 1;
-    index_buffer.get()[10] = 5;
-    index_buffer.get()[11] = 6;
+    for(char i=0; i < 3; i++){
+        x_start = (i+1) * BUTTON_PAD_X + i * BUTTON_SIZE_X;
+
+        vertex_buffer[14 + i * 8] = x_start; //1
+        vertex_buffer[15 + i * 8] = fb_height_f - BUTTON_PAD_Y;
+        vertex_buffer[16 + i * 8] = x_start;
+        vertex_buffer[17 + i * 8] = fb_height_f - BUTTON_PAD_Y - BUTTON_SIZE_Y;
+        vertex_buffer[18 + i * 8] = x_start + BUTTON_SIZE_X;
+        vertex_buffer[19 + i * 8] = fb_height_f - BUTTON_PAD_Y - BUTTON_SIZE_Y;
+        vertex_buffer[20 + i * 8] = x_start + BUTTON_SIZE_X;
+        vertex_buffer[21 + i * 8] = fb_height_f - BUTTON_PAD_Y;
+    }
 
     m_render_context->bindVao(m_vao);
 
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo_vert);
-    glBufferData(GL_ARRAY_BUFFER, 2 * EDITOR_GUI_VERTEX_NUM * sizeof(GLfloat), vertex_buffer.get(), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 2 * EDITOR_GUI_VERTEX_NUM * sizeof(GLfloat), vertex_buffer, GL_STATIC_DRAW);
 
     /*glBindBuffer(GL_ARRAY_BUFFER, m_vbo_tex);
     glBufferData(GL_ARRAY_BUFFER, 2 * m_num_vertices * sizeof(GLfloat), tex_coords_buffer.get(), GL_STATIC_DRAW);*/
-
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vbo_ind);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, EDITOR_GUI_INDEX_NUM * sizeof(GLushort), index_buffer.get(), GL_STATIC_DRAW);
 }
 
 
@@ -142,3 +172,4 @@ void EditorGUI::render(){
 void EditorGUI::update(){
     // deal with input??
 }
+

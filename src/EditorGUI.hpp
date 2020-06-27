@@ -11,10 +11,15 @@
 #include "RenderContext.hpp"
 
 // not sure if it's a good idea to hardcode this
-#define EDITOR_GUI_VERTEX_NUM 7
-#define EDITOR_GUI_INDEX_NUM 12
+#define EDITOR_GUI_VERTEX_NUM 19
+#define EDITOR_GUI_INDEX_NUM 30
 #define EDITOR_GUI_LP_W 300.0
-#define EDITOR_GUI_TP_H 30.0
+#define EDITOR_GUI_TP_H 40.0
+
+#define BUTTON_PAD_X 20
+#define BUTTON_PAD_Y 5
+#define BUTTON_SIZE_X 100
+#define BUTTON_SIZE_Y 30
 
 
 class EditorGUI : public BaseGUI{
