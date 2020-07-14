@@ -79,7 +79,7 @@ void App::run(){
 
     /* THIS SHOULD BE MOVED SOMEWHERE ELSE, THIS IS JUST FOR TESTING*/
     // font atlas = nullptr because I don't have text there yet
-    m_editor_gui.reset(new EditorGUI(m_window_handler.get(), nullptr, m_render_context->getShader(SHADER_GUI), m_render_context.get()));
+    m_editor_gui.reset(new EditorGUI(m_window_handler.get(), nullptr, m_render_context->getShader(SHADER_GUI), m_render_context.get(), m_input.get()));
     m_render_context->m_gui = m_editor_gui.get();
     /* THIS SHOULD BE MOVED SOMEWHERE ELSE, THIS IS JUST FOR TESTING*/
 
@@ -117,6 +117,7 @@ void App::run(){
         m_window_handler->update();
         m_camera->update();
         m_frustum->extractPlanes(m_camera->getViewMatrix(), m_camera->getProjMatrix(), false);
+        m_editor_gui->update();
 
         logic();
 
@@ -342,6 +343,10 @@ void App::logic(){
     if(m_input->pressed_keys[GLFW_KEY_P] == INPUT_KEY_DOWN){
         m_physics_pause = !m_physics_pause;
         m_bt_wrapper->pauseSimulation(m_physics_pause);
+    }
+
+    if(m_input->pressed_keys[GLFW_KEY_F12] == INPUT_KEY_DOWN){
+        m_render_context->toggleDebugOverlay();
     }
 }
 
