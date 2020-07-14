@@ -7,6 +7,7 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
     m_camera = camera;
     m_window_handler = window_handler;
     m_buffers = buff_manager;
+    m_draw_overlay = false;
 
     initGl();
     log_gl_params();
@@ -204,8 +205,10 @@ void RenderContext::render(){
     m_gui->render();
     glEnable(GL_DEPTH_TEST);
 
-    m_debug_overlay->setRenderedObjects(num_rendered);
-    m_debug_overlay->render();
+    if(m_draw_overlay){
+        m_debug_overlay->setRenderedObjects(num_rendered);
+        m_debug_overlay->render();
+    }
 }
 
 
@@ -307,5 +310,9 @@ void RenderContext::stop(){
 
 void RenderContext::pause(bool pause){
     m_pause = pause;
+}
+
+void RenderContext::toggleDebugOverlay(){
+    m_draw_overlay = !m_draw_overlay;
 }
 

@@ -61,6 +61,8 @@ class RenderContext{
         int m_fb_width, m_fb_height;
         bool m_update_fb, m_update_projection;
 
+        bool m_draw_overlay;
+
         // synchronization
         struct render_buffers* m_buffers;
 
@@ -82,6 +84,7 @@ class RenderContext{
         void useProgram(GLuint program) const;
         void bindVao(GLuint vao) const;
         void onFramebufferSizeUpdate(int width, int height);
+        void toggleDebugOverlay();
 
         GLuint getShader(int shader) const;
         GLuint getBoundShader() const;
