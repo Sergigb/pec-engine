@@ -22,13 +22,17 @@ class Object{
         math::vec3 m_mesh_color;
         math::mat4 m_mesh_transform;
         bool m_has_transform;
+        btScalar m_mass;
+        btCollisionShape* m_col_shape;
     public:
         std::unique_ptr<btRigidBody> m_body; // made public for convenience
 
-        Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, const btVector3& origin, const btVector3& local_inertia, const btQuaternion& initial_rotation, btScalar mass);
+        Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass);
         Object();
         Object(const Object& obj);
         virtual ~Object();
+
+        void addBody(const btVector3& origin, const btVector3& local_inertia, const btQuaternion& initial_rotation);
 
         math::mat4 getRigidBodyTransformSingle() const;
         void getRigidBodyTransformSingle(math::mat4& body_transform) const;

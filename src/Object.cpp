@@ -5,31 +5,13 @@ Object::Object(){
 }
 
 
-Object::Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, const btVector3& origin, const btVector3& local_inertia, const btQuaternion& initial_rotation, btScalar mass){
-    //btCollisionShape* colShape = new btBoxShape(btVector3(1,1,1));
-    btVector3 local_inertia_ = local_inertia;
-
+Object::Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass){
     m_mesh_color = math::vec3(1.0, 1.0, 1.0);
     m_bt_wrapper = bt_wrapper;
     m_model = model;
     m_has_transform = false;
-
-    btTransform start_transform;
-    start_transform.setIdentity();
-    start_transform.setOrigin(origin);
-    start_transform.setRotation(initial_rotation);
-
-    bool is_dynamic = (mass != 0.f);
-
-    if(is_dynamic)
-        col_shape->calculateLocalInertia(mass, local_inertia_);
-
-    m_motion_state.reset(new btDefaultMotionState(start_transform));
-    btRigidBody::btRigidBodyConstructionInfo rb_info(mass, m_motion_state.get(), col_shape, local_inertia_);
-    m_body.reset(new btRigidBody(rb_info));
-
-    m_bt_wrapper->addRigidBody(m_body.get());
-    m_body->setUserPointer((void*)this);
+    m_col_shape = col_shape;
+    m_mass = mass;
 }
 
 
@@ -40,7 +22,9 @@ Object::Object(const Object& obj){
     m_mesh_transform = obj.m_mesh_transform;
     m_has_transform = obj.m_has_transform;
 
-    btTransform start_transform;
+    m_body.reset(nullptr);
+
+    /*btTransform start_transform;
     obj.m_motion_state->getWorldTransform(start_transform);
     m_motion_state.reset(new btDefaultMotionState(start_transform));
 
@@ -48,12 +32,34 @@ Object::Object(const Object& obj){
     m_body.reset(new btRigidBody(rb_info));
     
     m_bt_wrapper->addRigidBody(m_body.get());
-    m_body->setUserPointer((void*)this);
+    m_body->setUserPointer((void*)this);*/
 }
 
 
 Object::~Object(){
     m_bt_wrapper->removeBody(m_body.get());
+}
+
+
+void Object::addBody(const btVector3& origin, const btVector3& local_inertia, const btQuaternion& initial_rotation){
+    btVector3 local_inertia_ = local_inertia;
+    btTransform start_transform;
+
+    start_transform.setIdentity();
+    start_transform.setOrigin(origin);
+    start_transform.setRotation(initial_rotation);
+
+    bool is_dynamic = (m_mass != 0.f);
+
+    if(is_dynamic)
+        m_col_shape->calculateLocalInertia(m_mass, local_inertia_);
+
+    m_motion_state.reset(new btDefaultMotionState(start_transform));
+    btRigidBody::btRigidBodyConstructionInfo rb_info(m_mass, m_motion_state.get(), m_col_shape, local_inertia_);
+    m_body.reset(new btRigidBody(rb_info));
+
+    m_bt_wrapper->addRigidBody(m_body.get());
+    m_body->setUserPointer((void*)this);
 }
 
 

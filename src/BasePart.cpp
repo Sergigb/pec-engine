@@ -1,8 +1,8 @@
 #include "BasePart.hpp"
 
 
-BasePart::BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, const btVector3& origin, const btVector3& local_inertia, const btQuaternion& initial_rotation, btScalar mass) : 
-    Object(model, bt_wrapper, col_shape, origin, local_inertia, initial_rotation, mass){
+BasePart::BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass) : 
+    Object(model, bt_wrapper, col_shape, mass){
 }
 
 

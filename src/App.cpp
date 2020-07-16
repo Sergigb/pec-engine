@@ -47,18 +47,21 @@ void App::objectsInit(){
     std::unique_ptr<btCollisionShape> cylinder_shape(new btCylinderShape(btVector3(1,1,1)));
 
     quat.setEuler(0, 0, 0);
-    Object* ground = new Object(m_terrain_model.get(), m_bt_wrapper.get(), cube_shape_ground.get(), btVector3(0.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(0.0));
+    Object* ground = new Object(m_terrain_model.get(), m_bt_wrapper.get(), cube_shape_ground.get(), btScalar(0.0));
+    ground->addBody(btVector3(0.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0), quat);
     m_objects.push_back(std::move(std::unique_ptr<Object>(ground)));
 
     for(int i=0; i<10; i++){
-        Object* cube = new Object(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btVector3(0.0, 30.0+i*2.5, 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(10.0));
+        Object* cube = new Object(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btScalar(10.0));
+        cube->addBody(btVector3(0.0, 30.0+i*2.5, 0.0), btVector3(0.0, 0.0, 0.0), quat);
         cube->setColor(math::vec3(0.0, 1.0, 0.0));
         m_objects.push_back(std::move(std::unique_ptr<Object>(cube)));
     }
 
     for(int i=0; i<10; i++){
         // testing attachment points
-        BasePart* cube = new BasePart(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btVector3(2.5, 30.0+i*5., 0.0), btVector3(0.0, 0.0, 0.0), quat, btScalar(10.0));
+        BasePart* cube = new BasePart(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btScalar(10.0));
+        cube->addBody(btVector3(2.5, 30.0+i*5., 0.0), btVector3(0.0, 0.0, 0.0), quat);
         cube->setColor(math::vec3(1.0-0.1*i, 0.0, 0.1*i));
         cube->setParentAttachmentPoint(math::vec3(0.0, 1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
         cube->addAttachmentPoint(math::vec3(1.0, 0.0, 0.0), math::vec3(0.0, 0.0, 0.0));
