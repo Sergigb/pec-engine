@@ -181,7 +181,7 @@ void EditorGUI::updateButtons(){ // used to update button colors
     int button_mouseover = m_button_mouseover;
 
     // reset button color if m_last_button_color != -1
-    if(m_last_button_color >= 0){
+    if(m_last_button_color >= 0 && !m_button_status[button_mouseover]){
         GLfloat new_color[16] = {BUTTON_COLOR_DEFAULT,
                                  BUTTON_COLOR_DEFAULT,
                                  BUTTON_COLOR_DEFAULT,
@@ -192,16 +192,25 @@ void EditorGUI::updateButtons(){ // used to update button colors
     m_last_button_color = -1;
 
     if(button_mouseover >= 0 && button_mouseover < EDITOR_GUI_N_BUTTONS){ // && button_mouseover < EDITOR_GUI_N_BUTTONS -> sanity check
-        if(!m_button_color_status[button_mouseover]){
+        if(m_button_status[button_mouseover]){
+            GLfloat new_color[16] = {BUTTON_COLOR_SELECTED_MOUSEOVER,
+                                     BUTTON_COLOR_SELECTED_MOUSEOVER,
+                                     BUTTON_COLOR_SELECTED_MOUSEOVER,
+                                     BUTTON_COLOR_SELECTED_MOUSEOVER};
+            colorButton(new_color, button_mouseover);
+            m_button_color_status[button_mouseover] = false;
+        }
+        else{
             GLfloat new_color[16] = {BUTTON_COLOR_MOUSEOVER,
                                      BUTTON_COLOR_MOUSEOVER,
                                      BUTTON_COLOR_MOUSEOVER,
                                      BUTTON_COLOR_MOUSEOVER};
-
             colorButton(new_color, button_mouseover);
-
-            m_last_button_color = button_mouseover;
         }
+
+        m_last_button_color = button_mouseover;
+
+        return;
     }
 
     for(int i=0; i < EDITOR_GUI_N_BUTTONS; i++){
@@ -261,9 +270,7 @@ void EditorGUI::update(){
                 if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){
                     m_button_status[i] = !m_button_status[i];
                 }
-                else{
-                    m_button_mouseover = i;
-                }
+                m_button_mouseover = i;
             }
         }
     }
