@@ -5,13 +5,16 @@ Object::Object(){
 }
 
 
-Object::Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass){
+Object::Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID){
     m_mesh_color = math::vec3(1.0, 1.0, 1.0);
     m_bt_wrapper = bt_wrapper;
     m_model = model;
     m_has_transform = false;
     m_col_shape = col_shape;
     m_mass = mass;
+    m_baseID = baseID;
+    m_object_name = "unnamed";
+    m_fancy_name = "unnamed";
 }
 
 
@@ -23,21 +26,13 @@ Object::Object(const Object& obj){
     m_has_transform = obj.m_has_transform;
 
     m_body.reset(nullptr);
-
-    /*btTransform start_transform;
-    obj.m_motion_state->getWorldTransform(start_transform);
-    m_motion_state.reset(new btDefaultMotionState(start_transform));
-
-    btRigidBody::btRigidBodyConstructionInfo rb_info(1/obj.m_body->getInvMass(), m_motion_state.get(), obj.m_body->getCollisionShape(), obj.m_body->getLocalInertia());
-    m_body.reset(new btRigidBody(rb_info));
-    
-    m_bt_wrapper->addRigidBody(m_body.get());
-    m_body->setUserPointer((void*)this);*/
 }
 
 
 Object::~Object(){
-    m_bt_wrapper->removeBody(m_body.get());
+    if(m_body != nullptr){
+        m_bt_wrapper->removeBody(m_body.get());
+    }
 }
 
 
@@ -171,3 +166,14 @@ void Object::getRigidBodyTransformDouble(double* mat4) const{
     m_body->getMotionState()->getWorldTransform(trans);
     trans.getOpenGLMatrix(mat4);
 }
+
+
+void Object::setName(std::string name){
+    m_object_name = name;
+}
+
+
+void Object::setFancyName(std::string name){
+    m_fancy_name = name;
+}
+

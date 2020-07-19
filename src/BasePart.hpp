@@ -23,7 +23,7 @@ class BasePart : public Object{
         std::vector<struct attachment_point> m_attachment_points;  // the attachment points of the part
         std::unique_ptr<btTypedConstraint> m_parent_constraint; // the constraint between this part and the parent
     public:
-        BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass);
+        BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID);
         BasePart();
         ~BasePart();
 

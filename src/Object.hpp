@@ -3,6 +3,7 @@
 
 #include <algorithm>
 #include <memory>
+#include <string>
 
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/btBulletDynamicsCommon.h>
@@ -24,10 +25,12 @@ class Object{
         bool m_has_transform;
         btScalar m_mass;
         btCollisionShape* m_col_shape;
+        int m_baseID;
+        std::string m_object_name, m_fancy_name;
     public:
         std::unique_ptr<btRigidBody> m_body; // made public for convenience
 
-        Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass);
+        Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID);
         Object();
         Object(const Object& obj);
         virtual ~Object();
@@ -45,6 +48,8 @@ class Object{
         void setMeshScale(const math::vec3& scale);
         void setMeshTransform(const math::mat4& transform);
         void setMotionState(const btVector3& origin, const btQuaternion& initial_rotation);
+        void setName(std::string name);
+        void setFancyName(std::string name);
         void activate(bool activate);
         int render();
         int render(math::mat4 body_transform);

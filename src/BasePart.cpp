@@ -1,8 +1,8 @@
 #include "BasePart.hpp"
 
 
-BasePart::BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass) : 
-    Object(model, bt_wrapper, col_shape, mass){
+BasePart::BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID) : 
+    Object(model, bt_wrapper, col_shape, mass, baseID){
 }
 
 
