@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include <mutex>
+#include <string>
 
 #include "maths_funcs.hpp"
 #include "Model.hpp"
@@ -56,6 +57,10 @@ class App : public BaseApp{
         complex crap.*/
         std::vector<std::unique_ptr<BasePart>> m_parts;
 
+        // in the future, all the objects are going to be copied from the master part copy
+        // maybe we'll need a different set for objects that are not parts?
+        std::map<int, std::unique_ptr<BasePart>> m_master_parts;
+
         // queues
         std::vector<struct set_motion_state_msg> m_set_motion_state_queue;
         std::vector<BasePart*> m_remove_part_constraint_queue;
@@ -68,6 +73,7 @@ class App : public BaseApp{
 
         void modelsInit();
         void objectsInit();
+        void loadParts();
         void logic();
     public:
         App();

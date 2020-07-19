@@ -4,6 +4,7 @@
 App::App() : BaseApp(){
     modelsInit();
     objectsInit();
+    loadParts();
 
     m_render_context->setLightPosition(math::vec3(150.0, 100.0, 0.0));
 
@@ -16,6 +17,7 @@ App::App() : BaseApp(){
 App::App(int gl_width, int gl_height) : BaseApp(gl_width, gl_height){
     modelsInit();
     objectsInit();
+    loadParts();
 
     m_render_context->setLightPosition(math::vec3(150.0, 100.0, 0.0));
 
@@ -47,12 +49,12 @@ void App::objectsInit(){
     std::unique_ptr<btCollisionShape> cylinder_shape(new btCylinderShape(btVector3(1,1,1)));
 
     quat.setEuler(0, 0, 0);
-    Object* ground = new Object(m_terrain_model.get(), m_bt_wrapper.get(), cube_shape_ground.get(), btScalar(0.0));
+    Object* ground = new Object(m_terrain_model.get(), m_bt_wrapper.get(), cube_shape_ground.get(), btScalar(0.0), 0);
     ground->addBody(btVector3(0.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0), quat);
     m_objects.push_back(std::move(std::unique_ptr<Object>(ground)));
 
     for(int i=0; i<10; i++){
-        Object* cube = new Object(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btScalar(10.0));
+        Object* cube = new Object(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btScalar(10.0), 0);
         cube->addBody(btVector3(0.0, 30.0+i*2.5, 0.0), btVector3(0.0, 0.0, 0.0), quat);
         cube->setColor(math::vec3(0.0, 1.0, 0.0));
         m_objects.push_back(std::move(std::unique_ptr<Object>(cube)));
@@ -60,7 +62,7 @@ void App::objectsInit(){
 
     for(int i=0; i<10; i++){
         // testing attachment points
-        BasePart* cube = new BasePart(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btScalar(10.0));
+        BasePart* cube = new BasePart(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btScalar(10.0), 0);
         cube->addBody(btVector3(2.5, 30.0+i*5., 0.0), btVector3(0.0, 0.0, 0.0), quat);
         cube->setColor(math::vec3(1.0-0.1*i, 0.0, 0.1*i));
         cube->setParentAttachmentPoint(math::vec3(0.0, 1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
@@ -75,6 +77,38 @@ void App::objectsInit(){
     m_collision_shapes.push_back(std::move(sphere_shape));
     m_collision_shapes.push_back(std::move(cube3m));
     m_collision_shapes.push_back(std::move(cylinder_shape));
+}
+
+
+void App::loadParts(){
+    // not really "loading" for now but whatever
+    // for now I'm just adding cubes as parts, just for testing
+    btQuaternion quat;
+    quat.setEuler(0, 0, 0);
+
+    std::unique_ptr<btCollisionShape> cube_shape(new btBoxShape(btVector3(1,1,1)));
+
+    for(int i=0; i<10; i++){
+        int ID = i; // change in the future to something else
+
+        std::unique_ptr<BasePart> cube(new BasePart(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btScalar(10.0), ID));
+        cube->setColor(math::vec3(1.0-0.1*i, 0.0, 0.1*i));
+        cube->setParentAttachmentPoint(math::vec3(0.0, 1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
+        cube->addAttachmentPoint(math::vec3(1.0, 0.0, 0.0), math::vec3(0.0, 0.0, 0.0));
+        cube->addAttachmentPoint(math::vec3(0.0, -1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
+        cube->addAttachmentPoint(math::vec3(1.0, 0.0, 1.0), math::vec3(0.0, 0.0, 0.0));
+        cube->setName(std::string("test_part_id_", ID));
+        cube->setFancyName(std::string("Test part ", ID));
+
+        typedef std::map<int, std::unique_ptr<BasePart>>::iterator map_iterator;
+        std::pair<map_iterator, bool> res = m_master_parts.insert({ID, std::move(cube)});
+
+        if(!res.second){
+            log("Failed to inset part with id ", ID, " (collided with ", res.first->first, ")");
+            std::cerr << "Failed to inset part with id " << ID << " (collided with " << res.first->first << ")" << std::endl;
+        }
+    }
+    m_collision_shapes.push_back(std::move(cube_shape));
 }
 
 
