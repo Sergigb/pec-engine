@@ -181,13 +181,15 @@ void EditorGUI::updateButtons(){ // used to update button colors
     int button_mouseover = m_button_mouseover;
 
     // reset button color if m_last_button_color != -1
-    if(m_last_button_color >= 0 && !m_button_status[button_mouseover]){
-        GLfloat new_color[16] = {BUTTON_COLOR_DEFAULT,
-                                 BUTTON_COLOR_DEFAULT,
-                                 BUTTON_COLOR_DEFAULT,
-                                 BUTTON_COLOR_DEFAULT};
+    if(m_last_button_color >= 0){
+        if(!m_button_status[m_last_button_color]){
+            GLfloat new_color[16] = {BUTTON_COLOR_DEFAULT,
+                                     BUTTON_COLOR_DEFAULT,
+                                     BUTTON_COLOR_DEFAULT,
+                                     BUTTON_COLOR_DEFAULT};
 
-        colorButton(new_color, m_last_button_color);
+            colorButton(new_color, m_last_button_color);
+        }
     }
     m_last_button_color = -1;
 
