@@ -117,6 +117,7 @@ void App::run(){
     /* THIS SHOULD BE MOVED SOMEWHERE ELSE, THIS IS JUST FOR TESTING*/
     // font atlas = nullptr because I don't have text there yet
     m_editor_gui.reset(new EditorGUI(m_window_handler.get(), nullptr, m_render_context->getShader(SHADER_GUI), m_render_context.get(), m_input.get()));
+    m_editor_gui->setMasterPartList(&m_master_parts);
     m_render_context->m_gui = m_editor_gui.get();
     /* THIS SHOULD BE MOVED SOMEWHERE ELSE, THIS IS JUST FOR TESTING*/
 
@@ -208,11 +209,9 @@ void App::logic(){
     // mouse pick test
     if(m_picked_obj){
         math::vec3 ray_start_world, ray_end_world;
-        btVector3 ray_end_world_btv3;
         BasePart* part;
         
         m_camera->castRayMousePos(25.f, ray_start_world, ray_end_world);
-        ray_end_world_btv3 = btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]);
 
         // some spaghetti code testing the attachments
         // disorganized as fuck

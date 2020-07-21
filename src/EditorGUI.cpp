@@ -22,6 +22,7 @@ EditorGUI::EditorGUI(const WindowHandler* window_handler, FontAtlas* atlas, GLui
     m_button_select = -1;
     std::memset(m_button_status, 0, EDITOR_GUI_N_BUTTONS * sizeof(bool));
     std::memset(m_button_color_status, 0, EDITOR_GUI_N_BUTTONS * sizeof(bool));
+    m_master_parts_list = nullptr;
 
     m_window_handler->getFramebufferSize(fb_width, fb_height);
     m_fb_width_f = (float)fb_width;
@@ -276,5 +277,10 @@ void EditorGUI::update(){
             }
         }
     }
+}
+
+
+void EditorGUI::setMasterPartList(const std::map<int, std::unique_ptr<BasePart>>* master_parts_list){
+    m_master_parts_list = master_parts_list;
 }
 

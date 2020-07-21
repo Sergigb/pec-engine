@@ -1,6 +1,8 @@
 #ifndef EDITORGUI_HPP
 #define EDITORGUI_HPP
 
+#include <map>
+
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
@@ -10,6 +12,7 @@
 #include "FontAtlas.hpp"
 #include "RenderContext.hpp"
 #include "Input.hpp"
+#include "BasePart.hpp"
 
 // not sure if it's a good idea to hardcode this
 #define EDITOR_GUI_VERTEX_NUM 19
@@ -52,6 +55,7 @@ class EditorGUI : public BaseGUI{
         FontAtlas* m_font_atlas;
         const RenderContext* m_render_context;
         const Input* m_input;
+        const std::map<int, std::unique_ptr<BasePart>>* m_master_parts_list;
 
         void updateBuffers();
         void updateButtons();
@@ -60,6 +64,8 @@ class EditorGUI : public BaseGUI{
         EditorGUI();
         EditorGUI(const WindowHandler* window_handler, FontAtlas* atlas, GLuint shader, const RenderContext* render_context, const Input* input);
         ~EditorGUI();
+
+        void setMasterPartList(const std::map<int, std::unique_ptr<BasePart>>* master_parts_list);
 
         void onFramebufferSizeUpdate();
         void render();
