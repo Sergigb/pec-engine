@@ -5,6 +5,7 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+#include <stb/stb_image.h>
 
 #include "WindowHandler.hpp"
 #include "BaseGUI.hpp"
@@ -13,6 +14,8 @@
 #include "RenderContext.hpp"
 #include "Input.hpp"
 #include "BasePart.hpp"
+#include "log.hpp"
+//#include "PartsPanelGUI.hpp"
 
 // not sure if it's a good idea to hardcode this
 #define EDITOR_GUI_VERTEX_NUM 19
@@ -34,6 +37,11 @@
 #define BUTTON_COLOR_SELECTED 0.0, 0.0, 0.9, 1.0
 #define BUTTON_COLOR_SELECTED_MOUSEOVER 0.0, 0.0, 0.7, 1.0
 
+// actions related to the gui
+#define EDITOR_ACTION_NONE 0
+#define EDITOR_ACTION_OBJECT_PICK 1
+#define EDITOR_ACTION_BUTTON 2 // well see about this
+
 
 
 class EditorGUI : public BaseGUI{
@@ -48,7 +56,12 @@ class EditorGUI : public BaseGUI{
         bool m_button_color_status[EDITOR_GUI_N_BUTTONS];
 
         GLuint m_vao, m_vbo_vert, m_vbo_tex, m_vbo_ind, m_vbo_clr;
+        GLuint m_texture_atlas;
         GLuint m_shader_programme;
+
+        // parts panel, this is related to the drawing on the panel, not the contents
+        GLuint m_parts_panel_vao, m_parts_panel_vbo_vert, m_parts_panel_vbo_tex;
+        //PartsPanelGUI m_parts_panel;
 
         math::mat4 m_projection;
 

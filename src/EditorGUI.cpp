@@ -64,15 +64,37 @@ EditorGUI::EditorGUI(const WindowHandler* window_handler, FontAtlas* atlas, GLui
 
     glBufferData(GL_ARRAY_BUFFER, 4 * EDITOR_GUI_VERTEX_NUM * sizeof(GLfloat), gui_color, GL_STATIC_DRAW);
 
-    /*glGenBuffers(1, &m_vbo_tex);
+    glGenBuffers(1, &m_vbo_tex);
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo_tex);
-    glVertexAttribPointer(1, 2,  GL_FLOAT, GL_FALSE, 0, NULL); // CHANGE THE ATTRIBUTE LOCATION!!!!
-    glEnableVertexAttribArray(1);*/ // CHANGE THE ATTRIBUTE LOCATION!!!!
+    glVertexAttribPointer(2, 3,  GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(2);
+    // this works, but the alpha is set all to 0s because I don't have a good texture atlas yet :(
+    GLfloat tex_coords[4 * EDITOR_GUI_VERTEX_NUM] = {0.0, 1.0, 0.0,
+                                                     0.0, 0.0, 0.0,
+                                                     1.0, 1.0, 0.0,
+                                                     1.0, 0.0, 0.0,
+                                                     0.0, 1.0, 0.0,
+                                                     1.0, 1.0, 0.0,
+                                                     1.0, 0.0, 0.0,
+                                                     0.0, 0.0, 0.0,
+                                                     0.0, 0.0, 0.0,
+                                                     0.0, 0.0, 0.0,
+                                                     0.0, 0.0, 0.0,
+                                                     0.0, 0.0, 0.0,
+                                                     0.0, 0.0, 0.0,
+                                                     0.0, 0.0, 0.0,
+                                                     0.0, 0.0, 0.0,
+                                                     0.0, 0.0, 0.0,
+                                                     0.0, 0.0, 0.0,
+                                                     0.0, 0.0, 0.0,
+                                                     0.0, 0.0, 0.0,};
+
+    glBufferData(GL_ARRAY_BUFFER, 4 * EDITOR_GUI_VERTEX_NUM * sizeof(GLfloat), tex_coords, GL_STATIC_DRAW);
 
     glGenBuffers(1, &m_vbo_ind);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vbo_ind);
-    glVertexAttribPointer(2, 3, GL_UNSIGNED_SHORT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(2);
+    glVertexAttribPointer(3, 3, GL_UNSIGNED_SHORT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(3);
 
     // same thing for the index buffer
     GLushort index_buffer[EDITOR_GUI_INDEX_NUM];
@@ -101,15 +123,34 @@ EditorGUI::EditorGUI(const WindowHandler* window_handler, FontAtlas* atlas, GLui
         index_buffer[17 + i * 6] = disp + 7;
     }
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, EDITOR_GUI_INDEX_NUM * sizeof(GLushort), index_buffer, GL_STATIC_DRAW);
+
+    // texture atlas loading test
+    int x, y, n;
+    unsigned char* image_data = stbi_load("../data/test_texture.png", &x, &y, &n, 4);
+    if(!image_data) {
+        std::cerr << "EditorGUI::EditorGUI - could not load GUI texture atlas" << std::endl;
+        log("EditorGUI::EditorGUI - could not load GUI texture atlas");
+    }
+    else{
+        glGenTextures(1, &m_texture_atlas);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, m_texture_atlas);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, x, y, 0, GL_RGBA, GL_UNSIGNED_BYTE, image_data);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    }
 }
 
 
 EditorGUI::~EditorGUI(){
     if(m_init){
         glDeleteBuffers(1, &m_vbo_vert);
-        //glDeleteBuffers(1, &m_vbo_tex);
+        glDeleteBuffers(1, &m_vbo_tex);
         glDeleteBuffers(1, &m_vbo_ind);
         glDeleteVertexArrays(1, &m_vao);
+        glDeleteTextures(1, &m_texture_atlas);
     }
 }
 
@@ -120,14 +161,9 @@ void EditorGUI::onFramebufferSizeUpdate(){
 
 
 void EditorGUI::updateBuffers(){
-    int fb_height, fb_width;
     float x_start;
 
     GLfloat vertex_buffer[2 * EDITOR_GUI_VERTEX_NUM];
-
-    m_window_handler->getFramebufferSize(fb_width, fb_height);
-    m_fb_width_f = (float)fb_width;
-    m_fb_height_f = (float)fb_height;
 
     // left panel
     vertex_buffer[0] = 0.0;
@@ -242,6 +278,11 @@ void EditorGUI::updateButtons(){ // used to update button colors
 
 void EditorGUI::render(){
     if(m_fb_update){
+        int fb_height, fb_width;
+        m_window_handler->getFramebufferSize(fb_width, fb_height);
+        m_fb_width_f = (float)fb_width;
+        m_fb_height_f = (float)fb_height;
+
         updateBuffers();
         m_fb_update = false;
     }
@@ -249,6 +290,9 @@ void EditorGUI::render(){
 
     m_render_context->useProgram(m_shader_programme);
     m_render_context->bindVao(m_vao);
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_texture_atlas);
 
     //m_font_atlas->bindTexture();
     glDrawElements(GL_TRIANGLES, EDITOR_GUI_INDEX_NUM, GL_UNSIGNED_SHORT, NULL);
