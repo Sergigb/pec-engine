@@ -143,6 +143,46 @@ EditorGUI::EditorGUI(const WindowHandler* window_handler, FontAtlas* atlas, GLui
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     }
+
+    // part list panel
+    glGenVertexArrays(1, &m_parts_panel_vao);
+    m_render_context->bindVao(m_parts_panel_vao);
+
+    glGenBuffers(1, &m_parts_panel_vbo_vert);
+    glBindBuffer(GL_ARRAY_BUFFER, m_parts_panel_vbo_vert);
+    glVertexAttribPointer(0, 2,  GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(0);
+    GLfloat parts_panel_vert[12] = {EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN,
+                                    EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN,
+                                    EDITOR_GUI_PP_MARGIN, m_fb_height_f - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN,
+                                    EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN,
+                                    EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, m_fb_height_f - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN,
+                                    EDITOR_GUI_PP_MARGIN, m_fb_height_f - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN};
+    glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), parts_panel_vert, GL_STATIC_DRAW);
+
+    glGenBuffers(1, &m_parts_panel_vbo_clr);
+    glBindBuffer(GL_ARRAY_BUFFER, m_parts_panel_vbo_clr);
+    glVertexAttribPointer(1, 4,  GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(1);
+    GLfloat parts_panel_clr[24] = {0.0, 0.0, 0.0, 0.0,
+                                   0.0, 0.0, 0.0, 0.0,
+                                   0.0, 0.0, 0.0, 0.0,
+                                   0.0, 0.0, 0.0, 0.0,
+                                   0.0, 0.0, 0.0, 0.0,
+                                   0.0, 0.0, 0.0, 0.0};
+    glBufferData(GL_ARRAY_BUFFER, 24 * sizeof(GLfloat), parts_panel_clr, GL_STATIC_DRAW);
+
+    glGenBuffers(1, &m_parts_panel_vbo_tex);
+    glBindBuffer(GL_ARRAY_BUFFER, m_parts_panel_vbo_tex);
+    glVertexAttribPointer(2, 3,  GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(2);
+    GLfloat parts_panel_tex[18] = {0.0, 0.0, 0.0,
+                                   0.0, 0.0, 0.0,
+                                   0.0, 0.0, 0.0,
+                                   0.0, 0.0, 0.0,
+                                   0.0, 0.0, 0.0,
+                                   0.0, 0.0, 0.0};
+    glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(GLfloat), parts_panel_tex, GL_STATIC_DRAW);
 }
 
 
@@ -153,6 +193,11 @@ EditorGUI::~EditorGUI(){
         glDeleteBuffers(1, &m_vbo_ind);
         glDeleteVertexArrays(1, &m_vao);
         glDeleteTextures(1, &m_texture_atlas);
+
+        glDeleteBuffers(1, &m_parts_panel_vbo_vert);
+        glDeleteBuffers(1, &m_parts_panel_vbo_tex);
+        glDeleteBuffers(1, &m_parts_panel_vbo_clr);
+        glDeleteVertexArrays(1, &m_parts_panel_vao);
     }
 }
 
@@ -203,8 +248,15 @@ void EditorGUI::updateBuffers(){
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo_vert);
     glBufferData(GL_ARRAY_BUFFER, 2 * EDITOR_GUI_VERTEX_NUM * sizeof(GLfloat), vertex_buffer, GL_STATIC_DRAW);
 
-    /*glBindBuffer(GL_ARRAY_BUFFER, m_vbo_tex);
-    glBufferData(GL_ARRAY_BUFFER, 2 * m_num_vertices * sizeof(GLfloat), tex_coords_buffer.get(), GL_STATIC_DRAW);*/
+    // parts panel
+    GLfloat parts_panel_vert[12] = {EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN,
+                                    EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN,
+                                    EDITOR_GUI_PP_MARGIN, m_fb_height_f - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN,
+                                    EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN,
+                                    EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, m_fb_height_f - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN,
+                                    EDITOR_GUI_PP_MARGIN, m_fb_height_f - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN};
+    glBindBuffer(GL_ARRAY_BUFFER, m_parts_panel_vbo_vert);
+    glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), parts_panel_vert, GL_STATIC_DRAW);
 }
 
 void EditorGUI::colorButton(const GLfloat* color_array, int button){
@@ -291,15 +343,15 @@ void EditorGUI::render(){
     updateButtons();
 
     m_render_context->useProgram(m_shader_programme);
-    m_render_context->bindVao(m_vao);
-
     glUniform2f(m_disp_location, 0.0, 0.0);
 
+    m_render_context->bindVao(m_vao);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_texture_atlas);
-
-    //m_font_atlas->bindTexture();
     glDrawElements(GL_TRIANGLES, EDITOR_GUI_INDEX_NUM, GL_UNSIGNED_SHORT, NULL);
+
+    m_render_context->bindVao(m_parts_panel_vao);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 

@@ -15,14 +15,15 @@
 #include "Input.hpp"
 #include "BasePart.hpp"
 #include "log.hpp"
-//#include "PartsPanelGUI.hpp"
+#include "PartsPanelGUI.hpp"
 
 // not sure if it's a good idea to hardcode this
 #define EDITOR_GUI_VERTEX_NUM 19
 #define EDITOR_GUI_INDEX_NUM 30
-#define EDITOR_GUI_LP_W 300.0
-#define EDITOR_GUI_TP_H 40.0
+#define EDITOR_GUI_LP_W 300.0f
+#define EDITOR_GUI_TP_H 40.0f
 #define EDITOR_GUI_N_BUTTONS 3 // changing this won't add buttons cuz the array sizes are fixed
+#define EDITOR_GUI_PP_MARGIN 30.0f
 
 // colors are defined per vertex
 #define EDITOR_GUI_PANEL_COLOR 0.15, 0.15, 0.15, 1.0
@@ -61,8 +62,8 @@ class EditorGUI : public BaseGUI{
         GLuint m_disp_location;
 
         // parts panel, this is related to the drawing on the panel, not the contents
-        GLuint m_parts_panel_vao, m_parts_panel_vbo_vert, m_parts_panel_vbo_tex;
-        //PartsPanelGUI m_parts_panel;
+        GLuint m_parts_panel_vao, m_parts_panel_vbo_vert, m_parts_panel_vbo_tex, m_parts_panel_vbo_clr;
+        std::unique_ptr<PartsPanelGUI> m_parts_panel;
 
         math::mat4 m_projection;
 
