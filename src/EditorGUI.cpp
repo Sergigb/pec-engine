@@ -28,6 +28,8 @@ EditorGUI::EditorGUI(const WindowHandler* window_handler, FontAtlas* atlas, GLui
     m_fb_width_f = (float)fb_width;
     m_fb_height_f = (float)fb_height;
 
+    m_disp_location = glGetUniformLocation(m_shader_programme, "disp");
+
     // gl init
     glGenVertexArrays(1, &m_vao);
     m_render_context->bindVao(m_vao);
@@ -290,6 +292,8 @@ void EditorGUI::render(){
 
     m_render_context->useProgram(m_shader_programme);
     m_render_context->bindVao(m_vao);
+
+    glUniform2f(m_disp_location, 10.0, 10.0);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_texture_atlas);
