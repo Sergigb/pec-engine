@@ -18,6 +18,7 @@ Text2D::Text2D(int fb_width, int fb_height, color& c, const FontAtlas* font, GLu
     m_render_context = render_context;
     m_init = true;
     m_color = c;
+    m_disp = math::vec2(0.0, 0.0);
 
     initgl();
 }
@@ -45,6 +46,7 @@ void Text2D::initgl(){
     glUseProgram(m_shader_programme);
 
     m_color_location = glGetUniformLocation(m_shader_programme, "text_color");
+    m_disp_location = glGetUniformLocation(m_shader_programme, "disp");
 }
 
 
@@ -138,7 +140,6 @@ void Text2D::updateBuffers(){
             vertex_buffer.get()[index + 6] = xpos + w;
             vertex_buffer.get()[index + 7] = ypos;
 
-            index = (k + acc) * 8;
             tex_coords_buffer.get()[index] = ch->tex_x_min;
             tex_coords_buffer.get()[index + 1] = ch->tex_y_max;
             tex_coords_buffer.get()[index + 2] = ch->tex_x_min;
@@ -187,6 +188,7 @@ void Text2D::render(){
     m_render_context->bindVao(m_vao);
 
     glUniform3f(m_color_location, m_color.r, m_color.g, m_color.b);
+    glUniform2fv(m_disp_location, 1, m_disp.v);
 
     m_font_atlas->bindTexture();
     glDrawElements(GL_TRIANGLES, m_num_indices, GL_UNSIGNED_SHORT, NULL);
@@ -257,5 +259,10 @@ void Text2D::onFramebufferSizeUpdate(int fb_width, int fb_height){
     m_fb_width = fb_width;
     m_fb_height = fb_height;
     m_update_buffer = true;
+}
+
+
+void Text2D::setDisplacement(const math::vec2& disp){
+    m_disp = disp;
 }
 

@@ -293,7 +293,7 @@ void EditorGUI::render(){
     m_render_context->useProgram(m_shader_programme);
     m_render_context->bindVao(m_vao);
 
-    glUniform2f(m_disp_location, 10.0, 10.0);
+    glUniform2f(m_disp_location, 0.0, 0.0);
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_texture_atlas);

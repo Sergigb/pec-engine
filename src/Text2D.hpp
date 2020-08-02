@@ -44,14 +44,14 @@ class Text2D{
     // to be drawn. Something like in https://www.reddit.com/r/opengl/comments/6d4eai/how_do_you_manage_your_quads_when_doing_text/
     private:
         GLuint m_vao, m_vbo_vert, m_vbo_tex, m_vbo_ind;
-        GLuint m_shader_programme, m_color_location;
+        GLuint m_shader_programme, m_color_location, m_disp_location;
         GLuint m_num_vertices, m_num_indices;
-        math::mat4 m_projection;
         struct color m_text_color;
         std::vector<struct string> m_strings;
         bool m_update_buffer, m_init;
         int m_fb_width, m_fb_height;
         color m_color;
+        math::vec2 m_disp;
 
         const FontAtlas* m_font_atlas;
         const RenderContext* m_render_context;
@@ -66,6 +66,7 @@ class Text2D{
 
         void addString(const wchar_t* string, uint x, uint y, float scale, int placement, int alignment);
         void addString(const wchar_t* string, float relative_x, float relative_y, float scale, int alignment);
+        void setDisplacement(const math::vec2& disp);
         void clearStrings();
 
         void onFramebufferSizeUpdate(int fb_width, int fb_height);
