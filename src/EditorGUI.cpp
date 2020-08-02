@@ -8,13 +8,17 @@ EditorGUI::EditorGUI(){
 }
 
 
-EditorGUI::EditorGUI(const WindowHandler* window_handler, FontAtlas* atlas, GLuint shader, const RenderContext* render_context, const Input* input): BaseGUI(window_handler){
+EditorGUI::EditorGUI(const WindowHandler* window_handler, FontAtlas* atlas, GLuint gui_shader, GLuint text_shader, const RenderContext* render_context, const Input* input): BaseGUI(window_handler){
     int fb_height, fb_width;
+
+    m_window_handler->getFramebufferSize(fb_width, fb_height);
+    m_fb_width_f = (float)fb_width;
+    m_fb_height_f = (float)fb_height;
 
     m_fb_update = true;
     m_init = true;
     m_font_atlas = atlas;
-    m_shader_programme = shader;
+    m_shader_programme = gui_shader;
     m_render_context = render_context;
     m_input = input;
     m_button_mouseover = -1;
@@ -23,10 +27,10 @@ EditorGUI::EditorGUI(const WindowHandler* window_handler, FontAtlas* atlas, GLui
     std::memset(m_button_status, 0, EDITOR_GUI_N_BUTTONS * sizeof(bool));
     std::memset(m_button_color_status, 0, EDITOR_GUI_N_BUTTONS * sizeof(bool));
     m_master_parts_list = nullptr;
+    m_text_shader_programme = text_shader;
 
-    m_window_handler->getFramebufferSize(fb_width, fb_height);
-    m_fb_width_f = (float)fb_width;
-    m_fb_height_f = (float)fb_height;
+    color c{0.85, 0.85, 0.85};
+    m_text_debug.reset(new Text2D(fb_width, fb_height, c, m_font_atlas, text_shader, render_context));
 
     m_disp_location = glGetUniformLocation(m_shader_programme, "disp");
 
@@ -230,8 +234,12 @@ void EditorGUI::updateBuffers(){
     vertex_buffer[13] = m_fb_height_f;
 
     // buttons
+    m_text_debug->clearStrings();
     for(char i=0; i < EDITOR_GUI_N_BUTTONS; i++){
         x_start = (i+1) * BUTTON_PAD_X + i * BUTTON_SIZE_X;
+
+        m_text_debug->addString(L"Button", x_start + BUTTON_SIZE_X / 2, m_fb_height_f - BUTTON_PAD_Y - BUTTON_SIZE_Y / 2 + 5,
+                                1, STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_CENTER_XY);
 
         vertex_buffer[14 + i * 8] = x_start; //1
         vertex_buffer[15 + i * 8] = m_fb_height_f - BUTTON_PAD_Y;
@@ -336,6 +344,7 @@ void EditorGUI::render(){
         m_window_handler->getFramebufferSize(fb_width, fb_height);
         m_fb_width_f = (float)fb_width;
         m_fb_height_f = (float)fb_height;
+        m_text_debug->onFramebufferSizeUpdate(fb_width, fb_height);
 
         updateBuffers();
         m_fb_update = false;
@@ -352,6 +361,8 @@ void EditorGUI::render(){
 
     m_render_context->bindVao(m_parts_panel_vao);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    m_text_debug->render();
 }
 
 

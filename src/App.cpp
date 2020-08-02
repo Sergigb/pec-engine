@@ -11,6 +11,12 @@ App::App() : BaseApp(){
     m_physics_pause = true;
     m_picked_obj = nullptr;
     m_buffers.last_updated = none;
+
+    m_def_font_atlas.reset(new FontAtlas(256));
+    m_def_font_atlas->loadFont("../data/fonts/Liberastika-Regular.ttf", 15);
+    m_def_font_atlas->loadCharacterRange(32, 255); // ascii
+    m_def_font_atlas->loadCharacterRange(913, 1023); // greek and coptic
+    m_def_font_atlas->createAtlas(false);
 }
 
 
@@ -24,6 +30,12 @@ App::App(int gl_width, int gl_height) : BaseApp(gl_width, gl_height){
     m_physics_pause = true;
     m_picked_obj = nullptr;
     m_buffers.last_updated = none;
+
+    m_def_font_atlas.reset(new FontAtlas(256));
+    m_def_font_atlas->loadFont("../data/fonts/Liberastika-Regular.ttf", 15);
+    m_def_font_atlas->loadCharacterRange(32, 255); // ascii
+    m_def_font_atlas->loadCharacterRange(913, 1023); // greek and coptic
+    m_def_font_atlas->createAtlas(false);
 }
 
 
@@ -116,7 +128,8 @@ void App::run(){
 
     /* THIS SHOULD BE MOVED SOMEWHERE ELSE, THIS IS JUST FOR TESTING*/
     // font atlas = nullptr because I don't have text there yet
-    m_editor_gui.reset(new EditorGUI(m_window_handler.get(), nullptr, m_render_context->getShader(SHADER_GUI), m_render_context.get(), m_input.get()));
+    m_editor_gui.reset(new EditorGUI(m_window_handler.get(), m_def_font_atlas.get(), m_render_context->getShader(SHADER_GUI), 
+                                     m_render_context->getShader(SHADER_TEXT), m_render_context.get(), m_input.get()));
     m_editor_gui->setMasterPartList(&m_master_parts);
     m_render_context->m_gui = m_editor_gui.get();
     /* THIS SHOULD BE MOVED SOMEWHERE ELSE, THIS IS JUST FOR TESTING*/

@@ -16,6 +16,7 @@
 #include "BasePart.hpp"
 #include "log.hpp"
 #include "PartsPanelGUI.hpp"
+#include "Text2D.hpp"
 
 // not sure if it's a good idea to hardcode this
 #define EDITOR_GUI_VERTEX_NUM 19
@@ -67,6 +68,10 @@ class EditorGUI : public BaseGUI{
 
         math::mat4 m_projection;
 
+        // test text
+        GLuint m_text_shader_programme;
+        std::unique_ptr<Text2D> m_text_debug;
+
         FontAtlas* m_font_atlas;
         const RenderContext* m_render_context;
         const Input* m_input;
@@ -77,7 +82,7 @@ class EditorGUI : public BaseGUI{
         void colorButton(const GLfloat* color_array, int button);
     public:
         EditorGUI();
-        EditorGUI(const WindowHandler* window_handler, FontAtlas* atlas, GLuint shader, const RenderContext* render_context, const Input* input);
+        EditorGUI(const WindowHandler* window_handler, FontAtlas* atlas, GLuint gui_shader, GLuint text_shader, const RenderContext* render_context, const Input* input);
         ~EditorGUI();
 
         void setMasterPartList(const std::map<int, std::unique_ptr<BasePart>>* master_parts_list);

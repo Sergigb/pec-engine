@@ -71,6 +71,9 @@ class App : public BaseApp{
         // GUI testing
         std::unique_ptr<EditorGUI> m_editor_gui;
 
+        // application default font atlas
+        std::unique_ptr<FontAtlas> m_def_font_atlas;
+
         void modelsInit();
         void objectsInit();
         void loadParts();
