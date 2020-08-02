@@ -227,7 +227,7 @@ GLuint RenderContext::getShader(int shader) const{
         case SHADER_PHONG_BLINN_NO_TEXTURE:
             return m_pb_notex_shader;
         case SHADER_TEXT:
-            return m_pb_notex_shader;
+            return m_text_shader;
         case SHADER_GUI:
             return m_gui_shader;
         default:
