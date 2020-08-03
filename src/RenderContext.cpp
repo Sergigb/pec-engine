@@ -173,8 +173,9 @@ void RenderContext::render(){
         m_update_projection = false;
     }
 
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glClearColor(m_bg_r, m_bg_g, m_bg_b, m_bg_a);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
 
     if(m_buffers->last_updated != none){
         if(m_buffers->last_updated == buffer_1){
