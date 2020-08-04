@@ -3,6 +3,8 @@
 RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_handler, render_buffers* buff_manager){
     int fb_width, fb_height;
     window_handler->getFramebufferSize(fb_width, fb_height);
+    m_fb_width = fb_width;
+    m_fb_height = fb_height;
 
     m_camera = camera;
     m_window_handler = window_handler;
@@ -155,18 +157,13 @@ void RenderContext::render(){
     glUniformMatrix4fv(m_pb_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
 
     if(m_update_projection){
-        int fb_width, fb_height;
-        m_window_handler->getFramebufferSize(fb_width, fb_height);
-
-        
-        math::mat4 projection = math::orthographic(fb_width, 0, fb_height, 0, 1.0f , -1.0f);
+        math::mat4 projection = math::orthographic(m_fb_width, 0, m_fb_height, 0, 1.0f , -1.0f);
         glUseProgram(m_text_shader);
         glUniformMatrix4fv(m_text_proj_mat, 1, GL_FALSE, projection.m);
         glUseProgram(m_gui_shader);
         glUniformMatrix4fv(m_gui_proj_mat, 1, GL_FALSE, projection.m);
 
-
-        m_debug_overlay->onFramebufferSizeUpdate(fb_width, fb_height);
+        m_debug_overlay->onFramebufferSizeUpdate(m_fb_width, m_fb_height);
 
         m_gui->onFramebufferSizeUpdate();
 
