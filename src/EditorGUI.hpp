@@ -59,7 +59,7 @@ class EditorGUI : public BaseGUI{
 
         GLuint m_vao, m_vbo_vert, m_vbo_tex, m_vbo_ind, m_vbo_clr;
         GLuint m_texture_atlas;
-        GLuint m_shader_programme;
+        GLuint m_gui_shader;
         GLuint m_disp_location;
 
         // parts panel, this is related to the drawing on the panel, not the contents
@@ -68,8 +68,6 @@ class EditorGUI : public BaseGUI{
 
         math::mat4 m_projection;
 
-        // test text
-        GLuint m_text_shader_programme;
         std::unique_ptr<Text2D> m_text_debug;
 
         const FontAtlas* m_font_atlas;
@@ -82,7 +80,7 @@ class EditorGUI : public BaseGUI{
         void colorButton(const GLfloat* color_array, int button);
     public:
         EditorGUI();
-        EditorGUI(const WindowHandler* window_handler, const FontAtlas* atlas, GLuint gui_shader, GLuint text_shader, const RenderContext* render_context, const Input* input);
+        EditorGUI(const FontAtlas* atlas, const RenderContext* render_context, const Input* input);
         ~EditorGUI();
 
         void setMasterPartList(const std::map<int, std::unique_ptr<BasePart>>* master_parts_list);

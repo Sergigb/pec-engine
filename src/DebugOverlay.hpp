@@ -23,7 +23,7 @@ class DebugOverlay{
         int m_rendered_obj;        
         double m_physics_load_time, m_logic_load_time, m_logic_sleep_time;
     public:
-        DebugOverlay(int fb_width, int fb_height, GLuint shader, const RenderContext* render_context);
+        DebugOverlay(int fb_width, int fb_height, const RenderContext* render_context);
         ~DebugOverlay();
 
         void setRenderedObjects(int n);
@@ -33,6 +33,6 @@ class DebugOverlay{
         void render();
 };
 
-void debug_info_box(Text2D** t, int fb_width, int fb_height, GLuint shader, const FontAtlas* font_atlas, const RenderContext* render_context);
+void debug_info_box(Text2D** t, int fb_width, int fb_height, const FontAtlas* font_atlas, const RenderContext* render_context);
 
 #endif

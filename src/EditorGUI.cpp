@@ -8,18 +8,13 @@ EditorGUI::EditorGUI(){
 }
 
 
-EditorGUI::EditorGUI(const WindowHandler* window_handler, const FontAtlas* atlas, GLuint gui_shader, GLuint text_shader, const RenderContext* render_context, const Input* input): BaseGUI(window_handler){
-    int fb_height, fb_width;
-
-    m_window_handler->getFramebufferSize(fb_width, fb_height);
-    m_fb_width = (float)fb_width;
-    m_fb_height = (float)fb_height;
-
+EditorGUI::EditorGUI(const FontAtlas* atlas, const RenderContext* render_context, const Input* input){
+    m_render_context = render_context;
+    m_render_context->getDefaultFbSize(m_fb_width, m_fb_height);
     m_fb_update = true;
     m_init = true;
     m_font_atlas = atlas;
-    m_shader_programme = gui_shader;
-    m_render_context = render_context;
+    m_gui_shader = m_render_context->getShader(SHADER_GUI);
     m_input = input;
     m_button_mouseover = -1;
     m_last_button_color = -1;
@@ -27,15 +22,14 @@ EditorGUI::EditorGUI(const WindowHandler* window_handler, const FontAtlas* atlas
     std::memset(m_button_status, 0, EDITOR_GUI_N_BUTTONS * sizeof(bool));
     std::memset(m_button_color_status, 0, EDITOR_GUI_N_BUTTONS * sizeof(bool));
     m_master_parts_list = nullptr;
-    m_text_shader_programme = text_shader;
 
     color c{0.85, 0.85, 0.85};
-    m_text_debug.reset(new Text2D(fb_width, fb_height, c, m_font_atlas, text_shader, render_context));
+    m_text_debug.reset(new Text2D(m_fb_width, m_fb_height, c, m_font_atlas, render_context));
 
     m_parts_panel.reset(new PartsPanelGUI(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2,
-                        m_font_atlas, text_shader, m_render_context));
+                        m_font_atlas, m_render_context));
 
-    m_disp_location = glGetUniformLocation(m_shader_programme, "disp");
+    m_disp_location = glGetUniformLocation(m_gui_shader, "disp");
 
     // gl init
     glGenVertexArrays(1, &m_vao);
@@ -343,11 +337,8 @@ void EditorGUI::updateButtons(){ // used to update button colors
 
 void EditorGUI::render(){
     if(m_fb_update){
-        int fb_height, fb_width;
-        m_window_handler->getFramebufferSize(fb_width, fb_height);
-        m_fb_width = (float)fb_width;
-        m_fb_height = (float)fb_height;
-        m_text_debug->onFramebufferSizeUpdate(fb_width, fb_height);
+        m_render_context->getDefaultFbSize(m_fb_width, m_fb_height);
+        m_text_debug->onFramebufferSizeUpdate(m_fb_width, m_fb_height);
         m_parts_panel->onFramebufferSizeUpdate(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2);
 
         updateBuffers();
@@ -355,7 +346,7 @@ void EditorGUI::render(){
     }
     updateButtons();
 
-    m_render_context->useProgram(m_shader_programme);
+    m_render_context->useProgram(m_gui_shader);
     glUniform2f(m_disp_location, 0.0, 0.0);
 
     m_render_context->bindVao(m_vao);

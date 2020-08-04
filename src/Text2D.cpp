@@ -7,15 +7,15 @@ Text2D::Text2D(){
 }
 
 
-Text2D::Text2D(int fb_width, int fb_height, color& c, const FontAtlas* font, GLuint shader, const RenderContext* render_context){
+Text2D::Text2D(int fb_width, int fb_height, color& c, const FontAtlas* font, const RenderContext* render_context){
     m_font_atlas = font;
     m_num_vertices = 0;
     m_num_indices = 0;
     m_fb_width = fb_width;
     m_fb_height = fb_height;
     m_update_buffer = true;
-    m_shader_programme = shader;
     m_render_context = render_context;
+    m_shader_programme = m_render_context->getShader(SHADER_TEXT);
     m_init = true;
     m_color = c;
     m_disp = math::vec2(0.0, 0.0);

@@ -70,7 +70,7 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
     glUniformMatrix4fv(m_gui_proj_mat, 1, GL_FALSE, orto_proj.m);
 
     // debug overlay
-    m_debug_overlay.reset(new DebugOverlay(fb_width, fb_height, m_text_shader, this));
+    m_debug_overlay.reset(new DebugOverlay(fb_width, fb_height, this));
 
     // other gl stuff
     m_bg_r = 0.2;
@@ -245,12 +245,12 @@ void RenderContext::setAttPointModel(std::unique_ptr<Model>* att_point_model){
 
 
 GLuint RenderContext::getBoundShader() const{
-    return m_bound_vao;
+    return m_bound_programme;
 }
 
 
 GLuint RenderContext::getBoundVao() const{
-    return m_bound_programme;
+    return m_bound_vao;
 }
 
 

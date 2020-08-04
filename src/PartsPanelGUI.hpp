@@ -17,7 +17,7 @@
 class PartsPanelGUI{
     private:
         GLuint m_fb, m_tex;
-        GLuint m_text_shader, m_gui_shader;
+        GLuint m_gui_shader;
         float m_fb_width, m_fb_height; // this is the size of the PANEL fb
         GLuint m_vao, m_vbo_vert, m_vbo_tex, m_vbo_clr;
         GLuint m_projection_location;
@@ -30,7 +30,7 @@ class PartsPanelGUI{
         const std::map<int, std::unique_ptr<BasePart>>* m_master_parts_list;
         const FontAtlas* m_font_atlas;
     public:
-        PartsPanelGUI(float fb_width, float fb_height, const FontAtlas* atlas, GLuint text_shader, const RenderContext* render_context);
+        PartsPanelGUI(float fb_width, float fb_height, const FontAtlas* atlas, const RenderContext* render_context);
         ~PartsPanelGUI();
 
         void setMasterPartList(const std::map<int, std::unique_ptr<BasePart>>* master_parts_list);

@@ -1,9 +1,7 @@
 #include "PartsPanelGUI.hpp"
 
 
-PartsPanelGUI::PartsPanelGUI(float fb_width, float fb_height, const FontAtlas* atlas, GLuint text_shader, const RenderContext* render_context){
-    UNUSED(text_shader);
-    UNUSED(render_context);
+PartsPanelGUI::PartsPanelGUI(float fb_width, float fb_height, const FontAtlas* atlas, const RenderContext* render_context){
     m_fb_width = fb_width;
     m_fb_height = fb_height;
     m_master_parts_list = nullptr;
@@ -11,7 +9,6 @@ PartsPanelGUI::PartsPanelGUI(float fb_width, float fb_height, const FontAtlas* a
     m_render_context = render_context;
     //color c{0.4, 0.9, 0.9};
   //  m_text.reset(new Text2D(fb_width, fb_height, c, m_font_atlas, text_shader, render_context));
-    m_text_shader = text_shader;
 
    // m_text->addString(L"Test string\nthis is just a test\ningore this, thank you", 50, 50,
      //                           1, STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_LEFT);

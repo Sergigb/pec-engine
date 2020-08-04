@@ -9,11 +9,9 @@
 
 class BaseGUI{
     protected:
-        const WindowHandler* m_window_handler;
     public:
 
         BaseGUI(){};
-        BaseGUI(const WindowHandler* window_handler): m_window_handler(window_handler){};
         virtual ~BaseGUI(){};
 
         virtual void onFramebufferSizeUpdate() = 0;
