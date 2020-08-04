@@ -8,12 +8,12 @@ EditorGUI::EditorGUI(){
 }
 
 
-EditorGUI::EditorGUI(const WindowHandler* window_handler, FontAtlas* atlas, GLuint gui_shader, GLuint text_shader, const RenderContext* render_context, const Input* input): BaseGUI(window_handler){
+EditorGUI::EditorGUI(const WindowHandler* window_handler, const FontAtlas* atlas, GLuint gui_shader, GLuint text_shader, const RenderContext* render_context, const Input* input): BaseGUI(window_handler){
     int fb_height, fb_width;
 
     m_window_handler->getFramebufferSize(fb_width, fb_height);
-    m_fb_width_f = (float)fb_width;
-    m_fb_height_f = (float)fb_height;
+    m_fb_width = (float)fb_width;
+    m_fb_height = (float)fb_height;
 
     m_fb_update = true;
     m_init = true;
@@ -31,6 +31,9 @@ EditorGUI::EditorGUI(const WindowHandler* window_handler, FontAtlas* atlas, GLui
 
     color c{0.85, 0.85, 0.85};
     m_text_debug.reset(new Text2D(fb_width, fb_height, c, m_font_atlas, text_shader, render_context));
+
+    m_parts_panel.reset(new PartsPanelGUI(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2,
+                        m_font_atlas, text_shader, m_render_context));
 
     m_disp_location = glGetUniformLocation(m_shader_programme, "disp");
 
@@ -158,10 +161,10 @@ EditorGUI::EditorGUI(const WindowHandler* window_handler, FontAtlas* atlas, GLui
     glEnableVertexAttribArray(0);
     GLfloat parts_panel_vert[12] = {EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN,
                                     EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN,
-                                    EDITOR_GUI_PP_MARGIN, m_fb_height_f - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN,
+                                    EDITOR_GUI_PP_MARGIN, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN,
                                     EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN,
-                                    EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, m_fb_height_f - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN,
-                                    EDITOR_GUI_PP_MARGIN, m_fb_height_f - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN};
+                                    EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN,
+                                    EDITOR_GUI_PP_MARGIN, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN};
     glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), parts_panel_vert, GL_STATIC_DRAW);
 
     glGenBuffers(1, &m_parts_panel_vbo_clr);
@@ -180,12 +183,12 @@ EditorGUI::EditorGUI(const WindowHandler* window_handler, FontAtlas* atlas, GLui
     glBindBuffer(GL_ARRAY_BUFFER, m_parts_panel_vbo_tex);
     glVertexAttribPointer(2, 3,  GL_FLOAT, GL_FALSE, 0, NULL);
     glEnableVertexAttribArray(2);
-    GLfloat parts_panel_tex[18] = {0.0, 0.0, 0.0,
-                                   0.0, 0.0, 0.0,
-                                   0.0, 0.0, 0.0,
-                                   0.0, 0.0, 0.0,
-                                   0.0, 0.0, 0.0,
-                                   0.0, 0.0, 0.0};
+    GLfloat parts_panel_tex[18] = {0.0, 0.0, 1.0,
+                                   1.0, 0.0, 1.0,
+                                   0.0, 1.0, 1.0,
+                                   1.0, 0.0, 1.0,
+                                   1.0, 1.0, 1.0,
+                                   0.0, 1.0, 1.0};
     glBufferData(GL_ARRAY_BUFFER, 18 * sizeof(GLfloat), parts_panel_tex, GL_STATIC_DRAW);
 }
 
@@ -220,35 +223,35 @@ void EditorGUI::updateBuffers(){
     vertex_buffer[0] = 0.0;
     vertex_buffer[1] = 0.0;
     vertex_buffer[2] = 0.0;
-    vertex_buffer[3] = m_fb_height_f;
+    vertex_buffer[3] = m_fb_height;
     vertex_buffer[4] = EDITOR_GUI_LP_W;
     vertex_buffer[5] = 0.0;
     vertex_buffer[6] = EDITOR_GUI_LP_W;
     // top panel
-    vertex_buffer[7] = m_fb_height_f;
+    vertex_buffer[7] = m_fb_height;
     vertex_buffer[8] = 0.0;
-    vertex_buffer[9] = m_fb_height_f - EDITOR_GUI_TP_H;
-    vertex_buffer[10] = m_fb_width_f;
-    vertex_buffer[11] = m_fb_height_f - EDITOR_GUI_TP_H;
-    vertex_buffer[12] = m_fb_width_f;
-    vertex_buffer[13] = m_fb_height_f;
+    vertex_buffer[9] = m_fb_height - EDITOR_GUI_TP_H;
+    vertex_buffer[10] = m_fb_width;
+    vertex_buffer[11] = m_fb_height - EDITOR_GUI_TP_H;
+    vertex_buffer[12] = m_fb_width;
+    vertex_buffer[13] = m_fb_height;
 
     // buttons
     m_text_debug->clearStrings();
     for(char i=0; i < EDITOR_GUI_N_BUTTONS; i++){
         x_start = (i+1) * BUTTON_PAD_X + i * BUTTON_SIZE_X;
 
-        m_text_debug->addString(L"Button", x_start + BUTTON_SIZE_X / 2, m_fb_height_f - BUTTON_PAD_Y - BUTTON_SIZE_Y / 2 + 5,
+        m_text_debug->addString(L"Button", x_start + BUTTON_SIZE_X / 2, m_fb_height - BUTTON_PAD_Y - BUTTON_SIZE_Y / 2 + 5,
                                 1, STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_CENTER_XY);
 
         vertex_buffer[14 + i * 8] = x_start; //1
-        vertex_buffer[15 + i * 8] = m_fb_height_f - BUTTON_PAD_Y;
+        vertex_buffer[15 + i * 8] = m_fb_height - BUTTON_PAD_Y;
         vertex_buffer[16 + i * 8] = x_start;
-        vertex_buffer[17 + i * 8] = m_fb_height_f - BUTTON_PAD_Y - BUTTON_SIZE_Y;
+        vertex_buffer[17 + i * 8] = m_fb_height - BUTTON_PAD_Y - BUTTON_SIZE_Y;
         vertex_buffer[18 + i * 8] = x_start + BUTTON_SIZE_X;
-        vertex_buffer[19 + i * 8] = m_fb_height_f - BUTTON_PAD_Y - BUTTON_SIZE_Y;
+        vertex_buffer[19 + i * 8] = m_fb_height - BUTTON_PAD_Y - BUTTON_SIZE_Y;
         vertex_buffer[20 + i * 8] = x_start + BUTTON_SIZE_X;
-        vertex_buffer[21 + i * 8] = m_fb_height_f - BUTTON_PAD_Y;
+        vertex_buffer[21 + i * 8] = m_fb_height - BUTTON_PAD_Y;
     }
 
     m_render_context->bindVao(m_vao);
@@ -259,10 +262,10 @@ void EditorGUI::updateBuffers(){
     // parts panel
     GLfloat parts_panel_vert[12] = {EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN,
                                     EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN,
-                                    EDITOR_GUI_PP_MARGIN, m_fb_height_f - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN,
+                                    EDITOR_GUI_PP_MARGIN, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN,
                                     EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN,
-                                    EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, m_fb_height_f - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN,
-                                    EDITOR_GUI_PP_MARGIN, m_fb_height_f - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN};
+                                    EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN,
+                                    EDITOR_GUI_PP_MARGIN, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN};
     glBindBuffer(GL_ARRAY_BUFFER, m_parts_panel_vbo_vert);
     glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), parts_panel_vert, GL_STATIC_DRAW);
 }
@@ -342,9 +345,10 @@ void EditorGUI::render(){
     if(m_fb_update){
         int fb_height, fb_width;
         m_window_handler->getFramebufferSize(fb_width, fb_height);
-        m_fb_width_f = (float)fb_width;
-        m_fb_height_f = (float)fb_height;
+        m_fb_width = (float)fb_width;
+        m_fb_height = (float)fb_height;
         m_text_debug->onFramebufferSizeUpdate(fb_width, fb_height);
+        m_parts_panel->onFramebufferSizeUpdate(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2);
 
         updateBuffers();
         m_fb_update = false;
@@ -359,6 +363,8 @@ void EditorGUI::render(){
     glBindTexture(GL_TEXTURE_2D, m_texture_atlas);
     glDrawElements(GL_TRIANGLES, EDITOR_GUI_INDEX_NUM, GL_UNSIGNED_SHORT, NULL);
 
+    m_parts_panel->render();
+    m_parts_panel->bindTexture();
     m_render_context->bindVao(m_parts_panel_vao);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
@@ -371,15 +377,15 @@ void EditorGUI::update(){
 
     m_input->getMousePos(posx, posy);
     posx = (double)posx;
-    posy = m_fb_height_f - (double)posy;
+    posy = m_fb_height - (double)posy;
 
     m_button_mouseover = -1;
-    if(posy > m_fb_height_f - EDITOR_GUI_TP_H){ // mouse over top panel
+    if(posy > m_fb_height - EDITOR_GUI_TP_H){ // mouse over top panel
         for(int i=0; i < EDITOR_GUI_N_BUTTONS; i++){
             float x_start = (i+1) * BUTTON_PAD_X + i * BUTTON_SIZE_X;
             
-            if(posx > x_start && posx < x_start + BUTTON_SIZE_X && posy > m_fb_height_f - 
-               BUTTON_PAD_Y - BUTTON_SIZE_Y && posy < m_fb_height_f - BUTTON_PAD_Y){
+            if(posx > x_start && posx < x_start + BUTTON_SIZE_X && posy > m_fb_height - 
+               BUTTON_PAD_Y - BUTTON_SIZE_Y && posy < m_fb_height - BUTTON_PAD_Y){
 
                 if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){
                     m_button_status[i] = !m_button_status[i];
