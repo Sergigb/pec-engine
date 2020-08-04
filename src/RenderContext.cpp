@@ -62,7 +62,7 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
 
     m_gui_shader = create_programme_from_files("../shaders/gui_vs.glsl",
                                                 "../shaders/gui_fs.glsl");
-    m_gui_proj_mat = glGetUniformLocation(m_text_shader, "projection");
+    m_gui_proj_mat = glGetUniformLocation(m_gui_shader, "projection");
 
     glUseProgram(m_gui_shader);
     glUniformMatrix4fv(m_gui_proj_mat, 1, GL_FALSE, orto_proj.m);
