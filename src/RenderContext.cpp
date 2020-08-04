@@ -317,3 +317,8 @@ void RenderContext::toggleDebugOverlay(){
     m_draw_overlay = !m_draw_overlay;
 }
 
+
+void RenderContext::getDefaultFbSize(float& width, float& height) const{
+    width = m_fb_width;
+    height = m_fb_height;
+}

@@ -89,6 +89,7 @@ class RenderContext{
         GLuint getShader(int shader) const;
         GLuint getBoundShader() const;
         GLuint getBoundVao() const;
+        void getDefaultFbSize(float& width, float& height) const;
 
         /*TEMPORAL*/
         BaseGUI* m_gui;
