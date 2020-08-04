@@ -47,8 +47,7 @@ void DebugOverlay::setTimes(double physics_load_time, double logic_load_time, do
 void DebugOverlay::render(){
     wchar_t buffer[64], buffer2[128];
     std::ostringstream oss2;
-    
-    glDisable(GL_DEPTH_TEST);
+
     oss2 << (int)get_fps() << " FPS";
     mbstowcs(buffer, oss2.str().c_str(), 64);
     m_text_dynamic_text->clearStrings();
@@ -71,8 +70,6 @@ void DebugOverlay::render(){
     m_text_dynamic_text->render();
 
     m_text_debug->render();
-
-    glEnable(GL_DEPTH_TEST);
 
 }
 
