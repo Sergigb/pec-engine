@@ -177,3 +177,13 @@ void Object::setFancyName(std::string name){
     m_fancy_name = name;
 }
 
+
+void Object::getName(std::string& name) const{
+    name = m_object_name;
+}
+
+
+void Object::getFancyName(std::string& name) const{
+    name = m_fancy_name;
+}
+

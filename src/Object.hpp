@@ -40,6 +40,8 @@ class Object{
         math::mat4 getRigidBodyTransformSingle() const;
         void getRigidBodyTransformSingle(math::mat4& body_transform) const;
         void getRigidBodyTransformDouble(double* mat4) const;
+        void getName(std::string& name) const;
+        void getFancyName(std::string& name) const;
 
         void applyCentralForce(const btVector3& force);
         void applyTorque(const btVector3& torque);
