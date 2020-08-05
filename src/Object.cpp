@@ -27,6 +27,8 @@ Object::Object(const Object& obj){
     m_baseID = obj.m_baseID;
     m_object_name = obj.m_object_name;
     m_fancy_name = obj.m_fancy_name;
+    m_col_shape = obj.m_col_shape;
+    m_mass = obj.m_mass;
 
     m_body.reset(nullptr);
 }
@@ -51,6 +53,8 @@ void Object::addBody(const btVector3& origin, const btVector3& local_inertia, co
 
     if(is_dynamic)
         m_col_shape->calculateLocalInertia(m_mass, local_inertia_);
+
+    //std::cout << m_bt_wrapper << 
 
     m_motion_state.reset(new btDefaultMotionState(start_transform));
     btRigidBody::btRigidBodyConstructionInfo rb_info(m_mass, m_motion_state.get(), m_col_shape, local_inertia_);
