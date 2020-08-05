@@ -69,6 +69,8 @@ class Text2D{
         void setDisplacement(const math::vec2& disp);
         void clearStrings();
 
+        uint getFontHeigth() const;
+
         void onFramebufferSizeUpdate(int fb_width, int fb_height);
         void render();
 };

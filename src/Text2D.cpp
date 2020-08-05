@@ -269,3 +269,8 @@ void Text2D::setDisplacement(const math::vec2& disp){
     m_disp = disp;
 }
 
+
+uint Text2D::getFontHeigth() const{
+    return m_font_atlas->getHeight() >> 6;
+}
+
