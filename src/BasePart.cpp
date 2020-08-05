@@ -18,6 +18,13 @@ BasePart::~BasePart(){
 }
 
 
+BasePart::BasePart(const BasePart& part) : Object(part) {
+    m_parent_att_point = part.m_parent_att_point;
+    m_attachment_points = part.m_attachment_points;
+    m_parent_constraint.reset(nullptr);
+}
+
+
 void BasePart::addAttachmentPoint(const math::vec3& point, const math::vec3& orientation){
     attachment_point att = {point, orientation};
     m_attachment_points.push_back(att);
