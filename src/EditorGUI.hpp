@@ -88,6 +88,8 @@ class EditorGUI : public BaseGUI{
         void onFramebufferSizeUpdate();
         void render();
         int update();
+
+        const std::unique_ptr<BasePart>* getPickedObject() const;
 };
 
 

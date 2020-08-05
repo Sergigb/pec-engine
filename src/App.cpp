@@ -100,17 +100,18 @@ void App::loadParts(){
 
     std::unique_ptr<btCollisionShape> cube_shape(new btBoxShape(btVector3(1,1,1)));
 
-    for(int i=0; i<10; i++){
+    int howmany = 35;
+    for(int i=0; i<howmany; i++){
         int ID = i; // change in the future to something else
 
         std::unique_ptr<BasePart> cube(new BasePart(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btScalar(10.0), ID));
-        cube->setColor(math::vec3(1.0-0.1*i, 0.0, 0.1*i));
+        cube->setColor(math::vec3(1.0-(1./howmany)*i, 0.0, (1./howmany)*i));
         cube->setParentAttachmentPoint(math::vec3(0.0, 1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
         cube->addAttachmentPoint(math::vec3(1.0, 0.0, 0.0), math::vec3(0.0, 0.0, 0.0));
         cube->addAttachmentPoint(math::vec3(0.0, -1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
         cube->addAttachmentPoint(math::vec3(1.0, 0.0, 1.0), math::vec3(0.0, 0.0, 0.0));
         cube->setName(std::string("test_part_id_") + std::to_string(ID));
-        cube->setFancyName(std::string("Test part ") + std::to_string(ID));
+        cube->setFancyName(std::string("Placeholder object ") + std::to_string(ID));
 
         typedef std::map<int, std::unique_ptr<BasePart>>::iterator map_iterator;
         std::pair<map_iterator, bool> res = m_master_parts.insert({ID, std::move(cube)});
@@ -157,6 +158,12 @@ void App::run(){
         }
         m_add_constraint_queue.clear();
 
+        for(uint i=0; i < m_add_object_queue.size(); i++){
+            struct add_object_msg& msg = m_add_object_queue.at(i);
+            msg.part->addBody(msg.origin, msg.inertia, msg.rotation);
+        }
+        m_add_object_queue.clear();
+
         {  //wake up physics thread
             std::unique_lock<std::mutex> lck2(m_thread_monitor.mtx_start);
             m_thread_monitor.worker_start = true;
@@ -167,7 +174,7 @@ void App::run(){
         m_window_handler->update();
         m_camera->update();
         m_frustum->extractPlanes(m_camera->getViewMatrix(), m_camera->getProjMatrix(), false);
-        m_editor_gui->update();
+        m_gui_action = m_editor_gui->update();
 
         logic();
 
@@ -223,7 +230,7 @@ void App::logic(){
         math::vec3 ray_start_world, ray_end_world;
         BasePart* part;
         
-        m_camera->castRayMousePos(25.f, ray_start_world, ray_end_world);
+        m_camera->castRayMousePos(10.f, ray_start_world, ray_end_world);
 
         // some spaghetti code testing the attachments
         // disorganized as fuck
@@ -369,23 +376,43 @@ void App::logic(){
             m_bt_wrapper->updateCollisionWorldSingleAABB(m_picked_obj->m_body.get()); // not thread safe
     }
 
-    if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){
-        if(!m_picked_obj){
-            double mousey, mousex;
-            math::vec3 ray_start_world, ray_end_world;
-            Object* obj;
+    if(!m_gui_action){ // scene has the focus
+        if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){
+            if(!m_picked_obj){
+                double mousey, mousex;
+                math::vec3 ray_start_world, ray_end_world;
+                Object* obj;
 
-            m_input->getMousePos(mousex, mousey);
-            m_camera->castRayMousePos(1000.f, ray_start_world, ray_end_world);
+                m_input->getMousePos(mousex, mousey);
+                m_camera->castRayMousePos(1000.f, ray_start_world, ray_end_world);
 
-            obj = m_bt_wrapper->testRay(ray_start_world, ray_end_world);
-            if(obj)
-                m_picked_obj = obj;
+                obj = m_bt_wrapper->testRay(ray_start_world, ray_end_world);
+                if(obj)
+                    m_picked_obj = obj;
+            }
+            else{
+                m_picked_obj->activate(true);
+                m_picked_obj = nullptr;
+            }
         }
-        else{
+    }
+    if(m_gui_action == EDITOR_ACTION_OBJECT_PICK){
+        const std::unique_ptr<BasePart>* editor_picked_object = m_editor_gui->getPickedObject();
+        const BasePart* part_ptr = editor_picked_object->get(); // trickery
+        BasePart* part = new BasePart(*part_ptr);
+        math::vec3 ray_start_world, ray_end_world;
+
+        m_camera->castRayMousePos(10.f, ray_start_world, ray_end_world);
+        m_add_object_queue.emplace_back(add_object_msg{part, btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]),
+                                        btVector3(0.0, 0.0, 0.0), btQuaternion::getIdentity()});
+        m_parts.push_back(std::move(std::unique_ptr<BasePart>(part)));
+
+        if(m_picked_obj){ // if the user has an scene object picked just leave it "there"
             m_picked_obj->activate(true);
             m_picked_obj = nullptr;
         }
+        m_picked_obj = part;
+
     }
 
     if(m_input->pressed_keys[GLFW_KEY_P] == INPUT_KEY_DOWN){

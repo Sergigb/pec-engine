@@ -29,6 +29,14 @@ struct add_contraint_msg{
 };
 
 
+struct add_object_msg{
+    BasePart* part;
+    btVector3 origin;
+    btVector3 inertia;
+    btQuaternion rotation;
+};
+
+
 class App : public BaseApp{
     private:
         // some models for testing
@@ -65,11 +73,14 @@ class App : public BaseApp{
         std::vector<struct set_motion_state_msg> m_set_motion_state_queue;
         std::vector<BasePart*> m_remove_part_constraint_queue;
         std::vector<struct add_contraint_msg> m_add_constraint_queue;
+        std::vector<struct add_object_msg> m_add_object_queue;
+
 
         std::chrono::duration<double, std::micro> m_elapsed_time;
 
         // GUI testing
         std::unique_ptr<EditorGUI> m_editor_gui;
+        int m_gui_action;
 
         // application default font atlas
         std::unique_ptr<FontAtlas> m_def_font_atlas;

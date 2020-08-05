@@ -396,7 +396,7 @@ int EditorGUI::update(){
     }
     else{
         // focus check
-        if(posy > m_fb_height || posx < EDITOR_GUI_LP_W){
+        if(posy > m_fb_height - EDITOR_GUI_TP_H || posx < EDITOR_GUI_LP_W){
             return EDITOR_ACTION_FOCUS;
         }
         else{
@@ -408,5 +408,10 @@ int EditorGUI::update(){
 
 void EditorGUI::setMasterPartList(const std::map<int, std::unique_ptr<BasePart>>* master_parts_list){
     m_parts_panel->setMasterPartList(master_parts_list);
+}
+
+
+const std::unique_ptr<BasePart>* EditorGUI::getPickedObject() const{
+    return m_parts_panel->getPickedObject();
 }
 
