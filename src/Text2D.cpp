@@ -130,32 +130,32 @@ void Text2D::updateBuffers(){
             h = (float)ch->height * current_string->scale;
 
             index = (k + acc) * 8;
-            vertex_buffer.get()[index] = xpos;
-            vertex_buffer.get()[index + 1] = ypos;
-            vertex_buffer.get()[index + 2] = xpos;
-            vertex_buffer.get()[index + 3] = ypos + h;
-            vertex_buffer.get()[index + 4] = xpos + w;
-            vertex_buffer.get()[index + 5] = ypos + h;
-            vertex_buffer.get()[index + 6] = xpos + w;
-            vertex_buffer.get()[index + 7] = ypos;
+            vertex_buffer[index] = xpos;
+            vertex_buffer[index + 1] = ypos;
+            vertex_buffer[index + 2] = xpos;
+            vertex_buffer[index + 3] = ypos + h;
+            vertex_buffer[index + 4] = xpos + w;
+            vertex_buffer[index + 5] = ypos + h;
+            vertex_buffer[index + 6] = xpos + w;
+            vertex_buffer[index + 7] = ypos;
 
-            tex_coords_buffer.get()[index] = ch->tex_x_min;
-            tex_coords_buffer.get()[index + 1] = ch->tex_y_max;
-            tex_coords_buffer.get()[index + 2] = ch->tex_x_min;
-            tex_coords_buffer.get()[index + 3] = ch->tex_y_min;
-            tex_coords_buffer.get()[index + 4] = ch->tex_x_max;
-            tex_coords_buffer.get()[index + 5] = ch->tex_y_min;
-            tex_coords_buffer.get()[index + 6] = ch->tex_x_max;
-            tex_coords_buffer.get()[index + 7] = ch->tex_y_max;
+            tex_coords_buffer[index] = ch->tex_x_min;
+            tex_coords_buffer[index + 1] = ch->tex_y_max;
+            tex_coords_buffer[index + 2] = ch->tex_x_min;
+            tex_coords_buffer[index + 3] = ch->tex_y_min;
+            tex_coords_buffer[index + 4] = ch->tex_x_max;
+            tex_coords_buffer[index + 5] = ch->tex_y_min;
+            tex_coords_buffer[index + 6] = ch->tex_x_max;
+            tex_coords_buffer[index + 7] = ch->tex_y_max;
 
             disp = (k + acc) * 4;
             index = (k + acc) * 6;
-            index_buffer.get()[index] = disp;
-            index_buffer.get()[index + 1] = disp + 2;
-            index_buffer.get()[index + 2] = disp + 1;
-            index_buffer.get()[index + 3] = disp;
-            index_buffer.get()[index + 4] = disp + 3;
-            index_buffer.get()[index + 5] = disp + 2;
+            index_buffer[index] = disp;
+            index_buffer[index + 1] = disp + 2;
+            index_buffer[index + 2] = disp + 1;
+            index_buffer[index + 3] = disp;
+            index_buffer[index + 4] = disp + 3;
+            index_buffer[index + 5] = disp + 2;
 
             pen_x += (float)(ch->advance_x >> 6) * current_string->scale;
 
