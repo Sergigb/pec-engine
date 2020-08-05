@@ -13,7 +13,6 @@
 #include "FontAtlas.hpp"
 #include "RenderContext.hpp"
 #include "Input.hpp"
-#include "BasePart.hpp"
 #include "log.hpp"
 #include "PartsPanelGUI.hpp"
 #include "Text2D.hpp"
@@ -41,10 +40,12 @@
 
 // actions related to the gui
 #define EDITOR_ACTION_NONE 0
-#define EDITOR_ACTION_OBJECT_PICK 1
-#define EDITOR_ACTION_BUTTON 2 // well see about this
+#define EDITOR_ACTION_FOCUS 1
+#define EDITOR_ACTION_OBJECT_PICK 2
+#define EDITOR_ACTION_BUTTON 3 // well see about this
 
 
+class BasePart;
 
 class EditorGUI : public BaseGUI{
     private:
@@ -86,7 +87,7 @@ class EditorGUI : public BaseGUI{
 
         void onFramebufferSizeUpdate();
         void render();
-        void update();
+        int update();
 };
 
 

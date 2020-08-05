@@ -12,6 +12,7 @@ PartsPanelGUI::PartsPanelGUI(float fb_width, float fb_height, const FontAtlas* a
     m_item_mouseover = ITEM_MOUSEOVER_NONE;
     m_last_item_colored = ITEM_MOUSEOVER_NONE;
     m_panel_scroll = math::vec2(0.0, 0.0);
+    m_picked_part = nullptr;
 
     m_gui_shader = m_render_context->getShader(SHADER_GUI);
     m_projection_location = glGetUniformLocation(m_gui_shader, "projection");
@@ -64,7 +65,6 @@ PartsPanelGUI::PartsPanelGUI(float fb_width, float fb_height, const FontAtlas* a
 
 
 PartsPanelGUI::~PartsPanelGUI(){
-    // buffers need to be created, we only clear color for now
     glDeleteBuffers(1, &m_vbo_vert);
     glDeleteBuffers(1, &m_vbo_tex);
     glDeleteBuffers(1, &m_vbo_clr);
@@ -229,7 +229,7 @@ void PartsPanelGUI::updateBuffers(){
 }
 
 
-void PartsPanelGUI::update(float mouse_x, float mouse_y){
+int PartsPanelGUI::update(float mouse_x, float mouse_y){
     double scx, scy;
     float disp;
 
@@ -247,18 +247,21 @@ void PartsPanelGUI::update(float mouse_x, float mouse_y){
         int i = (mouse_y + m_panel_scroll.v[1]) / ITEM_SEPARATION;
         if((uint)i < m_master_parts_list->size()){
             m_item_mouseover = i;
-            m_picked_object_index = i;
 
             if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){
-                std::cout << "Item selected: " << m_item_to_key.at(i) << std::endl;
+                m_picked_part = &m_master_parts_list->at(m_item_to_key.at(i));
+                return PANEL_ACTION_PICK;    
             }
+            return PANEL_ACTION_NONE;
         }
         else{
             m_item_mouseover = ITEM_MOUSEOVER_NONE;
+            return PANEL_ACTION_NONE;
         }
     }
     else{
         m_item_mouseover = ITEM_MOUSEOVER_NONE;
+        return PANEL_ACTION_NONE;
     }
 }
 
@@ -348,5 +351,10 @@ void PartsPanelGUI::buttonMouseoverColor(){
         glBufferSubData(GL_ARRAY_BUFFER, m_item_mouseover * 24 * sizeof(GLfloat), 24 * sizeof(GLfloat), color_buffer_subdata);
         m_last_item_colored = m_item_mouseover;
     }
+}
+
+
+const std::unique_ptr<BasePart>* PartsPanelGUI::getPickedObject() const{
+    return m_picked_part;
 }
 

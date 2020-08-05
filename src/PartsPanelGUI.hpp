@@ -41,9 +41,9 @@ class PartsPanelGUI{
         math::mat4 m_projection;
 
         int m_item_mouseover, m_last_item_colored;
-        uint m_picked_object_index;
         math::vec2 m_panel_scroll;
         std::map<int, int> m_item_to_key; // from list item to part key
+        const std::unique_ptr<BasePart>* m_picked_part;
 
         const RenderContext* m_render_context;
         const std::map<int, std::unique_ptr<BasePart>>* m_master_parts_list;
@@ -61,7 +61,9 @@ class PartsPanelGUI{
 
         void bindTexture();
         void render();
-        void update(float mouse_x, float mouse_y);
+        int update(float mouse_x, float mouse_y);
+
+        const std::unique_ptr<BasePart>* getPickedObject() const;
 
         // methods
 };

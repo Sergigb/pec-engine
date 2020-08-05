@@ -364,8 +364,9 @@ void EditorGUI::render(){
 }
 
 
-void EditorGUI::update(){
+int EditorGUI::update(){
     double posx, posy;
+    int lp_action;
 
     m_input->getMousePos(posx, posy);
     posx = (double)posx;
@@ -387,7 +388,21 @@ void EditorGUI::update(){
         }
     }
 
-    m_parts_panel->update(posx - EDITOR_GUI_PP_MARGIN, posy - EDITOR_GUI_PP_MARGIN); // transform coord origin
+    lp_action = m_parts_panel->update(posx - EDITOR_GUI_PP_MARGIN, posy - EDITOR_GUI_PP_MARGIN); // transform coord origin
+
+    // may change
+    if(lp_action){
+        return EDITOR_ACTION_OBJECT_PICK;
+    }
+    else{
+        // focus check
+        if(posy > m_fb_height || posx < EDITOR_GUI_LP_W){
+            return EDITOR_ACTION_FOCUS;
+        }
+        else{
+            return EDITOR_ACTION_NONE;
+        }
+    }
 }
 
 
