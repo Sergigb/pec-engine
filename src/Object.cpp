@@ -24,6 +24,9 @@ Object::Object(const Object& obj){
     m_mesh_color = obj.m_mesh_color;
     m_mesh_transform = obj.m_mesh_transform;
     m_has_transform = obj.m_has_transform;
+    m_baseID = obj.m_baseID;
+    m_object_name = obj.m_object_name;
+    m_fancy_name = obj.m_fancy_name;
 
     m_body.reset(nullptr);
 }
