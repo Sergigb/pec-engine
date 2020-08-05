@@ -20,9 +20,12 @@
 #define ITEM_COLOR_1 0.2f
 #define ITEM_COLOR_2 0.3f
 #define ITEM_MOUSEOVER_NONE -999999999 // :)
+
 #define PANEL_SCROLL_STEP 30
 #define PANEL_SCROLL_MARGIN 25
 
+#define PANEL_ACTION_NONE 0
+#define PANEL_ACTION_PICK 1
 
 class PartsPanelGUI{
     private:
@@ -38,7 +41,9 @@ class PartsPanelGUI{
         math::mat4 m_projection;
 
         int m_item_mouseover, m_last_item_colored;
+        uint m_picked_object_index;
         math::vec2 m_panel_scroll;
+        std::map<int, int> m_item_to_key; // from list item to part key
 
         const RenderContext* m_render_context;
         const std::map<int, std::unique_ptr<BasePart>>* m_master_parts_list;

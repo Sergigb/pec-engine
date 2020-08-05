@@ -77,11 +77,14 @@ PartsPanelGUI::~PartsPanelGUI(){
 void PartsPanelGUI::setMasterPartList(const std::map<int, std::unique_ptr<BasePart>>* master_parts_list){
     int i = 0;
     m_master_parts_list = master_parts_list;
+    m_item_to_key.clear();
 
     std::map<int, std::unique_ptr<BasePart>>::const_iterator it;
     for(it = m_master_parts_list->begin(); it != m_master_parts_list->end(); it++){
         std::string name;
         wchar_t wname[STRING_MAX_LEN];
+
+        m_item_to_key.insert(std::pair<int,int>(i, it->first));
 
         it->second->getFancyName(name);
         std::mbstowcs(wname, name.c_str(), STRING_MAX_LEN);
@@ -244,6 +247,11 @@ void PartsPanelGUI::update(float mouse_x, float mouse_y){
         int i = (mouse_y + m_panel_scroll.v[1]) / ITEM_SEPARATION;
         if((uint)i < m_master_parts_list->size()){
             m_item_mouseover = i;
+            m_picked_object_index = i;
+
+            if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){
+                std::cout << "Item selected: " << m_item_to_key.at(i) << std::endl;
+            }
         }
         else{
             m_item_mouseover = ITEM_MOUSEOVER_NONE;
