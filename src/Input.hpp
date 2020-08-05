@@ -24,6 +24,7 @@ class Input{
         int m_num_pressed_mbuttons;
         double m_mouse_posx, m_mouse_posy;
         double m_mouse_posx_prev, m_mouse_posy_prev;
+        double m_xoffset, m_yoffset;
         bool m_mouse_moved = false;
         std::vector<int> m_keys_pressed;
     public:
@@ -41,10 +42,12 @@ class Input{
         void getMousePos(double& posx, double& posy) const;
         void getMousePosPrev(double& posx, double& posy) const;
         bool mouseMoved() const;
+        void getScroll(double& xoffset, double& yoffset) const;
 
         void onKeyboardInput(int key, int scancode, int action, int mods);
         void onMouseButton(int button, int action, int mods);
         void onMousePos(double posx, double posy);
+        void onScroll(double xoffset, double yoffset);
 };
 
 

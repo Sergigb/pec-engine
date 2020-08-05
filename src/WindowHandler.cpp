@@ -73,6 +73,7 @@ void WindowHandler::initGlfw(){
     glfwSetFramebufferSizeCallback(m_window, WindowHandler::glfwFramebufferSizeCallback);
     glfwSetMouseButtonCallback(m_window, WindowHandler::glfwMouseButtonCallback);
     glfwSetCursorPosCallback(m_window, WindowHandler::glfwMousePosCallback);
+    glfwSetScrollCallback(m_window, WindowHandler::glfwScrollCallback);
 }
 
 
@@ -97,6 +98,11 @@ void WindowHandler::handleMouseButton(int button, int action, int mods){
 
 void WindowHandler::handleMousePos(double posx, double posy){
     m_input->onMousePos(posx, posy);
+}
+
+
+void WindowHandler::handleScrollCallback(double xoffset, double yoffset){
+    m_input->onScroll(xoffset, yoffset);
 }
 
 
@@ -141,6 +147,12 @@ void WindowHandler::glfwMouseButtonCallback(GLFWwindow *window, int button, int 
 void WindowHandler::glfwMousePosCallback(GLFWwindow *window, double posx, double posy){
     WindowHandler* wh = reinterpret_cast<WindowHandler*>(glfwGetWindowUserPointer(window));
     wh->handleMousePos(posx, posy);
+}
+
+
+void WindowHandler::glfwScrollCallback(GLFWwindow* window, double xoffset, double yoffset){
+    WindowHandler* wh = reinterpret_cast<WindowHandler*>(glfwGetWindowUserPointer(window));
+    wh->handleScrollCallback(xoffset, yoffset);
 }
 
 

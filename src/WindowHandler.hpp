@@ -33,6 +33,7 @@ class WindowHandler{
         void handleFramebufferSizeUpdate(int width, int height);
         void handleMouseButton(int button, int action, int mods);
         void handleMousePos(double posx, double posy);
+        void handleScrollCallback(double xoffset, double yoffset);
 
         void getFramebufferSize(int& gl_width, int& gl_heigth) const;
         GLFWwindow* getWindow() const;
@@ -41,6 +42,7 @@ class WindowHandler{
         static void glfwFramebufferSizeCallback(GLFWwindow *window, int width, int height);
         static void glfwMouseButtonCallback(GLFWwindow *window, int button, int action, int mods);
         static void glfwMousePosCallback(GLFWwindow *window, double posx, double posy);
+        static void glfwScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
         void update();
         void terminate();

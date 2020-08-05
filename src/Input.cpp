@@ -9,6 +9,8 @@ Input::Input(){
     m_mouse_posx_prev = 0;
     m_mouse_posy_prev = 0;
     m_mouse_moved = false;
+    m_xoffset = 0;
+    m_yoffset = 0;
 }
 
 
@@ -49,6 +51,12 @@ void Input::onMousePos(double posx, double posy){
 }
 
 
+void Input::onScroll(double xoffset, double yoffset){
+    m_xoffset = xoffset;
+    m_yoffset = yoffset;
+}
+
+
 void Input::update(){
     // This function is used to update the status of the keyboard/mouse before calling the poll
     // events function. It deals mostly with the key/mbutton down/repeat/release
@@ -56,6 +64,9 @@ void Input::update(){
 
     m_mouse_posx_prev = m_mouse_posx;
     m_mouse_posy_prev = m_mouse_posy;
+
+    m_xoffset = 0;
+    m_yoffset = 0;
 
     // update mbutton repeat/release
     for(int i=0; i < GLFW_MOUSE_BUTTON_LAST + 1; i++){
@@ -109,5 +120,11 @@ void Input::getMousePos(double& posx, double& posy) const{
 void Input::getMousePosPrev(double& posx, double& posy) const{
     posx = m_mouse_posx_prev;
     posy = m_mouse_posy_prev;
+}
+
+
+void Input::getScroll(double& xoffset, double& yoffset) const{
+    xoffset = m_xoffset;
+    yoffset = m_yoffset;
 }
 
