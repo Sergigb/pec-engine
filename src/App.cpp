@@ -109,8 +109,8 @@ void App::loadParts(){
         cube->addAttachmentPoint(math::vec3(1.0, 0.0, 0.0), math::vec3(0.0, 0.0, 0.0));
         cube->addAttachmentPoint(math::vec3(0.0, -1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
         cube->addAttachmentPoint(math::vec3(1.0, 0.0, 1.0), math::vec3(0.0, 0.0, 0.0));
-        cube->setName(std::string("test_part_id_", ID));
-        cube->setFancyName(std::string("Test part ", ID));
+        cube->setName(std::string("test_part_id_") + std::to_string(ID));
+        cube->setFancyName(std::string("Test part ") + std::to_string(ID));
 
         typedef std::map<int, std::unique_ptr<BasePart>>::iterator map_iterator;
         std::pair<map_iterator, bool> res = m_master_parts.insert({ID, std::move(cube)});
@@ -128,8 +128,7 @@ void App::run(){
 
     /* THIS SHOULD BE MOVED SOMEWHERE ELSE, THIS IS JUST FOR TESTING*/
     // font atlas = nullptr because I don't have text there yet
-    m_editor_gui.reset(new EditorGUI(m_window_handler.get(), m_def_font_atlas.get(), m_render_context->getShader(SHADER_GUI), 
-                                     m_render_context->getShader(SHADER_TEXT), m_render_context.get(), m_input.get()));
+    m_editor_gui.reset(new EditorGUI(m_def_font_atlas.get(), m_render_context.get(), m_input.get()));
     m_editor_gui->setMasterPartList(&m_master_parts);
     m_render_context->m_gui = m_editor_gui.get();
     /* THIS SHOULD BE MOVED SOMEWHERE ELSE, THIS IS JUST FOR TESTING*/
