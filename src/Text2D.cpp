@@ -26,7 +26,7 @@ Text2D::Text2D(int fb_width, int fb_height, color& c, const FontAtlas* font, con
 
 void Text2D::initgl(){
     glGenVertexArrays(1, &m_vao);
-    glBindVertexArray(m_vao);
+    m_render_context->bindVao(m_vao);
 
     glGenBuffers(1, &m_vbo_vert);
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo_vert);
@@ -43,8 +43,7 @@ void Text2D::initgl(){
     glVertexAttribPointer(2, 3, GL_UNSIGNED_SHORT, GL_FALSE, 0, NULL);
     glEnableVertexAttribArray(2);
 
-    glUseProgram(m_shader_programme);
-
+    m_render_context->useProgram(m_shader_programme);
     m_color_location = glGetUniformLocation(m_shader_programme, "text_color");
     m_disp_location = glGetUniformLocation(m_shader_programme, "disp");
 }
