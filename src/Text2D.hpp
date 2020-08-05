@@ -76,8 +76,8 @@ class Text2D{
 };
 
 struct string{
-    uint posx;
-    uint posy;
+    int posx;
+    int posy;
     uint strlen;  // string len without the \n
     short placement;
     short alignment;
