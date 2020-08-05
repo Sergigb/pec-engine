@@ -26,7 +26,7 @@ EditorGUI::EditorGUI(const FontAtlas* atlas, const RenderContext* render_context
     m_text_debug.reset(new Text2D(m_fb_width, m_fb_height, c, m_font_atlas, render_context));
 
     m_parts_panel.reset(new PartsPanelGUI(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2,
-                        m_font_atlas, m_render_context));
+                        m_font_atlas, m_render_context, m_input));
 
     m_disp_location = glGetUniformLocation(m_gui_shader, "disp");
 
@@ -386,6 +386,8 @@ void EditorGUI::update(){
             }
         }
     }
+
+    m_parts_panel->update(posx - EDITOR_GUI_PP_MARGIN, posy - EDITOR_GUI_PP_MARGIN); // transform coord origin
 }
 
 
