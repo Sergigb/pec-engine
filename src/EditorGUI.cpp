@@ -21,7 +21,6 @@ EditorGUI::EditorGUI(const FontAtlas* atlas, const RenderContext* render_context
     m_button_select = -1;
     std::memset(m_button_status, 0, EDITOR_GUI_N_BUTTONS * sizeof(bool));
     std::memset(m_button_color_status, 0, EDITOR_GUI_N_BUTTONS * sizeof(bool));
-    m_master_parts_list = nullptr;
 
     color c{0.85, 0.85, 0.85};
     m_text_debug.reset(new Text2D(m_fb_width, m_fb_height, c, m_font_atlas, render_context));
@@ -192,6 +191,7 @@ EditorGUI::~EditorGUI(){
         glDeleteBuffers(1, &m_vbo_vert);
         glDeleteBuffers(1, &m_vbo_tex);
         glDeleteBuffers(1, &m_vbo_ind);
+        glDeleteBuffers(1, &m_vbo_clr);
         glDeleteVertexArrays(1, &m_vao);
         glDeleteTextures(1, &m_texture_atlas);
 
@@ -355,6 +355,7 @@ void EditorGUI::render(){
     glDrawElements(GL_TRIANGLES, EDITOR_GUI_INDEX_NUM, GL_UNSIGNED_SHORT, NULL);
 
     m_parts_panel->render();
+    m_render_context->useProgram(m_gui_shader);
     m_parts_panel->bindTexture();
     m_render_context->bindVao(m_parts_panel_vao);
     glDrawArrays(GL_TRIANGLES, 0, 6);
@@ -389,6 +390,6 @@ void EditorGUI::update(){
 
 
 void EditorGUI::setMasterPartList(const std::map<int, std::unique_ptr<BasePart>>* master_parts_list){
-    m_master_parts_list = master_parts_list;
+    m_parts_panel->setMasterPartList(master_parts_list);
 }
 

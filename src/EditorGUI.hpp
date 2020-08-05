@@ -73,7 +73,6 @@ class EditorGUI : public BaseGUI{
         const FontAtlas* m_font_atlas;
         const RenderContext* m_render_context;
         const Input* m_input;
-        const std::map<int, std::unique_ptr<BasePart>>* m_master_parts_list;
 
         void updateBuffers();
         void updateButtons();

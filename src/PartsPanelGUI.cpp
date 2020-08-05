@@ -7,15 +7,17 @@ PartsPanelGUI::PartsPanelGUI(float fb_width, float fb_height, const FontAtlas* a
     m_master_parts_list = nullptr;
     m_font_atlas = atlas;
     m_render_context = render_context;
-    //color c{0.4, 0.9, 0.9};
-  //  m_text.reset(new Text2D(fb_width, fb_height, c, m_font_atlas, text_shader, render_context));
-
-   // m_text->addString(L"Test string\nthis is just a test\ningore this, thank you", 50, 50,
-     //                           1, STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_LEFT);
 
     m_gui_shader = m_render_context->getShader(SHADER_GUI);
     m_projection_location = glGetUniformLocation(m_gui_shader, "projection");
+
+    m_text_shader = m_render_context->getShader(SHADER_TEXT);
+    m_text_projection_location = glGetUniformLocation(m_text_shader, "projection");
+
     m_projection = math::orthographic(fb_width, 0, fb_height, 0, 1.0f , -1.0f);
+
+    color c{0.75, 0.75, 0.75};
+    m_text.reset(new Text2D(fb_width, fb_height, c, m_font_atlas, render_context));
 
     glGenFramebuffers(1, &m_fb);
     glBindFramebuffer(GL_FRAMEBUFFER, m_fb);
@@ -78,40 +80,58 @@ PartsPanelGUI::PartsPanelGUI(float fb_width, float fb_height, const FontAtlas* a
 
 PartsPanelGUI::~PartsPanelGUI(){
     // buffers need to be created, we only clear color for now
-    //glDeleteBuffers(1, &m_vbo_vert);
-    //glDeleteBuffers(1, &m_vbo_tex);
+    glDeleteBuffers(1, &m_vbo_vert);
+    glDeleteBuffers(1, &m_vbo_tex);
+    glDeleteBuffers(1, &m_vbo_clr);
+    glDeleteVertexArrays(1, &m_vao);
     glDeleteTextures(1, &m_tex);
     glDeleteFramebuffers(1, &m_fb);
 }
 
 
 void PartsPanelGUI::setMasterPartList(const std::map<int, std::unique_ptr<BasePart>>* master_parts_list){
+    int i = 0;
+
     m_master_parts_list = master_parts_list;
+    std::map<int, std::unique_ptr<BasePart>>::const_iterator it;
+    for(it = m_master_parts_list->begin(); it != m_master_parts_list->end(); it++){
+        std::string name;
+        wchar_t wname[STRING_MAX_LEN];
+
+        it->second->getFancyName(name);
+        std::mbstowcs(wname, name.c_str(), STRING_MAX_LEN);
+        m_text->addString(wname, 5., 15. + (float)i*20., 1, STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
+
+        i++;
+    }
 }
 
 
 void PartsPanelGUI::render(){
-    glBindFramebuffer(GL_FRAMEBUFFER, m_fb);
+    float fb_width, fb_height;
+    math::mat4 projection;
 
+    glBindFramebuffer(GL_FRAMEBUFFER, m_fb);
+    glViewport(0, 0, m_fb_width, m_fb_height);
     glClearColor(0.25, 0.25, 0.25, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_render_context->useProgram(m_gui_shader);
     glUniformMatrix4fv(m_projection_location, 1, GL_FALSE, m_projection.m);
-    glViewport(0, 0, m_fb_width, m_fb_height);
-
     m_render_context->bindVao(m_vao);
     glDrawArrays(GL_TRIANGLES, 0, 6);
-   // m_text->render();*/
-
-    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     // restore the original framebuffer uniform
-    float fb_width, fb_height;
     m_render_context->getDefaultFbSize(fb_width, fb_height);
-    m_render_context->useProgram(m_gui_shader);
-    math::mat4 projection = math::orthographic(fb_width, 0, fb_height, 0, 1.0f , -1.0f); // we have to compute that each frame, not ideal
+    projection = math::orthographic(fb_width, 0, fb_height, 0, 1.0f , -1.0f); // we have to compute that each frame, not ideal
     glUniformMatrix4fv(m_projection_location, 1, GL_FALSE, projection.m);
+
+    m_render_context->useProgram(m_text_shader);
+    glUniformMatrix4fv(m_text_projection_location, 1, GL_FALSE, m_projection.m);
+    m_text->render();
+    glUniformMatrix4fv(m_text_projection_location, 1, GL_FALSE, projection.m);
+
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, fb_width, fb_height);
 }
 
@@ -128,6 +148,8 @@ void PartsPanelGUI::onFramebufferSizeUpdate(float fb_width, float fb_height){
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    m_text->onFramebufferSizeUpdate(fb_width, fb_height);
 }
 
 

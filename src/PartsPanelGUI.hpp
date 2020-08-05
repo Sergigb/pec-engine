@@ -2,6 +2,7 @@
 #define PARTSPANELGUI_HPP
 
 #include <map>
+#include <cstdlib>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -17,10 +18,10 @@
 class PartsPanelGUI{
     private:
         GLuint m_fb, m_tex;
-        GLuint m_gui_shader;
+        GLuint m_gui_shader, m_text_shader;
         float m_fb_width, m_fb_height; // this is the size of the PANEL fb
         GLuint m_vao, m_vbo_vert, m_vbo_tex, m_vbo_clr;
-        GLuint m_projection_location;
+        GLuint m_projection_location, m_text_projection_location;
 
         std::unique_ptr<Text2D> m_text;
 
