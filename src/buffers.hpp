@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <mutex>
+#include <memory>
 
 #include "maths_funcs.hpp"
 
@@ -24,5 +25,35 @@ struct render_buffers{
     std::mutex buffer2_lock;
     buffer_manager last_updated;
 };
+
+/*
+ * Command buffer messages
+ */
+
+class btVector3;
+class btQuaternion;
+class BasePart;
+class btTypedConstraint;
+
+struct set_motion_state_msg{
+    Object* object;
+    btVector3 origin;
+    btQuaternion initial_rotation;
+};
+
+
+struct add_contraint_msg{
+    BasePart* part;
+    std::unique_ptr<btTypedConstraint> constraint_uptr;
+};
+
+
+struct add_object_msg{
+    BasePart* part;
+    btVector3 origin;
+    btVector3 inertia;
+    btQuaternion rotation;
+};
+
 
 #endif

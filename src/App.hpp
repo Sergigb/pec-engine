@@ -11,30 +11,10 @@
 #include "Object.hpp"
 #include "BaseApp.hpp"
 #include "EditorGUI.hpp"
+#include "buffers.hpp"
 
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/btBulletDynamicsCommon.h>
-
-
-struct set_motion_state_msg{
-    Object* object;
-    btVector3 origin;
-    btQuaternion initial_rotation;
-};
-
-
-struct add_contraint_msg{
-    BasePart* part;
-    std::unique_ptr<btTypedConstraint> constraint_uptr;
-};
-
-
-struct add_object_msg{
-    BasePart* part;
-    btVector3 origin;
-    btVector3 inertia;
-    btQuaternion rotation;
-};
 
 
 class App : public BaseApp{
