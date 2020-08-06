@@ -343,9 +343,13 @@ void App::logic(){
                     }
                     rotation = rotation * rotation2;
                 }
-                
+
                 btVector3 origin(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]);
                 m_set_motion_state_buffer.emplace_back(set_motion_state_msg{m_picked_obj, origin, rotation});
+
+                if(part->getParentConstraint()){
+                    m_remove_part_constraint_buffer.emplace_back(part);
+                }
             }
         }
         else{
@@ -428,5 +432,10 @@ void App::processCommandBuffers(){
         msg.part->addBody(msg.origin, msg.inertia, msg.rotation);
     }
     m_add_object_buffer.clear();
+
+    for(uint i=0; i < m_remove_part_constraint_buffer.size(); i++){
+        m_remove_part_constraint_buffer.at(i)->removeParentConstraint();
+    }
+    m_remove_part_constraint_buffer.clear();
 }
 
