@@ -9,6 +9,7 @@
 
 #include "Object.hpp"
 #include "maths_funcs.hpp"
+#include "buffers.hpp"
 
 
 struct attachment_point{
@@ -22,6 +23,8 @@ class BasePart : public Object{
         struct attachment_point m_parent_att_point;
         std::vector<struct attachment_point> m_attachment_points;  // the attachment points of the part
         std::unique_ptr<btTypedConstraint> m_parent_constraint; // the constraint between this part and the parent
+        BasePart* m_parent;
+        std::vector<BasePart*> m_childs; // in the future this will be a shared pointer
     public:
         BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID);
         BasePart(const BasePart& part);
@@ -32,10 +35,16 @@ class BasePart : public Object{
         void setParentAttachmentPoint(const math::vec3& point, const math::vec3& orientation);
         void setParentConstraint(std::unique_ptr<btTypedConstraint>& constraint_uptr);
         void removeParentConstraint();
+        void setParent(BasePart* parent);
+        bool addChild(BasePart* child);
+        bool removeChild(BasePart* child);
+        // each child adds its new motion state to the command buffer, the function is called recursively through all the subtree
+        void updateSubTreeMotionState(std::vector<struct set_motion_state_msg>& command_buffer, btVector3 disp, btQuaternion rotation); // add root origin to rotate
 
         const std::vector<struct attachment_point>* getAttachmentPoints() const;
         btTypedConstraint* getParentConstraint() const;
         const struct attachment_point* getParentAttachmentPoint() const;
+        BasePart* getParent() const;
 };
 
 
