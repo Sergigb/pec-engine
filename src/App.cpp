@@ -145,24 +145,7 @@ void App::run(){
     while (!glfwWindowShouldClose(m_window_handler->getWindow())){
         loop_start_load = std::chrono::steady_clock::now();
 
-        // process queues
-        for(uint i=0; i < m_set_motion_state_queue.size(); i++){
-            struct set_motion_state_msg& msg = m_set_motion_state_queue.at(i);
-            msg.object->setMotionState(msg.origin, msg.initial_rotation);
-        }
-        m_set_motion_state_queue.clear();
-
-        for(uint i=0; i < m_add_constraint_queue.size(); i++){
-            struct add_contraint_msg& msg = m_add_constraint_queue.at(i);
-            msg.part->setParentConstraint(msg.constraint_uptr);
-        }
-        m_add_constraint_queue.clear();
-
-        for(uint i=0; i < m_add_object_queue.size(); i++){
-            struct add_object_msg& msg = m_add_object_queue.at(i);
-            msg.part->addBody(msg.origin, msg.inertia, msg.rotation);
-        }
-        m_add_object_queue.clear();
+        processCommandBuffers();
 
         {  //wake up physics thread
             std::unique_lock<std::mutex> lck2(m_thread_monitor.mtx_start);
@@ -249,7 +232,7 @@ void App::logic(){
             float closest_dist = 99999999999.9;
             math::vec4 closest_att_point_world;
             math::vec3 closest_att_point;
-            const BasePart* closest;
+            const BasePart* closest = nullptr;
 
             for(uint i=0; i<m_parts.size(); i++){
                 if(part == m_parts.at(i).get()){
@@ -300,7 +283,7 @@ void App::logic(){
 
                 transform_final = object_T * object_R * transform_final; // rotated and traslated attachment point (world)
 
-                m_set_motion_state_queue.emplace_back(set_motion_state_msg{m_picked_obj, transform_final.getOrigin(), transform_final.getRotation()}); // thread safe :)))
+                m_set_motion_state_buffer.emplace_back(set_motion_state_msg{m_picked_obj, transform_final.getOrigin(), transform_final.getRotation()}); // thread safe :)))
 
                 if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){ // user has decided to attach the object to the parent
                     btTransform parent_transform, frame_child;
@@ -334,7 +317,7 @@ void App::logic(){
                     constraint->setAngularLowerLimit(limits);
                     constraint->setAngularUpperLimit(limits);
   
-                    m_add_constraint_queue.emplace_back(add_contraint_msg{part, std::unique_ptr<btTypedConstraint>(constraint)});
+                    m_add_constraint_buffer.emplace_back(add_contraint_msg{part, std::unique_ptr<btTypedConstraint>(constraint)});
                 }
             }
             else{
@@ -362,14 +345,14 @@ void App::logic(){
                 }
                 
                 btVector3 origin(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]);
-                m_set_motion_state_queue.emplace_back(set_motion_state_msg{m_picked_obj, origin, rotation});
+                m_set_motion_state_buffer.emplace_back(set_motion_state_msg{m_picked_obj, origin, rotation});
             }
         }
         else{
             btTransform transform;
             btVector3 origin(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]);
             m_picked_obj->m_body->getMotionState()->getWorldTransform(transform);
-            m_set_motion_state_queue.emplace_back(set_motion_state_msg{m_picked_obj, origin, transform.getRotation()});
+            m_set_motion_state_buffer.emplace_back(set_motion_state_msg{m_picked_obj, origin, transform.getRotation()});
         }
 
         if(m_physics_pause)
@@ -403,7 +386,7 @@ void App::logic(){
         math::vec3 ray_start_world, ray_end_world;
 
         m_camera->castRayMousePos(10.f, ray_start_world, ray_end_world);
-        m_add_object_queue.emplace_back(add_object_msg{part, btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]),
+        m_add_object_buffer.emplace_back(add_object_msg{part, btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]),
                                         btVector3(0.0, 0.0, 0.0), btQuaternion::getIdentity()});
         m_parts.push_back(std::move(std::unique_ptr<BasePart>(part)));
 
@@ -423,5 +406,27 @@ void App::logic(){
     if(m_input->pressed_keys[GLFW_KEY_F12] == INPUT_KEY_DOWN){
         m_render_context->toggleDebugOverlay();
     }
+}
+
+
+void App::processCommandBuffers(){
+    // process buffers
+    for(uint i=0; i < m_set_motion_state_buffer.size(); i++){
+        struct set_motion_state_msg& msg = m_set_motion_state_buffer.at(i);
+        msg.object->setMotionState(msg.origin, msg.initial_rotation);
+    }
+    m_set_motion_state_buffer.clear();
+
+    for(uint i=0; i < m_add_constraint_buffer.size(); i++){
+        struct add_contraint_msg& msg = m_add_constraint_buffer.at(i);
+        msg.part->setParentConstraint(msg.constraint_uptr);
+    }
+    m_add_constraint_buffer.clear();
+
+    for(uint i=0; i < m_add_object_buffer.size(); i++){
+        struct add_object_msg& msg = m_add_object_buffer.at(i);
+        msg.part->addBody(msg.origin, msg.inertia, msg.rotation);
+    }
+    m_add_object_buffer.clear();
 }
 

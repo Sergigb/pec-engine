@@ -69,11 +69,11 @@ class App : public BaseApp{
         // maybe we'll need a different set for objects that are not parts?
         std::map<int, std::unique_ptr<BasePart>> m_master_parts;
 
-        // queues
-        std::vector<struct set_motion_state_msg> m_set_motion_state_queue;
-        std::vector<BasePart*> m_remove_part_constraint_queue;
-        std::vector<struct add_contraint_msg> m_add_constraint_queue;
-        std::vector<struct add_object_msg> m_add_object_queue;
+        // command buffers
+        std::vector<struct set_motion_state_msg> m_set_motion_state_buffer;
+        std::vector<BasePart*> m_remove_part_constraint_buffer;
+        std::vector<struct add_contraint_msg> m_add_constraint_buffer;
+        std::vector<struct add_object_msg> m_add_object_buffer;
 
 
         std::chrono::duration<double, std::micro> m_elapsed_time;
@@ -89,6 +89,7 @@ class App : public BaseApp{
         void objectsInit();
         void loadParts();
         void logic();
+        void processCommandBuffers();
     public:
         App();
         App(int gl_width, int gl_height);
