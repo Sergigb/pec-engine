@@ -65,25 +65,6 @@ void App::objectsInit(){
     ground->addBody(btVector3(0.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0), quat);
     m_objects.push_back(std::move(std::unique_ptr<Object>(ground)));
 
-    for(int i=0; i<10; i++){
-        Object* cube = new Object(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btScalar(10.0), 0);
-        cube->addBody(btVector3(0.0, 30.0+i*2.5, 0.0), btVector3(0.0, 0.0, 0.0), quat);
-        cube->setColor(math::vec3(0.0, 1.0, 0.0));
-        m_objects.push_back(std::move(std::unique_ptr<Object>(cube)));
-    }
-
-    for(int i=0; i<10; i++){
-        // testing attachment points
-        BasePart* cube = new BasePart(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btScalar(10.0), 0);
-        cube->addBody(btVector3(2.5, 30.0+i*5., 0.0), btVector3(0.0, 0.0, 0.0), quat);
-        cube->setColor(math::vec3(1.0-0.1*i, 0.0, 0.1*i));
-        cube->setParentAttachmentPoint(math::vec3(0.0, 1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
-        cube->addAttachmentPoint(math::vec3(1.0, 0.0, 0.0), math::vec3(0.0, 0.0, 0.0));
-        cube->addAttachmentPoint(math::vec3(0.0, -1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
-        cube->addAttachmentPoint(math::vec3(1.0, 0.0, 1.0), math::vec3(0.0, 0.0, 0.0));
-        m_parts.push_back(std::move(std::unique_ptr<BasePart>(cube)));
-    }
-
     m_collision_shapes.push_back(std::move(cube_shape_ground));
     m_collision_shapes.push_back(std::move(cube_shape));
     m_collision_shapes.push_back(std::move(sphere_shape));
@@ -207,6 +188,11 @@ void App::run(){
 void App::logic(){
     // temporal method with the game logic
     //bool first_lmb_click = false;
+    /*
+     *  This function is hell
+     *  it will be updated and organized at some point
+     *  seriously it sucks badly
+     */
 
     // mouse pick test
     if(m_picked_obj){
@@ -218,7 +204,7 @@ void App::logic(){
         // some spaghetti code testing the attachments
         // disorganized as fuck
         part = dynamic_cast<BasePart*>(m_picked_obj);
-        if(part){
+        if(part){ // if it's a part
             const math::mat4 proj_mat = m_camera->getProjMatrix();
             const math::mat4 view_mat = m_camera->getViewMatrix();
 
@@ -231,10 +217,9 @@ void App::logic(){
 
             float closest_dist = 99999999999.9;
             math::vec4 closest_att_point_world;
-            math::vec3 closest_att_point;
-            const BasePart* closest = nullptr;
+            BasePart* closest = nullptr;
 
-            for(uint i=0; i<m_parts.size(); i++){
+            for(uint i=0; i<m_parts.size(); i++){ // get closest att point to the mouse cursor
                 if(part == m_parts.at(i).get()){
                     continue;
                 }
@@ -257,7 +242,6 @@ void App::logic(){
                     if(distance < closest_dist){
                         closest_dist = distance;
                         closest_att_point_world = att_point_loc_world;
-                        closest_att_point = att_point;
                         closest = m_parts.at(i).get();
                     }
                 }
@@ -267,7 +251,7 @@ void App::logic(){
             m_picked_obj->m_body->getMotionState()->getWorldTransform(transform_original);
             rotation = transform_original.getRotation();
 
-            if(closest_dist < 0.05){
+            if(closest_dist < 0.05){ // magnet
                 btTransform transform_final;
                 btVector3 btv3_child_att(part->getParentAttachmentPoint()->point.v[0],
                                          part->getParentAttachmentPoint()->point.v[1],
@@ -283,7 +267,8 @@ void App::logic(){
 
                 transform_final = object_T * object_R * transform_final; // rotated and traslated attachment point (world)
 
-                m_set_motion_state_buffer.emplace_back(set_motion_state_msg{m_picked_obj, transform_final.getOrigin(), transform_final.getRotation()}); // thread safe :)))
+                btVector3 disp = transform_final.getOrigin() - transform_original.getOrigin();
+                part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, transform_final.getRotation() * rotation.inverse());
 
                 if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){ // user has decided to attach the object to the parent
                     btTransform parent_transform, frame_child;
@@ -318,11 +303,18 @@ void App::logic(){
                     constraint->setAngularUpperLimit(limits);
   
                     m_add_constraint_buffer.emplace_back(add_contraint_msg{part, std::unique_ptr<btTypedConstraint>(constraint)});
+    
+                    BasePart* parent = part->getParent();
+                    if(parent){ // disown child
+                        parent->removeChild(part);
+                    }
+                    part->setParent(closest);
+                    closest->addChild(part);
                 }
             }
-            else{
+            else{ // no att point closer than 0.05, part tree roams free
+                btQuaternion rotation2(0.0, 0.0, 0.0); // allows the user to rotate the part
                 if(m_input->keyboardPressed()){
-                    btQuaternion rotation2(0.0, 0.0, 0.0); // allows the user to rotate the part
                     if(m_input->pressed_keys[GLFW_KEY_U] & INPUT_KEY_DOWN){
                         rotation2.setEuler(M_PI/2.0, 0., 0.);
                     }
@@ -341,49 +333,56 @@ void App::logic(){
                     else if(m_input->pressed_keys[GLFW_KEY_L] & INPUT_KEY_DOWN){
                         rotation2.setEuler(0., 0., -M_PI/2.0);
                     }
-                    rotation = rotation * rotation2;
+                    else if(m_input->pressed_keys[GLFW_KEY_R] & INPUT_KEY_DOWN){
+                        rotation2 = rotation.inverse();
+                    }
                 }
 
                 btVector3 origin(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]);
-                m_set_motion_state_buffer.emplace_back(set_motion_state_msg{m_picked_obj, origin, rotation});
+                btVector3 disp = origin - transform_original.getOrigin();
+                part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, rotation2);
 
-                if(part->getParentConstraint()){
+                if(part->getParentConstraint()){ // remove constraint if it exists
                     m_remove_part_constraint_buffer.emplace_back(part);
+                }
+
+                BasePart* parent = part->getParent();
+                if(parent){ // disown child
+                    parent->removeChild(part);
+                    part->setParent(nullptr);
                 }
             }
         }
-        else{
+        else{ // object is not of type part
             btTransform transform;
             btVector3 origin(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]);
             m_picked_obj->m_body->getMotionState()->getWorldTransform(transform);
             m_set_motion_state_buffer.emplace_back(set_motion_state_msg{m_picked_obj, origin, transform.getRotation()});
         }
 
-        if(m_physics_pause)
-            m_bt_wrapper->updateCollisionWorldSingleAABB(m_picked_obj->m_body.get()); // not thread safe
+        if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){ // if the object has been placed
+            m_picked_obj->activate(true);
+            m_picked_obj = nullptr;
+        }
     }
+    else{ // if not picked object
+        if(!m_gui_action && m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && m_physics_pause){ // scene has the focus
+            double mousey, mousex;
+            math::vec3 ray_start_world, ray_end_world;
+            Object* obj;
 
-    if(!m_gui_action){ // scene has the focus
-        if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){
-            if(!m_picked_obj){
-                double mousey, mousex;
-                math::vec3 ray_start_world, ray_end_world;
-                Object* obj;
+            m_input->getMousePos(mousex, mousey);
+            m_camera->castRayMousePos(1000.f, ray_start_world, ray_end_world);
 
-                m_input->getMousePos(mousex, mousey);
-                m_camera->castRayMousePos(1000.f, ray_start_world, ray_end_world);
-
-                obj = m_bt_wrapper->testRay(ray_start_world, ray_end_world);
-                if(obj)
-                    m_picked_obj = obj;
-            }
-            else{
-                m_picked_obj->activate(true);
-                m_picked_obj = nullptr;
+            obj = m_bt_wrapper->testRay(ray_start_world, ray_end_world);
+            if(obj){
+                m_picked_obj = obj;
             }
         }
     }
-    if(m_gui_action == EDITOR_ACTION_OBJECT_PICK){
+
+    // GUI processing
+    if(m_gui_action == EDITOR_ACTION_OBJECT_PICK && m_physics_pause){
         const std::unique_ptr<BasePart>* editor_picked_object = m_editor_gui->getPickedObject();
         const BasePart* part_ptr = editor_picked_object->get(); // trickery
         BasePart* part = new BasePart(*part_ptr);
@@ -402,9 +401,14 @@ void App::logic(){
 
     }
 
+    // other input
     if(m_input->pressed_keys[GLFW_KEY_P] == INPUT_KEY_DOWN){
         m_physics_pause = !m_physics_pause;
         m_bt_wrapper->pauseSimulation(m_physics_pause);
+        if(m_picked_obj){
+            m_picked_obj->activate(true);
+            m_picked_obj = nullptr;
+        }
     }
 
     if(m_input->pressed_keys[GLFW_KEY_F12] == INPUT_KEY_DOWN){
@@ -418,6 +422,9 @@ void App::processCommandBuffers(){
     for(uint i=0; i < m_set_motion_state_buffer.size(); i++){
         struct set_motion_state_msg& msg = m_set_motion_state_buffer.at(i);
         msg.object->setMotionState(msg.origin, msg.initial_rotation);
+        if(m_physics_pause){
+            m_bt_wrapper->updateCollisionWorldSingleAABB(msg.object->m_body.get());
+        }
     }
     m_set_motion_state_buffer.clear();
 
