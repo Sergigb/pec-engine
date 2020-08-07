@@ -268,7 +268,7 @@ void App::logic(){
                 transform_final = object_T * object_R * transform_final; // rotated and traslated attachment point (world)
 
                 btVector3 disp = transform_final.getOrigin() - transform_original.getOrigin();
-                part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, transform_final.getRotation() * rotation.inverse());
+                part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, transform_original.getOrigin(), btQuaternion::getIdentity());
 
                 if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){ // user has decided to attach the object to the parent
                     btTransform parent_transform, frame_child;
@@ -340,7 +340,7 @@ void App::logic(){
 
                 btVector3 origin(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]);
                 btVector3 disp = origin - transform_original.getOrigin();
-                part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, rotation2);
+                part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, transform_original.getOrigin(), rotation2);
 
                 if(part->getParentConstraint()){ // remove constraint if it exists
                     m_remove_part_constraint_buffer.emplace_back(part);

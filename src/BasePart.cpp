@@ -104,19 +104,26 @@ bool BasePart::removeChild(BasePart* child){
 }
 
 
-void BasePart::updateSubTreeMotionState(std::vector<struct set_motion_state_msg>& command_buffer, btVector3 disp, btQuaternion rotation){
-    btTransform transform;
+void BasePart::updateSubTreeMotionState(std::vector<struct set_motion_state_msg>& command_buffer, btVector3 disp, btVector3 root_origin, btQuaternion rotation){
+    btTransform transform, trans, trans_r;
     btQuaternion rrotation; // rotation is overrided for now
-    btVector3 origin;
+    btVector3 origin, dist_from_root;
 
     m_body->getMotionState()->getWorldTransform(transform);
-    rrotation = transform.getRotation() * rotation;
-    origin = transform.getOrigin() + disp;
+    rrotation = transform.getRotation();
+    origin = transform.getOrigin();
 
-    command_buffer.emplace_back(set_motion_state_msg{this, origin, rrotation});
+    dist_from_root = origin - root_origin;
+    trans = btTransform(rrotation, dist_from_root);
+    trans_r = btTransform(rotation, btVector3(0.0, 0.0, 0.0));
+    trans = trans_r * trans;
+
+    //std::cout << rotation.get();
+
+    command_buffer.emplace_back(set_motion_state_msg{this, (origin - dist_from_root) + disp + trans.getOrigin(), trans.getRotation()});
 
     for(uint i=0; i < m_childs.size(); i++){
-        m_childs.at(i)->updateSubTreeMotionState(command_buffer, disp, btQuaternion::getIdentity());
+        m_childs.at(i)->updateSubTreeMotionState(command_buffer, disp, root_origin, rotation);
     }
 }
 

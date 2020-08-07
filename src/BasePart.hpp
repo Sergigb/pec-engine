@@ -39,7 +39,7 @@ class BasePart : public Object{
         bool addChild(BasePart* child);
         bool removeChild(BasePart* child);
         // each child adds its new motion state to the command buffer, the function is called recursively through all the subtree
-        void updateSubTreeMotionState(std::vector<struct set_motion_state_msg>& command_buffer, btVector3 disp, btQuaternion rotation); // add root origin to rotate
+        void updateSubTreeMotionState(std::vector<struct set_motion_state_msg>& command_buffer, btVector3 disp, btVector3 root_origin, btQuaternion rotation); // add root origin to rotate
 
         const std::vector<struct attachment_point>* getAttachmentPoints() const;
         btTypedConstraint* getParentConstraint() const;
