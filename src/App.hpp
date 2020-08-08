@@ -28,7 +28,7 @@ class App : public BaseApp{
         std::unique_ptr<Model> m_cylinder_model;
 
         // game state
-        bool m_physics_pause;
+        bool m_physics_pause, m_clear_scene;
         Object* m_picked_obj;
 
         std::vector<std::unique_ptr<btCollisionShape>> m_collision_shapes;
@@ -64,6 +64,7 @@ class App : public BaseApp{
         void loadParts();
         void logic();
         void processCommandBuffers();
+        void clearScene();
     public:
         App();
         App(int gl_width, int gl_height);

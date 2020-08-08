@@ -10,6 +10,7 @@ App::App() : BaseApp(){
 
     m_physics_pause = true;
     m_picked_obj = nullptr;
+    m_clear_scene = false;
     m_buffers.last_updated = none;
 
     m_def_font_atlas.reset(new FontAtlas(256));
@@ -29,6 +30,7 @@ App::App(int gl_width, int gl_height) : BaseApp(gl_width, gl_height){
 
     m_physics_pause = true;
     m_picked_obj = nullptr;
+    m_clear_scene = false;
     m_buffers.last_updated = none;
 
     m_def_font_atlas.reset(new FontAtlas(256));
@@ -127,6 +129,9 @@ void App::run(){
         loop_start_load = std::chrono::steady_clock::now();
 
         processCommandBuffers();
+        if(m_clear_scene){
+            clearScene();
+        }
 
         {  //wake up physics thread
             std::unique_lock<std::mutex> lck2(m_thread_monitor.mtx_start);
@@ -414,15 +419,9 @@ void App::logic(){
         m_render_context->toggleDebugOverlay();
     }
 
-
     if(m_input->pressed_keys[GLFW_KEY_F] == INPUT_KEY_DOWN){
-        std::cout << "Scene cleared" << std::endl;
-        for(uint i=0; i < m_parts.size(); i++){
-            m_parts.at(i)->setRenderIgnore();
-        }
-        m_parts.clear();
+        m_clear_scene = true;
     }
-
 }
 
 
@@ -453,5 +452,16 @@ void App::processCommandBuffers(){
         m_remove_part_constraint_buffer.at(i)->removeParentConstraint();
     }
     m_remove_part_constraint_buffer.clear();
+}
+
+
+void App::clearScene(){
+    for(uint i=0; i < m_parts.size(); i++){
+        m_parts.at(i)->setRenderIgnore();
+    }
+    m_parts.clear();
+    std::cout << "Scene cleared" << std::endl;
+    m_clear_scene = false;
+    m_picked_obj = nullptr;
 }
 
