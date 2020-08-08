@@ -4,11 +4,13 @@
 BasePart::BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID) : 
     Object(model, bt_wrapper, col_shape, mass, baseID){
     m_parent = nullptr;
+    m_vessel = nullptr;
 }
 
 
 BasePart::BasePart(){
     m_parent = nullptr;
+    m_vessel = nullptr;
 }
 
 
@@ -106,7 +108,7 @@ bool BasePart::removeChild(BasePart* child){
 
 void BasePart::updateSubTreeMotionState(std::vector<struct set_motion_state_msg>& command_buffer, btVector3 disp, btVector3 root_origin, btQuaternion rotation){
     btTransform transform, trans, trans_r;
-    btQuaternion rrotation; // rotation is overrided for now
+    btQuaternion rrotation;
     btVector3 origin, dist_from_root;
 
     m_body->getMotionState()->getWorldTransform(transform);
@@ -118,9 +120,7 @@ void BasePart::updateSubTreeMotionState(std::vector<struct set_motion_state_msg>
     trans_r = btTransform(rotation, btVector3(0.0, 0.0, 0.0));
     trans = trans_r * trans;
 
-    //std::cout << rotation.get();
-
-    command_buffer.emplace_back(set_motion_state_msg{this, (origin - dist_from_root) + disp + trans.getOrigin(), trans.getRotation()});
+    command_buffer.emplace_back(set_motion_state_msg{this, root_origin + trans.getOrigin() + disp, trans.getRotation()});
 
     for(uint i=0; i < m_childs.size(); i++){
         m_childs.at(i)->updateSubTreeMotionState(command_buffer, disp, root_origin, rotation);
@@ -131,3 +131,19 @@ void BasePart::updateSubTreeMotionState(std::vector<struct set_motion_state_msg>
 BasePart* BasePart::getParent() const{
     return m_parent;
 }
+
+
+std::vector<BasePart*>* BasePart::getChilds(){
+    return &m_childs;
+}
+
+
+void BasePart::setVessel(Vessel* vess){
+    m_vessel = vess;
+}
+
+
+const Vessel* BasePart::getVessel() const{
+    return m_vessel;
+}
+
