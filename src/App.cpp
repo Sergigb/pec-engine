@@ -61,9 +61,9 @@ void App::objectsInit(){
     std::unique_ptr<btCollisionShape> cylinder_shape(new btCylinderShape(btVector3(1,1,1)));
 
     quat.setEuler(0, 0, 0);
-    Object* ground = new Object(m_terrain_model.get(), m_bt_wrapper.get(), cube_shape_ground.get(), btScalar(0.0), 0);
+    std::shared_ptr<Object> ground = std::make_shared<Object>(m_terrain_model.get(), m_bt_wrapper.get(), cube_shape_ground.get(), btScalar(0.0), 0);
     ground->addBody(btVector3(0.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0), quat);
-    m_objects.push_back(std::move(std::unique_ptr<Object>(ground)));
+    m_objects.emplace_back(ground);
 
     m_collision_shapes.push_back(std::move(cube_shape_ground));
     m_collision_shapes.push_back(std::move(cube_shape));
@@ -391,7 +391,7 @@ void App::logic(){
         m_camera->castRayMousePos(10.f, ray_start_world, ray_end_world);
         m_add_body_buffer.emplace_back(add_body_msg{part.get(), btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]),
                                        btVector3(0.0, 0.0, 0.0), btQuaternion::getIdentity()});
-        m_parts.push_back(part);
+        m_parts.emplace_back(part);
 
         if(m_picked_obj){ // if the user has an scene object picked just leave it "there"
             m_picked_obj->activate(true);
@@ -413,6 +413,16 @@ void App::logic(){
     if(m_input->pressed_keys[GLFW_KEY_F12] == INPUT_KEY_DOWN){
         m_render_context->toggleDebugOverlay();
     }
+
+
+    if(m_input->pressed_keys[GLFW_KEY_F] == INPUT_KEY_DOWN){
+        std::cout << "Scene cleared" << std::endl;
+        for(uint i=0; i < m_parts.size(); i++){
+            m_parts.at(i)->setRenderIgnore();
+        }
+        m_parts.clear();
+    }
+
 }
 
 

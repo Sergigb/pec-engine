@@ -178,7 +178,7 @@ void RenderContext::render(){
         if(m_buffers->last_updated == buffer_1){
             m_buffers->buffer1_lock.lock(); // extremely unlikely to not get the lock
             for(uint i=0; i<m_buffers->buffer1.size(); i++){
-                BasePart* part = dynamic_cast<BasePart*>(m_buffers->buffer1.at(i).object_ptr);
+                BasePart* part = dynamic_cast<BasePart*>(m_buffers->buffer1.at(i).object_ptr.get());
                 if(part){
                     renderAttPoints(part, num_rendered, m_buffers->buffer1.at(i).transform);
                 }
@@ -189,7 +189,7 @@ void RenderContext::render(){
         else{
             m_buffers->buffer2_lock.lock();
             for(uint i=0; i<m_buffers->buffer2.size(); i++){
-                BasePart* part = dynamic_cast<BasePart*>(m_buffers->buffer2.at(i).object_ptr);
+                BasePart* part = dynamic_cast<BasePart*>(m_buffers->buffer2.at(i).object_ptr.get());
                 if(part){
                     renderAttPoints(part, num_rendered, m_buffers->buffer2.at(i).transform);
                 }

@@ -32,20 +32,13 @@ class App : public BaseApp{
         Object* m_picked_obj;
 
         std::vector<std::unique_ptr<btCollisionShape>> m_collision_shapes;
-        std::vector<std::unique_ptr<Object>> m_objects;
 
-        /* Note: this is a tricky situation. If BasePart inherits from Object, why not
-        include the parts in m_objects (and use virtual functions if needed)? As now,
-        I want to have parts in a different vector for when we are in the editor and we
-        need to draw the attachment points. I dont want to include opengl code in BasePart
-        or Object, so the render context should be the one calling the opengl functions
-        and draw the attachment points (and we need to know that the Object is actually 
-        a BasePart to call the corresponding method). Also, I want to avoid using dynamic
-        casts on m_objects (ew).
-
-        This will change when we add the object trees, kinematic objects, and other more 
-        complex crap.*/
+        //...
+        std::vector<std::shared_ptr<Object>> m_objects;
         std::vector<std::shared_ptr<BasePart>> m_parts;
+
+        // editor vessel
+        std::unique_ptr<Vessel> m_vessel;
 
         // in the future, all the objects are going to be copied from the master part copy
         // maybe we'll need a different set for objects that are not parts?
@@ -56,9 +49,6 @@ class App : public BaseApp{
         std::vector<BasePart*> m_remove_part_constraint_buffer;
         std::vector<struct add_contraint_msg> m_add_constraint_buffer;
         std::vector<struct add_body_msg> m_add_body_buffer;
-
-        // editor vessel
-        std::unique_ptr<Vessel> m_vessel;
 
         std::chrono::duration<double, std::micro> m_elapsed_time;
 

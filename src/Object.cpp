@@ -15,6 +15,7 @@ Object::Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape,
     m_base_id = base_id;
     m_object_name = "unnamed";
     m_fancy_name = "unnamed";
+    m_render_ignore = false;
     create_id(m_unique_id, PART_SET);
 }
 
@@ -30,6 +31,7 @@ Object::Object(const Object& obj) : std::enable_shared_from_this<Object>(){
     m_fancy_name = obj.m_fancy_name;
     m_col_shape = obj.m_col_shape;
     m_mass = obj.m_mass;
+    m_render_ignore = false;
     create_id(m_unique_id, PART_SET);
 
     m_body.reset(nullptr);
@@ -203,5 +205,20 @@ std::uint32_t Object::getUniqueId() const{
 
 std::uint32_t Object::getBaseId() const{
     return m_base_id;
+}
+
+
+std::shared_ptr<Object> Object::getSharedPtr(){
+    return shared_from_this();
+}
+
+
+bool Object::renderIgnore() const{
+    return m_render_ignore;
+}
+
+
+void Object::setRenderIgnore(){
+    m_render_ignore = true;
 }
 

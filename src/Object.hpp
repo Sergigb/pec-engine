@@ -16,7 +16,7 @@
 
 /* Simple class for rigid objects, contains a rigid body object and its model*/
 
-class Object : std::enable_shared_from_this<Object>{
+class Object : public std::enable_shared_from_this<Object>{
     protected:
         Model* m_model;
         BtWrapper* m_bt_wrapper;
@@ -29,6 +29,7 @@ class Object : std::enable_shared_from_this<Object>{
         btCollisionShape* m_col_shape;
         std::uint32_t m_base_id, m_unique_id;
         std::string m_object_name, m_fancy_name;
+        bool m_render_ignore;
     public:
         std::unique_ptr<btRigidBody> m_body; // made public for convenience
 
@@ -46,6 +47,8 @@ class Object : std::enable_shared_from_this<Object>{
         void getFancyName(std::string& name) const;
         std::uint32_t getUniqueId() const;
         std::uint32_t getBaseId() const;
+        std::shared_ptr<Object> getSharedPtr();
+        bool renderIgnore() const; // tells the physics thread to not include this object in the render buffers because it should be destroyed
 
         void applyCentralForce(const btVector3& force);
         void applyTorque(const btVector3& torque);
@@ -59,6 +62,7 @@ class Object : std::enable_shared_from_this<Object>{
         void activate(bool activate);
         int render();
         int render(math::mat4 body_transform);
+        void setRenderIgnore(); // call this when the object needs to be destroyed so the physics thread doesn't include it in the render buffers
 };
 
 

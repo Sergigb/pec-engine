@@ -12,7 +12,7 @@ class Object;
 // buffers for synchronizing physics and rendering
 
 struct object_transform{
-    Object* object_ptr;
+    std::shared_ptr<Object> object_ptr;
     math::mat4 transform;
 };
 

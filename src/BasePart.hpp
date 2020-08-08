@@ -44,6 +44,7 @@ class BasePart : public Object{
         bool removeChild(BasePart* child);
         // each child adds its new motion state to the command buffer, the function is called recursively through all the subtree
         void updateSubTreeMotionState(std::vector<struct set_motion_state_msg>& command_buffer, btVector3 disp, btVector3 root_origin, btQuaternion rotation); // add root origin to rotate
+        void updateSubTreeVessel(Vessel* vessel);
         void setVessel(Vessel* vess);
 
         const std::vector<struct attachment_point>* getAttachmentPoints() const;

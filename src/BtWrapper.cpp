@@ -164,7 +164,18 @@ void BtWrapper::updateBuffer(std::vector<object_transform>* buffer_){
     buffer_->clear();
     for(int i=0; i<col_object_array.size(); i++){
         Object* obj = static_cast<Object *>(col_object_array.at(i)->getUserPointer());
-        buffer_->emplace_back(object_transform{obj, obj->getRigidBodyTransformSingle()});
+        if(obj->renderIgnore()){ // ignore if the object should be destroyed
+            continue;
+        }
+        try{
+            std::shared_ptr<Object> obj_sptr = obj->getSharedPtr();    
+            buffer_->emplace_back(object_transform{obj_sptr, obj->getRigidBodyTransformSingle()});
+        }
+        catch(std::bad_weak_ptr& e) {
+            std::string name;
+            obj->getFancyName(name);
+            std::cout << "BtWrapper::updateBuffer - Warning, weak ptr for object " << name << " with id " << obj->getBaseId() << '\n';
+        }
     }
 }
 
