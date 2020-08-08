@@ -19,7 +19,7 @@ Object::Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape,
 }
 
 
-Object::Object(const Object& obj){
+Object::Object(const Object& obj) : std::enable_shared_from_this<Object>(){
     m_model = obj.m_model;
     m_bt_wrapper = obj.m_bt_wrapper;
     m_mesh_color = obj.m_mesh_color;

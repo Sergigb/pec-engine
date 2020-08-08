@@ -12,6 +12,8 @@
 #include "BaseApp.hpp"
 #include "EditorGUI.hpp"
 #include "buffers.hpp"
+#include "Vessel.hpp"
+
 
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/btBulletDynamicsCommon.h>
@@ -43,7 +45,7 @@ class App : public BaseApp{
 
         This will change when we add the object trees, kinematic objects, and other more 
         complex crap.*/
-        std::vector<std::unique_ptr<BasePart>> m_parts;
+        std::vector<std::shared_ptr<BasePart>> m_parts;
 
         // in the future, all the objects are going to be copied from the master part copy
         // maybe we'll need a different set for objects that are not parts?
@@ -53,8 +55,10 @@ class App : public BaseApp{
         std::vector<struct set_motion_state_msg> m_set_motion_state_buffer;
         std::vector<BasePart*> m_remove_part_constraint_buffer;
         std::vector<struct add_contraint_msg> m_add_constraint_buffer;
-        std::vector<struct add_object_msg> m_add_object_buffer;
+        std::vector<struct add_body_msg> m_add_body_buffer;
 
+        // editor vessel
+        std::unique_ptr<Vessel> m_vessel;
 
         std::chrono::duration<double, std::micro> m_elapsed_time;
 

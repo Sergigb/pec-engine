@@ -16,7 +16,7 @@
 
 /* Simple class for rigid objects, contains a rigid body object and its model*/
 
-class Object{
+class Object : std::enable_shared_from_this<Object>{
     protected:
         Model* m_model;
         BtWrapper* m_bt_wrapper;

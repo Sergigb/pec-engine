@@ -48,7 +48,7 @@ struct add_contraint_msg{
 };
 
 
-struct add_object_msg{
+struct add_body_msg{
     BasePart* part;
     btVector3 origin;
     btVector3 inertia;

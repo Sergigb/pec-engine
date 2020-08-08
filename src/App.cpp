@@ -385,20 +385,19 @@ void App::logic(){
     if(m_gui_action == EDITOR_ACTION_OBJECT_PICK && m_physics_pause){
         const std::unique_ptr<BasePart>* editor_picked_object = m_editor_gui->getPickedObject();
         const BasePart* part_ptr = editor_picked_object->get(); // trickery
-        BasePart* part = new BasePart(*part_ptr);
+        std::shared_ptr<BasePart> part = std::make_shared<BasePart>(*part_ptr);
         math::vec3 ray_start_world, ray_end_world;
 
         m_camera->castRayMousePos(10.f, ray_start_world, ray_end_world);
-        m_add_object_buffer.emplace_back(add_object_msg{part, btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]),
-                                        btVector3(0.0, 0.0, 0.0), btQuaternion::getIdentity()});
-        m_parts.push_back(std::move(std::unique_ptr<BasePart>(part)));
+        m_add_body_buffer.emplace_back(add_body_msg{part.get(), btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]),
+                                       btVector3(0.0, 0.0, 0.0), btQuaternion::getIdentity()});
+        m_parts.push_back(part);
 
         if(m_picked_obj){ // if the user has an scene object picked just leave it "there"
             m_picked_obj->activate(true);
             m_picked_obj = nullptr;
         }
-        m_picked_obj = part;
-
+        m_picked_obj = part.get();
     }
 
     // other input
@@ -434,11 +433,11 @@ void App::processCommandBuffers(){
     }
     m_add_constraint_buffer.clear();
 
-    for(uint i=0; i < m_add_object_buffer.size(); i++){
-        struct add_object_msg& msg = m_add_object_buffer.at(i);
+    for(uint i=0; i < m_add_body_buffer.size(); i++){
+        struct add_body_msg& msg = m_add_body_buffer.at(i);
         msg.part->addBody(msg.origin, msg.inertia, msg.rotation);
     }
-    m_add_object_buffer.clear();
+    m_add_body_buffer.clear();
 
     for(uint i=0; i < m_remove_part_constraint_buffer.size(); i++){
         m_remove_part_constraint_buffer.at(i)->removeParentConstraint();
