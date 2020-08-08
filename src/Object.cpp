@@ -5,16 +5,17 @@ Object::Object(){
 }
 
 
-Object::Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID){
+Object::Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, std::uint32_t base_id){
     m_mesh_color = math::vec3(1.0, 1.0, 1.0);
     m_bt_wrapper = bt_wrapper;
     m_model = model;
     m_has_transform = false;
     m_col_shape = col_shape;
     m_mass = mass;
-    m_baseID = baseID;
+    m_base_id = base_id;
     m_object_name = "unnamed";
     m_fancy_name = "unnamed";
+    create_id(m_unique_id, PART_SET);
 }
 
 
@@ -24,11 +25,12 @@ Object::Object(const Object& obj){
     m_mesh_color = obj.m_mesh_color;
     m_mesh_transform = obj.m_mesh_transform;
     m_has_transform = obj.m_has_transform;
-    m_baseID = obj.m_baseID;
+    m_base_id = obj.m_base_id;
     m_object_name = obj.m_object_name;
     m_fancy_name = obj.m_fancy_name;
     m_col_shape = obj.m_col_shape;
     m_mass = obj.m_mass;
+    create_id(m_unique_id, PART_SET);
 
     m_body.reset(nullptr);
 }
@@ -38,6 +40,7 @@ Object::~Object(){
     if(m_body != nullptr){
         m_bt_wrapper->removeBody(m_body.get());
     }
+    remove_id(m_unique_id, PART_SET);
 }
 
 
@@ -53,8 +56,6 @@ void Object::addBody(const btVector3& origin, const btVector3& local_inertia, co
 
     if(is_dynamic)
         m_col_shape->calculateLocalInertia(m_mass, local_inertia_);
-
-    //std::cout << m_bt_wrapper << 
 
     m_motion_state.reset(new btDefaultMotionState(start_transform));
     btRigidBody::btRigidBodyConstructionInfo rb_info(m_mass, m_motion_state.get(), m_col_shape, local_inertia_);
@@ -192,5 +193,15 @@ void Object::getName(std::string& name) const{
 
 void Object::getFancyName(std::string& name) const{
     name = m_fancy_name;
+}
+
+
+std::uint32_t Object::getUniqueId() const{
+    return m_unique_id;
+}
+
+
+std::uint32_t Object::getBaseId() const{
+    return m_base_id;
 }
 

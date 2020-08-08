@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <memory>
 #include <string>
+#include <cstdint>
 
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/btBulletDynamicsCommon.h>
@@ -11,6 +12,7 @@
 #include "Model.hpp"
 #include "maths_funcs.hpp"
 #include "BtWrapper.hpp"
+#include "id_manager.hpp"
 
 /* Simple class for rigid objects, contains a rigid body object and its model*/
 
@@ -25,12 +27,12 @@ class Object{
         bool m_has_transform;
         btScalar m_mass;
         btCollisionShape* m_col_shape;
-        int m_baseID;
+        std::uint32_t m_base_id, m_unique_id;
         std::string m_object_name, m_fancy_name;
     public:
         std::unique_ptr<btRigidBody> m_body; // made public for convenience
 
-        Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID);
+        Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, std::uint32_t base_id);
         Object();
         Object(const Object& obj);
         virtual ~Object();
@@ -42,6 +44,8 @@ class Object{
         void getRigidBodyTransformDouble(double* mat4) const;
         void getName(std::string& name) const;
         void getFancyName(std::string& name) const;
+        std::uint32_t getUniqueId() const;
+        std::uint32_t getBaseId() const;
 
         void applyCentralForce(const btVector3& force);
         void applyTorque(const btVector3& torque);
