@@ -6,6 +6,7 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <stb/stb_image.h>
+#include <cstdint>
 
 #include "WindowHandler.hpp"
 #include "BaseGUI.hpp"
@@ -83,7 +84,7 @@ class EditorGUI : public BaseGUI{
         EditorGUI(const FontAtlas* atlas, const RenderContext* render_context, const Input* input);
         ~EditorGUI();
 
-        void setMasterPartList(const std::map<int, std::unique_ptr<BasePart>>* master_parts_list);
+        void setMasterPartList(const std::map<std::uint32_t, std::unique_ptr<BasePart>>* master_parts_list);
 
         void onFramebufferSizeUpdate();
         void render();

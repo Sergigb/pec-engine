@@ -4,6 +4,7 @@
 #include <map>
 #include <cstdlib>
 #include <memory>
+#include <cstdint>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
@@ -46,7 +47,7 @@ class PartsPanelGUI{
         const std::unique_ptr<BasePart>* m_picked_part;
 
         const RenderContext* m_render_context;
-        const std::map<int, std::unique_ptr<BasePart>>* m_master_parts_list;
+        const std::map<std::uint32_t, std::unique_ptr<BasePart>>* m_master_parts_list;
         const FontAtlas* m_font_atlas;
         const Input* m_input;
 
@@ -56,7 +57,7 @@ class PartsPanelGUI{
         PartsPanelGUI(float fb_width, float fb_height, const FontAtlas* atlas, const RenderContext* render_context, const Input* input);
         ~PartsPanelGUI();
 
-        void setMasterPartList(const std::map<int, std::unique_ptr<BasePart>>* master_parts_list);
+        void setMasterPartList(const std::map<std::uint32_t, std::unique_ptr<BasePart>>* master_parts_list);
         void onFramebufferSizeUpdate(float fb_width, float fb_height);
 
         void bindTexture();

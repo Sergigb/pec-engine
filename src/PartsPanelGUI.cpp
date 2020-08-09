@@ -74,17 +74,17 @@ PartsPanelGUI::~PartsPanelGUI(){
 }
 
 
-void PartsPanelGUI::setMasterPartList(const std::map<int, std::unique_ptr<BasePart>>* master_parts_list){
+void PartsPanelGUI::setMasterPartList(const std::map<std::uint32_t, std::unique_ptr<BasePart>>* master_parts_list){
     int i = 0;
     m_master_parts_list = master_parts_list;
     m_item_to_key.clear();
 
-    std::map<int, std::unique_ptr<BasePart>>::const_iterator it;
+    std::map<std::uint32_t, std::unique_ptr<BasePart>>::const_iterator it;
     for(it = m_master_parts_list->begin(); it != m_master_parts_list->end(); it++){
         std::string name;
         wchar_t wname[STRING_MAX_LEN];
 
-        m_item_to_key.insert(std::pair<int,int>(i, it->first));
+        m_item_to_key.insert(std::pair<int,std::uint32_t>(i, it->first));
 
         it->second->getFancyName(name);
         std::mbstowcs(wname, name.c_str(), STRING_MAX_LEN);
