@@ -79,6 +79,9 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
     m_bg_a = 1.;
 
     glClearColor(m_bg_r, m_bg_g, m_bg_b, m_bg_a);
+
+    m_rscene_acc_load_time = 0.0;
+    m_rgui_acc_load_time = 0.0;
 }
 
 
@@ -145,8 +148,10 @@ void RenderContext::renderAttPoints(const BasePart* part, int& num_rendered, con
 
 void RenderContext::render(){
     int num_rendered = 0;
+    std::chrono::steady_clock::time_point start_scene, end_scene_start_gui, end_gui;
 
     //clean up this shit
+
 
     glUseProgram(m_pb_notex_shader);
     glUniformMatrix4fv(m_pb_notex_view_mat, 1, GL_FALSE, m_camera->getViewMatrix().m);
@@ -172,7 +177,8 @@ void RenderContext::render(){
 
     glClearColor(m_bg_r, m_bg_g, m_bg_b, m_bg_a);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    
+
+    start_scene = std::chrono::steady_clock::now();
 
     if(m_buffers->last_updated != none){
         if(m_buffers->last_updated == buffer_1){
@@ -199,9 +205,18 @@ void RenderContext::render(){
         }
     }
 
+    end_scene_start_gui = std::chrono::steady_clock::now();
+
     glDisable(GL_DEPTH_TEST);
     m_gui->render();
     glEnable(GL_DEPTH_TEST);
+
+    end_gui = std::chrono::steady_clock::now();
+
+    std::chrono::duration<double, std::micro> load_time_scene = end_scene_start_gui - start_scene;
+    std::chrono::duration<double, std::micro> load_time_gui = end_gui - end_scene_start_gui;
+    m_rgui_acc_load_time += load_time_scene.count();
+    m_rscene_acc_load_time += load_time_gui.count();
 
     if(m_draw_overlay){
         m_debug_overlay->setRenderedObjects(num_rendered);
@@ -282,10 +297,15 @@ void RenderContext::start(){
 
 
 void RenderContext::run(){
+    std::chrono::steady_clock::time_point start, end;
+    double accumulated_load = 0.0, render_load_time, scene_render_time, gui_render_time;
+    int ticks_since_last_update = 0;
+
     // this should be enough to transfer the opengl context to the current thread
     glfwMakeContextCurrent(m_window_handler->getWindow());
 
     while(!m_stop){
+        start = std::chrono::steady_clock::now();
         if(m_update_fb){
             m_update_fb = false;
             m_update_projection = true;
@@ -293,8 +313,25 @@ void RenderContext::run(){
         }
 
         render();
+
+        end = std::chrono::steady_clock::now();
+        std::chrono::duration<double, std::micro> load_time = end - start;
+        accumulated_load += load_time.count();
+        if(ticks_since_last_update == 60){
+            render_load_time = accumulated_load / 60000.0;
+            scene_render_time = m_rscene_acc_load_time / 60000.0;
+            gui_render_time = m_rgui_acc_load_time / 60000.0;
+            m_debug_overlay->setRenderTimes(render_load_time, scene_render_time, gui_render_time);
+            accumulated_load = 0.0;
+            m_rscene_acc_load_time = 0.0;
+            m_rgui_acc_load_time = 0.0;
+            ticks_since_last_update = 0;
+        }
+        else{
+            ticks_since_last_update++;
+        }
+
         glfwSwapBuffers(m_window_handler->getWindow());
-        // timing stuff?
     }
 }
 
@@ -309,6 +346,7 @@ void RenderContext::stop(){
 void RenderContext::pause(bool pause){
     m_pause = pause;
 }
+
 
 void RenderContext::toggleDebugOverlay(){
     m_draw_overlay = !m_draw_overlay;

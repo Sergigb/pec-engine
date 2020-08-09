@@ -6,6 +6,7 @@
 #include <memory>
 #include <mutex>
 #include <thread>
+#include <chrono>
 
 #include "gl_utils.hpp"
 #include "Camera.hpp"
@@ -62,6 +63,7 @@ class RenderContext{
         bool m_update_fb, m_update_projection;
 
         bool m_draw_overlay;
+        double m_rscene_acc_load_time, m_rgui_acc_load_time;
 
         // synchronization
         struct render_buffers* m_buffers;

@@ -9,7 +9,7 @@ DebugOverlay::DebugOverlay(int fb_width, int fb_height, const RenderContext* ren
     m_font_atlas->loadCharacterRange(913, 1023); // greek and coptic
     m_font_atlas->createAtlas(true);
 
-    color c{1.0, 1.0, 0.0};
+    color c{0.0, 1.0, 0.0};
     m_text_dynamic_text.reset(new Text2D(fb_width, fb_height, c, m_font_atlas.get(), render_context));
     Text2D* text_debug;
     debug_info_box(&text_debug, fb_width, fb_height, m_font_atlas.get(), render_context);
@@ -19,6 +19,9 @@ DebugOverlay::DebugOverlay(int fb_width, int fb_height, const RenderContext* ren
     m_physics_load_time = 0.0;
     m_logic_load_time = 0.0;
     m_logic_sleep_time = 0.0;
+    m_render_load_time = 0.0;
+    m_rscene_load_time = 0.0;
+    m_rgui_load_time = 0.0;
 }
 
 
@@ -67,6 +70,14 @@ void DebugOverlay::render(){
     mbstowcs(buffer2, oss2.str().c_str(), 128);
     m_text_dynamic_text->addString(buffer2, 15, 125, 1, STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
 
+    oss2.str("");
+    oss2.clear();
+    oss2 << "Render time: " << std::setprecision(3) << m_render_load_time 
+         << "ms - Scene render: " << std::setprecision(3) << m_rscene_load_time
+         << "ms - GUI render: " << std::setprecision(3) << m_rgui_load_time << "ms";
+    mbstowcs(buffer2, oss2.str().c_str(), 128);
+    m_text_dynamic_text->addString(buffer2, 15, 145, 1, STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
+
     m_text_dynamic_text->render();
 
     m_text_debug->render();
@@ -75,7 +86,7 @@ void DebugOverlay::render(){
 
 
 void debug_info_box(Text2D** t, int fb_width, int fb_height, const FontAtlas* font_atlas, const RenderContext* render_context){
-    color c{1.0, 1.0, 0.0};
+    color c{0.0, 1.0, 0.0};
     *t = new Text2D(fb_width, fb_height, c, font_atlas, render_context);
     
     const GLubyte* vendor = glGetString(GL_VENDOR); // Returns the vendor
@@ -113,5 +124,12 @@ void debug_info_box(Text2D** t, int fb_width, int fb_height, const FontAtlas* fo
     oss << "System memory: " << mem_gb << " GB";
     mbstowcs(totalmemory_w, oss.str().c_str(), 64);
     (*t)->addString(totalmemory_w, 15, 105, 1, STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
+}
+
+
+void DebugOverlay::setRenderTimes(double render_load_time, double rscene_load_time, double rgui_load_time){
+    m_render_load_time = render_load_time;
+    m_rscene_load_time = rscene_load_time;
+    m_rgui_load_time = rgui_load_time;
 }
 
