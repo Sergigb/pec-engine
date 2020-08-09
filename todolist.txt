@@ -1,27 +1,53 @@
 list of stuff i have to do/fix
 - imgui: WantCaptureKeyboard to know if we need to handle input
 - also integrate imgui
-- in the load scene function (gl utils) update to use new instead of malloc (and cleanup the function)
-- create uniform for the light in the shader
-- frustum culling
-- when we press q/e the up vector we use to change the yaw should rotate?
 - load all meshes in scene as a single mesh?
-- mouse camera movement
 - we should link assimp dynamically
-- in the mesh loading function, in the line 261, shouldn't it be GL_UINT???
-- revise const correctness
-- in the font atlas function, it should be possible to load custom ranges of characters before creating the texture atlas
 - In glutils, when we load the indices and then bind the buffer we pass glfloat to glVertexAttribPointer, is this correct?
 - the shader programme or the shaders are not being deleted right, it leaks memory if the programme gets deleted (see 2d text class destructor)
 - implement kerning in the text rendering/atlas
 - change the name of the texture coords in the character struct to left right top bottom or such
-- create a shader class to avoid having to create a new shader for every object/text or whatever
-- new lines in the 2d text class do not work when its not placed absolute to the bl, fix it or whatever
-- integrate bullet 
-- create a makefile that doesn't suck
-- overloaded functions for vec4?
+- new file structure (render folder, physics folder, game? folder etc)
+- remove debug_info_box fuck that shit
+- important thing for concurrency: the rendering thread, since it will run free in the future, might access objects that have been deleted in the main thread because they still are in the rendering buffers. To avoid this I've thought about the following: make the pointers in the object vectors (m_objects/m_parts or whatever) to be shared pointers. Each object will hold a pointer to its shared pointer (confusing but ok), and the rendering buffers will actually hold a shared pointer (along its world matrix) that will be initialised with the object's pointer to its shared pointer (ugh). This way, if the object or rigid body is deleted, the object will not be freed (but it can be considered freed by the logic and the physics thread) DONT DO THAT TAKE A LOOK AT test.cpp!!!!!!. As soon as the physics thread clears the vector where this smart pointer is, the memory will be freed. Also, I think that the render function in the objects/parts should (more like MUST) be virtual.
+- future optimization: getRigidBodyTransformSingle seems to be quite expensive, try to do something about it
+- rename the queues to buffers, I think it makes more sense
+- investigate the increase in load time in the main loop when the mouse is moving, doesn't make much sense?????? IMPORTANT ---> glfwSetInputMode that's the cause - investigate in fedora
+- delete m_objects and m_parts from the render context? it's not used...
+- IMPORTANT: fix glBindVertexArray calls in Text2D, maybe other places???
+- check model destructor, doesnt check if the buffers are initialised
+- move the render buffers to the btwrapper class?
+- manage the mouse focus (if it's over the gui don't pick objects)
+- useProgram should be used in RenderContext too
+- test m_remove_part_constraint_queue
+- we should be calling glDeleteTextures whenever needed, for example in the text atlases
+- check if in PartsPanel::onFramebufferSizeUpdate we need to free the texture before resizing it
+- I'm still thinking about this, but the rendering of the objects should be moved to renderScene or something like that, where the scene is rendered to whatever fb is bound. This would make rendering multiple views simpler (different fbs). Also, we should make a method to change the projection matrix to whatever shader we need.
+- implement a callback system for when the frame buffer is updated, I don't like having to call manually the camera and the render context (what if we have more than one of those?)
+- create a render scene function that can be called from anyone from the render thread. This is to be used when other framebuffers are bound (other cameras).
+- move the panel gui thing to the editor gui
+- check that all the methods are using bindProgram and bindVao
+- create general init function in the app class constructor
+- disable depth test should be called in the gui render function, not in the render context - no it should not, the same shit goes for the text - it causes depth error in the gui -> fix
+- investigate  glGetError invalid operation (not caused by the render thread - App?)
+- we don't have to pass the text2d shader to the gui, just get it from the render context (same for gui) - maybe don't even pass the text shader to the text2d class...
+- save ortho projection in the render context and have a method to get it. That's useful for when we have other framebuffers and we want to restore the default projection uniform value
+- decide what to do with useProgram and bindVao...
+- max string len is being being ignored in the addstring method (text2d)?
+- implemet gui managing in the render context
+- I dont like dynamic casts in the render function, why not let the object decide wether to draw the att points or not? the render context should have a boolean to keep track of wether the game is paused or not
+- deleting objects should be handled somehow, maybe in the future itll be easier with a map<vesselID, shared ptr<vessel>>
+- Important: we have to somehow avoid parents getting attached to childs/grandsons as childs (happens when you grab the root and the mouse overlaps with attachments from other attached parts). Segmentation fault occurs when a father is attached to a child as a father, and we try to detach it. Most likely nullptr is referenced somewhere (we go in a loop until nullptr). In the future, the editor should have 1 vessel in it (or none, if we don't have a root), parts shall be attached to other parts if they don't belong to the vessel (parts will have a pointer to the vessel they belong, or nullptr). Subtrees that don't belong to a vessel (nullptr) can only be attached to a part that belongs to a vessel, so they can't be attached between each other.
+- should getParent/Childs be made private (basePArt) and make Vessel a friend?
+- check the id type in loadParts, should be std::uint32_t if it isn't, the same goes for the master part list
+- check #define RECALCULATE_AABB to avoid having to call updateAABB or whatever
+- possible id collision between the ground and the first part created
+- shader hot reloading should be possible
+
 
 Interesting links:
+- things about planets:
+    - https://pybullet.org/Bullet/phpBB3/viewtopic.php?t=11560
 - planet rendering/reentry effects, etc
     - http://leah-lindner.com/blog/
     - http://leah-lindner.com/img/blog/planet_renderer/week5-6/researchPaper.pdf
@@ -31,3 +57,16 @@ Interesting links:
     - https://www.opengl-tutorial.org/miscellaneous/clicking-on-objects/picking-with-a-physics-library/
 - interesting opengl stuff
     - https://www.songho.ca/opengl/
+- newtonian trajectories
+    - www.roesle.org/cms25/index.php/projects/81-general/95-on-newtonian-trajectories-in-kerbal-space-program
+- rockets
+    - https://www.grc.nasa.gov/WWW/BGH/lrockth.html
+- architectures
+    - https://software.intel.com/content/www/us/en/develop/articles/designing-the-framework-of-a-parallel-game-engine.html
+    - https://www.gamasutra.com/view/feature/130247/multithreaded_game_engine_.php?print=1
+
+
+about IDS:
+    To manage parts, parts instances and vessels we will have a system of ids. For parts instances and vessels I'll have a file with functions that will manage the creation and deletion of the ids. It won't be a class, it will have a static variable pointing to the memory structure with the necessary fields. When something requests a new id, the file should create a random integer which will be added to a unordered set (that contains the rest of the ids), if there's a collision it will generate a new int until it finds a unique one. It should be possible to request adding a specific id (useful for loading stuff), but if a collision occurs (unlikely) something should be done about it... We should have a set for every id list (2 for now)
+
+    For the parts it should be easier. I'm still thinking about how to generate them. We could preassign ids like we do now, but the main problem is mods in the future. I think a good way to avoid collisions is to make a hash out of the name of the part.
