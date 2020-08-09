@@ -215,8 +215,8 @@ void RenderContext::render(){
 
     std::chrono::duration<double, std::micro> load_time_scene = end_scene_start_gui - start_scene;
     std::chrono::duration<double, std::micro> load_time_gui = end_gui - end_scene_start_gui;
-    m_rgui_acc_load_time += load_time_scene.count();
-    m_rscene_acc_load_time += load_time_gui.count();
+    m_rscene_acc_load_time += load_time_scene.count();
+    m_rgui_acc_load_time += load_time_gui.count();
 
     if(m_draw_overlay){
         m_debug_overlay->setRenderedObjects(num_rendered);
