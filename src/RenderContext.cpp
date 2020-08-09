@@ -133,13 +133,13 @@ void RenderContext::renderAttPoints(const BasePart* part, int& num_rendered, con
 
         point = part->getParentAttachmentPoint()->point;
         att_transform = body_transform * math::translate(math::identity_mat4(), point);
-        m_att_point_model->setMeshColor(math::vec3(0.0, 1.0, 0.0));
+        m_att_point_model->setMeshColor(math::vec4(0.0, 1.0, 0.0, 1.0));
         num_rendered += m_att_point_model->render(att_transform * m_att_point_scale);
 
         for(uint j=0; j<att_points->size(); j++){
             point = att_points->at(j).point;
             att_transform = body_transform * math::translate(math::identity_mat4(), point);
-            m_att_point_model->setMeshColor(math::vec3(1.0, 0.0, 0.0));
+            m_att_point_model->setMeshColor(math::vec4(1.0, 0.0, 0.0, 1.0));
             num_rendered += m_att_point_model->render(att_transform * m_att_point_scale);
         }
     }

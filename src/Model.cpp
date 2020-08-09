@@ -16,7 +16,7 @@ Model::Model(const char* path_to_mesh, const char* path_to_texture, GLuint shade
     m_model_mat_location = glGetUniformLocation(m_shader_programme, "model");
     m_color_location = glGetUniformLocation(m_shader_programme, "object_color");
 
-    m_mesh_color = mesh_color;
+    m_mesh_color = math::vec4(mesh_color, 1.0);
 
     loadScene(std::string(path_to_mesh));
 
@@ -56,7 +56,7 @@ Model::~Model(){
 }
 
 
-void Model::setMeshColor(const math::vec3& mesh_color){
+void Model::setMeshColor(const math::vec4& mesh_color){
     m_mesh_color = mesh_color;
 }
 
@@ -125,7 +125,7 @@ int Model::loadScene(const std::string& pFile){
     
     glGenVertexArrays(1, &m_vao);
     glBindVertexArray(m_vao);
-    glUniform3fv(m_color_location, 1, m_mesh_color.v); // set mesh color to white
+    glUniform4fv(m_color_location, 1, m_mesh_color.v); // set mesh color to white
 
     if(mesh->HasPositions()){
         glGenBuffers(1, &m_vbo_vert);
@@ -174,7 +174,7 @@ int Model::render(const math::mat4& transform) const{
             glBindTexture(GL_TEXTURE_2D, m_tex_id);
         }
 
-        glUniform3fv(m_color_location, 1, m_mesh_color.v);
+        glUniform4fv(m_color_location, 1, m_mesh_color.v);
         glUniformMatrix4fv(m_model_mat_location, 1, GL_FALSE, transform.m);
         glDrawElements(GL_TRIANGLES, m_num_faces * 3, GL_UNSIGNED_INT, NULL);
 

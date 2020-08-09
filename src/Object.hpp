@@ -30,6 +30,7 @@ class Object : public std::enable_shared_from_this<Object>{
         std::uint32_t m_base_id, m_unique_id;
         std::string m_object_name, m_fancy_name;
         bool m_render_ignore;
+        float m_alpha;
     public:
         std::unique_ptr<btRigidBody> m_body; // made public for convenience
 
@@ -63,6 +64,7 @@ class Object : public std::enable_shared_from_this<Object>{
         int render();
         int render(math::mat4 body_transform);
         void setRenderIgnore(); // call this when the object needs to be destroyed so the physics thread doesn't include it in the render buffers
+        void setAlpha(float alpha);
 };
 
 

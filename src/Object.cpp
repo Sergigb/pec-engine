@@ -6,7 +6,7 @@ Object::Object(){
 
 
 Object::Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, std::uint32_t base_id){
-    m_mesh_color = math::vec3(1.0, 1.0, 1.0);
+    m_mesh_color = math::vec4(1.0, 1.0, 1.0, 1.0);
     m_bt_wrapper = bt_wrapper;
     m_model = model;
     m_has_transform = false;
@@ -17,6 +17,7 @@ Object::Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape,
     m_fancy_name = "unnamed";
     m_render_ignore = false;
     create_id(m_unique_id, PART_SET);
+    m_alpha = 1.0;
 }
 
 
@@ -33,6 +34,7 @@ Object::Object(const Object& obj) : std::enable_shared_from_this<Object>(){
     m_mass = obj.m_mass;
     m_render_ignore = false;
     create_id(m_unique_id, PART_SET);
+    m_alpha = 1.0;
 
     m_body.reset(nullptr);
 }
@@ -75,7 +77,7 @@ int Object::render(){
         body_transform = body_transform * m_mesh_transform;
     }
 
-    m_model->setMeshColor(m_mesh_color);
+    m_model->setMeshColor(math::vec4(m_mesh_color, m_alpha));
     return m_model->render(body_transform);
 }
 
@@ -85,7 +87,7 @@ int Object::render(math::mat4 body_transform){
         body_transform = body_transform * m_mesh_transform;
     }
 
-    m_model->setMeshColor(m_mesh_color);
+    m_model->setMeshColor(math::vec4(m_mesh_color, m_alpha));
     return m_model->render(body_transform);
 }
 
@@ -220,5 +222,10 @@ bool Object::renderIgnore() const{
 
 void Object::setRenderIgnore(){
     m_render_ignore = true;
+}
+
+
+void Object::setAlpha(float alpha){
+    m_alpha = alpha;
 }
 

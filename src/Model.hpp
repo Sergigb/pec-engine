@@ -24,7 +24,7 @@ class Model{
         int m_num_faces, m_tex_x, m_tex_y, m_n_channels;
         GLuint m_shader_programme;
         bool m_has_texture;
-        math::vec3 m_mesh_color;
+        math::vec4 m_mesh_color;
 
         const Frustum* m_frustum;
         const RenderContext* m_render_context;
@@ -35,7 +35,7 @@ class Model{
         Model(const char* path_to_mesh, const char* path_to_texture, GLuint shader_programme, const Frustum* frustum, const RenderContext* render_context, const math::vec3& mesh_color);
         ~Model();
 
-        void setMeshColor(const math::vec3& mesh_color);
+        void setMeshColor(const math::vec4& mesh_color);
         int render(const math::mat4& transform) const;
 
 };
