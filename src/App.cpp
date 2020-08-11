@@ -337,13 +337,48 @@ void App::placePart(float closest_dist, math::vec4& closest_att_point_world, Bas
 }
 
 
+void App::pickObject(){
+    double mousey, mousex;
+    math::vec3 ray_start_world, ray_end_world;
+    Object* obj;
+
+    m_input->getMousePos(mousex, mousey);
+    m_camera->castRayMousePos(1000.f, ray_start_world, ray_end_world);
+
+    obj = m_bt_wrapper->testRay(ray_start_world, ray_end_world);
+    if(obj){
+        m_picked_obj = obj;
+
+        BasePart* part = dynamic_cast<BasePart*>(m_picked_obj);
+
+        if(part){
+            if(part->getVessel() == nullptr){
+                while(part->getParent() != nullptr){
+                   part = part->getParent();
+                }
+            }
+            else{ // we are certainly detaching a part from the vessel
+                if(!part->isRoot()){ // ignore root
+                    BasePart* parent = part->getParent();
+                    m_subtrees.emplace_back(parent->removeChild(part));
+
+                    m_remove_part_constraint_buffer.emplace_back(part);
+                    part->setParent(nullptr);
+                    part->updateSubTreeVessel(nullptr);
+                    m_vessels.at(m_vessel_id)->onTreeUpdate();
+                }
+            }
+        }
+    }
+}
+
+
 void App::logic(){
 
     if(m_picked_obj){
         BasePart* part = dynamic_cast<BasePart*>(m_picked_obj);
 
         if(part){
-            std::cout << part->getVessel() << " - " << m_vessels.at(m_vessel_id) << std::endl;
             float closest_dist = 99999999999.9;;
             math::vec4 closest_att_point_world;
             BasePart* closest = nullptr;
@@ -361,38 +396,7 @@ void App::logic(){
     }
     else{ // if not picked object
         if(!m_gui_action && m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && m_physics_pause){ // scene has the focus
-            double mousey, mousex;
-            math::vec3 ray_start_world, ray_end_world;
-            Object* obj;
-
-            m_input->getMousePos(mousex, mousey);
-            m_camera->castRayMousePos(1000.f, ray_start_world, ray_end_world);
-
-            obj = m_bt_wrapper->testRay(ray_start_world, ray_end_world);
-            if(obj){
-                m_picked_obj = obj;
-
-                BasePart* part = dynamic_cast<BasePart*>(m_picked_obj);
-
-                if(part){
-                    if(part->getVessel() == nullptr){
-                        while(part->getParent() != nullptr){
-                           part = part->getParent();
-                        }
-                    }
-                    else{ // we are certainly detaching a part from the vessel
-                        if(!part->isRoot()){ // ignore root
-                            BasePart* parent = part->getParent();
-                            m_subtrees.emplace_back(parent->removeChild(part));
-
-                            m_remove_part_constraint_buffer.emplace_back(part);
-                            part->setParent(nullptr);
-                            part->updateSubTreeVessel(nullptr);
-                            m_vessels.at(m_vessel_id)->onTreeUpdate();
-                        }
-                    }
-                }
-            }
+            pickObject();
         }
     }
 
