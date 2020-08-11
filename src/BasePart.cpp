@@ -5,12 +5,14 @@ BasePart::BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_sh
     Object(model, bt_wrapper, col_shape, mass, baseID){
     m_parent = nullptr;
     m_vessel = nullptr;
+    m_is_root = false;
 }
 
 
 BasePart::BasePart(){
     m_parent = nullptr;
     m_vessel = nullptr;
+    m_is_root = false;
 }
 
 
@@ -26,6 +28,8 @@ BasePart::BasePart(const BasePart& part) : Object(part) {
     m_attachment_points = part.m_attachment_points;
     m_parent_constraint.reset(nullptr);
     m_parent = nullptr;
+    m_is_root = false;
+    m_vessel = nullptr;
 }
 
 
@@ -92,17 +96,19 @@ bool BasePart::addChild(std::shared_ptr<BasePart> child){
 }
 
 
-bool BasePart::removeChild(BasePart* child){
+std::shared_ptr<BasePart> BasePart::removeChild(BasePart* child){
+    std::shared_ptr<BasePart> partsptr(nullptr);
     for(uint i=0; i < m_childs.size(); i++){
         if(m_childs.at(i).get() == child){
+            partsptr = std::dynamic_pointer_cast<BasePart>(m_childs.at(i)); 
             m_childs.erase(m_childs.begin() + i);
             //std::cout << "part with value " << this << " has disowned child part with value " << child << std::endl;
-            return true;
+            return partsptr;
         }
     }
     log("BasePart::removeChild - tried to remove child part with value ", child, " but it's not in the list");
     std::cerr << "BasePart::removeChild - tried to remove child part with value " << child << " but it's not in the list" << std::endl;
-    return false;
+    return partsptr;
 }
 
 
@@ -143,7 +149,7 @@ void BasePart::setVessel(Vessel* vess){
 }
 
 
-const Vessel* BasePart::getVessel() const{
+Vessel* BasePart::getVessel() const{
     return m_vessel;
 }
 
@@ -156,7 +162,7 @@ void BasePart::updateSubTreeVessel(Vessel* vessel){
     }
 }
 
-/*
+
 int BasePart::render(){
     math::mat4 body_transform = getRigidBodyTransformSingle();
  
@@ -190,13 +196,23 @@ int BasePart::render(math::mat4 body_transform){
     return m_model->render(body_transform);
 }
 
-*/
 
-void BasePart::serRenderIgnoreSubTree(){
+
+void BasePart::setRenderIgnoreSubTree(){
     m_render_ignore = true;
 
     for(uint i=0; i < m_childs.size(); i++){
-        m_childs.at(i)->serRenderIgnoreSubTree();
+        m_childs.at(i)->setRenderIgnoreSubTree();
     }
-
 }
+
+
+void BasePart::setRoot(bool root){
+    m_is_root = root;
+}
+
+
+bool BasePart::isRoot() const{
+    return m_is_root;
+}
+
