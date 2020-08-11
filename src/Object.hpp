@@ -61,8 +61,8 @@ class Object : public std::enable_shared_from_this<Object>{
         void setName(std::string name);
         void setFancyName(std::string name);
         void activate(bool activate);
-        int render();
-        int render(math::mat4 body_transform);
+        virtual int render();
+        virtual int render(math::mat4 body_transform);
         void setRenderIgnore(); // call this when the object needs to be destroyed so the physics thread doesn't include it in the render buffers
         void setAlpha(float alpha);
 };
