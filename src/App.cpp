@@ -12,6 +12,7 @@ App::App() : BaseApp(){
     m_picked_obj = nullptr;
     m_clear_scene = false;
     m_buffers.last_updated = none;
+    m_vessel_id = 0;
 
     m_def_font_atlas.reset(new FontAtlas(256));
     m_def_font_atlas->loadFont("../data/fonts/Liberastika-Regular.ttf", 15);
@@ -32,6 +33,7 @@ App::App(int gl_width, int gl_height) : BaseApp(gl_width, gl_height){
     m_picked_obj = nullptr;
     m_clear_scene = false;
     m_buffers.last_updated = none;
+    m_vessel_id = 0;
 
     m_def_font_atlas.reset(new FontAtlas(256));
     m_def_font_atlas->loadFont("../data/fonts/Liberastika-Regular.ttf", 15);
@@ -85,7 +87,7 @@ void App::loadParts(){
 
     int howmany = 35;
     for(int i=0; i<howmany; i++){
-        int ID = i; // change in the future to something else
+        std::uint32_t ID = i; // change in the future to something else
 
         std::unique_ptr<BasePart> cube(new BasePart(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btScalar(10.0), ID));
         cube->setColor(math::vec3(1.0-(1./howmany)*i, 0.0, (1./howmany)*i));
@@ -96,7 +98,7 @@ void App::loadParts(){
         cube->setName(std::string("test_part_id_") + std::to_string(ID));
         cube->setFancyName(std::string("Placeholder object ") + std::to_string(ID));
 
-        typedef std::map<int, std::unique_ptr<BasePart>>::iterator map_iterator;
+        typedef std::map<std::uint32_t, std::unique_ptr<BasePart>>::iterator map_iterator;
         std::pair<map_iterator, bool> res = m_master_parts.insert({ID, std::move(cube)});
 
         if(!res.second){
@@ -190,184 +192,171 @@ void App::run(){
 }
 
 
-void App::logic(){
-    // temporal method with the game logic
-    //bool first_lmb_click = false;
-    /*
-     *  This function is hell
-     *  it will be updated and organized at some point
-     *  seriously it sucks badly
-     */
+void App::getClosestAtt(float& closest_dist, math::vec4& closest_att_point_world, BasePart*& closest, BasePart* part){
+    const math::mat4 proj_mat = m_camera->getProjMatrix();
+    const math::mat4 view_mat = m_camera->getViewMatrix();
+    double mousey, mousex;
+    int w, h;
 
-    // mouse pick test
-    if(m_picked_obj){
+    m_input->getMousePos(mousex, mousey);
+    m_window_handler->getFramebufferSize(w, h);
+    mousey = ((mousey / h) * 2 - 1) * -1;
+    mousex = (mousex / w) * 2 - 1;
+
+    std::vector<BasePart*>* vessel_parts = m_vessels.at(m_vessel_id)->getParts();
+    for(uint i=0; i<vessel_parts->size(); i++){ // get closest att point to the mouse cursor
+        if(part == vessel_parts->at(i)){
+            continue;
+        }
+
+        const std::vector<struct attachment_point>* att_points = vessel_parts->at(i)->getAttachmentPoints();
+
+        for(uint j=0; j<att_points->size(); j++){
+            const math::vec3 att_point = att_points->at(j).point;
+            math::mat4 att_transform = math::translate(math::identity_mat4(), att_point);
+            att_transform = vessel_parts->at(i)->getRigidBodyTransformSingle() * att_transform;
+            math::vec4 att_point_loc_world = math::vec4(att_transform.m[12], att_transform.m[13], att_transform.m[14], 1.0);
+            math::vec4 att_point_loc_screen;
+
+            att_point_loc_screen = proj_mat * view_mat * att_point_loc_world;
+            att_point_loc_screen = att_point_loc_screen / att_point_loc_screen.v[3];
+
+            float distance = math::distance(math::vec2(mousex, mousey),
+                                            math::vec2(att_point_loc_screen.v[0], att_point_loc_screen.v[1]));
+            
+            if(distance < closest_dist){
+                closest_dist = distance;
+                closest_att_point_world = att_point_loc_world;
+                closest = vessel_parts->at(i);
+            }
+        }
+    }
+}
+
+void App::placePart(float closest_dist, math::vec4& closest_att_point_world, BasePart* closest, BasePart* part){
+    btTransform transform_original;
+    btQuaternion rotation;
+    m_picked_obj->m_body->getMotionState()->getWorldTransform(transform_original);
+    rotation = transform_original.getRotation();
+
+    if(closest_dist < 0.05){ // magnet
+        btTransform transform_final;
+        btVector3 btv3_child_att(part->getParentAttachmentPoint()->point.v[0],
+                                 part->getParentAttachmentPoint()->point.v[1],
+                                 part->getParentAttachmentPoint()->point.v[2]);
+        btVector3 btv3_closest_att_world(closest_att_point_world.v[0],
+                                         closest_att_point_world.v[1],
+                                         closest_att_point_world.v[2]);
+
+        transform_final = btTransform(btQuaternion::getIdentity(), -btv3_child_att);
+
+        btTransform object_R = btTransform(rotation, btVector3(0.0, 0.0, 0.0));
+        btTransform object_T = btTransform(btQuaternion::getIdentity(), btv3_closest_att_world);
+
+        transform_final = object_T * object_R * transform_final; // rotated and traslated attachment point (world)
+
+        btVector3 disp = transform_final.getOrigin() - transform_original.getOrigin();
+        part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, transform_original.getOrigin(), btQuaternion::getIdentity());
+
+        if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){ // user has decided to attach the object to the parent
+            btTransform parent_transform, frame_child;
+
+            closest->m_body->getMotionState()->getWorldTransform(parent_transform);
+            frame_child = btTransform(transform_final.inverse() * parent_transform);
+
+            btGeneric6DofConstraint* constraint = new btGeneric6DofConstraint(*closest->m_body, *m_picked_obj->m_body, 
+                                                                              btTransform::getIdentity(), frame_child, false);
+
+            constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 0);
+            constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 1);
+            constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 2);
+            constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 3);
+            constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 4);
+            constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 5);
+
+            constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 0);
+            constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 1);
+            constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 2);
+            constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 3);
+            constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 4);
+            constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 5);
+
+            constraint->setOverrideNumSolverIterations(100); // improved stiffness??
+            // also add 2 constraints??
+
+            btVector3 limits = btVector3(0, 0, 0);
+            constraint->setLinearLowerLimit(limits);
+            constraint->setLinearUpperLimit(limits);
+            constraint->setAngularLowerLimit(limits);
+            constraint->setAngularUpperLimit(limits);
+
+            m_add_constraint_buffer.emplace_back(add_contraint_msg{part, std::unique_ptr<btTypedConstraint>(constraint)});
+            BasePart* parent = part->getParent();
+            if(parent){ // sanity check
+                parent->removeChild(part);
+            }
+            part->setParent(closest);
+            part->updateSubTreeVessel(closest->getVessel());
+            closest->addChild(std::dynamic_pointer_cast<BasePart>(part->getSharedPtr()));
+            m_vessels.at(m_vessel_id)->onTreeUpdate();
+        }
+    }
+    else{ // no att point closer than 0.05, part tree roams free
+        btQuaternion rotation2(0.0, 0.0, 0.0); // allows the user to rotate the part
         math::vec3 ray_start_world, ray_end_world;
-        BasePart* part;
-        
         m_camera->castRayMousePos(10.f, ray_start_world, ray_end_world);
 
-        // some spaghetti code testing the attachments
-        // disorganized as fuck
-        part = dynamic_cast<BasePart*>(m_picked_obj);
-        if(part){ // if it's a part
-            const math::mat4 proj_mat = m_camera->getProjMatrix();
-            const math::mat4 view_mat = m_camera->getViewMatrix();
+        if(m_input->keyboardPressed()){
+            if(m_input->pressed_keys[GLFW_KEY_U] & INPUT_KEY_DOWN){
+                rotation2.setEuler(M_PI/2.0, 0., 0.);
+            }
+            else if(m_input->pressed_keys[GLFW_KEY_O] & INPUT_KEY_DOWN){
+                rotation2.setEuler(-M_PI/2.0, 0., 0.);
+            }
+            else if(m_input->pressed_keys[GLFW_KEY_I] & INPUT_KEY_DOWN){
+                rotation2.setEuler(0., M_PI/2.0, 0.);
+            }
+            else if(m_input->pressed_keys[GLFW_KEY_K] & INPUT_KEY_DOWN){
+                rotation2.setEuler(0., -M_PI/2.0, 0.);
+            }
+            else if(m_input->pressed_keys[GLFW_KEY_J] & INPUT_KEY_DOWN){
+                rotation2.setEuler(0., 0., M_PI/2.0);
+            }
+            else if(m_input->pressed_keys[GLFW_KEY_L] & INPUT_KEY_DOWN){
+                rotation2.setEuler(0., 0., -M_PI/2.0);
+            }
+            else if(m_input->pressed_keys[GLFW_KEY_R] & INPUT_KEY_DOWN){
+                rotation2 = rotation.inverse();
+            }
+        }
 
-            double mousey, mousex;
-            int w, h;
-            m_input->getMousePos(mousex, mousey);
-            m_window_handler->getFramebufferSize(w, h);
-            mousey = ((mousey / h) * 2 - 1) * -1;
-            mousex = (mousex / w) * 2 - 1;
+        btVector3 origin(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]);
+        btVector3 disp = origin - transform_original.getOrigin();
+        part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, transform_original.getOrigin(), rotation2);
+    }
+}
 
-            float closest_dist = 99999999999.9;
+
+void App::logic(){
+
+    if(m_picked_obj){
+        BasePart* part = dynamic_cast<BasePart*>(m_picked_obj);
+
+        if(part){
+            std::cout << part->getVessel() << " - " << m_vessels.at(m_vessel_id) << std::endl;
+            float closest_dist = 99999999999.9;;
             math::vec4 closest_att_point_world;
             BasePart* closest = nullptr;
 
-            for(uint i=0; i<m_parts.size(); i++){ // get closest att point to the mouse cursor
-                if(part == m_parts.at(i).get()){
-                    continue;
-                }
-
-                const std::vector<struct attachment_point>* att_points = m_parts.at(i)->getAttachmentPoints();
-
-                for(uint j=0; j<att_points->size(); j++){
-                    const math::vec3 att_point = att_points->at(j).point;
-                    math::mat4 att_transform = math::translate(math::identity_mat4(), att_point);
-                    att_transform = m_parts.at(i)->getRigidBodyTransformSingle() * att_transform;
-                    math::vec4 att_point_loc_world = math::vec4(att_transform.m[12], att_transform.m[13], att_transform.m[14], 1.0);
-                    math::vec4 att_point_loc_screen;
-
-                    att_point_loc_screen = proj_mat * view_mat * att_point_loc_world;
-                    att_point_loc_screen = att_point_loc_screen / att_point_loc_screen.v[3];
-
-                    float distance = math::distance(math::vec2(mousex, mousey),
-                                                    math::vec2(att_point_loc_screen.v[0], att_point_loc_screen.v[1]));
-                    
-                    if(distance < closest_dist){
-                        closest_dist = distance;
-                        closest_att_point_world = att_point_loc_world;
-                        closest = m_parts.at(i).get();
-                    }
-                }
+            if(m_vessel_id != 0){
+                getClosestAtt(closest_dist, closest_att_point_world, closest, part);
             }
-            btTransform transform_original;
-            btQuaternion rotation;
-            m_picked_obj->m_body->getMotionState()->getWorldTransform(transform_original);
-            rotation = transform_original.getRotation();
+            placePart(closest_dist, closest_att_point_world, closest, part);
 
-            if(closest_dist < 0.05){ // magnet
-                btTransform transform_final;
-                btVector3 btv3_child_att(part->getParentAttachmentPoint()->point.v[0],
-                                         part->getParentAttachmentPoint()->point.v[1],
-                                         part->getParentAttachmentPoint()->point.v[2]);
-                btVector3 btv3_closest_att_world(closest_att_point_world.v[0],
-                                                 closest_att_point_world.v[1],
-                                                 closest_att_point_world.v[2]);
-
-                transform_final = btTransform(btQuaternion::getIdentity(), -btv3_child_att);
-
-                btTransform object_R = btTransform(rotation, btVector3(0.0, 0.0, 0.0));
-                btTransform object_T = btTransform(btQuaternion::getIdentity(), btv3_closest_att_world);
-
-                transform_final = object_T * object_R * transform_final; // rotated and traslated attachment point (world)
-
-                btVector3 disp = transform_final.getOrigin() - transform_original.getOrigin();
-                part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, transform_original.getOrigin(), btQuaternion::getIdentity());
-
-                if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){ // user has decided to attach the object to the parent
-                    btTransform parent_transform, frame_child;
-
-                    closest->m_body->getMotionState()->getWorldTransform(parent_transform);
-                    frame_child = btTransform(transform_final.inverse() * parent_transform);
-
-                    btGeneric6DofConstraint* constraint = new btGeneric6DofConstraint(*closest->m_body, *m_picked_obj->m_body, 
-                                                                                      btTransform::getIdentity(), frame_child, false);
-
-                    constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 0);
-                    constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 1);
-                    constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 2);
-                    constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 3);
-                    constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 4);
-                    constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 5);
-
-                    constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 0);
-                    constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 1);
-                    constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 2);
-                    constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 3);
-                    constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 4);
-                    constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 5);
-
-                    constraint->setOverrideNumSolverIterations(100); // improved stiffness??
-                    // also add 2 constraints??
-
-                    btVector3 limits = btVector3(0, 0, 0);
-                    constraint->setLinearLowerLimit(limits);
-                    constraint->setLinearUpperLimit(limits);
-                    constraint->setAngularLowerLimit(limits);
-                    constraint->setAngularUpperLimit(limits);
-  
-                    m_add_constraint_buffer.emplace_back(add_contraint_msg{part, std::unique_ptr<btTypedConstraint>(constraint)});
-    
-                    BasePart* parent = part->getParent();
-                    if(parent){ // disown child
-                        parent->removeChild(part);
-                    }
-                    part->setParent(closest);
-                    closest->addChild(part);
-                }
+            if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){
+                m_picked_obj->activate(true);
+                m_picked_obj = nullptr;
             }
-            else{ // no att point closer than 0.05, part tree roams free
-                btQuaternion rotation2(0.0, 0.0, 0.0); // allows the user to rotate the part
-                if(m_input->keyboardPressed()){
-                    if(m_input->pressed_keys[GLFW_KEY_U] & INPUT_KEY_DOWN){
-                        rotation2.setEuler(M_PI/2.0, 0., 0.);
-                    }
-                    else if(m_input->pressed_keys[GLFW_KEY_O] & INPUT_KEY_DOWN){
-                        rotation2.setEuler(-M_PI/2.0, 0., 0.);
-                    }
-                    else if(m_input->pressed_keys[GLFW_KEY_I] & INPUT_KEY_DOWN){
-                        rotation2.setEuler(0., M_PI/2.0, 0.);
-                    }
-                    else if(m_input->pressed_keys[GLFW_KEY_K] & INPUT_KEY_DOWN){
-                        rotation2.setEuler(0., -M_PI/2.0, 0.);
-                    }
-                    else if(m_input->pressed_keys[GLFW_KEY_J] & INPUT_KEY_DOWN){
-                        rotation2.setEuler(0., 0., M_PI/2.0);
-                    }
-                    else if(m_input->pressed_keys[GLFW_KEY_L] & INPUT_KEY_DOWN){
-                        rotation2.setEuler(0., 0., -M_PI/2.0);
-                    }
-                    else if(m_input->pressed_keys[GLFW_KEY_R] & INPUT_KEY_DOWN){
-                        rotation2 = rotation.inverse();
-                    }
-                }
-
-                btVector3 origin(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]);
-                btVector3 disp = origin - transform_original.getOrigin();
-                part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, transform_original.getOrigin(), rotation2);
-
-                if(part->getParentConstraint()){ // remove constraint if it exists
-                    m_remove_part_constraint_buffer.emplace_back(part);
-                }
-
-                BasePart* parent = part->getParent();
-                if(parent){ // disown child
-                    parent->removeChild(part);
-                    part->setParent(nullptr);
-                }
-            }
-        }
-        else{ // object is not of type part
-            btTransform transform;
-            btVector3 origin(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]);
-            m_picked_obj->m_body->getMotionState()->getWorldTransform(transform);
-            m_set_motion_state_buffer.emplace_back(set_motion_state_msg{m_picked_obj, origin, transform.getRotation()});
-        }
-
-        if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){ // if the object has been placed
-            m_picked_obj->activate(true);
-            m_picked_obj = nullptr;
         }
     }
     else{ // if not picked object
@@ -382,6 +371,27 @@ void App::logic(){
             obj = m_bt_wrapper->testRay(ray_start_world, ray_end_world);
             if(obj){
                 m_picked_obj = obj;
+
+                BasePart* part = dynamic_cast<BasePart*>(m_picked_obj);
+
+                if(part){
+                    if(part->getVessel() == nullptr){
+                        while(part->getParent() != nullptr){
+                           part = part->getParent();
+                        }
+                    }
+                    else{ // we are certainly detaching a part from the vessel
+                        if(!part->isRoot()){ // ignore root
+                            BasePart* parent = part->getParent();
+                            m_subtrees.emplace_back(parent->removeChild(part));
+
+                            m_remove_part_constraint_buffer.emplace_back(part);
+                            part->setParent(nullptr);
+                            part->updateSubTreeVessel(nullptr);
+                            m_vessels.at(m_vessel_id)->onTreeUpdate();
+                        }
+                    }
+                }
             }
         }
     }
@@ -391,18 +401,30 @@ void App::logic(){
         const std::unique_ptr<BasePart>* editor_picked_object = m_editor_gui->getPickedObject();
         const BasePart* part_ptr = editor_picked_object->get(); // trickery
         std::shared_ptr<BasePart> part = std::make_shared<BasePart>(*part_ptr);
-        math::vec3 ray_start_world, ray_end_world;
-
-        m_camera->castRayMousePos(10.f, ray_start_world, ray_end_world);
-        m_add_body_buffer.emplace_back(add_body_msg{part.get(), btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]),
-                                       btVector3(0.0, 0.0, 0.0), btQuaternion::getIdentity()});
-        m_parts.emplace_back(part);
 
         if(m_picked_obj){ // if the user has an scene object picked just leave it "there"
             m_picked_obj->activate(true);
             m_picked_obj = nullptr;
         }
-        m_picked_obj = part.get();
+
+        if(!m_vessel_id){ // set the vessel root
+            m_add_body_buffer.emplace_back(add_body_msg{part.get(), btVector3(0.0, 60.0, 0.0),
+                                           btVector3(0.0, 0.0, 0.0), btQuaternion::getIdentity()});
+
+            std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(part);
+            m_vessel_id = vessel->getId();
+            m_vessels.insert({m_vessel_id, vessel});
+            part->updateSubTreeVessel(vessel.get());
+        }
+        else{
+            math::vec3 ray_start_world, ray_end_world;
+            m_camera->castRayMousePos(10.f, ray_start_world, ray_end_world);
+            m_add_body_buffer.emplace_back(add_body_msg{part.get(), btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]),
+                                           btVector3(0.0, 0.0, 0.0), btQuaternion::getIdentity()});
+
+            m_subtrees.emplace_back(part);
+            m_picked_obj = part.get();
+        }
     }
 
     // other input
@@ -456,12 +478,18 @@ void App::processCommandBuffers(){
 
 
 void App::clearScene(){
-    for(uint i=0; i < m_parts.size(); i++){
-        m_parts.at(i)->setRenderIgnore();
+    for(uint i=0; i < m_subtrees.size(); i++){
+        m_subtrees.at(i)->setRenderIgnoreSubTree();
     }
-    m_parts.clear();
+    m_subtrees.clear();
     std::cout << "Scene cleared" << std::endl;
+    if(m_vessel_id){
+        m_vessels.at(m_vessel_id)->getRoot()->setRenderIgnoreSubTree();
+    }
+    m_vessels.clear();
+    m_vessel_id = 0;
     m_clear_scene = false;
     m_picked_obj = nullptr;
+    m_vessel_id = 0;
 }
 

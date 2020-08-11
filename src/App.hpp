@@ -5,6 +5,7 @@
 #include <vector>
 #include <mutex>
 #include <string>
+#include <cstdint>
 
 #include "maths_funcs.hpp"
 #include "Model.hpp"
@@ -35,14 +36,15 @@ class App : public BaseApp{
 
         //...
         std::vector<std::shared_ptr<Object>> m_objects;
-        std::vector<std::shared_ptr<BasePart>> m_parts;
+        std::vector<std::shared_ptr<BasePart>> m_subtrees;
+        std::map<std::uint32_t, std::shared_ptr<Vessel>> m_vessels;
+        std::uint32_t m_vessel_id;
 
         // editor vessel
         std::unique_ptr<Vessel> m_vessel;
 
-        // in the future, all the objects are going to be copied from the master part copy
-        // maybe we'll need a different set for objects that are not parts?
-        std::map<int, std::unique_ptr<BasePart>> m_master_parts;
+        // parts are copied from here
+        std::map<std::uint32_t, std::unique_ptr<BasePart>> m_master_parts;
 
         // command buffers
         std::vector<struct set_motion_state_msg> m_set_motion_state_buffer;
@@ -65,6 +67,8 @@ class App : public BaseApp{
         void logic();
         void processCommandBuffers();
         void clearScene();
+        void getClosestAtt(float& closest_dist, math::vec4& closest_att_point_world, BasePart*& closest, BasePart* part);
+        void placePart(float closest_dist, math::vec4& closest_att_point_world, BasePart* closest, BasePart* part);
     public:
         App();
         App(int gl_width, int gl_height);
