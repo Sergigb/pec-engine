@@ -40,10 +40,11 @@ class Vessel{
 
         BasePart* getRoot() const;
         BasePart* getPartById(std::uint32_t id) const;
-        const std::string getVesselName();
-        const std::string getVesselDescription();
+        const std::string getVesselName() const;
+        const std::string getVesselDescription() const;
         std::vector<BasePart*>* getParts();
         std::uint32_t getId() const;
+        void printVessel() const;
 };
 
 

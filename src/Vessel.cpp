@@ -58,12 +58,12 @@ BasePart* Vessel::getPartById(std::uint32_t id) const{
 }
 
 
-const std::string Vessel::getVesselName(){
+const std::string Vessel::getVesselName() const{
     return m_vessel_name;
 }
 
 
-const std::string Vessel::getVesselDescription(){
+const std::string Vessel::getVesselDescription() const{
     return m_vessel_desc;
 }
 
@@ -104,4 +104,40 @@ std::vector<BasePart*>* Vessel::getParts(){
 std::uint32_t Vessel::getId() const{
     return m_vessel_id;
 }
+
+
+std::string vertical_and_right = "\u251C";
+std::string horizontal = "\u2500\u2500\u2500";
+std::string vertical = "\u2502";
+std::string up_and_right = "\u2514";
+std::string separator = "    ";
+
+void print_tree_member(BasePart *node, std::string tail, bool last_child){
+    std::string part_name;
+    node->getFancyName(part_name);
+
+    std::string next_tail;
+    if(!last_child){
+        std::cout << tail << up_and_right  << horizontal << " " << part_name << " - " << node->getUniqueId() << std::endl;
+        next_tail = tail + " " + separator;
+    }
+    else{
+        std::cout << tail << vertical_and_right  << horizontal << " " << part_name << " - " << node->getUniqueId() << std::endl;
+        next_tail = tail + vertical + separator;
+    }
+
+    for(uint i=0; i < node->getChilds()->size(); i++)
+        print_tree_member(node->getChilds()->at(i).get(), next_tail, !(i == node->getChilds()->size() - 1));
+}
+
+void Vessel::printVessel() const{
+    if(m_vessel_root == nullptr){
+        std::cerr << "Ship::printTree - ship has no part tree" << std::endl;
+        return;
+    }
+    std::string tail = "";
+    std::cout << m_vessel_name << "'s part tree:" << std::endl;
+    print_tree_member(m_vessel_root.get(), tail, false);
+}
+
 
