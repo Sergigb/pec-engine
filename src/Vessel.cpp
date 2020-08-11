@@ -9,6 +9,7 @@ Vessel::Vessel(){
 
 Vessel::Vessel(std::shared_ptr<BasePart> vessel_root){
     m_vessel_root = vessel_root;
+    m_vessel_root->setRoot(true);
     create_id(m_vessel_id, VESSEL_SET);
     updateNodes();
 }
@@ -31,6 +32,7 @@ void Vessel::setVesselDescription(const std::string& description){
 
 /*void Vessel::setRoot(BasePart* part){
     m_vessel_root = part;
+    m_vessel_root->setRoot(true);
     updateNodes();
 }*/
 
