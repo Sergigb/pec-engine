@@ -239,7 +239,7 @@ void App::placePart(float closest_dist, math::vec4& closest_att_point_world, Bas
     m_picked_obj->m_body->getMotionState()->getWorldTransform(transform_original);
     rotation = transform_original.getRotation();
 
-    if(closest_dist < 0.05){ // magnet
+    if(closest_dist < 0.05 && !part->isRoot()){ // magnet
         btTransform transform_final;
         btVector3 btv3_child_att(part->getParentAttachmentPoint()->point.v[0],
                                  part->getParentAttachmentPoint()->point.v[1],
