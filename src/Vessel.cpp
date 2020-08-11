@@ -35,7 +35,7 @@ void Vessel::setVesselDescription(const std::string& description){
 }*/
 
 
-void Vessel::onChildAppend(){
+void Vessel::onTreeUpdate(){
     // nothing else for now
     updateNodes();
 }

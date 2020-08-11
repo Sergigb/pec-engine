@@ -36,7 +36,7 @@ class Vessel{
          * a child to a vessel we MUST call the onChildAppend. Not sure if this situation is ideal, but it'll 
          * suffice for now.
          */
-        void onChildAppend();
+        void onTreeUpdate();
 
         BasePart* getRoot() const;
         BasePart* getPartById(std::uint32_t id) const;
