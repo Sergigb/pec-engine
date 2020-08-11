@@ -27,7 +27,7 @@ class BasePart : public Object{
         std::vector<struct attachment_point> m_attachment_points;  // the attachment points of the part
         std::unique_ptr<btTypedConstraint> m_parent_constraint; // the constraint between this part and the parent
         BasePart* m_parent;
-        std::vector<BasePart*> m_childs; // in the future this will be a shared pointer
+        std::vector<std::shared_ptr<BasePart>> m_childs;
         Vessel* m_vessel;
     public:
         BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID);
@@ -40,21 +40,24 @@ class BasePart : public Object{
         void setParentConstraint(std::unique_ptr<btTypedConstraint>& constraint_uptr);
         void removeParentConstraint();
         void setParent(BasePart* parent);
-        bool addChild(BasePart* child);
+        bool addChild(std::shared_ptr<BasePart> child);
         bool removeChild(BasePart* child);
         // each child adds its new motion state to the command buffer, the function is called recursively through all the subtree
         void updateSubTreeMotionState(std::vector<struct set_motion_state_msg>& command_buffer, btVector3 disp, btVector3 root_origin, btQuaternion rotation); // add root origin to rotate
         void updateSubTreeVessel(Vessel* vessel);
         void setVessel(Vessel* vess);
+        void serRenderIgnoreSubTree();
 
         const std::vector<struct attachment_point>* getAttachmentPoints() const;
         btTypedConstraint* getParentConstraint() const;
         const struct attachment_point* getParentAttachmentPoint() const;
         const Vessel* getVessel() const;
+  /*      int render();
+        int render(math::mat4 body_transform);*/
 
         // I don't know if I should make these private (friending Vessel)
         BasePart* getParent() const;
-        std::vector<BasePart*>* getChilds();
+        std::vector<std::shared_ptr<BasePart>>* getChilds();
 };
 
 

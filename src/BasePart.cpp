@@ -78,11 +78,11 @@ void BasePart::setParent(BasePart* parent){
 }
 
 
-bool BasePart::addChild(BasePart* child){
+bool BasePart::addChild(std::shared_ptr<BasePart> child){
     for(uint i=0; i < m_childs.size(); i++){
-        if(m_childs.at(i) == child){
-            log("BasePart::addChild - tried to add child part with value ", child, " but it's already in the list");
-            std::cerr << "BasePart::addChild - tried to add child part with value " << child << " but it's already in the list" << std::endl;
+        if(m_childs.at(i).get() == child.get()){
+            log("BasePart::addChild - tried to add child part with value ", child.get(), " but it's already in the list");
+            std::cerr << "BasePart::addChild - tried to add child part with value " << child.get() << " but it's already in the list" << std::endl;
             return false;
         }
     }
@@ -94,7 +94,7 @@ bool BasePart::addChild(BasePart* child){
 
 bool BasePart::removeChild(BasePart* child){
     for(uint i=0; i < m_childs.size(); i++){
-        if(m_childs.at(i) == child){
+        if(m_childs.at(i).get() == child){
             m_childs.erase(m_childs.begin() + i);
             //std::cout << "part with value " << this << " has disowned child part with value " << child << std::endl;
             return true;
@@ -133,7 +133,7 @@ BasePart* BasePart::getParent() const{
 }
 
 
-std::vector<BasePart*>* BasePart::getChilds(){
+std::vector<std::shared_ptr<BasePart>>* BasePart::getChilds(){
     return &m_childs;
 }
 
@@ -156,3 +156,47 @@ void BasePart::updateSubTreeVessel(Vessel* vessel){
     }
 }
 
+/*
+int BasePart::render(){
+    math::mat4 body_transform = getRigidBodyTransformSingle();
+ 
+    if(m_has_transform){
+        body_transform = body_transform * m_mesh_transform;
+    }
+
+    if(m_vessel){
+        m_model->setMeshColor(math::vec4(m_mesh_color, 1.0));
+    }
+    else{
+        m_model->setMeshColor(math::vec4(m_mesh_color, 0.5));
+    }
+    
+    return m_model->render(body_transform);
+}
+
+
+int BasePart::render(math::mat4 body_transform){
+    if(m_has_transform){
+        body_transform = body_transform * m_mesh_transform;
+    }
+
+    if(m_vessel){
+        m_model->setMeshColor(math::vec4(m_mesh_color, 1.0));
+    }
+    else{
+        m_model->setMeshColor(math::vec4(m_mesh_color, 0.5));
+    }
+
+    return m_model->render(body_transform);
+}
+
+*/
+
+void BasePart::serRenderIgnoreSubTree(){
+    m_render_ignore = true;
+
+    for(uint i=0; i < m_childs.size(); i++){
+        m_childs.at(i)->serRenderIgnoreSubTree();
+    }
+
+}
