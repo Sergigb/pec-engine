@@ -361,6 +361,7 @@ void App::pickObject(){
                 while(part->getParent() != nullptr){
                    part = part->getParent();
                 }
+                m_picked_obj = part;
             }
             else{ // we are certainly detaching a part from the vessel
                 if(!part->isRoot()){ // ignore root
