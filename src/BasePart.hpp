@@ -41,12 +41,11 @@ class BasePart : public Object{
         void setParentConstraint(std::unique_ptr<btTypedConstraint>& constraint_uptr);
         void removeParentConstraint();
         void setParent(BasePart* parent);
-        bool addChild(std::shared_ptr<BasePart> child);
+        bool addChild(std::shared_ptr<BasePart>& child);
         std::shared_ptr<BasePart> removeChild(BasePart* child);
         // each child adds its new motion state to the command buffer, the function is called recursively through all the subtree
         void updateSubTreeMotionState(std::vector<struct set_motion_state_msg>& command_buffer, btVector3 disp, btVector3 root_origin, btQuaternion rotation); // add root origin to rotate
         void updateSubTreeVessel(Vessel* vessel);
-        void setVessel(Vessel* vess);
         void setRenderIgnoreSubTree();
         void setRoot(bool root);
 

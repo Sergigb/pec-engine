@@ -82,7 +82,7 @@ void BasePart::setParent(BasePart* parent){
 }
 
 
-bool BasePart::addChild(std::shared_ptr<BasePart> child){
+bool BasePart::addChild(std::shared_ptr<BasePart>& child){
     for(uint i=0; i < m_childs.size(); i++){
         if(m_childs.at(i).get() == child.get()){
             log("BasePart::addChild - tried to add child part with value ", child.get(), " but it's already in the list");
@@ -141,11 +141,6 @@ BasePart* BasePart::getParent() const{
 
 std::vector<std::shared_ptr<BasePart>>* BasePart::getChilds(){
     return &m_childs;
-}
-
-
-void BasePart::setVessel(Vessel* vess){
-    m_vessel = vess;
 }
 
 
