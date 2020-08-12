@@ -295,10 +295,15 @@ void App::placePart(float closest_dist, math::vec4& closest_att_point_world, Bas
             if(parent){ // sanity check
                 parent->removeChild(part);
             }
-            part->setParent(closest);
-            part->updateSubTreeVessel(closest->getVessel());
-            closest->addChild(std::dynamic_pointer_cast<BasePart>(part->getSharedPtr()));
-            m_vessels.at(m_vessel_id)->onTreeUpdate();
+
+            std::shared_ptr<BasePart> part_sptr = std::dynamic_pointer_cast<BasePart>(part->getSharedPtr());
+            m_vessels.at(closest->getVessel()->getId())->addChildById(part_sptr, closest->getUniqueId());
+
+            for(uint i=0; i < m_subtrees.size(); i++){
+                if(m_subtrees.at(i).get() == part){
+                    m_subtrees.erase(m_subtrees.begin() + i);
+                }
+            }
         }
     }
     else{ // no att point closer than 0.05, part tree roams free
@@ -359,13 +364,8 @@ void App::pickObject(){
             }
             else{ // we are certainly detaching a part from the vessel
                 if(!part->isRoot()){ // ignore root
-                    BasePart* parent = part->getParent();
-                    m_subtrees.emplace_back(parent->removeChild(part));
-
                     m_remove_part_constraint_buffer.emplace_back(part);
-                    part->setParent(nullptr);
-                    part->updateSubTreeVessel(nullptr);
-                    m_vessels.at(m_vessel_id)->onTreeUpdate();
+                    m_subtrees.emplace_back(m_vessels.at(part->getVessel()->getId())->removeChild(part));
                 }
             }
         }
@@ -374,7 +374,6 @@ void App::pickObject(){
 
 
 void App::logic(){
-
     if(m_picked_obj){
         BasePart* part = dynamic_cast<BasePart*>(m_picked_obj);
 

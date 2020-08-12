@@ -8,6 +8,7 @@
 
 #include "BasePart.hpp"
 #include "id_manager.hpp"
+#include "log.hpp"
 
 
 class Vessel{
@@ -21,12 +22,16 @@ class Vessel{
         void updateNodes(); // updates node list and map
     public:
         Vessel();
-        Vessel(std::shared_ptr<BasePart> vessel_root);
+        Vessel(std::shared_ptr<BasePart>& vessel_root);
         ~Vessel();
 
         void setVesselName(const std::string& name);
         void setVesselDescription(const std::string& description);
         //void setRoot(BasePart* part);
+        bool addChildById(std::shared_ptr<BasePart>& child, std::uint32_t parent_id);
+        bool addChild(BasePart* child, BasePart* parent);
+        std::shared_ptr<BasePart> removeChild(BasePart* child);
+        std::shared_ptr<BasePart> removeChildById(std::uint32_t child_id);
 
         /*
          * When we want to append a child in, for example, the editor, we get the part pointer (that's the user 

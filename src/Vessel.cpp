@@ -7,7 +7,7 @@ Vessel::Vessel(){
 }
 
 
-Vessel::Vessel(std::shared_ptr<BasePart> vessel_root){
+Vessel::Vessel(std::shared_ptr<BasePart>& vessel_root){
     m_vessel_root = vessel_root;
     m_vessel_root->setRoot(true);
     create_id(m_vessel_id, VESSEL_SET);
@@ -133,11 +133,96 @@ void print_tree_member(BasePart *node, std::string tail, bool last_child){
 void Vessel::printVessel() const{
     if(m_vessel_root == nullptr){
         std::cerr << "Ship::printTree - ship has no part tree" << std::endl;
+        log("Ship::printTree - ship has no part tree");
         return;
     }
     std::string tail = "";
     std::cout << m_vessel_name << "'s part tree:" << std::endl;
     print_tree_member(m_vessel_root.get(), tail, false);
+}
+
+
+bool Vessel::addChildById(std::shared_ptr<BasePart>& child, std::uint32_t parent_id){
+    try{
+        BasePart* parent = m_node_map_by_id.at(parent_id);
+        child->setParent(parent);
+        child->updateSubTreeVessel(this);
+        parent->addChild(child);
+        updateNodes();
+
+        return true;
+    }
+    catch(const std::out_of_range& oor){
+        std::cerr << "Vessel::addChildById - could not add child because the parent ID " << parent_id 
+                  << " does not belong to this vessel" << m_vessel_id << " - " << oor.what() << std::endl;    
+        log("Vessel::addChildById - could not add child because the parent ID ", parent_id, 
+            " does not belong to this vessel", m_vessel_id, " - ", oor.what());
+
+        return false;
+    }
+}
+
+
+bool Vessel::addChild(BasePart* child, BasePart* parent){
+    if(parent->getVessel()->getId() != m_vessel_id){
+        std::cerr << "Vessel::addChild - could not add child because the parent (" << parent->getUniqueId() 
+                  << ") does not belong to this vessel (" << m_vessel_id << ")" << std::endl;
+        log("Vessel::addChild - could not add child because the parent (", parent->getUniqueId(),
+            ") does not belong to this vessel (", m_vessel_id, ")");
+        return false;
+    }
+    std::shared_ptr<BasePart> child_sptr = std::dynamic_pointer_cast<BasePart>(child->getSharedPtr());
+
+    child->setParent(parent);
+    child->updateSubTreeVessel(this);
+    parent->addChild(child_sptr);
+    updateNodes();
+
+    return true;
+}
+
+
+std::shared_ptr<BasePart> Vessel::removeChildById(std::uint32_t child_id){
+    std::shared_ptr<BasePart> child_sptr;
+    try{
+        BasePart* child = m_node_map_by_id.at(child_id);
+        BasePart* parent = child->getParent();
+
+        child->setParent(nullptr);
+        child->updateSubTreeVessel(nullptr);
+        child_sptr = parent->removeChild(child);
+        updateNodes();
+
+        return child_sptr;
+    }
+    catch(const std::out_of_range& oor){
+        std::cerr << "Vessel::removeChildById - could not remove child with id " << child_id 
+                  << " because it does not belong to this vessel (" << m_vessel_id << ") - " << oor.what() << std::endl;    
+        log("Vessel::removeChildById - could not remove child with id", child_id,
+            " because it does not belong to this vessel (", m_vessel_id, ") - ", oor.what());
+
+        return child_sptr;
+    }
+}
+
+
+std::shared_ptr<BasePart> Vessel::removeChild(BasePart* child){
+    std::shared_ptr<BasePart> child_sptr;
+    if(child->getVessel()->getId() != m_vessel_id){
+        std::cerr << "Vessel::removeChild - could not remove child with id " << child->getUniqueId()
+                  << " as it does not belong to this vessel (" << m_vessel_id << ")" << std::endl;
+        log("Vessel::removeChild - could not remove child with id ", child->getUniqueId(),
+            " as it does not belong to this vessel (", m_vessel_id, ")");
+        return child_sptr;
+    }
+    BasePart* parent = child->getParent();
+
+    child->setParent(nullptr);
+    child->updateSubTreeVessel(nullptr);
+    child_sptr = parent->removeChild(child);
+    updateNodes();
+
+    return child_sptr;                
 }
 
 
