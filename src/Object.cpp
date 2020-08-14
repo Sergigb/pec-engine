@@ -18,6 +18,8 @@ Object::Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape,
     m_render_ignore = false;
     create_id(m_unique_id, PART_SET);
     m_alpha = 1.0;
+    m_col_group = 1;
+    m_col_filters = -1;
 }
 
 
@@ -35,6 +37,8 @@ Object::Object(const Object& obj) : std::enable_shared_from_this<Object>(){
     m_render_ignore = false;
     create_id(m_unique_id, PART_SET);
     m_alpha = 1.0;
+    m_col_group = obj.m_col_group;
+    m_col_filters = obj.m_col_filters;
 
     m_body.reset(nullptr);
 }
@@ -65,7 +69,7 @@ void Object::addBody(const btVector3& origin, const btVector3& local_inertia, co
     btRigidBody::btRigidBodyConstructionInfo rb_info(m_mass, m_motion_state.get(), m_col_shape, local_inertia_);
     m_body.reset(new btRigidBody(rb_info));
 
-    m_bt_wrapper->addRigidBody(m_body.get());
+    m_bt_wrapper->addRigidBody(m_body.get(), m_col_group, m_col_filters);
     m_body->setUserPointer((void*)this);
 }
 
@@ -227,5 +231,25 @@ void Object::setRenderIgnore(){
 
 void Object::setAlpha(float alpha){
     m_alpha = alpha;
+}
+
+
+void Object::setCollisionGroup(short cg_group){
+    m_col_group = cg_group;
+}
+
+
+void Object::setCollisionFilters(short cg_filters){
+    m_col_filters = cg_filters;
+}
+
+
+short Object::getCollisionGroup() const{
+    return m_col_group;
+}
+
+
+short Object::getCollisionFilters() const{
+    return m_col_filters;
 }
 

@@ -31,6 +31,7 @@ class Object : public std::enable_shared_from_this<Object>{
         std::string m_object_name, m_fancy_name;
         bool m_render_ignore;
         float m_alpha;
+        short m_col_group, m_col_filters;
     public:
         std::unique_ptr<btRigidBody> m_body; // made public for convenience
 
@@ -50,6 +51,8 @@ class Object : public std::enable_shared_from_this<Object>{
         std::uint32_t getBaseId() const;
         std::shared_ptr<Object> getSharedPtr();
         bool renderIgnore() const; // tells the physics thread to not include this object in the render buffers because it should be destroyed
+        short getCollisionGroup() const;
+        short getCollisionFilters() const;
 
         void applyCentralForce(const btVector3& force);
         void applyTorque(const btVector3& torque);
@@ -65,6 +68,9 @@ class Object : public std::enable_shared_from_this<Object>{
         virtual int render(math::mat4 body_transform);
         void setRenderIgnore(); // call this when the object needs to be destroyed so the physics thread doesn't include it in the render buffers
         void setAlpha(float alpha);
+        // call these before the object is added to the dynamics world
+        void setCollisionGroup(short cg_group);
+        void setCollisionFilters(short cg_filters);
 };
 
 
