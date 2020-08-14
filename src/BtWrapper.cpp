@@ -65,6 +65,18 @@ Object* BtWrapper::testRay(const math::vec3& ray_start_world, const math::vec3& 
 }
 
 
+Object* BtWrapper::testRay(btCollisionWorld::ClosestRayResultCallback& ray_callback, const btVector3& ray_start, const btVector3& ray_end) const{
+    m_dynamics_world->rayTest(ray_start, ray_end, ray_callback);
+
+    if(ray_callback.hasHit()) {
+        Object* obj = static_cast<Object*>(ray_callback.m_collisionObject->getUserPointer());
+        return obj;
+    }else{
+        return nullptr;
+    }
+}
+
+
 void BtWrapper::addConstraint(btTypedConstraint *constraint, bool disable_collision_between_bodies){
     m_dynamics_world->addConstraint(constraint, disable_collision_between_bodies);
 }
