@@ -295,7 +295,7 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
             constraint->setAngularUpperLimit(limits);
 
             m_add_constraint_buffer.emplace_back(add_contraint_msg{part, std::unique_ptr<btTypedConstraint>(constraint)});
-            BasePart* parent = part->getParent();
+            BasePart* parent = part->getParent(); // temove this??
             if(parent){ // sanity check
                 parent->removeChild(part);
             }
@@ -311,43 +311,102 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
         }
     }
     else{
-        /*
-        1. use raytest and 
-
-        */
-
-
         btQuaternion rotation2(0.0, 0.0, 0.0); // allows the user to rotate the part
         math::vec3 ray_start_world, ray_end_world;
         m_camera->castRayMousePos(10.f, ray_start_world, ray_end_world);
+        btCollisionWorld::ClosestRayResultCallback ray_callback(btVector3(ray_start_world.v[0], ray_start_world.v[1], ray_start_world.v[2]),
+                                                                btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]));
+        ray_callback.m_collisionFilterGroup = CG_RAY_EDITOR_RADIAL;
 
-        if(m_input->keyboardPressed()){
-            if(m_input->pressed_keys[GLFW_KEY_U] & INPUT_KEY_DOWN){
-                rotation2.setEuler(M_PI/2.0, 0., 0.);
-            }
-            else if(m_input->pressed_keys[GLFW_KEY_O] & INPUT_KEY_DOWN){
-                rotation2.setEuler(-M_PI/2.0, 0., 0.);
-            }
-            else if(m_input->pressed_keys[GLFW_KEY_I] & INPUT_KEY_DOWN){
-                rotation2.setEuler(0., M_PI/2.0, 0.);
-            }
-            else if(m_input->pressed_keys[GLFW_KEY_K] & INPUT_KEY_DOWN){
-                rotation2.setEuler(0., -M_PI/2.0, 0.);
-            }
-            else if(m_input->pressed_keys[GLFW_KEY_J] & INPUT_KEY_DOWN){
-                rotation2.setEuler(0., 0., M_PI/2.0);
-            }
-            else if(m_input->pressed_keys[GLFW_KEY_L] & INPUT_KEY_DOWN){
-                rotation2.setEuler(0., 0., -M_PI/2.0);
-            }
-            else if(m_input->pressed_keys[GLFW_KEY_R] & INPUT_KEY_DOWN){
-                rotation2 = rotation.inverse();
+        Object* obj = m_bt_wrapper->testRay(ray_callback, 
+                                            btVector3(ray_start_world.v[0], ray_start_world.v[1], ray_start_world.v[2]),
+                                            btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]));
+
+        if(obj && !part->isRoot()){ // free attaching -- just a test for now, doesnt take into account the normal of the ray test yet
+            btVector3 btv3_child_att(part->getParentAttachmentPoint()->point.v[0], // should use a special "free" att point, we use this one for now
+                                     part->getParentAttachmentPoint()->point.v[1],
+                                     part->getParentAttachmentPoint()->point.v[2]);
+            btTransform transform_final = btTransform(btQuaternion::getIdentity(), -btv3_child_att);
+            btTransform object_R = btTransform(rotation, btVector3(0.0, 0.0, 0.0));
+            btTransform object_T = btTransform(btQuaternion::getIdentity(), ray_callback.m_hitPointWorld);
+
+            transform_final = object_T * object_R * transform_final;
+
+            btVector3 disp = transform_final.getOrigin() - transform_original.getOrigin();
+            part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, transform_original.getOrigin(), btQuaternion::getIdentity());
+
+            if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){ // user has decided to attach the object to the parent
+                btTransform parent_transform;
+                BasePart* parent = static_cast<BasePart*>(obj);
+
+                parent->m_body->getMotionState()->getWorldTransform(parent_transform);
+
+                btGeneric6DofConstraint* constraint = new btGeneric6DofConstraint(*parent->m_body, *part->m_body, btTransform::getIdentity(),
+                                                                                  transform_final.inverse() * parent_transform, false);
+
+                constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 0);
+                constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 1);
+                constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 2);
+                constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 3);
+                constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 4);
+                constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 5);
+
+                constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 0);
+                constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 1);
+                constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 2);
+                constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 3);
+                constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 4);
+                constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 5);
+
+                constraint->setOverrideNumSolverIterations(100);
+
+                btVector3 limits = btVector3(0, 0, 0);
+                constraint->setLinearLowerLimit(limits);
+                constraint->setLinearUpperLimit(limits);
+                constraint->setAngularLowerLimit(limits);
+                constraint->setAngularUpperLimit(limits);
+
+                m_add_constraint_buffer.emplace_back(add_contraint_msg{part, std::unique_ptr<btTypedConstraint>(constraint)});
+
+                std::shared_ptr<BasePart> part_sptr = std::dynamic_pointer_cast<BasePart>(part->getSharedPtr());
+                m_vessels.at(parent->getVessel()->getId())->addChildById(part_sptr, parent->getUniqueId());
+
+                for(uint i=0; i < m_subtrees.size(); i++){
+                    if(m_subtrees.at(i).get() == part){
+                        m_subtrees.erase(m_subtrees.begin() + i);
+                    }
+                }
             }
         }
+        else{
+            if(m_input->keyboardPressed()){
+                if(m_input->pressed_keys[GLFW_KEY_U] & INPUT_KEY_DOWN){
+                    rotation2.setEuler(M_PI/2.0, 0., 0.);
+                }
+                else if(m_input->pressed_keys[GLFW_KEY_O] & INPUT_KEY_DOWN){
+                    rotation2.setEuler(-M_PI/2.0, 0., 0.);
+                }
+                else if(m_input->pressed_keys[GLFW_KEY_I] & INPUT_KEY_DOWN){
+                    rotation2.setEuler(0., M_PI/2.0, 0.);
+                }
+                else if(m_input->pressed_keys[GLFW_KEY_K] & INPUT_KEY_DOWN){
+                    rotation2.setEuler(0., -M_PI/2.0, 0.);
+                }
+                else if(m_input->pressed_keys[GLFW_KEY_J] & INPUT_KEY_DOWN){
+                    rotation2.setEuler(0., 0., M_PI/2.0);
+                }
+                else if(m_input->pressed_keys[GLFW_KEY_L] & INPUT_KEY_DOWN){
+                    rotation2.setEuler(0., 0., -M_PI/2.0);
+                }
+                else if(m_input->pressed_keys[GLFW_KEY_R] & INPUT_KEY_DOWN){
+                    rotation2 = rotation.inverse();
+                }
+            }
 
-        btVector3 origin(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]);
-        btVector3 disp = origin - transform_original.getOrigin();
-        part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, transform_original.getOrigin(), rotation2);
+            btVector3 origin(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]);
+            btVector3 disp = origin - transform_original.getOrigin();
+            part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, transform_original.getOrigin(), rotation2);
+        }
     }
 }
 
