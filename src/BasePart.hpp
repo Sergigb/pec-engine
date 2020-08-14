@@ -48,6 +48,7 @@ class BasePart : public Object{
         void updateSubTreeVessel(Vessel* vessel);
         void setRenderIgnoreSubTree();
         void setRoot(bool root);
+        void setCollisionMaskSubTree(short mask);
 
         const std::vector<struct attachment_point>* getAttachmentPoints() const;
         btTypedConstraint* getParentConstraint() const;

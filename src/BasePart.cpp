@@ -211,3 +211,12 @@ bool BasePart::isRoot() const{
     return m_is_root;
 }
 
+
+void BasePart::setCollisionMaskSubTree(short mask){
+    m_body->getBroadphaseProxy()->m_collisionFilterMask = mask;
+
+    for(uint i=0; i < m_childs.size(); i++){
+        m_childs.at(i)->setCollisionMaskSubTree(mask);
+    }
+}
+
