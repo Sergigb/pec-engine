@@ -67,6 +67,8 @@ void App::objectsInit(){
     quat.setEuler(0, 0, 0);
     std::shared_ptr<Object> ground = std::make_shared<Object>(m_terrain_model.get(), m_bt_wrapper.get(), cube_shape_ground.get(), btScalar(0.0), 0);
     ground->addBody(btVector3(0.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0), quat);
+    ground->setCollisionGroup(CG_KINEMATIC);
+    ground->setCollisionFilters(~CG_RAY_EDITOR_RADIAL); // by default, do not collide with radial attach. ray tests
     m_objects.emplace_back(ground);
 
     m_collision_shapes.push_back(std::move(cube_shape_ground));
@@ -97,6 +99,8 @@ void App::loadParts(){
         cube->addAttachmentPoint(math::vec3(1.0, 0.0, 1.0), math::vec3(0.0, 0.0, 0.0));
         cube->setName(std::string("test_part_id_") + std::to_string(ID));
         cube->setFancyName(std::string("Placeholder object ") + std::to_string(ID));
+        cube->setCollisionGroup(CG_PART);
+        cube->setCollisionFilters(~CG_RAY_EDITOR_RADIAL); // by default, do not collide with radial attach. ray tests
 
         typedef std::map<std::uint32_t, std::unique_ptr<BasePart>>::iterator map_iterator;
         std::pair<map_iterator, bool> res = m_master_parts.insert({ID, std::move(cube)});
@@ -233,7 +237,7 @@ void App::getClosestAtt(float& closest_dist, math::vec4& closest_att_point_world
     }
 }
 
-void App::placePart(float closest_dist, math::vec4& closest_att_point_world, BasePart* closest, BasePart* part){
+void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, BasePart* closest, BasePart* part){
     btTransform transform_original;
     btQuaternion rotation;
     m_picked_obj->m_body->getMotionState()->getWorldTransform(transform_original);
@@ -306,7 +310,13 @@ void App::placePart(float closest_dist, math::vec4& closest_att_point_world, Bas
             }
         }
     }
-    else{ // no att point closer than 0.05, part tree roams free
+    else{
+        /*
+        1. use raytest and 
+
+        */
+
+
         btQuaternion rotation2(0.0, 0.0, 0.0); // allows the user to rotate the part
         math::vec3 ray_start_world, ray_end_world;
         m_camera->castRayMousePos(10.f, ray_start_world, ray_end_world);
@@ -352,11 +362,10 @@ void App::pickObject(){
 
     obj = m_bt_wrapper->testRay(ray_start_world, ray_end_world);
     if(obj){
-        m_picked_obj = obj;
-
-        BasePart* part = dynamic_cast<BasePart*>(m_picked_obj);
+        BasePart* part = dynamic_cast<BasePart*>(obj);
 
         if(part){
+            m_picked_obj = obj; // quick fix - USE COLLISION GROUPS!!!!!!
             if(part->getVessel() == nullptr){
                 while(part->getParent() != nullptr){
                    part = part->getParent();
@@ -386,7 +395,7 @@ void App::logic(){
             if(m_vessel_id != 0){
                 getClosestAtt(closest_dist, closest_att_point_world, closest, part);
             }
-            placePart(closest_dist, closest_att_point_world, closest, part);
+            placeSubTree(closest_dist, closest_att_point_world, closest, part);
 
             if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){
                 m_picked_obj->activate(true);
@@ -418,7 +427,7 @@ void App::logic(){
             std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(part);
             m_vessel_id = vessel->getId();
             m_vessels.insert({m_vessel_id, vessel});
-            part->updateSubTreeVessel(vessel.get());
+            part->setCollisionFilters(part->getCollisionFilters() | CG_RAY_EDITOR_RADIAL);
         }
         else{
             math::vec3 ray_start_world, ray_end_world;

@@ -10,6 +10,7 @@ Vessel::Vessel(){
 Vessel::Vessel(std::shared_ptr<BasePart>& vessel_root){
     m_vessel_root = vessel_root;
     m_vessel_root->setRoot(true);
+    m_vessel_root->updateSubTreeVessel(this);
     create_id(m_vessel_id, VESSEL_SET);
     updateNodes();
 }
@@ -147,6 +148,7 @@ bool Vessel::addChildById(std::shared_ptr<BasePart>& child, std::uint32_t parent
         BasePart* parent = m_node_map_by_id.at(parent_id);
         child->setParent(parent);
         child->updateSubTreeVessel(this);
+        child->setCollisionMaskSubTree(child->m_body->getBroadphaseProxy()->m_collisionFilterMask | CG_RAY_EDITOR_RADIAL);
         parent->addChild(child);
         updateNodes();
 
@@ -175,6 +177,7 @@ bool Vessel::addChild(BasePart* child, BasePart* parent){
 
     child->setParent(parent);
     child->updateSubTreeVessel(this);
+    child->setCollisionMaskSubTree(child->m_body->getBroadphaseProxy()->m_collisionFilterMask | CG_RAY_EDITOR_RADIAL);
     parent->addChild(child_sptr);
     updateNodes();
 
@@ -190,6 +193,7 @@ std::shared_ptr<BasePart> Vessel::removeChildById(std::uint32_t child_id){
 
         child->setParent(nullptr);
         child->updateSubTreeVessel(nullptr);
+        child->setCollisionMaskSubTree(child->m_body->getBroadphaseProxy()->m_collisionFilterMask & ~CG_RAY_EDITOR_RADIAL);
         child_sptr = parent->removeChild(child);
         updateNodes();
 
@@ -219,6 +223,7 @@ std::shared_ptr<BasePart> Vessel::removeChild(BasePart* child){
 
     child->setParent(nullptr);
     child->updateSubTreeVessel(nullptr);
+    child->setCollisionMaskSubTree(child->m_body->getBroadphaseProxy()->m_collisionFilterMask & ~CG_RAY_EDITOR_RADIAL);
     child_sptr = parent->removeChild(child);
     updateNodes();
 

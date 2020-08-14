@@ -9,6 +9,7 @@
 #include "BasePart.hpp"
 #include "id_manager.hpp"
 #include "log.hpp"
+#include "BtWrapper.hpp" // collision flags
 
 
 class Vessel{
@@ -28,19 +29,13 @@ class Vessel{
         void setVesselName(const std::string& name);
         void setVesselDescription(const std::string& description);
         //void setRoot(BasePart* part);
+
+        /* These functions should only be used in the editor */
         bool addChildById(std::shared_ptr<BasePart>& child, std::uint32_t parent_id);
         bool addChild(BasePart* child, BasePart* parent);
         std::shared_ptr<BasePart> removeChild(BasePart* child);
         std::shared_ptr<BasePart> removeChildById(std::uint32_t child_id);
 
-        /*
-         * When we want to append a child in, for example, the editor, we get the part pointer (that's the user 
-         * pointer) in the callback returned by rayTest. We attach the child directly using the parts interface,
-         * and we don't call Vessel at any moment. Not noticing Vessel can be harmful if for example we don't update
-         * the pointer to the Vessel it belongs to, or the parts list/map. For that reason, every time we append
-         * a child to a vessel we MUST call the onChildAppend. Not sure if this situation is ideal, but it'll 
-         * suffice for now.
-         */
         void onTreeUpdate();
 
         BasePart* getRoot() const;

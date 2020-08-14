@@ -68,7 +68,7 @@ class App : public BaseApp{
         void processCommandBuffers();
         void clearScene();
         void getClosestAtt(float& closest_dist, math::vec4& closest_att_point_world, BasePart*& closest, BasePart* part);
-        void placePart(float closest_dist, math::vec4& closest_att_point_world, BasePart* closest, BasePart* part);
+        void placeSubTree(float closest_dist, math::vec4& closest_att_point_world, BasePart* closest, BasePart* part);
         void pickObject();
     public:
         App();
