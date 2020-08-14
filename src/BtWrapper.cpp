@@ -36,8 +36,8 @@ BtWrapper::~BtWrapper(){
 }
 
 
-void BtWrapper::addRigidBody(btRigidBody* body){
-    m_dynamics_world->addRigidBody(body);
+void BtWrapper::addRigidBody(btRigidBody* body, short group, short mask){
+    m_dynamics_world->addRigidBody(body, group, mask);
 }
 
 

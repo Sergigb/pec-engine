@@ -17,6 +17,14 @@
 #include "multithreading.hpp"
 
 
+// bullet collision groups (for now, only filtering rays)
+#define CG_OBJECT 1
+#define CG_KINEMATIC 2
+#define CG_PART 4
+#define CG_RAY 8
+#define CG_RAY_EDITOR_RADIAL 16 // editor radial attaching
+
+
 class Object;
 
 class BtWrapper{
@@ -47,7 +55,7 @@ class BtWrapper{
         BtWrapper(const btVector3& gravity, render_buffers* buff_manager, thread_monitor* thread_monitor);
         ~BtWrapper();
 
-        void addRigidBody(btRigidBody* body);
+        void addRigidBody(btRigidBody* body, short group, short mask);
         void addConstraint(btTypedConstraint *constraint, bool disable_collision_between_bodies);
         void removeConstraint(btTypedConstraint *constraint);
         void removeBody(btRigidBody* body);
