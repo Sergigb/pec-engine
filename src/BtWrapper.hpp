@@ -17,12 +17,13 @@
 #include "multithreading.hpp"
 
 
-// bullet collision groups (for now, only filtering rays)
-#define CG_OBJECT 1
-#define CG_KINEMATIC 2
-#define CG_PART 4
-#define CG_RAY 8
-#define CG_RAY_EDITOR_RADIAL 16 // editor radial attaching
+// bullet collision groups
+#define CG_DEFAULT 1
+#define CG_OBJECT 2
+#define CG_KINEMATIC 4
+#define CG_PART 8
+#define CG_RAY 16
+#define CG_RAY_EDITOR_RADIAL 32 // editor radial attaching
 
 
 class Object;

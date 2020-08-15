@@ -66,9 +66,9 @@ void App::objectsInit(){
 
     quat.setEuler(0, 0, 0);
     std::shared_ptr<Object> ground = std::make_shared<Object>(m_terrain_model.get(), m_bt_wrapper.get(), cube_shape_ground.get(), btScalar(0.0), 0);
-    ground->addBody(btVector3(0.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0), quat);
-    ground->setCollisionGroup(CG_KINEMATIC);
+    ground->setCollisionGroup(CG_DEFAULT | CG_KINEMATIC);
     ground->setCollisionFilters(~CG_RAY_EDITOR_RADIAL); // by default, do not collide with radial attach. ray tests
+    ground->addBody(btVector3(0.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0), quat);
     m_objects.emplace_back(ground);
 
     m_collision_shapes.push_back(std::move(cube_shape_ground));
@@ -87,7 +87,7 @@ void App::loadParts(){
 
     std::unique_ptr<btCollisionShape> cube_shape(new btBoxShape(btVector3(1,1,1)));
 
-    int howmany = 35;
+    int howmany = 1000;
     for(int i=0; i<howmany; i++){
         std::uint32_t ID = i; // change in the future to something else
 
@@ -99,7 +99,7 @@ void App::loadParts(){
         cube->addAttachmentPoint(math::vec3(1.0, 0.0, 1.0), math::vec3(0.0, 0.0, 0.0));
         cube->setName(std::string("test_part_id_") + std::to_string(ID));
         cube->setFancyName(std::string("Placeholder object ") + std::to_string(ID));
-        cube->setCollisionGroup(CG_PART);
+        cube->setCollisionGroup(CG_DEFAULT | CG_PART);
         cube->setCollisionFilters(~CG_RAY_EDITOR_RADIAL); // by default, do not collide with radial attach. ray tests
 
         typedef std::map<std::uint32_t, std::unique_ptr<BasePart>>::iterator map_iterator;
@@ -313,7 +313,7 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
     else{
         btQuaternion rotation2(0.0, 0.0, 0.0); // allows the user to rotate the part
         math::vec3 ray_start_world, ray_end_world;
-        m_camera->castRayMousePos(10.f, ray_start_world, ray_end_world);
+        m_camera->castRayMousePos(1000.f, ray_start_world, ray_end_world);
         btCollisionWorld::ClosestRayResultCallback ray_callback(btVector3(ray_start_world.v[0], ray_start_world.v[1], ray_start_world.v[2]),
                                                                 btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]));
         ray_callback.m_collisionFilterGroup = CG_RAY_EDITOR_RADIAL;
@@ -379,6 +379,7 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
             }
         }
         else{
+            m_camera->castRayMousePos(10.f, ray_start_world, ray_end_world);
             if(m_input->keyboardPressed()){
                 if(m_input->pressed_keys[GLFW_KEY_U] & INPUT_KEY_DOWN){
                     rotation2.setEuler(M_PI/2.0, 0., 0.);
