@@ -220,3 +220,8 @@ void BasePart::setCollisionMaskSubTree(short mask){
     }
 }
 
+
+void BasePart::setFreeAttachmentPoint(const math::vec3& point, const math::vec3& orientation){
+    m_free_att_point = {point, orientation};
+}
+

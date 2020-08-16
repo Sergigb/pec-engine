@@ -23,7 +23,7 @@ struct attachment_point{
 
 class BasePart : public Object{
     private:
-        struct attachment_point m_parent_att_point;
+        struct attachment_point m_parent_att_point, m_free_att_point;
         std::vector<struct attachment_point> m_attachment_points;  // the attachment points of the part
         std::unique_ptr<btTypedConstraint> m_parent_constraint; // the constraint between this part and the parent
         BasePart* m_parent;
@@ -39,6 +39,7 @@ class BasePart : public Object{
         void addAttachmentPoint(const math::vec3& point, const math::vec3& orientation);
         void setParentAttachmentPoint(const math::vec3& point, const math::vec3& orientation);
         void setParentConstraint(std::unique_ptr<btTypedConstraint>& constraint_uptr);
+        void setFreeAttachmentPoint(const math::vec3& point, const math::vec3& orientation);
         void removeParentConstraint();
         void setParent(BasePart* parent);
         bool addChild(std::shared_ptr<BasePart>& child);

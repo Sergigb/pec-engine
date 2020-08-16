@@ -87,13 +87,14 @@ void App::loadParts(){
 
     std::unique_ptr<btCollisionShape> cube_shape(new btBoxShape(btVector3(1,1,1)));
 
-    int howmany = 1000;
+    int howmany = 35;
     for(int i=0; i<howmany; i++){
         std::uint32_t ID = i; // change in the future to something else
 
         std::unique_ptr<BasePart> cube(new BasePart(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btScalar(10.0), ID));
         cube->setColor(math::vec3(1.0-(1./howmany)*i, 0.0, (1./howmany)*i));
         cube->setParentAttachmentPoint(math::vec3(0.0, 1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
+        cube->setFreeAttachmentPoint(math::vec3(0.0, 1.0, 0.0), math::vec3(0.0, 1.0, 0.0));
         cube->addAttachmentPoint(math::vec3(1.0, 0.0, 0.0), math::vec3(0.0, 0.0, 0.0));
         cube->addAttachmentPoint(math::vec3(0.0, -1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
         cube->addAttachmentPoint(math::vec3(1.0, 0.0, 1.0), math::vec3(0.0, 0.0, 0.0));
