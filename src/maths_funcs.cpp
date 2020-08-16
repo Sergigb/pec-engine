@@ -392,6 +392,13 @@ math::mat3 math::identity_mat3() {
     return math::mat3( 1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f );
 }
 
+math::vec3 math::mat3::operator*( const vec3 &rhs ) const {
+    float x = m[0] * rhs.v[0] + m[3] * rhs.v[1] + m[6] * rhs.v[2];
+    float y = m[1] * rhs.v[0] + m[4] * rhs.v[1] + m[7] * rhs.v[2];
+    float z = m[2] * rhs.v[0] + m[5] * rhs.v[1] + m[8] * rhs.v[2];
+    return vec3( x, y, z );
+}
+
 math::mat4 math::zero_mat4() {
     return math::mat4( 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f,
                              0.0f, 0.0f, 0.0f, 0.0f, 0.0f );
@@ -788,3 +795,18 @@ math::versor math::slerp( versor &q, versor &r, float t ) {
     }
     return result;
 }
+
+
+math::mat3 math::rotation_align( const vec3& d, const vec3& z ) {
+    const vec3  v = cross( z, d );
+    const float c = dot( z, d );
+    const float k = 1.0f/(1.0f+c);
+
+    /*return mat3( v.v[0]*v.v[0]*k + c,        v.v[1]*v.v[0]*k - v.v[2],    v.v[2]*v.v[0]*k + v.v[1],
+                 v.v[0]*v.v[1]*k + v.v[2],   v.v[1]*v.v[1]*k + c,         v.v[2]*v.v[1]*k - v.v[0],
+                 v.v[0]*v.v[2]*k - v.v[1],   v.v[1]*v.v[2]*k + v.v[0],    v.v[2]*v.v[2]*k + c );*/
+    return mat3( v.v[0]*v.v[0]*k + c , v.v[0]*v.v[1]*k + v.v[2], v.v[0]*v.v[2]*k - v.v[1],
+v.v[1]*v.v[0]*k - v.v[2], v.v[1]*v.v[1]*k + c, v.v[1]*v.v[2]*k + v.v[0],
+v.v[2]*v.v[0]*k + v.v[1], v.v[2]*v.v[1]*k - v.v[0], v.v[2]*v.v[2]*k + c );
+}
+

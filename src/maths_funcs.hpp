@@ -86,6 +86,7 @@ namespace math{
         mat3();
         mat3( float a, float b, float c, float d, float e, float f, float g, float h,
                     float i );
+        vec3 operator*( const vec3 &rhs ) const;
         float m[9];
     };
 
@@ -164,6 +165,7 @@ namespace math{
     versor normalise( versor &q );
     void print( const versor &q );
     versor slerp( versor &q, versor &r, float t );
+    mat3 rotation_align( const vec3& d, const vec3& z );
 }
 
 #define TAU 2.0 * M_PI
