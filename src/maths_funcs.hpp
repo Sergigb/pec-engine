@@ -87,6 +87,7 @@ namespace math{
         mat3( float a, float b, float c, float d, float e, float f, float g, float h,
                     float i );
         vec3 operator*( const vec3 &rhs ) const;
+        mat3 operator*( const mat3 &rhs ) const;
         float m[9];
     };
 
@@ -137,6 +138,7 @@ namespace math{
     float distance(const vec2 &a, const vec2 &b);
     float distance(const vec3 &a, const vec3 &b);
     float distance(const vec4 &a, const vec4 &b);
+    vec3 arb_perpendicular( const vec3& v );
     // matrix functions
     mat3 zero_mat3();
     mat3 identity_mat3();
@@ -161,6 +163,7 @@ namespace math{
     mat4 quat_to_mat4( const versor &q );
     float dot( const versor &q, const versor &r );
     versor slerp( const versor &q, const versor &r );
+    versor from_mat3( const mat3& m);
     // stupid overloading wouldn't let me use const
     versor normalise( versor &q );
     void print( const versor &q );

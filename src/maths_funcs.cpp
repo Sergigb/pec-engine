@@ -383,6 +383,19 @@ float math::distance( const vec4 &a, const vec4 &b ) {
     return sqrt( x_diff * x_diff + y_diff * y_diff + z_diff * z_diff + w_diff * w_diff );
 }
 
+math::vec3 math::arb_perpendicular( const vec3& v ) {
+    vec3 pv(0.0f, 0.0f, 0.0f);
+    if(v.v[1] == 0 && v.v[2] == 0){
+        if(v.v[0] == 0){
+            return pv;
+        }
+        else{
+            return cross(v, math::vec3(0.0f, 1.0f, 0.0f));
+        }
+    }
+    return cross(v, math::vec3(1.0f, 0.0f ,0.0f));
+}
+
 /*-----------------------------MATRIX FUNCTIONS-------------------------------*/
 math::mat3 math::zero_mat3() {
     return math::mat3( 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f );
@@ -397,6 +410,22 @@ math::vec3 math::mat3::operator*( const vec3 &rhs ) const {
     float y = m[1] * rhs.v[0] + m[4] * rhs.v[1] + m[7] * rhs.v[2];
     float z = m[2] * rhs.v[0] + m[5] * rhs.v[1] + m[8] * rhs.v[2];
     return vec3( x, y, z );
+}
+
+math::mat3 math::mat3::operator*( const mat3 &rhs ) const {
+    mat3 r = zero_mat3();
+    int r_index = 0;
+    for ( int col = 0; col < 3; col++ ) {
+        for ( int row = 0; row < 3; row++ ) {
+            float sum = 0.0f;
+            for ( int i = 0; i < 3; i++ ) {
+                sum += rhs.m[i + col * 3] * m[row + i * 3];
+            }
+            r.m[r_index] = sum;
+            r_index++;
+        }
+    }
+    return r;
 }
 
 math::mat4 math::zero_mat4() {
@@ -795,6 +824,93 @@ math::versor math::slerp( versor &q, versor &r, float t ) {
     }
     return result;
 }
+/*    0 3 6
+      1 4 7
+      2 5 8 */
+/*
+      m00 m01 m02
+      m10 m11 m12
+      m20 m21 m22
+
+
+*/
+
+math::versor math::from_mat3( const mat3& m) {
+    float t = m.m[0] + m.m[4] + m.m[8];
+    math::versor v;
+
+    if (t >= 0) {
+        float s = sqrt(t + 1);
+        v.q[3] = 0.5 * s;
+        s = 0.5 / s;                 
+        v.q[0] = (m.m[5] - m.m[7]) * s;
+        v.q[1] = (m.m[6] - m.m[2]) * s;
+        v.q[2] = (m.m[1] - m.m[3]) * s;
+    } else if ((m.m[0] > m.m[4]) && (m.m[0] > m.m[8])) {
+        float s = sqrt(1 + m.m[0] - m.m[4] - m.m[8]); 
+        v.q[0] = s * 0.5; 
+        s = 0.5 / s;
+        v.q[1] = (m.m[1] + m.m[3]) * s;
+        v.q[2] = (m.m[6] + m.m[2]) * s;
+        v.q[3] = (m.m[5] - m.m[7]) * s;
+    } else if (m.m[4] > m.m[8]) {
+        float s = sqrt(1 + m.m[4] - m.m[0] - m.m[8]); 
+        v.q[1] = s * 0.5; 
+        s = 0.5 / s;
+        v.q[0] = (m.m[1] + m.m[3]) * s;
+        v.q[2] = (m.m[5] + m.m[7]) * s;
+        v.q[3] = (m.m[6] - m.m[2]) * s;
+    } else {
+        float s = sqrt(1 + m.m[8] - m.m[0] - m.m[4]); 
+        v.q[2] = s * 0.5; 
+        s = 0.5 / s;
+        v.q[0] = (m.m[6] + m.m[2]) * s;
+        v.q[1] = (m.m[5] + m.m[7]) * s;
+        v.q[3] = (m.m[1] - m.m[3]) * s;
+    }
+    return v;
+}
+
+/*
+
+
+inline void fromMatrix( TYPE m00, TYPE m01, TYPE m02,    TYPE m10, TYPE m11, TYPE m12,        TYPE m20, TYPE m21, TYPE m22) {
+    // Use the Graphics Gems code, from 
+    // ftp://ftp.cis.upenn.edu/pub/graphics/shoemake/quatut.ps.Z
+    TYPE t = m00 + m11 + m22;
+    // we protect the division by s by ensuring that s>=1
+    if (t >= 0) { // by w
+        TYPE s = sqrt(t + 1);
+        w = 0.5 * s;
+        s = 0.5 / s;                 
+        x = (m21 - m12) * s;
+        y = (m02 - m20) * s;
+        z = (m10 - m01) * s;
+    } else if ((m00 > m11) && (m00 > m22)) { // by x
+        TYPE s = sqrt(1 + m00 - m11 - m22); 
+        x = s * 0.5; 
+        s = 0.5 / s;
+        y = (m10 + m01) * s;
+        z = (m02 + m20) * s;
+        w = (m21 - m12) * s;
+    } else if (m11 > m22) { // by y
+        TYPE s = sqrt(1 + m11 - m00 - m22); 
+        y = s * 0.5; 
+        s = 0.5 / s;
+        x = (m10 + m01) * s;
+        z = (m21 + m12) * s;
+        w = (m02 - m20) * s;
+    } else { // by z
+        TYPE s = sqrt(1 + m22 - m00 - m11); 
+        z = s * 0.5; 
+        s = 0.5 / s;
+        x = (m02 + m20) * s;
+        y = (m21 + m12) * s;
+        w = (m10 - m01) * s;
+    }
+}
+
+*/
 
 
 math::mat3 math::rotation_align( const vec3& d, const vec3& z ) {
@@ -802,11 +918,8 @@ math::mat3 math::rotation_align( const vec3& d, const vec3& z ) {
     const float c = dot( z, d );
     const float k = 1.0f/(1.0f+c);
 
-    /*return mat3( v.v[0]*v.v[0]*k + c,        v.v[1]*v.v[0]*k - v.v[2],    v.v[2]*v.v[0]*k + v.v[1],
-                 v.v[0]*v.v[1]*k + v.v[2],   v.v[1]*v.v[1]*k + c,         v.v[2]*v.v[1]*k - v.v[0],
-                 v.v[0]*v.v[2]*k - v.v[1],   v.v[1]*v.v[2]*k + v.v[0],    v.v[2]*v.v[2]*k + c );*/
-    return mat3( v.v[0]*v.v[0]*k + c , v.v[0]*v.v[1]*k + v.v[2], v.v[0]*v.v[2]*k - v.v[1],
-v.v[1]*v.v[0]*k - v.v[2], v.v[1]*v.v[1]*k + c, v.v[1]*v.v[2]*k + v.v[0],
-v.v[2]*v.v[0]*k + v.v[1], v.v[2]*v.v[1]*k - v.v[0], v.v[2]*v.v[2]*k + c );
+    return mat3( v.v[0]*v.v[0]*k + c ,     v.v[0]*v.v[1]*k + v.v[2],    v.v[0]*v.v[2]*k - v.v[1],
+                 v.v[1]*v.v[0]*k - v.v[2], v.v[1]*v.v[1]*k + c,         v.v[1]*v.v[2]*k + v.v[0],
+                 v.v[2]*v.v[0]*k + v.v[1], v.v[2]*v.v[1]*k - v.v[0],    v.v[2]*v.v[2]*k + c );
 }
 
