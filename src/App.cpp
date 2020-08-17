@@ -57,12 +57,7 @@ void App::modelsInit(){
 
 void App::objectsInit(){
     btQuaternion quat;
-
     std::unique_ptr<btCollisionShape> cube_shape_ground(new btBoxShape(btVector3(btScalar(25.), btScalar(25.), btScalar(25.))));
-    std::unique_ptr<btCollisionShape> cube_shape(new btBoxShape(btVector3(1,1,1)));
-    std::unique_ptr<btCollisionShape> sphere_shape(new btSphereShape(btScalar(1)));
-    std::unique_ptr<btCollisionShape> cube3m(new btBoxShape(btVector3(3,3,3)));
-    std::unique_ptr<btCollisionShape> cylinder_shape(new btCylinderShape(btVector3(1,1,1)));
 
     quat.setEuler(0, 0, 0);
     std::shared_ptr<Object> ground = std::make_shared<Object>(m_terrain_model.get(), m_bt_wrapper.get(), cube_shape_ground.get(), btScalar(0.0), 0);
@@ -72,10 +67,6 @@ void App::objectsInit(){
     m_objects.emplace_back(ground);
 
     m_collision_shapes.push_back(std::move(cube_shape_ground));
-    m_collision_shapes.push_back(std::move(cube_shape));
-    m_collision_shapes.push_back(std::move(sphere_shape));
-    m_collision_shapes.push_back(std::move(cube3m));
-    m_collision_shapes.push_back(std::move(cylinder_shape));
 }
 
 
@@ -94,7 +85,7 @@ void App::loadParts(){
         std::unique_ptr<BasePart> cube(new BasePart(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btScalar(10.0), ID));
         cube->setColor(math::vec3(1.0-(1./howmany)*i, 0.0, (1./howmany)*i));
         cube->setParentAttachmentPoint(math::vec3(0.0, 1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
-        cube->setFreeAttachmentPoint(math::vec3(0.0, 1.0, 0.0), math::vec3(0.0, 1.0, 0.0));
+        cube->setFreeAttachmentPoint(math::vec3(-1.0, 0.0, 0.0), math::vec3(-1.0, 0.0, 0.0));
         cube->addAttachmentPoint(math::vec3(1.0, 0.0, 0.0), math::vec3(0.0, 0.0, 0.0));
         cube->addAttachmentPoint(math::vec3(0.0, -1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
         cube->addAttachmentPoint(math::vec3(1.0, 0.0, 1.0), math::vec3(0.0, 0.0, 0.0));
@@ -111,7 +102,49 @@ void App::loadParts(){
             std::cerr << "Failed to inset part with id " << ID << " (collided with " << res.first->first << ")" << std::endl;
         }
     }
+
+    std::unique_ptr<btCollisionShape> cylinder_shape(new btCylinderShape(btVector3(1,1,1)));
+
+    std::unique_ptr<BasePart> cylinder(new BasePart(m_cylinder_model.get(), m_bt_wrapper.get(), cylinder_shape.get(), btScalar(10.0), 100));
+    cylinder->setColor(math::vec3(1.0, 0.0, 1.0));
+    cylinder->setParentAttachmentPoint(math::vec3(0.0, 1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
+    cylinder->setFreeAttachmentPoint(math::vec3(1.0, 0.0, 0.0), math::vec3(1.0, 0.0, 0.0));
+    cylinder->setName(std::string("cylinder") + std::to_string(100));
+    cylinder->setFancyName(std::string("Cylinder ") + std::to_string(100));
+    cylinder->setCollisionGroup(CG_DEFAULT | CG_PART);
+    cylinder->setCollisionFilters(~CG_RAY_EDITOR_RADIAL); // by default, do not collide with radial attach. ray tests
+
+    typedef std::map<std::uint32_t, std::unique_ptr<BasePart>>::iterator map_iterator;
+    std::pair<map_iterator, bool> res = m_master_parts.insert({100, std::move(cylinder)});
+
+    if(!res.second){
+        log("Failed to inset part with id ", 100, " (collided with ", res.first->first, ")");
+        std::cerr << "Failed to inset part with id " << 100 << " (collided with " << res.first->first << ")" << std::endl;
+    }
+
+    std::unique_ptr<btCollisionShape> sphere_shape(new btSphereShape(1.0));
+
+    std::unique_ptr<BasePart> sphere(new BasePart(m_sphere_model.get(), m_bt_wrapper.get(), sphere_shape.get(), btScalar(10.0), 101));
+    sphere->setColor(math::vec3(1.0, 0.0, 1.0));
+    sphere->setParentAttachmentPoint(math::vec3(0.0, 1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
+    sphere->setFreeAttachmentPoint(math::vec3(1.0, 0.0, 0.0), math::vec3(1.0, 0.0, 0.0));
+    sphere->addAttachmentPoint(math::vec3(0.0, -1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
+    sphere->setName(std::string("sphere_") + std::to_string(101));
+    sphere->setFancyName(std::string("Sphere ") + std::to_string(101));
+    sphere->setCollisionGroup(CG_DEFAULT | CG_PART);
+    sphere->setCollisionFilters(~CG_RAY_EDITOR_RADIAL); // by default, do not collide with radial attach. ray tests
+
+    typedef std::map<std::uint32_t, std::unique_ptr<BasePart>>::iterator map_iterator;
+    res = m_master_parts.insert({101, std::move(sphere)});
+
+    if(!res.second){
+        log("Failed to inset part with id ", 101, " (collided with ", res.first->first, ")");
+        std::cerr << "Failed to inset part with id " << 101 << " (collided with " << res.first->first << ")" << std::endl;
+    }
+
+    m_collision_shapes.push_back(std::move(sphere_shape));
     m_collision_shapes.push_back(std::move(cube_shape));
+    m_collision_shapes.push_back(std::move(cylinder_shape));
 }
 
 
@@ -312,7 +345,6 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
         }
     }
     else{
-        btQuaternion rotation2(0.0, 0.0, 0.0); // allows the user to rotate the part
         math::vec3 ray_start_world, ray_end_world;
         m_camera->castRayMousePos(1000.f, ray_start_world, ray_end_world);
         btCollisionWorld::ClosestRayResultCallback ray_callback(btVector3(ray_start_world.v[0], ray_start_world.v[1], ray_start_world.v[2]),
@@ -323,10 +355,36 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
                                             btVector3(ray_start_world.v[0], ray_start_world.v[1], ray_start_world.v[2]),
                                             btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]));
 
-        if(obj && !part->isRoot()){ // free attaching -- just a test for now, doesnt take into account the normal of the ray test yet
-            btVector3 btv3_child_att(part->getParentAttachmentPoint()->point.v[0], // should use a special "free" att point, we use this one for now
-                                     part->getParentAttachmentPoint()->point.v[1],
-                                     part->getParentAttachmentPoint()->point.v[2]);
+        if(obj && !part->isRoot()){ // free attaching
+            btVector3 btv3_child_att;
+            btQuaternion rotation2;
+            math::versor align_rot_q;
+            math::mat3 align_rot;
+
+            math::vec3 child_att = part->getFreeAttachmentPoint()->point;
+            math::vec3 child_att_orientation(0.0, 0.0, 0.0); // should be rotated by the object's transform???
+            child_att_orientation = child_att_orientation - part->getFreeAttachmentPoint()->orientation; //??DS?D?SADsjfk
+            math::vec3 surface_normal = math::vec3(ray_callback.m_hitNormalWorld.getX(),
+                                                   ray_callback.m_hitNormalWorld.getY(),
+                                                   ray_callback.m_hitNormalWorld.getZ());
+
+            if(dot(surface_normal, child_att_orientation) == -1){
+                vec3 temp;
+                align_rot = rotation_align(math::arb_perpendicular(child_att_orientation), child_att_orientation);
+                child_att = align_rot * child_att;
+                align_rot = rotation_align(surface_normal, math::arb_perpendicular(child_att_orientation));
+            }
+            else{
+                align_rot = rotation_align(surface_normal, child_att_orientation);
+            }
+
+            child_att = align_rot * child_att;
+
+            align_rot_q = math::from_mat3(align_rot);
+            align_rot_q = math::normalise(align_rot_q);
+            rotation2 = btQuaternion(align_rot_q.q[0], align_rot_q.q[1], align_rot_q.q[2], align_rot_q.q[3]);
+            btv3_child_att = btVector3(child_att.v[0], child_att.v[1], child_att.v[2]);
+
             btTransform transform_final = btTransform(btQuaternion::getIdentity(), -btv3_child_att);
             btTransform object_R = btTransform(rotation, btVector3(0.0, 0.0, 0.0));
             btTransform object_T = btTransform(btQuaternion::getIdentity(), ray_callback.m_hitPointWorld);
@@ -334,7 +392,8 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
             transform_final = object_T * object_R * transform_final;
 
             btVector3 disp = transform_final.getOrigin() - transform_original.getOrigin();
-            part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, transform_original.getOrigin(), btQuaternion::getIdentity());
+            part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, transform_original.getOrigin(), rotation2 * rotation.inverse());
+            //part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, transform_original.getOrigin(), btQuaternion::getIdentity());
 
             if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){ // user has decided to attach the object to the parent
                 btTransform parent_transform;
@@ -380,6 +439,7 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
             }
         }
         else{
+            btQuaternion rotation2(0.0, 0.0, 0.0); // allows the user to rotate the part
             m_camera->castRayMousePos(10.f, ray_start_world, ray_end_world);
             if(m_input->keyboardPressed()){
                 if(m_input->pressed_keys[GLFW_KEY_U] & INPUT_KEY_DOWN){
