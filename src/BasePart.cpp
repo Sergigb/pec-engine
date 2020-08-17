@@ -26,6 +26,7 @@ BasePart::~BasePart(){
 BasePart::BasePart(const BasePart& part) : Object(part) {
     m_parent_att_point = part.m_parent_att_point;
     m_attachment_points = part.m_attachment_points;
+    m_free_att_point = part.m_free_att_point;
     m_parent_constraint.reset(nullptr);
     m_parent = nullptr;
     m_is_root = false;
@@ -223,5 +224,10 @@ void BasePart::setCollisionMaskSubTree(short mask){
 
 void BasePart::setFreeAttachmentPoint(const math::vec3& point, const math::vec3& orientation){
     m_free_att_point = {point, orientation};
+}
+
+
+const struct attachment_point* BasePart::getFreeAttachmentPoint() const{
+    return &m_free_att_point;
 }
 
