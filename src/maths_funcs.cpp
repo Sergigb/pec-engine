@@ -824,16 +824,6 @@ math::versor math::slerp( versor &q, versor &r, float t ) {
     }
     return result;
 }
-/*    0 3 6
-      1 4 7
-      2 5 8 */
-/*
-      m00 m01 m02
-      m10 m11 m12
-      m20 m21 m22
-
-
-*/
 
 math::versor math::from_mat3( const mat3& m) {
     float t = m.m[0] + m.m[4] + m.m[8];
@@ -870,48 +860,6 @@ math::versor math::from_mat3( const mat3& m) {
     }
     return v;
 }
-
-/*
-
-
-inline void fromMatrix( TYPE m00, TYPE m01, TYPE m02,    TYPE m10, TYPE m11, TYPE m12,        TYPE m20, TYPE m21, TYPE m22) {
-    // Use the Graphics Gems code, from 
-    // ftp://ftp.cis.upenn.edu/pub/graphics/shoemake/quatut.ps.Z
-    TYPE t = m00 + m11 + m22;
-    // we protect the division by s by ensuring that s>=1
-    if (t >= 0) { // by w
-        TYPE s = sqrt(t + 1);
-        w = 0.5 * s;
-        s = 0.5 / s;                 
-        x = (m21 - m12) * s;
-        y = (m02 - m20) * s;
-        z = (m10 - m01) * s;
-    } else if ((m00 > m11) && (m00 > m22)) { // by x
-        TYPE s = sqrt(1 + m00 - m11 - m22); 
-        x = s * 0.5; 
-        s = 0.5 / s;
-        y = (m10 + m01) * s;
-        z = (m02 + m20) * s;
-        w = (m21 - m12) * s;
-    } else if (m11 > m22) { // by y
-        TYPE s = sqrt(1 + m11 - m00 - m22); 
-        y = s * 0.5; 
-        s = 0.5 / s;
-        x = (m10 + m01) * s;
-        z = (m21 + m12) * s;
-        w = (m02 - m20) * s;
-    } else { // by z
-        TYPE s = sqrt(1 + m22 - m00 - m11); 
-        z = s * 0.5; 
-        s = 0.5 / s;
-        x = (m02 + m20) * s;
-        y = (m21 + m12) * s;
-        w = (m10 - m01) * s;
-    }
-}
-
-*/
-
 
 math::mat3 math::rotation_align( const vec3& d, const vec3& z ) {
     const vec3  v = cross( z, d );
