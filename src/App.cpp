@@ -109,6 +109,7 @@ void App::loadParts(){
     cylinder->setColor(math::vec3(1.0, 0.0, 1.0));
     cylinder->setParentAttachmentPoint(math::vec3(0.0, 1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
     cylinder->setFreeAttachmentPoint(math::vec3(1.0, 0.0, 0.0), math::vec3(1.0, 0.0, 0.0));
+    cylinder->addAttachmentPoint(math::vec3(1.0, 0.0, 0.0), math::vec3(0.0, 0.0, 0.0));
     cylinder->setName(std::string("cylinder") + std::to_string(100));
     cylinder->setFancyName(std::string("Cylinder ") + std::to_string(100));
     cylinder->setCollisionGroup(CG_DEFAULT | CG_PART);
@@ -369,19 +370,17 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
                                                    ray_callback.m_hitNormalWorld.getZ());
 
             if(dot(surface_normal, child_att_orientation) == -1){
-                vec3 temp;
+                math::mat4 aux;
                 align_rot = rotation_align(math::arb_perpendicular(child_att_orientation), child_att_orientation);
                 child_att = align_rot * child_att;
                 align_rot = rotation_align(surface_normal, math::arb_perpendicular(child_att_orientation));
+                child_att = align_rot * child_att;
             }
             else{
                 align_rot = rotation_align(surface_normal, child_att_orientation);
             }
 
-            child_att = align_rot * child_att;
-
             align_rot_q = math::from_mat3(align_rot);
-            align_rot_q = math::normalise(align_rot_q);
             rotation2 = btQuaternion(align_rot_q.q[0], align_rot_q.q[1], align_rot_q.q[2], align_rot_q.q[3]);
             btv3_child_att = btVector3(child_att.v[0], child_att.v[1], child_att.v[2]);
 
