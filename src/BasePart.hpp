@@ -63,6 +63,8 @@ class BasePart : public Object{
         // I don't know if I should make these private (friending Vessel)
         BasePart* getParent() const;
         std::vector<std::shared_ptr<BasePart>>* getChilds();
+
+        btQuaternion m_user_rotation;
 };
 
 

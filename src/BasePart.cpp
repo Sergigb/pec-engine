@@ -6,6 +6,7 @@ BasePart::BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_sh
     m_parent = nullptr;
     m_vessel = nullptr;
     m_is_root = false;
+    m_user_rotation = btQuaternion::getIdentity();
 }
 
 
@@ -13,6 +14,7 @@ BasePart::BasePart(){
     m_parent = nullptr;
     m_vessel = nullptr;
     m_is_root = false;
+    m_user_rotation = btQuaternion::getIdentity();
 }
 
 
@@ -31,6 +33,7 @@ BasePart::BasePart(const BasePart& part) : Object(part) {
     m_parent = nullptr;
     m_is_root = false;
     m_vessel = nullptr;
+    m_user_rotation = btQuaternion::getIdentity();
 }
 
 

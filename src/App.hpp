@@ -61,6 +61,7 @@ class App : public BaseApp{
         // application default font atlas
         std::unique_ptr<FontAtlas> m_def_font_atlas;
 
+        void getUserRotation(btQuaternion& rotation, const btQuaternion& current_rotation);
         void modelsInit();
         void objectsInit();
         void loadParts();

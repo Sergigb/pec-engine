@@ -128,7 +128,7 @@ void App::loadParts(){
     std::unique_ptr<BasePart> sphere(new BasePart(m_sphere_model.get(), m_bt_wrapper.get(), sphere_shape.get(), btScalar(10.0), 101));
     sphere->setColor(math::vec3(1.0, 0.0, 1.0));
     sphere->setParentAttachmentPoint(math::vec3(0.0, 1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
-    sphere->setFreeAttachmentPoint(math::vec3(1.0, 0.0, 0.0), math::vec3(1.0, 0.0, 0.0));
+    sphere->setFreeAttachmentPoint(math::vec3(0.0, 0.0, 1.0), math::vec3(0.0, 0.0, 1.0));
     sphere->addAttachmentPoint(math::vec3(0.0, -1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
     sphere->setName(std::string("sphere_") + std::to_string(101));
     sphere->setFancyName(std::string("Sphere ") + std::to_string(101));
@@ -272,6 +272,34 @@ void App::getClosestAtt(float& closest_dist, math::vec4& closest_att_point_world
     }
 }
 
+
+void App::getUserRotation(btQuaternion& rotation, const btQuaternion& current_rotation){
+    if(m_input->keyboardPressed()){
+        if(m_input->pressed_keys[GLFW_KEY_U] & INPUT_KEY_DOWN){
+            rotation.setEuler(M_PI/2.0, 0., 0.);
+        }
+        else if(m_input->pressed_keys[GLFW_KEY_O] & INPUT_KEY_DOWN){
+            rotation.setEuler(-M_PI/2.0, 0., 0.);
+        }
+        else if(m_input->pressed_keys[GLFW_KEY_I] & INPUT_KEY_DOWN){
+            rotation.setEuler(0., M_PI/2.0, 0.);
+        }
+        else if(m_input->pressed_keys[GLFW_KEY_K] & INPUT_KEY_DOWN){
+            rotation.setEuler(0., -M_PI/2.0, 0.);
+        }
+        else if(m_input->pressed_keys[GLFW_KEY_J] & INPUT_KEY_DOWN){
+            rotation.setEuler(0., 0., M_PI/2.0);
+        }
+        else if(m_input->pressed_keys[GLFW_KEY_L] & INPUT_KEY_DOWN){
+            rotation.setEuler(0., 0., -M_PI/2.0);
+        }
+        else if(m_input->pressed_keys[GLFW_KEY_R] & INPUT_KEY_DOWN){
+            rotation = current_rotation.inverse();
+        }
+    }
+}
+
+
 void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, BasePart* closest, BasePart* part){
     btTransform transform_original;
     btQuaternion rotation;
@@ -295,7 +323,7 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
         transform_final = object_T * object_R * transform_final; // rotated and traslated attachment point (world)
 
         btVector3 disp = transform_final.getOrigin() - transform_original.getOrigin();
-        part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, transform_original.getOrigin(), btQuaternion::getIdentity());
+        part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, transform_original.getOrigin(), part->m_user_rotation * rotation.inverse());
 
         if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){ // user has decided to attach the object to the parent
             btTransform parent_transform, frame_child;
@@ -347,6 +375,7 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
     }
     else{
         math::vec3 ray_start_world, ray_end_world;
+        btQuaternion user_rotation(0.0, 0.0, 0.0);
         m_camera->castRayMousePos(1000.f, ray_start_world, ray_end_world);
         btCollisionWorld::ClosestRayResultCallback ray_callback(btVector3(ray_start_world.v[0], ray_start_world.v[1], ray_start_world.v[2]),
                                                                 btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]));
@@ -356,9 +385,13 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
                                             btVector3(ray_start_world.v[0], ray_start_world.v[1], ray_start_world.v[2]),
                                             btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]));
 
+        // get+update user totation
+        getUserRotation(user_rotation, rotation);
+        part->m_user_rotation = part->m_user_rotation * user_rotation;
+
         if(obj && !part->isRoot()){ // free attaching
             btVector3 btv3_child_att;
-            btQuaternion rotation2;
+            btQuaternion align_rotation;
             math::versor align_rot_q;
             math::mat3 align_rot;
 
@@ -381,7 +414,7 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
             }
 
             align_rot_q = math::from_mat3(align_rot);
-            rotation2 = btQuaternion(align_rot_q.q[0], align_rot_q.q[1], align_rot_q.q[2], align_rot_q.q[3]);
+            align_rotation = btQuaternion(align_rot_q.q[0], align_rot_q.q[1], align_rot_q.q[2], align_rot_q.q[3]);
             btv3_child_att = btVector3(child_att.v[0], child_att.v[1], child_att.v[2]);
 
             btTransform transform_final = btTransform(btQuaternion::getIdentity(), -btv3_child_att);
@@ -391,8 +424,7 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
             transform_final = object_T * object_R * transform_final;
 
             btVector3 disp = transform_final.getOrigin() - transform_original.getOrigin();
-            part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, transform_original.getOrigin(), rotation2 * rotation.inverse());
-            //part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, transform_original.getOrigin(), btQuaternion::getIdentity());
+            part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, transform_original.getOrigin(), align_rotation * part->m_user_rotation * rotation.inverse());
 
             if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){ // user has decided to attach the object to the parent
                 btTransform parent_transform;
@@ -438,35 +470,10 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
             }
         }
         else{
-            btQuaternion rotation2(0.0, 0.0, 0.0); // allows the user to rotate the part
             m_camera->castRayMousePos(10.f, ray_start_world, ray_end_world);
-            if(m_input->keyboardPressed()){
-                if(m_input->pressed_keys[GLFW_KEY_U] & INPUT_KEY_DOWN){
-                    rotation2.setEuler(M_PI/2.0, 0., 0.);
-                }
-                else if(m_input->pressed_keys[GLFW_KEY_O] & INPUT_KEY_DOWN){
-                    rotation2.setEuler(-M_PI/2.0, 0., 0.);
-                }
-                else if(m_input->pressed_keys[GLFW_KEY_I] & INPUT_KEY_DOWN){
-                    rotation2.setEuler(0., M_PI/2.0, 0.);
-                }
-                else if(m_input->pressed_keys[GLFW_KEY_K] & INPUT_KEY_DOWN){
-                    rotation2.setEuler(0., -M_PI/2.0, 0.);
-                }
-                else if(m_input->pressed_keys[GLFW_KEY_J] & INPUT_KEY_DOWN){
-                    rotation2.setEuler(0., 0., M_PI/2.0);
-                }
-                else if(m_input->pressed_keys[GLFW_KEY_L] & INPUT_KEY_DOWN){
-                    rotation2.setEuler(0., 0., -M_PI/2.0);
-                }
-                else if(m_input->pressed_keys[GLFW_KEY_R] & INPUT_KEY_DOWN){
-                    rotation2 = rotation.inverse();
-                }
-            }
-
             btVector3 origin(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]);
             btVector3 disp = origin - transform_original.getOrigin();
-            part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, transform_original.getOrigin(), rotation2);
+            part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, transform_original.getOrigin(), part->m_user_rotation * rotation.inverse());
         }
     }
 }
