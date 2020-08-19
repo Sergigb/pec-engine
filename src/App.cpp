@@ -19,6 +19,10 @@ App::App() : BaseApp(){
     m_def_font_atlas->loadCharacterRange(32, 255); // ascii
     m_def_font_atlas->loadCharacterRange(913, 1023); // greek and coptic
     m_def_font_atlas->createAtlas(false);
+
+    m_editor_gui.reset(new EditorGUI(m_def_font_atlas.get(), m_render_context.get(), m_input.get()));
+    m_editor_gui->setMasterPartList(&m_master_parts);
+    m_render_context->setEditorGUI(m_editor_gui.get());
 }
 
 
@@ -40,6 +44,10 @@ App::App(int gl_width, int gl_height) : BaseApp(gl_width, gl_height){
     m_def_font_atlas->loadCharacterRange(32, 255); // ascii
     m_def_font_atlas->loadCharacterRange(913, 1023); // greek and coptic
     m_def_font_atlas->createAtlas(false);
+
+    m_editor_gui.reset(new EditorGUI(m_def_font_atlas.get(), m_render_context.get(), m_input.get()));
+    m_editor_gui->setMasterPartList(&m_master_parts);
+    m_render_context->setEditorGUI(m_editor_gui.get());
 }
 
 
@@ -80,7 +88,7 @@ void App::loadParts(){
 
     int howmany = 35;
     for(int i=0; i<howmany; i++){
-        std::uint32_t ID = i + 1; // change in the future to something else
+        std::uint32_t ID = i + 5; // change in the future to something else
 
         std::unique_ptr<BasePart> cube(new BasePart(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btScalar(10.0), ID));
         cube->setColor(math::vec3(1.0-(1./howmany)*i, 0.0, (1./howmany)*i));
@@ -150,20 +158,13 @@ void App::loadParts(){
 
 
 void App::run(){
-
-    /* THIS SHOULD BE MOVED SOMEWHERE ELSE, THIS IS JUST FOR TESTING*/
-    // font atlas = nullptr because I don't have text there yet
-    m_editor_gui.reset(new EditorGUI(m_def_font_atlas.get(), m_render_context.get(), m_input.get()));
-    m_editor_gui->setMasterPartList(&m_master_parts);
-    m_render_context->m_gui = m_editor_gui.get();
-    /* THIS SHOULD BE MOVED SOMEWHERE ELSE, THIS IS JUST FOR TESTING*/
-
     std::chrono::steady_clock::time_point loop_start_load;
     std::chrono::steady_clock::time_point previous_loop_start_load = std::chrono::steady_clock::now();;
     std::chrono::steady_clock::time_point loop_end_load;
     double delta_t = (1. / 60.) * 1000000., accumulated_load = 0.0, accumulated_sleep = 0.0, average_load = 0.0, average_sleep = 0.0;
     int ticks_since_last_update = 0;
 
+    m_render_context->setEditorMode(GUI_MODE_EDITOR);
     m_bt_wrapper->startSimulation(1.f / 60.f, 2);
     m_render_context->start();
     while (!glfwWindowShouldClose(m_window_handler->getWindow())){

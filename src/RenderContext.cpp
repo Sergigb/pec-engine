@@ -28,6 +28,9 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
     m_update_fb = false;
     m_update_projection = false;
 
+    m_gui_mode = GUI_MODE_NONE;
+    m_editor_gui = nullptr;
+
     // shader setup (I don't like how this is organised)
 
     m_pb_notex_shader = create_programme_from_files("../shaders/phong_blinn_color_vs.glsl",
@@ -179,7 +182,12 @@ void RenderContext::render(){
 
         m_debug_overlay->onFramebufferSizeUpdate(m_fb_width, m_fb_height);
 
-        m_gui->onFramebufferSizeUpdate();
+        switch(m_gui_mode){
+            case GUI_MODE_NONE:
+            case GUI_MODE_EDITOR:
+                m_editor_gui->onFramebufferSizeUpdate();
+                break;
+        }
 
         m_update_projection = false;
     }
@@ -217,7 +225,16 @@ void RenderContext::render(){
     end_scene_start_gui = std::chrono::steady_clock::now();
 
     glDisable(GL_DEPTH_TEST);
-    m_gui->render();
+    switch(m_gui_mode){
+        case GUI_MODE_NONE:
+            break;
+        case GUI_MODE_EDITOR:
+            m_editor_gui->render();
+            break;
+        default:
+            std::cerr << "RenderContext::render - Warning, invalid GUI mode (" << m_gui_mode << ")" << std::endl;
+            log("RenderContext::render - Warning, invalid GUI mode (", m_gui_mode, ")");
+    }
     glEnable(GL_DEPTH_TEST);
 
     end_gui = std::chrono::steady_clock::now();
@@ -366,3 +383,14 @@ void RenderContext::getDefaultFbSize(float& width, float& height) const{
     width = m_fb_width;
     height = m_fb_height;
 }
+
+
+void RenderContext::setEditorGUI(BaseGUI* editor_ptr){
+    m_editor_gui = editor_ptr;
+}
+
+
+void RenderContext::setEditorMode(short mode){
+    m_gui_mode = mode;
+}
+

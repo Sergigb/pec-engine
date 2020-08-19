@@ -27,6 +27,10 @@
 #define SHADER_TEXT 3
 #define SHADER_GUI 4
 
+// gui modes, only editor for now
+#define GUI_MODE_NONE 0
+#define GUI_MODE_EDITOR 1
+
 
 class RenderContext{
     private:
@@ -68,6 +72,11 @@ class RenderContext{
         // synchronization
         struct render_buffers* m_buffers;
 
+        // gui
+        BaseGUI* m_editor_gui;
+        // other ones...
+        short m_gui_mode;
+
         void initGl();
         void run();
         void render();
@@ -87,15 +96,14 @@ class RenderContext{
         void bindVao(GLuint vao) const;
         void onFramebufferSizeUpdate(int width, int height);
         void toggleDebugOverlay();
+        void setEditorGUI(BaseGUI* editor_ptr);
+        void setEditorMode(short mode);
 
         GLuint getShader(int shader) const;
         GLuint getBoundShader() const;
         GLuint getBoundVao() const;
         void getDefaultFbSize(float& width, float& height) const;
 
-        /*TEMPORAL*/
-        BaseGUI* m_gui;
-        /*TEMPORAL*/
 };
 
 
