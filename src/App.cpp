@@ -2,31 +2,16 @@
 
 
 App::App() : BaseApp(){
-    modelsInit();
-    objectsInit();
-    loadParts();
-
-    m_render_context->setLightPosition(math::vec3(150.0, 100.0, 0.0));
-
-    m_physics_pause = true;
-    m_picked_obj = nullptr;
-    m_clear_scene = false;
-    m_buffers.last_updated = none;
-    m_vessel_id = 0;
-
-    m_def_font_atlas.reset(new FontAtlas(256));
-    m_def_font_atlas->loadFont("../data/fonts/Liberastika-Regular.ttf", 15);
-    m_def_font_atlas->loadCharacterRange(32, 255); // ascii
-    m_def_font_atlas->loadCharacterRange(913, 1023); // greek and coptic
-    m_def_font_atlas->createAtlas(false);
-
-    m_editor_gui.reset(new EditorGUI(m_def_font_atlas.get(), m_render_context.get(), m_input.get()));
-    m_editor_gui->setMasterPartList(&m_master_parts);
-    m_render_context->setEditorGUI(m_editor_gui.get());
+    init();
 }
 
 
 App::App(int gl_width, int gl_height) : BaseApp(gl_width, gl_height){
+    init();
+}
+
+
+void App::init(){
     modelsInit();
     objectsInit();
     loadParts();

@@ -71,6 +71,7 @@ class App : public BaseApp{
         void getClosestAtt(float& closest_dist, math::vec4& closest_att_point_world, BasePart*& closest, BasePart* part);
         void placeSubTree(float closest_dist, math::vec4& closest_att_point_world, BasePart* closest, BasePart* part);
         void pickObject();
+        void init();
     public:
         App();
         App(int gl_width, int gl_height);
