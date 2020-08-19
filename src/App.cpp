@@ -60,7 +60,7 @@ void App::objectsInit(){
     std::unique_ptr<btCollisionShape> cube_shape_ground(new btBoxShape(btVector3(btScalar(25.), btScalar(25.), btScalar(25.))));
 
     quat.setEuler(0, 0, 0);
-    std::shared_ptr<Object> ground = std::make_shared<Object>(m_terrain_model.get(), m_bt_wrapper.get(), cube_shape_ground.get(), btScalar(0.0), 0);
+    std::shared_ptr<Object> ground = std::make_shared<Object>(m_terrain_model.get(), m_bt_wrapper.get(), cube_shape_ground.get(), btScalar(0.0), 1);
     ground->setCollisionGroup(CG_DEFAULT | CG_KINEMATIC);
     ground->setCollisionFilters(~CG_RAY_EDITOR_RADIAL); // by default, do not collide with radial attach. ray tests
     ground->addBody(btVector3(0.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0), quat);
@@ -80,7 +80,7 @@ void App::loadParts(){
 
     int howmany = 35;
     for(int i=0; i<howmany; i++){
-        std::uint32_t ID = i; // change in the future to something else
+        std::uint32_t ID = i + 1; // change in the future to something else
 
         std::unique_ptr<BasePart> cube(new BasePart(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btScalar(10.0), ID));
         cube->setColor(math::vec3(1.0-(1./howmany)*i, 0.0, (1./howmany)*i));

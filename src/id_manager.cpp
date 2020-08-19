@@ -38,6 +38,10 @@ short add_id(std::uint32_t id, short set){
         return REQUEST_INVALID_SET;
     }
 
+    if(id == 0){
+        return REQUEST_ID_INVALID;
+    }
+
     std::unordered_set<std::uint32_t>::iterator res = uset_ptr->find(id);
     if(res != uset_ptr->end()){
         return REQUEST_ID_COLLISION;
