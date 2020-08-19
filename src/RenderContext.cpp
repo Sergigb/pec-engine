@@ -131,15 +131,19 @@ void RenderContext::renderAttPoints(const BasePart* part, int& num_rendered, con
         math::mat4 att_transform;
         math::vec3 point;
 
-        point = part->getParentAttachmentPoint()->point;
-        att_transform = body_transform * math::translate(math::identity_mat4(), point);
-        m_att_point_model->setMeshColor(math::vec4(0.0, 1.0, 0.0, 1.0));
-        num_rendered += m_att_point_model->render(att_transform * m_att_point_scale);
+        if(part->hasParentAttPoint()){
+            point = part->getParentAttachmentPoint()->point;
+            att_transform = body_transform * math::translate(math::identity_mat4(), point);
+            m_att_point_model->setMeshColor(math::vec4(0.0, 1.0, 0.0, 1.0));
+            num_rendered += m_att_point_model->render(att_transform * m_att_point_scale);
+        }
 
-        point = part->getFreeAttachmentPoint()->point;
-        att_transform = body_transform * math::translate(math::identity_mat4(), point);
-        m_att_point_model->setMeshColor(math::vec4(0.0, 1.0, 1.0, 1.0));
-        num_rendered += m_att_point_model->render(att_transform * m_att_point_scale);
+        if(part->hasFreeAttPoint()){
+            point = part->getFreeAttachmentPoint()->point;
+            att_transform = body_transform * math::translate(math::identity_mat4(), point);
+            m_att_point_model->setMeshColor(math::vec4(0.0, 1.0, 1.0, 1.0));
+            num_rendered += m_att_point_model->render(att_transform * m_att_point_scale);
+        }
 
         for(uint j=0; j<att_points->size(); j++){
             point = att_points->at(j).point;

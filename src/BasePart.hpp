@@ -29,7 +29,7 @@ class BasePart : public Object{
         BasePart* m_parent;
         std::vector<std::shared_ptr<BasePart>> m_childs;
         Vessel* m_vessel;
-        bool m_is_root;
+        bool m_is_root, m_has_parent_att, m_has_free_att;
     public:
         BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID);
         BasePart(const BasePart& part);
@@ -50,6 +50,8 @@ class BasePart : public Object{
         void setRenderIgnoreSubTree();
         void setRoot(bool root);
         void setCollisionMaskSubTree(short mask);
+        bool hasParentAttPoint() const;
+        bool hasFreeAttPoint() const;
 
         const std::vector<struct attachment_point>* getAttachmentPoints() const;
         btTypedConstraint* getParentConstraint() const;

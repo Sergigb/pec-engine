@@ -7,6 +7,8 @@ BasePart::BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_sh
     m_vessel = nullptr;
     m_is_root = false;
     m_user_rotation = btQuaternion::getIdentity();
+    m_has_parent_att = false;
+    m_has_free_att = false;
 }
 
 
@@ -15,6 +17,8 @@ BasePart::BasePart(){
     m_vessel = nullptr;
     m_is_root = false;
     m_user_rotation = btQuaternion::getIdentity();
+    m_has_parent_att = false;
+    m_has_free_att = false;
 }
 
 
@@ -34,6 +38,8 @@ BasePart::BasePart(const BasePart& part) : Object(part) {
     m_is_root = false;
     m_vessel = nullptr;
     m_user_rotation = btQuaternion::getIdentity();
+    m_has_parent_att = part.m_has_parent_att;
+    m_has_free_att = part.m_has_free_att;
 }
 
 
@@ -44,6 +50,7 @@ void BasePart::addAttachmentPoint(const math::vec3& point, const math::vec3& ori
 
 
 void BasePart::setParentAttachmentPoint(const math::vec3& point, const math::vec3& orientation){
+    m_has_parent_att = true;
     m_parent_att_point = {point, orientation};
 }
 
@@ -226,11 +233,22 @@ void BasePart::setCollisionMaskSubTree(short mask){
 
 
 void BasePart::setFreeAttachmentPoint(const math::vec3& point, const math::vec3& orientation){
+    m_has_free_att = true;
     m_free_att_point = {point, orientation};
 }
 
 
 const struct attachment_point* BasePart::getFreeAttachmentPoint() const{
     return &m_free_att_point;
+}
+
+
+bool BasePart::hasParentAttPoint() const{
+    return m_has_parent_att;
+}
+
+
+bool BasePart::hasFreeAttPoint() const{
+    return m_has_free_att;
 }
 

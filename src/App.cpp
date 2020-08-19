@@ -306,7 +306,7 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
     m_picked_obj->m_body->getMotionState()->getWorldTransform(transform_original);
     rotation = transform_original.getRotation();
 
-    if(closest_dist < 0.05 && !part->isRoot()){ // magnet
+    if(closest_dist < 0.05 && !part->isRoot() && part->hasParentAttPoint()){ // magnet
         btTransform transform_final;
         btVector3 btv3_child_att(part->getParentAttachmentPoint()->point.v[0],
                                  part->getParentAttachmentPoint()->point.v[1],
@@ -389,14 +389,14 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
         getUserRotation(user_rotation, rotation);
         part->m_user_rotation = part->m_user_rotation * user_rotation;
 
-        if(obj && !part->isRoot()){ // free attaching
+        if(obj && !part->isRoot() && part->hasFreeAttPoint()){ // free attaching
             btVector3 btv3_child_att;
             btQuaternion align_rotation;
             math::versor align_rot_q;
             math::mat3 align_rot;
 
             math::vec3 child_att = part->getFreeAttachmentPoint()->point;
-            math::vec3 child_att_orientation(0.0, 0.0, 0.0); // should be rotated by the object's transform???
+            math::vec3 child_att_orientation(0.0, 0.0, 0.0);
             child_att_orientation = child_att_orientation - part->getFreeAttachmentPoint()->orientation; //??DS?D?SADsjfk
             math::vec3 surface_normal = math::vec3(ray_callback.m_hitNormalWorld.getX(),
                                                    ray_callback.m_hitNormalWorld.getY(),
