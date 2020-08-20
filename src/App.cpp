@@ -55,7 +55,7 @@ void App::objectsInit(){
     quat.setEuler(0, 0, 0);
     std::shared_ptr<Object> ground = std::make_shared<Object>(m_terrain_model.get(), m_bt_wrapper.get(), cube_shape_ground.get(), btScalar(0.0), 1);
     ground->setCollisionGroup(CG_DEFAULT | CG_KINEMATIC);
-    ground->setCollisionFilters(~CG_RAY_EDITOR_RADIAL); // by default, do not collide with radial attach. ray tests
+    ground->setCollisionFilters(~CG_RAY_EDITOR_RADIAL & ~CG_RAY_EDITOR_SELECT); // by default, do not collide with radial attach. ray tests
     ground->addBody(btVector3(0.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0), quat);
     m_objects.emplace_back(ground);
 
@@ -473,23 +473,27 @@ void App::pickObject(){
     m_input->getMousePos(mousex, mousey);
     m_camera->castRayMousePos(1000.f, ray_start_world, ray_end_world);
 
-    obj = m_bt_wrapper->testRay(ray_start_world, ray_end_world);
-    if(obj){
-        BasePart* part = dynamic_cast<BasePart*>(obj);
+    btCollisionWorld::ClosestRayResultCallback ray_callback(btVector3(ray_start_world.v[0], ray_start_world.v[1], ray_start_world.v[2]),
+                                                            btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]));
+    ray_callback.m_collisionFilterGroup = CG_RAY_EDITOR_SELECT;
 
-        if(part){
-            m_picked_obj = obj; // quick fix - USE COLLISION GROUPS!!!!!!
-            if(part->getVessel() == nullptr){
-                while(part->getParent() != nullptr){
-                   part = part->getParent();
-                }
-                m_picked_obj = part;
+    obj = m_bt_wrapper->testRay(ray_callback, 
+                                btVector3(ray_start_world.v[0], ray_start_world.v[1], ray_start_world.v[2]),
+                                btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]));
+    if(obj){
+        BasePart* part = static_cast<BasePart*>(obj);
+
+        m_picked_obj = obj;
+        if(part->getVessel() == nullptr){
+            while(part->getParent() != nullptr){
+               part = part->getParent();
             }
-            else{ // we are certainly detaching a part from the vessel
-                if(!part->isRoot()){ // ignore root
-                    m_remove_part_constraint_buffer.emplace_back(part);
-                    m_subtrees.emplace_back(m_vessels.at(part->getVessel()->getId())->removeChild(part));
-                }
+            m_picked_obj = part;
+        }
+        else{ // we are certainly detaching a part from the vessel
+            if(!part->isRoot()){ // ignore root
+                m_remove_part_constraint_buffer.emplace_back(part);
+                m_subtrees.emplace_back(m_vessels.at(part->getVessel()->getId())->removeChild(part));
             }
         }
     }
@@ -498,22 +502,20 @@ void App::pickObject(){
 
 void App::logic(){
     if(m_picked_obj){
-        BasePart* part = dynamic_cast<BasePart*>(m_picked_obj);
+        BasePart* part = static_cast<BasePart*>(m_picked_obj);
 
-        if(part){
-            float closest_dist = 99999999999.9;;
-            math::vec4 closest_att_point_world;
-            BasePart* closest = nullptr;
+        float closest_dist = 99999999999.9;;
+        math::vec4 closest_att_point_world;
+        BasePart* closest = nullptr;
 
-            if(m_vessel_id != 0){
-                getClosestAtt(closest_dist, closest_att_point_world, closest, part);
-            }
-            placeSubTree(closest_dist, closest_att_point_world, closest, part);
+        if(m_vessel_id != 0){
+            getClosestAtt(closest_dist, closest_att_point_world, closest, part);
+        }
+        placeSubTree(closest_dist, closest_att_point_world, closest, part);
 
-            if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){
-                m_picked_obj->activate(true);
-                m_picked_obj = nullptr;
-            }
+        if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){
+            m_picked_obj->activate(true);
+            m_picked_obj = nullptr;
         }
     }
     else{ // if not picked object

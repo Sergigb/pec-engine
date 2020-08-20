@@ -23,7 +23,8 @@
 #define CG_KINEMATIC 4
 #define CG_PART 8
 #define CG_RAY 16
-#define CG_RAY_EDITOR_RADIAL 32 // editor radial attaching
+#define CG_RAY_EDITOR_SELECT 32
+#define CG_RAY_EDITOR_RADIAL 64 // editor radial attaching
 
 
 class Object;
