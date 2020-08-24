@@ -170,7 +170,9 @@ void App::run(){
         m_window_handler->update();
         m_camera->update();
         m_frustum->extractPlanes(m_camera->getViewMatrix(), m_camera->getProjMatrix(), false);
-        m_gui_action = m_editor_gui->update();
+        if(!m_render_context->imGuiWantCaptureMouse()){
+            m_gui_action = m_editor_gui->update();
+        }        
 
         logic();
 
@@ -311,7 +313,7 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
         btVector3 disp = transform_final.getOrigin() - transform_original.getOrigin();
         part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, transform_original.getOrigin(), part->m_user_rotation * rotation.inverse());
 
-        if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){ // user has decided to attach the object to the parent
+        if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
             btTransform parent_transform, frame_child;
 
             closest->m_body->getMotionState()->getWorldTransform(parent_transform);
@@ -412,7 +414,7 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
             btVector3 disp = transform_final.getOrigin() - transform_original.getOrigin();
             part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, transform_original.getOrigin(), align_rotation * part->m_user_rotation * rotation.inverse());
 
-            if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){ // user has decided to attach the object to the parent
+            if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
                 btTransform parent_transform;
                 BasePart* parent = static_cast<BasePart*>(obj);
 
@@ -513,13 +515,13 @@ void App::logic(){
         }
         placeSubTree(closest_dist, closest_att_point_world, closest, part);
 
-        if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){
+        if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
             m_picked_obj->activate(true);
             m_picked_obj = nullptr;
         }
     }
     else{ // if not picked object
-        if(!m_gui_action && m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && m_physics_pause){ // scene has the focus
+        if(!m_gui_action && m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && m_physics_pause && !m_render_context->imGuiWantCaptureMouse()){ // scene has the focus
             pickObject();
         }
     }
