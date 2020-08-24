@@ -20,6 +20,8 @@
 
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/btBulletDynamicsCommon.h>
+#include <imgui.h>
+#include <imgui_impl_opengl3.h>
 
 
 #define SHADER_PHONG_BLINN 1
@@ -77,10 +79,14 @@ class RenderContext{
         // other ones...
         short m_gui_mode;
 
+        double m_glfw_time;
+
         void initGl();
+        void initImgui();
         void run();
         void render();
         void renderAttPoints(const BasePart* part, int& num_rendered, const math::mat4& body_transform);
+        void testImgui();
     public:
         RenderContext(const Camera* camera, const WindowHandler* window_handler, render_buffers* buff_manager);
         ~RenderContext();

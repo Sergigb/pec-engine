@@ -13,6 +13,7 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
 
     initGl();
     log_gl_params();
+    initImgui();
 
     m_att_point_scale = math::identity_mat4();
     m_att_point_scale.m[0] = 0.25;
@@ -30,6 +31,8 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
 
     m_gui_mode = GUI_MODE_NONE;
     m_editor_gui = nullptr;
+
+    m_glfw_time = 0.0;
 
     // shader setup (I don't like how this is organised)
 
@@ -124,6 +127,22 @@ void RenderContext::initGl(){
         log("MSAA is available with ", samples, " samples");
     else
         log("MSAA is unavailable");
+}
+
+
+void RenderContext::initImgui(){
+    IMGUI_CHECKVERSION();
+    ImGui::CreateContext();
+    ImGuiIO& io = ImGui::GetIO(); (void)io;
+
+
+    ImGui::StyleColorsDark();
+    //ImGui::StyleColorsClassic();
+    ImGui_ImplOpenGL3_Init("#version 410");
+    
+    //io.Fonts->AddFontDefault();
+    io.Fonts->AddFontFromFileTTF("../data/fonts/Liberastika-Regular.ttf", 16.0f);
+    io.Fonts->Build();
 }
 
 
@@ -243,6 +262,8 @@ void RenderContext::render(){
     std::chrono::duration<double, std::micro> load_time_gui = end_gui - end_scene_start_gui;
     m_rscene_acc_load_time += load_time_scene.count();
     m_rgui_acc_load_time += load_time_gui.count();
+
+    testImgui();
 
     if(m_draw_overlay){
         m_debug_overlay->setRenderedObjects(num_rendered);
@@ -392,5 +413,54 @@ void RenderContext::setEditorGUI(BaseGUI* editor_ptr){
 
 void RenderContext::setEditorMode(short mode){
     m_gui_mode = mode;
+}
+
+
+void RenderContext::testImgui(){
+    // testing imgui
+    int w, h, display_w, display_h;
+    double current_time = glfwGetTime();
+    ImGuiIO& io = ImGui::GetIO();
+
+    ImGui_ImplOpenGL3_NewFrame();
+
+    glfwGetWindowSize(m_window_handler->getWindow(), &w, &h);
+    glfwGetFramebufferSize(m_window_handler->getWindow(), &display_w, &display_h);
+    io.DisplaySize = ImVec2((float)w, (float)h);
+    if(w > 0 && h > 0){
+        io.DisplayFramebufferScale = ImVec2((float)display_w / w, (float)display_h / h);
+    }
+    io.DeltaTime = m_glfw_time > 0.0 ? (float)(current_time - m_glfw_time) : (float)(1.0f / 60.0f);
+    m_glfw_time = current_time;
+
+    ImGui::NewFrame();
+
+    {
+        static float f = 0.0f;
+        static int counter = 0;
+        bool a, b;
+        float col[] = {0.5, 0.5, 0.5};
+
+        ImGui::Begin("Hello, world!");
+
+        ImGui::Text("This is some useful text.");
+        ImGui::Checkbox("Demo Window", &a);
+        ImGui::Checkbox("Another Window", &b);
+
+        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
+        ImGui::ColorEdit3("clear color", col);
+
+        if (ImGui::Button("Button")){
+            counter++;
+        }
+        ImGui::SameLine();
+        ImGui::Text("counter = %d", counter);
+
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
+        ImGui::End();
+    }
+
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
