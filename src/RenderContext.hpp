@@ -22,6 +22,7 @@
 #include <bullet/btBulletDynamicsCommon.h>
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
+#include <imgui_impl_glfw.h>
 
 
 #define SHADER_PHONG_BLINN 1

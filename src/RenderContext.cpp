@@ -95,6 +95,7 @@ RenderContext::~RenderContext(){
     glDeleteShader(m_pb_notex_shader);
     glDeleteShader(m_pb_shader);
     glDeleteShader(m_text_shader);
+    glDeleteShader(m_gui_shader);
 }
 
 
@@ -135,12 +136,10 @@ void RenderContext::initImgui(){
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO(); (void)io;
 
-
     ImGui::StyleColorsDark();
-    //ImGui::StyleColorsClassic();
+    ImGui_ImplGlfw_InitForOpenGL(m_window_handler->getWindow(), true);
     ImGui_ImplOpenGL3_Init("#version 410");
     
-    //io.Fonts->AddFontDefault();
     io.Fonts->AddFontFromFileTTF("../data/fonts/Liberastika-Regular.ttf", 16.0f);
     io.Fonts->Build();
 }
@@ -380,6 +379,10 @@ void RenderContext::run(){
 
         glfwSwapBuffers(m_window_handler->getWindow());
     }
+
+    ImGui_ImplOpenGL3_Shutdown();
+    ImGui_ImplGlfw_Shutdown();
+    ImGui::DestroyContext();
 }
 
 
@@ -418,29 +421,17 @@ void RenderContext::setEditorMode(short mode){
 
 void RenderContext::testImgui(){
     // testing imgui
-    int w, h, display_w, display_h;
-    double current_time = glfwGetTime();
-    ImGuiIO& io = ImGui::GetIO();
-
     ImGui_ImplOpenGL3_NewFrame();
-
-    glfwGetWindowSize(m_window_handler->getWindow(), &w, &h);
-    glfwGetFramebufferSize(m_window_handler->getWindow(), &display_w, &display_h);
-    io.DisplaySize = ImVec2((float)w, (float)h);
-    if(w > 0 && h > 0){
-        io.DisplayFramebufferScale = ImVec2((float)display_w / w, (float)display_h / h);
-    }
-    io.DeltaTime = m_glfw_time > 0.0 ? (float)(current_time - m_glfw_time) : (float)(1.0f / 60.0f);
-    m_glfw_time = current_time;
-
+    ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
     {
         static float f = 0.0f;
         static int counter = 0;
-        bool a, b;
-        float col[] = {0.5, 0.5, 0.5};
+        static bool a = false, b = true;
+        static float col[] = {0.5, 0.5, 0.5};
 
+        //ImGui::SetNextWindowPos(ImVec2(500, 500));
         ImGui::Begin("Hello, world!");
 
         ImGui::Text("This is some useful text.");
