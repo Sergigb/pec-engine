@@ -110,7 +110,8 @@ class RenderContext{
         GLuint getBoundShader() const;
         GLuint getBoundVao() const;
         void getDefaultFbSize(float& width, float& height) const;
-
+        bool imGuiWantCaptureMouse() const;
+        bool imGuiWantCaptureKeyboard() const;
 };
 
 

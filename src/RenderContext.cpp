@@ -455,3 +455,17 @@ void RenderContext::testImgui(){
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
 
+
+bool RenderContext::imGuiWantCaptureMouse() const{
+    ImGuiIO& io = ImGui::GetIO();
+
+    return io.WantCaptureMouse;
+}
+
+
+bool RenderContext::imGuiWantCaptureKeyboard() const{
+    ImGuiIO& io = ImGui::GetIO();
+
+    return io.WantCaptureKeyboard;
+}
+
