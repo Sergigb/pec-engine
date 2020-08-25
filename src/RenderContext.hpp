@@ -56,7 +56,7 @@ class RenderContext{
 
         std::unique_ptr<DebugOverlay> m_debug_overlay;
 
-        float m_bg_r, m_bg_g, m_bg_b, m_bg_a;
+        math::vec4 m_color_clear;
         const Camera* m_camera;
         const WindowHandler* m_window_handler;
         
@@ -87,7 +87,7 @@ class RenderContext{
         void run();
         void render();
         void renderAttPoints(const BasePart* part, int& num_rendered, const math::mat4& body_transform);
-        void testImgui();
+        void renderImGui();
     public:
         RenderContext(const Camera* camera, const WindowHandler* window_handler, render_buffers* buff_manager);
         ~RenderContext();

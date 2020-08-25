@@ -79,12 +79,9 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
     m_debug_overlay.reset(new DebugOverlay(fb_width, fb_height, this));
 
     // other gl stuff
-    m_bg_r = 0.2;
-    m_bg_g = 0.2;
-    m_bg_b = 0.2;
-    m_bg_a = 1.;
+    m_color_clear = math::vec4(0.2f, 0.2f, 0.2f, 1.0f);
 
-    glClearColor(m_bg_r, m_bg_g, m_bg_b, m_bg_a);
+    glClearColor(m_color_clear.v[0], m_color_clear.v[1], m_color_clear.v[2], m_color_clear.v[3]);
 
     m_rscene_acc_load_time = 0.0;
     m_rgui_acc_load_time = 0.0;
@@ -210,7 +207,7 @@ void RenderContext::render(){
         m_update_projection = false;
     }
 
-    glClearColor(m_bg_r, m_bg_g, m_bg_b, m_bg_a);
+    glClearColor(m_color_clear.v[0], m_color_clear.v[1], m_color_clear.v[2], m_color_clear.v[3]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     start_scene = std::chrono::steady_clock::now();
@@ -262,7 +259,7 @@ void RenderContext::render(){
     m_rscene_acc_load_time += load_time_scene.count();
     m_rgui_acc_load_time += load_time_gui.count();
 
-    testImgui();
+    renderImGui();
 
     if(m_draw_overlay){
         m_debug_overlay->setRenderedObjects(num_rendered);
@@ -419,36 +416,27 @@ void RenderContext::setEditorMode(short mode){
 }
 
 
-void RenderContext::testImgui(){
-    // testing imgui
+void RenderContext::renderImGui(){
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    {
-        static float f = 0.0f;
-        static int counter = 0;
-        static bool a = false, b = true;
-        static float col[] = {0.5, 0.5, 0.5};
-
-        //ImGui::SetNextWindowPos(ImVec2(500, 500));
-        ImGui::Begin("Hello, world!");
-
-        ImGui::Text("This is some useful text.");
-        ImGui::Checkbox("Demo Window", &a);
-        ImGui::Checkbox("Another Window", &b);
-
-        ImGui::SliderFloat("float", &f, 0.0f, 1.0f);
-        ImGui::ColorEdit3("clear color", col);
-
-        if (ImGui::Button("Button")){
-            counter++;
+    /*This is okay for now, but might not be correct in the future*/
+    if(m_buffers->last_updated != none){
+        if(m_buffers->last_updated == buffer_1){
+            m_buffers->buffer1_lock.lock();
+            for(uint i=0; i<m_buffers->buffer1.size(); i++){
+                m_buffers->buffer1.at(i).object_ptr.get()->renderOther();
+            }
+            m_buffers->buffer1_lock.unlock();
         }
-        ImGui::SameLine();
-        ImGui::Text("counter = %d", counter);
-
-        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
-        ImGui::End();
+        else{
+            m_buffers->buffer2_lock.lock();
+            for(uint i=0; i<m_buffers->buffer2.size(); i++){
+                m_buffers->buffer2.at(i).object_ptr.get()->renderOther();
+            }
+            m_buffers->buffer2_lock.unlock();
+        }
     }
 
     ImGui::Render();
