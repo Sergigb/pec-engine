@@ -66,11 +66,14 @@ class Object : public std::enable_shared_from_this<Object>{
         void activate(bool activate);
         virtual int render();
         virtual int render(math::mat4 body_transform);
+        virtual void renderOther(); // gui, other stuff
         void setRenderIgnore(); // call this when the object needs to be destroyed so the physics thread doesn't include it in the render buffers
         void setAlpha(float alpha);
         // call these before the object is added to the dynamics world
         void setCollisionGroup(short cg_group);
         void setCollisionFilters(short cg_filters);
+
+        virtual void onEditorRightMouseButton();
 };
 
 

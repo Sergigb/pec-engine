@@ -6,6 +6,7 @@
 
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/btBulletDynamicsCommon.h>
+#include <imgui.h>
 
 #include "Object.hpp"
 #include "maths_funcs.hpp"
@@ -30,6 +31,7 @@ class BasePart : public Object{
         std::vector<std::shared_ptr<BasePart>> m_childs;
         Vessel* m_vessel;
         bool m_is_root, m_has_parent_att, m_has_free_att;
+        bool m_show_editor_menu;
     public:
         BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID);
         BasePart(const BasePart& part);
@@ -65,6 +67,9 @@ class BasePart : public Object{
         // I don't know if I should make these private (friending Vessel)
         BasePart* getParent() const;
         std::vector<std::shared_ptr<BasePart>>* getChilds();
+
+        virtual void renderOther();
+        virtual void onEditorRightMouseButton();
 
         btQuaternion m_user_rotation;
 };

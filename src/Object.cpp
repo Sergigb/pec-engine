@@ -253,3 +253,14 @@ short Object::getCollisionFilters() const{
     return m_col_filters;
 }
 
+
+void Object::renderOther(){
+
+}
+
+
+void Object::onEditorRightMouseButton(){
+
+}
+
+

@@ -9,6 +9,7 @@ BasePart::BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_sh
     m_user_rotation = btQuaternion::getIdentity();
     m_has_parent_att = false;
     m_has_free_att = false;
+    m_show_editor_menu = false;
 }
 
 
@@ -19,6 +20,7 @@ BasePart::BasePart(){
     m_user_rotation = btQuaternion::getIdentity();
     m_has_parent_att = false;
     m_has_free_att = false;
+    m_show_editor_menu = false;
 }
 
 
@@ -40,6 +42,7 @@ BasePart::BasePart(const BasePart& part) : Object(part) {
     m_user_rotation = btQuaternion::getIdentity();
     m_has_parent_att = part.m_has_parent_att;
     m_has_free_att = part.m_has_free_att;
+    m_show_editor_menu = false;
 }
 
 
@@ -250,5 +253,25 @@ bool BasePart::hasParentAttPoint() const{
 
 bool BasePart::hasFreeAttPoint() const{
     return m_has_free_att;
+}
+
+
+void BasePart::renderOther(){
+    if(m_show_editor_menu){
+        ImVec2 mousepos = ImGui::GetMousePos();
+
+        ImGui::SetNextWindowPos(mousepos, ImGuiCond_Appearing);
+        ImGui::SetNextWindowSize(ImVec2(300.f, 200.f), ImGuiCond_Appearing);
+        ImGui::Begin(m_fancy_name.c_str(), &m_show_editor_menu);
+
+        ImGui::ColorEdit3("Mesh color", m_mesh_color.v);
+
+        ImGui::End();
+    }
+}
+
+
+void BasePart::onEditorRightMouseButton(){
+    m_show_editor_menu = true;
 }
 
