@@ -262,7 +262,7 @@ void App::getClosestAtt(float& closest_dist, math::vec4& closest_att_point_world
 
 
 void App::getUserRotation(btQuaternion& rotation, const btQuaternion& current_rotation){
-    if(m_input->keyboardPressed()){
+    if(m_input->keyboardPressed() && !m_render_context->imGuiWantCaptureKeyboard()){
         if(m_input->pressed_keys[GLFW_KEY_U] & INPUT_KEY_DOWN){
             rotation.setEuler(M_PI/2.0, 0., 0.);
         }
@@ -558,7 +558,7 @@ void App::logic(){
     }
 
     // other input
-    if(m_input->pressed_keys[GLFW_KEY_P] == INPUT_KEY_DOWN){
+    if(m_input->pressed_keys[GLFW_KEY_P] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
         m_physics_pause = !m_physics_pause;
         m_bt_wrapper->pauseSimulation(m_physics_pause);
         if(m_picked_obj){
@@ -567,12 +567,16 @@ void App::logic(){
         }
     }
 
-    if(m_input->pressed_keys[GLFW_KEY_F12] == INPUT_KEY_DOWN){
+    if(m_input->pressed_keys[GLFW_KEY_F12] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
         m_render_context->toggleDebugOverlay();
     }
 
-    if(m_input->pressed_keys[GLFW_KEY_F] == INPUT_KEY_DOWN){
+    if(m_input->pressed_keys[GLFW_KEY_F] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
         m_clear_scene = true;
+    }
+
+    if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse() && !m_gui_action){
+        onLeftMouseButton();
     }
 }
 
@@ -621,5 +625,27 @@ void App::clearScene(){
     m_clear_scene = false;
     m_picked_obj = nullptr;
     m_vessel_id = 0;
+}
+
+
+void App::onLeftMouseButton(){
+    math::vec3 ray_start_world, ray_end_world;
+    Object* obj;
+    BasePart* part;
+
+    m_camera->castRayMousePos(1000.f, ray_start_world, ray_end_world);
+
+    btCollisionWorld::ClosestRayResultCallback ray_callback(btVector3(ray_start_world.v[0], ray_start_world.v[1], ray_start_world.v[2]),
+                                                            btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]));
+    ray_callback.m_collisionFilterGroup = CG_RAY_EDITOR_SELECT;
+
+    obj = m_bt_wrapper->testRay(ray_callback, 
+                                btVector3(ray_start_world.v[0], ray_start_world.v[1], ray_start_world.v[2]),
+                                btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]));
+
+    if(obj){
+        part = static_cast<BasePart*>(obj);
+        part->onEditorRightMouseButton();
+    }
 }
 
