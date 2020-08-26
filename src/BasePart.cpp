@@ -81,7 +81,7 @@ void BasePart::removeParentConstraint(){
 }
 
 
-btTypedConstraint* BasePart::getParentConstraint() const{
+const btTypedConstraint* BasePart::getParentConstraint() const{
     return m_parent_constraint.get();
 }
 
@@ -148,7 +148,11 @@ void BasePart::updateSubTreeMotionState(std::vector<struct set_motion_state_msg>
 }
 
 
-BasePart* BasePart::getParent() const{
+const BasePart* BasePart::getParent() const{
+    return m_parent;
+}
+
+BasePart* BasePart::getParent(){
     return m_parent;
 }
 

@@ -56,7 +56,7 @@ class BasePart : public Object{
         bool hasFreeAttPoint() const;
 
         const std::vector<struct attachment_point>* getAttachmentPoints() const;
-        btTypedConstraint* getParentConstraint() const;
+        const btTypedConstraint* getParentConstraint() const;
         const struct attachment_point* getParentAttachmentPoint() const;
         const struct attachment_point* getFreeAttachmentPoint() const;
         const Vessel* getVessel() const;
@@ -65,7 +65,8 @@ class BasePart : public Object{
         int render(math::mat4 body_transform);
 
         // I don't know if I should make these private (friending Vessel)
-        BasePart* getParent() const;
+        const BasePart* getParent() const;
+        BasePart* getParent();
         const std::vector<std::shared_ptr<BasePart>>* getChilds();
 
         virtual void renderOther();
