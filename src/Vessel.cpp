@@ -44,12 +44,27 @@ void Vessel::onTreeUpdate(){
 }
 
 
-BasePart* Vessel::getRoot() const{
+BasePart* Vessel::getRoot(){
     return m_vessel_root.get();
 }
 
 
-BasePart* Vessel::getPartById(std::uint32_t id) const{
+BasePart* Vessel::getPartById(std::uint32_t id){
+    try{
+        return m_node_map_by_id.at(id);
+    }
+    catch(const std::out_of_range &err){
+        return nullptr;
+    }
+}
+
+
+const BasePart* Vessel::getRoot() const{
+    return m_vessel_root.get();
+}
+
+
+const BasePart* Vessel::getPartById(std::uint32_t id) const{
     try{
         return m_node_map_by_id.at(id);
     }
@@ -98,6 +113,11 @@ void Vessel::updateNodes(){
 
 
 std::vector<BasePart*>* Vessel::getParts(){
+    return &m_node_list;
+}
+
+
+const std::vector<BasePart*>* Vessel::getParts() const{
     return &m_node_list;
 }
 

@@ -38,11 +38,14 @@ class Vessel{
 
         void onTreeUpdate();
 
-        BasePart* getRoot() const;
-        BasePart* getPartById(std::uint32_t id) const;
+        BasePart* getRoot();
+        BasePart* getPartById(std::uint32_t id);
+        const BasePart* getRoot() const;
+        const BasePart* getPartById(std::uint32_t id) const;
         const std::string getVesselName() const;
         const std::string getVesselDescription() const;
         std::vector<BasePart*>* getParts();
+        const std::vector<BasePart*>* getParts() const;
         std::uint32_t getId() const;
         void printVessel() const;
 };

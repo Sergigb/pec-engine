@@ -67,7 +67,8 @@ class BasePart : public Object{
         // I don't know if I should make these private (friending Vessel)
         const BasePart* getParent() const;
         BasePart* getParent();
-        const std::vector<std::shared_ptr<BasePart>>* getChilds();
+        std::vector<std::shared_ptr<BasePart>>* getChilds();
+        const std::vector<std::shared_ptr<BasePart>>* getChilds() const;
 
         virtual void renderOther();
         virtual void onEditorRightMouseButton();

@@ -152,12 +152,18 @@ const BasePart* BasePart::getParent() const{
     return m_parent;
 }
 
+
 BasePart* BasePart::getParent(){
     return m_parent;
 }
 
 
-const std::vector<std::shared_ptr<BasePart>>* BasePart::getChilds(){
+std::vector<std::shared_ptr<BasePart>>* BasePart::getChilds(){
+    return &m_childs;
+}
+
+
+const std::vector<std::shared_ptr<BasePart>>* BasePart::getChilds() const{
     return &m_childs;
 }
 
