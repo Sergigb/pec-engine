@@ -59,14 +59,14 @@ class BasePart : public Object{
         btTypedConstraint* getParentConstraint() const;
         const struct attachment_point* getParentAttachmentPoint() const;
         const struct attachment_point* getFreeAttachmentPoint() const;
-        Vessel* getVessel() const;
+        const Vessel* getVessel() const;
         bool isRoot() const;
         int render();
         int render(math::mat4 body_transform);
 
         // I don't know if I should make these private (friending Vessel)
         BasePart* getParent() const;
-        std::vector<std::shared_ptr<BasePart>>* getChilds();
+        const std::vector<std::shared_ptr<BasePart>>* getChilds();
 
         virtual void renderOther();
         virtual void onEditorRightMouseButton();

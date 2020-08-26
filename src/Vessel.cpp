@@ -85,7 +85,7 @@ void Vessel::updateNodes(){
     m_node_map_by_id[current->getUniqueId()] = current;
 
     while(!to_visit.empty()){
-        std::vector<std::shared_ptr<BasePart>>* current_childs = current->getChilds();
+        const std::vector<std::shared_ptr<BasePart>>* current_childs = current->getChilds();
         for(uint i=0; i < current_childs->size(); i++){
             m_node_list.insert(m_node_list.end(), current_childs->at(i).get());
             m_node_map_by_id[current_childs->at(i)->getUniqueId()] = current_childs->at(i).get();
@@ -107,11 +107,11 @@ std::uint32_t Vessel::getId() const{
 }
 
 
-std::string vertical_and_right = "\u251C";
-std::string horizontal = "\u2500\u2500\u2500";
-std::string vertical = "\u2502";
-std::string up_and_right = "\u2514";
-std::string separator = "    ";
+const std::string vertical_and_right = "\u251C";
+const std::string horizontal = "\u2500\u2500\u2500";
+const std::string vertical = "\u2502";
+const std::string up_and_right = "\u2514";
+const std::string separator = "    ";
 
 void print_tree_member(BasePart *node, std::string tail, bool last_child){
     std::string part_name;
@@ -156,9 +156,9 @@ bool Vessel::addChildById(std::shared_ptr<BasePart>& child, std::uint32_t parent
     }
     catch(const std::out_of_range& oor){
         std::cerr << "Vessel::addChildById - could not add child because the parent ID " << parent_id 
-                  << " does not belong to this vessel" << m_vessel_id << " - " << oor.what() << std::endl;    
+                  << " does not belong to this vessel (" << m_vessel_id << " - " << oor.what() << std::endl;    
         log("Vessel::addChildById - could not add child because the parent ID ", parent_id, 
-            " does not belong to this vessel", m_vessel_id, " - ", oor.what());
+            " does not belong to this vessel (", m_vessel_id, ") - ", oor.what());
 
         return false;
     }
