@@ -23,6 +23,7 @@ void App::init(){
     m_clear_scene = false;
     m_buffers.last_updated = none;
     m_vessel_id = 0;
+    m_delete_current = false;
 
     m_def_font_atlas.reset(new FontAtlas(256));
     m_def_font_atlas->loadFont("../data/fonts/Liberastika-Regular.ttf", 15);
@@ -159,6 +160,9 @@ void App::run(){
         if(m_clear_scene){
             clearScene();
         }
+        if(m_delete_current){
+            deleteCurrent();
+        }
 
         {  //wake up physics thread
             std::unique_lock<std::mutex> lck2(m_thread_monitor.mtx_start);
@@ -172,7 +176,7 @@ void App::run(){
         m_frustum->extractPlanes(m_camera->getViewMatrix(), m_camera->getProjMatrix(), false);
         if(!m_render_context->imGuiWantCaptureMouse()){
             m_gui_action = m_editor_gui->update();
-        }        
+        }
 
         logic();
 
@@ -503,7 +507,7 @@ void App::pickObject(){
 
 
 void App::logic(){
-    if(m_picked_obj){
+    if(m_picked_obj && m_gui_action != EDITOR_ACTION_DELETE){
         BasePart* part = static_cast<BasePart*>(m_picked_obj);
 
         float closest_dist = 99999999999.9;;
@@ -555,6 +559,10 @@ void App::logic(){
             m_subtrees.emplace_back(part);
             m_picked_obj = part.get();
         }
+    }
+
+    if(m_gui_action == EDITOR_ACTION_DELETE && m_physics_pause){
+        m_delete_current = true;
     }
 
     // other input
@@ -624,7 +632,6 @@ void App::clearScene(){
     m_vessel_id = 0;
     m_clear_scene = false;
     m_picked_obj = nullptr;
-    m_vessel_id = 0;
 }
 
 
@@ -647,5 +654,39 @@ void App::onLeftMouseButton(){
         part = static_cast<BasePart*>(obj);
         part->onEditorRightMouseButton();
     }
+}
+
+
+void App::deleteCurrent(){
+    /*In the future a command buffer should be used to delete multiple subtrees/vessels*/
+    BasePart* part;
+
+    m_delete_current = false;
+
+    if(!m_picked_obj){
+        return;
+    }
+
+    part = static_cast<BasePart*>(m_picked_obj);
+
+    if(part->getVessel()){
+        std::uint32_t vid = part->getVessel()->getId();
+
+        m_vessels.at(vid)->getRoot()->setRenderIgnoreSubTree();
+        m_vessels.erase(vid);
+        if(m_vessel_id == vid){
+            m_vessel_id = 0;
+        }
+    }
+    else{
+        for(uint i=0; i < m_subtrees.size(); i++){
+            if(m_subtrees.at(i).get() == part){
+                m_subtrees.at(i)->setRenderIgnoreSubTree();
+                m_subtrees.erase(m_subtrees.begin()+i);
+                break;
+            }
+        }
+    }
+    m_picked_obj = nullptr;
 }
 

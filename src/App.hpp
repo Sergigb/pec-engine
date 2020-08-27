@@ -29,14 +29,14 @@ class App : public BaseApp{
         std::unique_ptr<Model> m_cylinder_model;
 
         // game state
-        bool m_physics_pause, m_clear_scene;
+        bool m_physics_pause, m_clear_scene, m_delete_current;
         Object* m_picked_obj;
 
         std::vector<std::unique_ptr<btCollisionShape>> m_collision_shapes;
 
         //...
         std::vector<std::shared_ptr<Object>> m_objects;
-        std::vector<std::shared_ptr<BasePart>> m_subtrees;
+        std::vector<std::shared_ptr<BasePart>> m_subtrees; // should be a map..
         std::map<std::uint32_t, std::shared_ptr<Vessel>> m_vessels;
         std::uint32_t m_vessel_id;
 
@@ -69,6 +69,7 @@ class App : public BaseApp{
         void logic();
         void processCommandBuffers();
         void clearScene();
+        void deleteCurrent();
         void getClosestAtt(float& closest_dist, math::vec4& closest_att_point_world, BasePart*& closest, BasePart* part);
         void placeSubTree(float closest_dist, math::vec4& closest_att_point_world, BasePart* closest, BasePart* part);
         void pickObject();
