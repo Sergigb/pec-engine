@@ -36,7 +36,8 @@ class App : public BaseApp{
 
         //...
         std::vector<std::shared_ptr<Object>> m_objects;
-        std::vector<std::shared_ptr<BasePart>> m_subtrees; // should be a map..
+        //std::vector<std::shared_ptr<BasePart>> m_subtrees;
+        std::map<std::uint32_t, std::shared_ptr<BasePart>> m_subtrees;
         std::map<std::uint32_t, std::shared_ptr<Vessel>> m_vessels;
         std::uint32_t m_vessel_id;
 

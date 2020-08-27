@@ -358,11 +358,12 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
             std::shared_ptr<BasePart> part_sptr = std::dynamic_pointer_cast<BasePart>(part->getSharedPtr());
             m_vessels.at(closest->getVessel()->getId())->addChildById(part_sptr, closest->getUniqueId());
 
-            for(uint i=0; i < m_subtrees.size(); i++){
+           /* for(uint i=0; i < m_subtrees.size(); i++){
                 if(m_subtrees.at(i).get() == part){
                     m_subtrees.erase(m_subtrees.begin() + i);
                 }
-            }
+            }*/
+            m_subtrees.erase(part->getUniqueId());
         }
     }
     else{
@@ -454,11 +455,13 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
                 std::shared_ptr<BasePart> part_sptr = std::dynamic_pointer_cast<BasePart>(part->getSharedPtr());
                 m_vessels.at(parent->getVessel()->getId())->addChildById(part_sptr, parent->getUniqueId());
 
-                for(uint i=0; i < m_subtrees.size(); i++){
+                /*for(uint i=0; i < m_subtrees.size(); i++){
                     if(m_subtrees.at(i).get() == part){
                         m_subtrees.erase(m_subtrees.begin() + i);
                     }
-                }
+                }*/
+                m_subtrees.erase(part->getUniqueId());
+
             }
         }
         else{
@@ -499,7 +502,8 @@ void App::pickObject(){
         else{ // we are certainly detaching a part from the vessel
             if(!part->isRoot()){ // ignore root
                 m_remove_part_constraint_buffer.emplace_back(part);
-                m_subtrees.emplace_back(m_vessels.at(part->getVessel()->getId())->removeChild(part));
+                //m_subtrees.emplace_back(m_vessels.at(part->getVessel()->getId())->removeChild(part));
+                m_subtrees.insert({part->getUniqueId(), m_vessels.at(part->getVessel()->getId())->removeChild(part)});
             }
         }
     }
@@ -556,7 +560,8 @@ void App::logic(){
             m_add_body_buffer.emplace_back(add_body_msg{part.get(), btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]),
                                            btVector3(0.0, 0.0, 0.0), btQuaternion::getIdentity()});
 
-            m_subtrees.emplace_back(part);
+            //m_subtrees.emplace_back(part);
+            m_subtrees.insert({part->getUniqueId(), part});
             m_picked_obj = part.get();
         }
     }
@@ -583,7 +588,7 @@ void App::logic(){
         m_clear_scene = true;
     }
 
-    if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse() && !m_gui_action){
+    if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2] & INPUT_MBUTTON_RELEASE && !m_render_context->imGuiWantCaptureMouse() && !m_gui_action){
         onLeftMouseButton();
     }
 }
@@ -620,11 +625,16 @@ void App::processCommandBuffers(){
 
 
 void App::clearScene(){
-    for(uint i=0; i < m_subtrees.size(); i++){
+    /*for(uint i=0; i < m_subtrees.size(); i++){
         m_subtrees.at(i)->setRenderIgnoreSubTree();
+    }*/
+    std::map<std::uint32_t, std::shared_ptr<BasePart>>::iterator it;
+
+    for(it=m_subtrees.begin(); it != m_subtrees.end(); it++){
+        it->second->setRenderIgnoreSubTree();
     }
     m_subtrees.clear();
-    std::cout << "Scene cleared" << std::endl;
+
     if(m_vessel_id){
         m_vessels.at(m_vessel_id)->getRoot()->setRenderIgnoreSubTree();
     }
@@ -632,6 +642,7 @@ void App::clearScene(){
     m_vessel_id = 0;
     m_clear_scene = false;
     m_picked_obj = nullptr;
+    std::cout << "Scene cleared" << std::endl;
 }
 
 
@@ -679,13 +690,16 @@ void App::deleteCurrent(){
         }
     }
     else{
-        for(uint i=0; i < m_subtrees.size(); i++){
+        /*for(uint i=0; i < m_subtrees.size(); i++){
             if(m_subtrees.at(i).get() == part){
                 m_subtrees.at(i)->setRenderIgnoreSubTree();
                 m_subtrees.erase(m_subtrees.begin()+i);
                 break;
             }
-        }
+        }*/
+        std::uint32_t stid = part->getUniqueId();
+        m_subtrees.at(stid)->setRenderIgnoreSubTree();
+        m_subtrees.erase(stid);
     }
     m_picked_obj = nullptr;
 }
