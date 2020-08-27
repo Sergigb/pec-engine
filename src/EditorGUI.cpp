@@ -25,7 +25,7 @@ EditorGUI::EditorGUI(const FontAtlas* atlas, const RenderContext* render_context
     color c{0.85, 0.85, 0.85};
     m_text_debug.reset(new Text2D(m_fb_width, m_fb_height, c, m_font_atlas, render_context));
 
-    m_parts_panel.reset(new PartsPanelGUI(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2,
+    m_parts_panel.reset(new PartsPanelGUI(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2 - EDITOR_GUI_PP_LOW_MARGIN,
                         m_font_atlas, m_render_context, m_input));
 
     m_disp_location = glGetUniformLocation(m_gui_shader, "disp");
@@ -62,7 +62,11 @@ EditorGUI::EditorGUI(const FontAtlas* atlas, const RenderContext* render_context
                                                     BUTTON_COLOR_DEFAULT,
                                                     BUTTON_COLOR_DEFAULT,
                                                     BUTTON_COLOR_DEFAULT,
-                                                    BUTTON_COLOR_DEFAULT};
+                                                    BUTTON_COLOR_DEFAULT,
+                                                    DELETE_AREA_COLOR,
+                                                    DELETE_AREA_COLOR,
+                                                    DELETE_AREA_COLOR,
+                                                    DELETE_AREA_COLOR};
 
     glBufferData(GL_ARRAY_BUFFER, 4 * EDITOR_GUI_VERTEX_NUM * sizeof(GLfloat), gui_color, GL_STATIC_DRAW);
 
@@ -89,7 +93,11 @@ EditorGUI::EditorGUI(const FontAtlas* atlas, const RenderContext* render_context
                                                      0.0, 0.0, 0.0,
                                                      0.0, 0.0, 0.0,
                                                      0.0, 0.0, 0.0,
-                                                     0.0, 0.0, 0.0,};
+                                                     0.0, 0.0, 0.0,
+                                                     0.0, 0.0, 1.0,
+                                                     0.0, 0.2734, 1.0,
+                                                     0.9375, 0.2734, 1.0,
+                                                     0.9375, 0.0, 1.0,};
 
     glBufferData(GL_ARRAY_BUFFER, 4 * EDITOR_GUI_VERTEX_NUM * sizeof(GLfloat), tex_coords, GL_STATIC_DRAW);
 
@@ -124,11 +132,21 @@ EditorGUI::EditorGUI(const FontAtlas* atlas, const RenderContext* render_context
         index_buffer[16 + i * 6] = disp + 10;
         index_buffer[17 + i * 6] = disp + 7;
     }
+
+    // delete area
+    int disp = 17 + (EDITOR_GUI_N_BUTTONS - 1) * 6;
+    index_buffer[disp + 1] = 19;
+    index_buffer[disp + 2] = 20;
+    index_buffer[disp + 3] = 21;
+    index_buffer[disp + 4] = 21;
+    index_buffer[disp + 5] = 22;
+    index_buffer[disp + 6] = 19;
+
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, EDITOR_GUI_INDEX_NUM * sizeof(GLushort), index_buffer, GL_STATIC_DRAW);
 
     // texture atlas loading test
     int x, y, n;
-    unsigned char* image_data = stbi_load("../data/test_texture.png", &x, &y, &n, 4);
+    unsigned char* image_data = stbi_load("../data/editor_atlas.png", &x, &y, &n, 4);
     if(!image_data) {
         std::cerr << "EditorGUI::EditorGUI - could not load GUI texture atlas" << std::endl;
         log("EditorGUI::EditorGUI - could not load GUI texture atlas");
@@ -152,10 +170,10 @@ EditorGUI::EditorGUI(const FontAtlas* atlas, const RenderContext* render_context
     glBindBuffer(GL_ARRAY_BUFFER, m_parts_panel_vbo_vert);
     glVertexAttribPointer(0, 2,  GL_FLOAT, GL_FALSE, 0, NULL);
     glEnableVertexAttribArray(0);
-    GLfloat parts_panel_vert[12] = {EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN,
-                                    EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN,
+    GLfloat parts_panel_vert[12] = {EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN + EDITOR_GUI_PP_LOW_MARGIN,
+                                    EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN + EDITOR_GUI_PP_LOW_MARGIN,
                                     EDITOR_GUI_PP_MARGIN, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN,
-                                    EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN,
+                                    EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN + EDITOR_GUI_PP_LOW_MARGIN,
                                     EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN,
                                     EDITOR_GUI_PP_MARGIN, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN};
     glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), parts_panel_vert, GL_STATIC_DRAW);
@@ -248,16 +266,27 @@ void EditorGUI::updateBuffers(){
         vertex_buffer[21 + i * 8] = m_fb_height - BUTTON_PAD_Y;
     }
 
+    // delete area
+    int disp = 21 + (EDITOR_GUI_N_BUTTONS - 1) * 8;
+    vertex_buffer[disp + 1] = DELETE_AREA_ORIGIN;
+    vertex_buffer[disp + 2] = EDITOR_GUI_PP_MARGIN + EDITOR_GUI_PP_LOW_MARGIN - DELETE_AREA_MARGIN;
+    vertex_buffer[disp + 3] = DELETE_AREA_ORIGIN;
+    vertex_buffer[disp + 4] = DELETE_AREA_ORIGIN;
+    vertex_buffer[disp + 5] = EDITOR_GUI_LP_W - DELETE_AREA_MARGIN;
+    vertex_buffer[disp + 6] = DELETE_AREA_ORIGIN;
+    vertex_buffer[disp + 7] = EDITOR_GUI_LP_W - DELETE_AREA_MARGIN;
+    vertex_buffer[disp + 8] = EDITOR_GUI_PP_MARGIN + EDITOR_GUI_PP_LOW_MARGIN - DELETE_AREA_MARGIN;
+
     m_render_context->bindVao(m_vao);
 
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo_vert);
     glBufferData(GL_ARRAY_BUFFER, 2 * EDITOR_GUI_VERTEX_NUM * sizeof(GLfloat), vertex_buffer, GL_STATIC_DRAW);
 
     // parts panel
-    GLfloat parts_panel_vert[12] = {EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN,
-                                    EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN,
+    GLfloat parts_panel_vert[12] = {EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN + EDITOR_GUI_PP_LOW_MARGIN,
+                                    EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN + EDITOR_GUI_PP_LOW_MARGIN,
                                     EDITOR_GUI_PP_MARGIN, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN,
-                                    EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN,
+                                    EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN + EDITOR_GUI_PP_LOW_MARGIN,
                                     EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN,
                                     EDITOR_GUI_PP_MARGIN, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN};
     glBindBuffer(GL_ARRAY_BUFFER, m_parts_panel_vbo_vert);
@@ -275,6 +304,28 @@ void EditorGUI::colorButton(const GLfloat* color_array, int button){
 void EditorGUI::updateButtons(){ // used to update button colors
     // grab the current value of m_button_mouseover in case it is overwritten in the update function while we are working with it
     int button_mouseover = m_button_mouseover;
+    bool delete_area_mouseover = m_delete_area_mouseover;
+
+    if(m_delete_area_mouseover_status != delete_area_mouseover){
+        m_delete_area_mouseover_status = delete_area_mouseover;
+
+        if(m_delete_area_mouseover_status){
+            GLfloat new_color[16] = {DELETE_AREA_MOUSEOVER,
+                                     DELETE_AREA_MOUSEOVER,
+                                     DELETE_AREA_MOUSEOVER,
+                                     DELETE_AREA_MOUSEOVER};
+            glBindBuffer(GL_ARRAY_BUFFER, m_vbo_clr);
+            glBufferSubData(GL_ARRAY_BUFFER, ((7*4) + (3 * 16)) * sizeof(GLfloat) , 16 * sizeof(GLfloat), new_color);
+        }
+        else{
+            GLfloat new_color[16] = {DELETE_AREA_COLOR,
+                                     DELETE_AREA_COLOR,
+                                     DELETE_AREA_COLOR,
+                                     DELETE_AREA_COLOR};
+            glBindBuffer(GL_ARRAY_BUFFER, m_vbo_clr);
+            glBufferSubData(GL_ARRAY_BUFFER, ((7*4) + (3 * 16)) * sizeof(GLfloat) , 16 * sizeof(GLfloat), new_color);
+        }
+    }
 
     // reset button color if m_last_button_color != -1
     if(m_last_button_color >= 0){
@@ -339,7 +390,7 @@ void EditorGUI::render(){
     if(m_fb_update){
         m_render_context->getDefaultFbSize(m_fb_width, m_fb_height);
         m_text_debug->onFramebufferSizeUpdate(m_fb_width, m_fb_height);
-        m_parts_panel->onFramebufferSizeUpdate(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2);
+        m_parts_panel->onFramebufferSizeUpdate(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2 - EDITOR_GUI_PP_LOW_MARGIN);
 
         updateBuffers();
         m_fb_update = false;
@@ -388,7 +439,18 @@ int EditorGUI::update(){
         }
     }
 
-    lp_action = m_parts_panel->update(posx - EDITOR_GUI_PP_MARGIN, posy - EDITOR_GUI_PP_MARGIN); // transform coord origin
+    lp_action = m_parts_panel->update(posx - EDITOR_GUI_PP_MARGIN, posy - EDITOR_GUI_PP_MARGIN - EDITOR_GUI_PP_LOW_MARGIN); // transform coord origin
+
+    if(posx > DELETE_AREA_ORIGIN && posy > DELETE_AREA_ORIGIN && posx < EDITOR_GUI_LP_W - DELETE_AREA_MARGIN && 
+       posy < EDITOR_GUI_PP_MARGIN + EDITOR_GUI_PP_LOW_MARGIN - DELETE_AREA_MARGIN){
+        m_delete_area_mouseover = true;
+        if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS){
+            return EDITOR_ACTION_DELETE;
+        }
+    }
+    else{
+        m_delete_area_mouseover = false;
+    }
 
     // may change
     if(lp_action){

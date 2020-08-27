@@ -19,12 +19,14 @@
 #include "Text2D.hpp"
 
 // not sure if it's a good idea to hardcode this
-#define EDITOR_GUI_VERTEX_NUM 19
-#define EDITOR_GUI_INDEX_NUM 30
+#define EDITOR_GUI_VERTEX_NUM 23
+#define EDITOR_GUI_INDEX_NUM 36
+
 #define EDITOR_GUI_LP_W 300.0f
 #define EDITOR_GUI_TP_H 40.0f
 #define EDITOR_GUI_N_BUTTONS 3 // changing this won't add buttons cuz the array sizes are fixed
 #define EDITOR_GUI_PP_MARGIN 30.0f
+#define EDITOR_GUI_PP_LOW_MARGIN 100.0f
 
 // colors are defined per vertex
 #define EDITOR_GUI_PANEL_COLOR 0.15, 0.15, 0.15, 1.0
@@ -39,11 +41,17 @@
 #define BUTTON_COLOR_SELECTED 0.0, 0.0, 0.9, 1.0
 #define BUTTON_COLOR_SELECTED_MOUSEOVER 0.0, 0.0, 0.7, 1.0
 
+#define DELETE_AREA_ORIGIN 30.0f
+#define DELETE_AREA_MARGIN 30.0f
+#define DELETE_AREA_COLOR 0.0f, 0.0f, 0.0f, 0.0f
+#define DELETE_AREA_MOUSEOVER -0.2f, -0.2f, -0.2f, 0.0f
+
 // actions related to the gui
 #define EDITOR_ACTION_NONE 0
 #define EDITOR_ACTION_FOCUS 1
 #define EDITOR_ACTION_OBJECT_PICK 2
 #define EDITOR_ACTION_BUTTON 3 // well see about this
+#define EDITOR_ACTION_DELETE 4
 
 
 class BasePart;
@@ -54,10 +62,12 @@ class EditorGUI : public BaseGUI{
         float m_fb_height, m_fb_width;
         int m_button_mouseover, m_button_select;
         bool m_button_status[EDITOR_GUI_N_BUTTONS];
+        bool m_delete_area_mouseover;
 
         // used by the render thread
         int m_last_button_color; // last button that changed color
         bool m_button_color_status[EDITOR_GUI_N_BUTTONS];
+        bool m_delete_area_mouseover_status;
 
         GLuint m_vao, m_vbo_vert, m_vbo_tex, m_vbo_ind, m_vbo_clr;
         GLuint m_texture_atlas;
