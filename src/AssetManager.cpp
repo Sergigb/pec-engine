@@ -3,6 +3,7 @@
 #include "Frustum.hpp"
 #include "BtWrapper.hpp"
 #include "buffers.hpp"
+#include "Vessel.hpp"
 
 
 AssetManager::AssetManager(RenderContext* render_context, const Frustum* frustum, BtWrapper* bt_wrapper){
@@ -150,5 +151,39 @@ void AssetManager::processCommandBuffers(bool physics_pause){
         m_remove_part_constraint_buffer.at(i)->removeParentConstraint();
     }
     m_remove_part_constraint_buffer.clear();
+}
+
+
+void AssetManager::clearSceneEditor(){
+    std::map<std::uint32_t, std::shared_ptr<BasePart>>::iterator it;
+    std::map<std::uint32_t, std::shared_ptr<Vessel>>::iterator it2;
+
+    for(it=m_editor_subtrees.begin(); it != m_editor_subtrees.end(); it++){
+        it->second->setRenderIgnoreSubTree();
+    }
+    m_editor_subtrees.clear();
+
+    for(it2=m_editor_vessels.begin(); it2 != m_editor_vessels.end(); it2++){
+        it2->second->getRoot()->setRenderIgnoreSubTree();
+    }
+    m_editor_vessels.clear();
+}
+
+
+void AssetManager::deleteObjectEditor(BasePart* part, std::uint32_t& vessel_id){
+    if(part->getVessel()){
+        std::uint32_t vid = part->getVessel()->getId();
+
+        m_editor_vessels.at(vid)->getRoot()->setRenderIgnoreSubTree();
+        m_editor_vessels.erase(vid);
+        if(vessel_id == vid){
+            vessel_id = 0;
+        }
+    }
+    else{
+        std::uint32_t stid = part->getUniqueId();
+        m_editor_subtrees.at(stid)->setRenderIgnoreSubTree();
+        m_editor_subtrees.erase(stid);
+    }
 }
 

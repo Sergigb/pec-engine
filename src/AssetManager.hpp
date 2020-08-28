@@ -54,6 +54,10 @@ class AssetManager{
         ~AssetManager();
 
         void processCommandBuffers(bool physics_pause);
+
+        /*Editor methods, only call them before calling logic() and waking up the physics thread*/
+        void clearSceneEditor();
+        void deleteObjectEditor(BasePart* part, std::uint32_t& vessel_id);
 };
 
 

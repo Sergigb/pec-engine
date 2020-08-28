@@ -22,40 +22,17 @@
 
 class App : public BaseApp{
     private:
-        // some models for testing
-        std::unique_ptr<Model> m_cube_model;
-        std::unique_ptr<Model> m_terrain_model;
-        std::unique_ptr<Model> m_sphere_model;
-        std::unique_ptr<Model> m_cylinder_model;
-
         // game state
         bool m_physics_pause, m_clear_scene, m_delete_current;
         Object* m_picked_obj;
 
-        std::vector<std::unique_ptr<btCollisionShape>> m_collision_shapes;
-
-        //...
-        std::vector<std::shared_ptr<Object>> m_objects;
-        //std::vector<std::shared_ptr<BasePart>> m_subtrees;
-        std::map<std::uint32_t, std::shared_ptr<BasePart>> m_subtrees;
-        std::map<std::uint32_t, std::shared_ptr<Vessel>> m_vessels;
         std::uint32_t m_vessel_id;
+        std::unique_ptr<Vessel> m_editor_vessel;
 
-        // editor vessel
-        std::unique_ptr<Vessel> m_vessel;
-
-        // parts are copied from here
-        std::map<std::uint32_t, std::unique_ptr<BasePart>> m_master_parts;
-
-        // command buffers
-        std::vector<struct set_motion_state_msg> m_set_motion_state_buffer;
-        std::vector<BasePart*> m_remove_part_constraint_buffer;
-        std::vector<struct add_contraint_msg> m_add_constraint_buffer;
-        std::vector<struct add_body_msg> m_add_body_buffer;
-
+        // time
         std::chrono::duration<double, std::micro> m_elapsed_time;
 
-        // GUI testing
+        // GUI
         std::unique_ptr<EditorGUI> m_editor_gui;
         int m_gui_action;
 

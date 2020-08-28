@@ -12,10 +12,6 @@ App::App(int gl_width, int gl_height) : BaseApp(gl_width, gl_height){
 
 
 void App::init(){
-    modelsInit();
-    objectsInit();
-    loadParts();
-
     m_render_context->setLightPosition(math::vec3(150.0, 100.0, 0.0));
 
     m_physics_pause = true;
@@ -32,114 +28,12 @@ void App::init(){
     m_def_font_atlas->createAtlas(false);
 
     m_editor_gui.reset(new EditorGUI(m_def_font_atlas.get(), m_render_context.get(), m_input.get()));
-    m_editor_gui->setMasterPartList(&m_master_parts);
+    m_editor_gui->setMasterPartList(&m_asset_manager->m_master_parts);
     m_render_context->setEditorGUI(m_editor_gui.get());
 }
 
 
 App::~App(){
-}
-
-
-void App::modelsInit(){
-    m_cube_model.reset(new Model("../data/cube.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum.get(), m_render_context.get(),math::vec3(0.5, 0.0, 0.5)));
-    m_terrain_model.reset(new Model("../data/bigcube.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum.get(), m_render_context.get(), math::vec3(0.75, 0.75, 0.75)));
-    m_sphere_model.reset(new Model("../data/sphere.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum.get(), m_render_context.get(), math::vec3(0.75, 0.75, 0.75)));
-    m_cylinder_model.reset(new Model("../data/cylinder.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum.get(), m_render_context.get(), math::vec3(0.25, 0.25, 0.25)));
-}
-
-
-void App::objectsInit(){
-    btQuaternion quat;
-    std::unique_ptr<btCollisionShape> cube_shape_ground(new btBoxShape(btVector3(btScalar(25.), btScalar(25.), btScalar(25.))));
-
-    quat.setEuler(0, 0, 0);
-    std::shared_ptr<Object> ground = std::make_shared<Object>(m_terrain_model.get(), m_bt_wrapper.get(), cube_shape_ground.get(), btScalar(0.0), 1);
-    ground->setCollisionGroup(CG_DEFAULT | CG_KINEMATIC);
-    ground->setCollisionFilters(~CG_RAY_EDITOR_RADIAL & ~CG_RAY_EDITOR_SELECT); // by default, do not collide with radial attach. ray tests
-    ground->addBody(btVector3(0.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0), quat);
-    m_objects.emplace_back(ground);
-
-    m_collision_shapes.push_back(std::move(cube_shape_ground));
-}
-
-
-void App::loadParts(){
-    // not really "loading" for now but whatever
-    // for now I'm just adding cubes as parts, just for testing
-    btQuaternion quat;
-    quat.setEuler(0, 0, 0);
-
-    std::unique_ptr<btCollisionShape> cube_shape(new btBoxShape(btVector3(1,1,1)));
-
-    int howmany = 35;
-    for(int i=0; i<howmany; i++){
-        std::uint32_t ID = i + 5; // change in the future to something else
-
-        std::unique_ptr<BasePart> cube(new BasePart(m_cube_model.get(), m_bt_wrapper.get(), cube_shape.get(), btScalar(10.0), ID));
-        cube->setColor(math::vec3(1.0-(1./howmany)*i, 0.0, (1./howmany)*i));
-        cube->setParentAttachmentPoint(math::vec3(0.0, 1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
-        cube->setFreeAttachmentPoint(math::vec3(-1.0, 0.0, 0.0), math::vec3(-1.0, 0.0, 0.0));
-        cube->addAttachmentPoint(math::vec3(1.0, 0.0, 0.0), math::vec3(0.0, 0.0, 0.0));
-        cube->addAttachmentPoint(math::vec3(0.0, -1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
-        cube->addAttachmentPoint(math::vec3(1.0, 0.0, 1.0), math::vec3(0.0, 0.0, 0.0));
-        cube->setName(std::string("test_part_id_") + std::to_string(ID));
-        cube->setFancyName(std::string("Placeholder object ") + std::to_string(ID));
-        cube->setCollisionGroup(CG_DEFAULT | CG_PART);
-        cube->setCollisionFilters(~CG_RAY_EDITOR_RADIAL); // by default, do not collide with radial attach. ray tests
-
-        typedef std::map<std::uint32_t, std::unique_ptr<BasePart>>::iterator map_iterator;
-        std::pair<map_iterator, bool> res = m_master_parts.insert({ID, std::move(cube)});
-
-        if(!res.second){
-            log("Failed to inset part with id ", ID, " (collided with ", res.first->first, ")");
-            std::cerr << "Failed to inset part with id " << ID << " (collided with " << res.first->first << ")" << std::endl;
-        }
-    }
-
-    std::unique_ptr<btCollisionShape> cylinder_shape(new btCylinderShape(btVector3(1,1,1)));
-
-    std::unique_ptr<BasePart> cylinder(new BasePart(m_cylinder_model.get(), m_bt_wrapper.get(), cylinder_shape.get(), btScalar(10.0), 100));
-    cylinder->setColor(math::vec3(1.0, 0.0, 1.0));
-    cylinder->setParentAttachmentPoint(math::vec3(0.0, 1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
-    cylinder->setFreeAttachmentPoint(math::vec3(1.0, 0.0, 0.0), math::vec3(1.0, 0.0, 0.0));
-    cylinder->addAttachmentPoint(math::vec3(1.0, 0.0, 0.0), math::vec3(0.0, 0.0, 0.0));
-    cylinder->setName(std::string("cylinder") + std::to_string(100));
-    cylinder->setFancyName(std::string("Cylinder ") + std::to_string(100));
-    cylinder->setCollisionGroup(CG_DEFAULT | CG_PART);
-    cylinder->setCollisionFilters(~CG_RAY_EDITOR_RADIAL); // by default, do not collide with radial attach. ray tests
-
-    typedef std::map<std::uint32_t, std::unique_ptr<BasePart>>::iterator map_iterator;
-    std::pair<map_iterator, bool> res = m_master_parts.insert({100, std::move(cylinder)});
-
-    if(!res.second){
-        log("Failed to inset part with id ", 100, " (collided with ", res.first->first, ")");
-        std::cerr << "Failed to inset part with id " << 100 << " (collided with " << res.first->first << ")" << std::endl;
-    }
-
-    std::unique_ptr<btCollisionShape> sphere_shape(new btSphereShape(1.0));
-
-    std::unique_ptr<BasePart> sphere(new BasePart(m_sphere_model.get(), m_bt_wrapper.get(), sphere_shape.get(), btScalar(10.0), 101));
-    sphere->setColor(math::vec3(1.0, 0.0, 1.0));
-    sphere->setParentAttachmentPoint(math::vec3(0.0, 1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
-    sphere->setFreeAttachmentPoint(math::vec3(0.0, 0.0, 1.0), math::vec3(0.0, 0.0, 1.0));
-    sphere->addAttachmentPoint(math::vec3(0.0, -1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
-    sphere->setName(std::string("sphere_") + std::to_string(101));
-    sphere->setFancyName(std::string("Sphere ") + std::to_string(101));
-    sphere->setCollisionGroup(CG_DEFAULT | CG_PART);
-    sphere->setCollisionFilters(~CG_RAY_EDITOR_RADIAL); // by default, do not collide with radial attach. ray tests
-
-    typedef std::map<std::uint32_t, std::unique_ptr<BasePart>>::iterator map_iterator;
-    res = m_master_parts.insert({101, std::move(sphere)});
-
-    if(!res.second){
-        log("Failed to inset part with id ", 101, " (collided with ", res.first->first, ")");
-        std::cerr << "Failed to inset part with id " << 101 << " (collided with " << res.first->first << ")" << std::endl;
-    }
-
-    m_collision_shapes.push_back(std::move(sphere_shape));
-    m_collision_shapes.push_back(std::move(cube_shape));
-    m_collision_shapes.push_back(std::move(cylinder_shape));
 }
 
 
@@ -156,7 +50,7 @@ void App::run(){
     while (!glfwWindowShouldClose(m_window_handler->getWindow())){
         loop_start_load = std::chrono::steady_clock::now();
 
-        processCommandBuffers();
+        m_asset_manager->processCommandBuffers(m_physics_pause);
         if(m_clear_scene){
             clearScene();
         }
@@ -234,7 +128,7 @@ void App::getClosestAtt(float& closest_dist, math::vec4& closest_att_point_world
     mousey = ((mousey / h) * 2 - 1) * -1;
     mousex = (mousex / w) * 2 - 1;
 
-    std::vector<BasePart*>* vessel_parts = m_vessels.at(m_vessel_id)->getParts();
+    std::vector<BasePart*>* vessel_parts = m_asset_manager->m_editor_vessels.at(m_vessel_id)->getParts();
     for(uint i=0; i<vessel_parts->size(); i++){ // get closest att point to the mouse cursor
         if(part == vessel_parts->at(i)){
             continue;
@@ -315,7 +209,8 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
         transform_final = object_T * object_R * transform_final; // rotated and traslated attachment point (world)
 
         btVector3 disp = transform_final.getOrigin() - transform_original.getOrigin();
-        part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, transform_original.getOrigin(), part->m_user_rotation * rotation.inverse());
+        part->updateSubTreeMotionState(m_asset_manager->m_set_motion_state_buffer, disp, transform_original.getOrigin(), 
+                                       part->m_user_rotation * rotation.inverse());
 
         if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
             btTransform parent_transform, frame_child;
@@ -349,21 +244,16 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
             constraint->setAngularLowerLimit(limits);
             constraint->setAngularUpperLimit(limits);
 
-            m_add_constraint_buffer.emplace_back(add_contraint_msg{part, std::unique_ptr<btTypedConstraint>(constraint)});
+            m_asset_manager->m_add_constraint_buffer.emplace_back(add_contraint_msg{part, std::unique_ptr<btTypedConstraint>(constraint)});
             BasePart* parent = part->getParent(); // temove this??
             if(parent){ // sanity check
                 parent->removeChild(part);
             }
 
             std::shared_ptr<BasePart> part_sptr = std::dynamic_pointer_cast<BasePart>(part->getSharedPtr());
-            m_vessels.at(closest->getVessel()->getId())->addChildById(part_sptr, closest->getUniqueId());
+            m_asset_manager->m_editor_vessels.at(closest->getVessel()->getId())->addChildById(part_sptr, closest->getUniqueId());
 
-           /* for(uint i=0; i < m_subtrees.size(); i++){
-                if(m_subtrees.at(i).get() == part){
-                    m_subtrees.erase(m_subtrees.begin() + i);
-                }
-            }*/
-            m_subtrees.erase(part->getUniqueId());
+            m_asset_manager->m_editor_subtrees.erase(part->getUniqueId());
         }
     }
     else{
@@ -417,7 +307,8 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
             transform_final = object_T * object_R * transform_final;
 
             btVector3 disp = transform_final.getOrigin() - transform_original.getOrigin();
-            part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, transform_original.getOrigin(), align_rotation * part->m_user_rotation * rotation.inverse());
+            part->updateSubTreeMotionState(m_asset_manager->m_set_motion_state_buffer, disp, transform_original.getOrigin(),
+                                           align_rotation * part->m_user_rotation * rotation.inverse());
 
             if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
                 btTransform parent_transform;
@@ -450,17 +341,12 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
                 constraint->setAngularLowerLimit(limits);
                 constraint->setAngularUpperLimit(limits);
 
-                m_add_constraint_buffer.emplace_back(add_contraint_msg{part, std::unique_ptr<btTypedConstraint>(constraint)});
+                m_asset_manager->m_add_constraint_buffer.emplace_back(add_contraint_msg{part, std::unique_ptr<btTypedConstraint>(constraint)});
 
                 std::shared_ptr<BasePart> part_sptr = std::dynamic_pointer_cast<BasePart>(part->getSharedPtr());
-                m_vessels.at(parent->getVessel()->getId())->addChildById(part_sptr, parent->getUniqueId());
+                m_asset_manager->m_editor_vessels.at(parent->getVessel()->getId())->addChildById(part_sptr, parent->getUniqueId());
 
-                /*for(uint i=0; i < m_subtrees.size(); i++){
-                    if(m_subtrees.at(i).get() == part){
-                        m_subtrees.erase(m_subtrees.begin() + i);
-                    }
-                }*/
-                m_subtrees.erase(part->getUniqueId());
+                m_asset_manager->m_editor_subtrees.erase(part->getUniqueId());
 
             }
         }
@@ -468,7 +354,8 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
             m_camera->castRayMousePos(10.f, ray_start_world, ray_end_world);
             btVector3 origin(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]);
             btVector3 disp = origin - transform_original.getOrigin();
-            part->updateSubTreeMotionState(m_set_motion_state_buffer, disp, transform_original.getOrigin(), part->m_user_rotation * rotation.inverse());
+            part->updateSubTreeMotionState(m_asset_manager->m_set_motion_state_buffer, disp, transform_original.getOrigin(),
+                                           part->m_user_rotation * rotation.inverse());
         }
     }
 }
@@ -501,9 +388,8 @@ void App::pickObject(){
         }
         else{ // we are certainly detaching a part from the vessel
             if(!part->isRoot()){ // ignore root
-                m_remove_part_constraint_buffer.emplace_back(part);
-                //m_subtrees.emplace_back(m_vessels.at(part->getVessel()->getId())->removeChild(part));
-                m_subtrees.insert({part->getUniqueId(), m_vessels.at(part->getVessel()->getId())->removeChild(part)});
+                m_asset_manager->m_remove_part_constraint_buffer.emplace_back(part);
+                m_asset_manager->m_editor_subtrees.insert({part->getUniqueId(), m_asset_manager->m_editor_vessels.at(part->getVessel()->getId())->removeChild(part)});
             }
         }
     }
@@ -529,7 +415,8 @@ void App::logic(){
         }
     }
     else{ // if not picked object
-        if(!m_gui_action && m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && m_physics_pause && !m_render_context->imGuiWantCaptureMouse()){ // scene has the focus
+        if(!m_gui_action && m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS &&
+            m_physics_pause && !m_render_context->imGuiWantCaptureMouse()){ // scene has the focus
             pickObject();
         }
     }
@@ -546,22 +433,21 @@ void App::logic(){
         }
 
         if(!m_vessel_id){ // set the vessel root
-            m_add_body_buffer.emplace_back(add_body_msg{part.get(), btVector3(0.0, 60.0, 0.0),
-                                           btVector3(0.0, 0.0, 0.0), btQuaternion::getIdentity()});
+            m_asset_manager->m_add_body_buffer.emplace_back(add_body_msg{part.get(), btVector3(0.0, 60.0, 0.0),
+                                                            btVector3(0.0, 0.0, 0.0), btQuaternion::getIdentity()});
 
             std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(part);
             m_vessel_id = vessel->getId();
-            m_vessels.insert({m_vessel_id, vessel});
+            m_asset_manager->m_editor_vessels.insert({m_vessel_id, vessel});
             part->setCollisionFilters(part->getCollisionFilters() | CG_RAY_EDITOR_RADIAL);
         }
         else{
             math::vec3 ray_start_world, ray_end_world;
             m_camera->castRayMousePos(10.f, ray_start_world, ray_end_world);
-            m_add_body_buffer.emplace_back(add_body_msg{part.get(), btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]),
-                                           btVector3(0.0, 0.0, 0.0), btQuaternion::getIdentity()});
+            m_asset_manager->m_add_body_buffer.emplace_back(add_body_msg{part.get(), btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]),
+                                                            btVector3(0.0, 0.0, 0.0), btQuaternion::getIdentity()});
 
-            //m_subtrees.emplace_back(part);
-            m_subtrees.insert({part->getUniqueId(), part});
+            m_asset_manager->m_editor_subtrees.insert({part->getUniqueId(), part});
             m_picked_obj = part.get();
         }
     }
@@ -594,51 +480,8 @@ void App::logic(){
 }
 
 
-void App::processCommandBuffers(){
-    // process buffers
-    for(uint i=0; i < m_set_motion_state_buffer.size(); i++){
-        struct set_motion_state_msg& msg = m_set_motion_state_buffer.at(i);
-        msg.object->setMotionState(msg.origin, msg.initial_rotation);
-        if(m_physics_pause){
-            m_bt_wrapper->updateCollisionWorldSingleAABB(msg.object->m_body.get());
-        }
-    }
-    m_set_motion_state_buffer.clear();
-
-    for(uint i=0; i < m_add_constraint_buffer.size(); i++){
-        struct add_contraint_msg& msg = m_add_constraint_buffer.at(i);
-        msg.part->setParentConstraint(msg.constraint_uptr);
-    }
-    m_add_constraint_buffer.clear();
-
-    for(uint i=0; i < m_add_body_buffer.size(); i++){
-        struct add_body_msg& msg = m_add_body_buffer.at(i);
-        msg.part->addBody(msg.origin, msg.inertia, msg.rotation);
-    }
-    m_add_body_buffer.clear();
-
-    for(uint i=0; i < m_remove_part_constraint_buffer.size(); i++){
-        m_remove_part_constraint_buffer.at(i)->removeParentConstraint();
-    }
-    m_remove_part_constraint_buffer.clear();
-}
-
-
 void App::clearScene(){
-    /*for(uint i=0; i < m_subtrees.size(); i++){
-        m_subtrees.at(i)->setRenderIgnoreSubTree();
-    }*/
-    std::map<std::uint32_t, std::shared_ptr<BasePart>>::iterator it;
-
-    for(it=m_subtrees.begin(); it != m_subtrees.end(); it++){
-        it->second->setRenderIgnoreSubTree();
-    }
-    m_subtrees.clear();
-
-    if(m_vessel_id){
-        m_vessels.at(m_vessel_id)->getRoot()->setRenderIgnoreSubTree();
-    }
-    m_vessels.clear();
+    m_asset_manager->clearSceneEditor();
     m_vessel_id = 0;
     m_clear_scene = false;
     m_picked_obj = nullptr;
@@ -670,37 +513,13 @@ void App::onLeftMouseButton(){
 
 void App::deleteCurrent(){
     /*In the future a command buffer should be used to delete multiple subtrees/vessels*/
-    BasePart* part;
-
     m_delete_current = false;
 
     if(!m_picked_obj){
         return;
     }
 
-    part = static_cast<BasePart*>(m_picked_obj);
-
-    if(part->getVessel()){
-        std::uint32_t vid = part->getVessel()->getId();
-
-        m_vessels.at(vid)->getRoot()->setRenderIgnoreSubTree();
-        m_vessels.erase(vid);
-        if(m_vessel_id == vid){
-            m_vessel_id = 0;
-        }
-    }
-    else{
-        /*for(uint i=0; i < m_subtrees.size(); i++){
-            if(m_subtrees.at(i).get() == part){
-                m_subtrees.at(i)->setRenderIgnoreSubTree();
-                m_subtrees.erase(m_subtrees.begin()+i);
-                break;
-            }
-        }*/
-        std::uint32_t stid = part->getUniqueId();
-        m_subtrees.at(stid)->setRenderIgnoreSubTree();
-        m_subtrees.erase(stid);
-    }
+    m_asset_manager->deleteObjectEditor(static_cast<BasePart*>(m_picked_obj), m_vessel_id);
     m_picked_obj = nullptr;
 }
 
