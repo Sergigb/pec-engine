@@ -171,6 +171,73 @@ namespace math{
     mat3 rotation_align( const vec3& d, const vec3& z );
 }
 
+
+namespace dmath{ // double precision for the camera
+
+    struct vec3 {
+        vec3();
+        vec3( double x, double y, double z );
+        vec3( const vec3 &rhs );
+        vec3 operator+( const vec3 &rhs ) const;
+        vec3 &operator+=( const vec3 &rhs );
+        vec3 operator-( const vec3 &rhs ) const;
+        vec3 &operator-=( const vec3 &rhs );
+        vec3 operator*( double rhs ) const;
+        vec3 &operator*=( double rhs );
+        vec3 &operator=( const vec3 &rhs );
+
+        // internal data
+        double v[3];
+    };
+
+    struct vec4 {
+        vec4();
+        vec4( double x, double y, double z, double w );
+        vec4( const vec4 &rhs );
+        vec4 operator*( double rhs ) const;
+        vec4 operator+( double rhs ) const;
+        vec4 operator+( const vec4 &rhs ) const;
+        vec4 operator-( double rhs ) const;
+        vec4 operator-( const vec4 &rhs ) const;
+
+        double v[4];
+    };
+
+    struct mat4 {
+        mat4();
+        mat4( double a, double b, double c, double d, double e, double f, double g, double h,
+              double i, double j, double k, double l, double mm, double n, double o, double p );
+        mat4( const mat4 &rhs );
+        vec4 operator*( const vec4 &rhs ) const;
+        mat4 operator*( const mat4 &rhs ) const;
+        mat4 &operator=( const mat4 &rhs );
+
+        double m[16];
+    };
+
+    struct versor {
+        versor();
+        versor operator/( double rhs ) const;
+        versor operator*( double rhs ) const;
+        versor operator*( const versor &rhs ) const;
+        versor operator+( const versor &rhs ) const;
+
+        double q[4];
+    };
+
+    // matrix functions
+    mat4 zero_mat4();
+    mat4 identity_mat4();
+    mat4 translate( const mat4 &m, const vec3 &v );
+    mat4 inverse( const mat4 &mm );
+    double determinant( const mat4 &mm );
+    //versor functions
+    mat4 quat_to_mat4( const versor &q );
+    versor normalise( versor &q );
+    versor quat_from_axis_rad( double radians, double x, double y, double z );
+}
+
+
 #define TAU 2.0 * M_PI
 #define ONE_DEG_IN_RAD ( 2.0 * M_PI ) / 360.0 // 0.017444444
 #define ONE_RAD_IN_DEG 360.0 / ( 2.0 * M_PI ) // 57.2957795

@@ -871,3 +871,384 @@ math::mat3 math::rotation_align( const vec3& d, const vec3& z ) {
                  v.v[2]*v.v[0]*k + v.v[1], v.v[2]*v.v[1]*k - v.v[0],    v.v[2]*v.v[2]*k + c );
 }
 
+
+/*---------------------------- double precision ----------------------------*/
+
+dmath::vec3::vec3(){}
+
+dmath::vec3::vec3( double x, double y, double z ) {
+    v[0] = x;
+    v[1] = y;
+    v[2] = z;
+}
+
+dmath::vec3::vec3( const vec3 &rhs ){
+    v[0] = rhs.v[0];
+    v[1] = rhs.v[1];
+    v[2] = rhs.v[2];
+}
+
+dmath::vec4::vec4(){}
+
+dmath::vec4::vec4( double x, double y, double z, double w ) {
+    v[0] = x;
+    v[1] = y;
+    v[2] = z;
+    v[3] = w;
+}
+
+dmath::vec4::vec4( const vec4 &rhs ){
+    v[0] = rhs.v[0];
+    v[1] = rhs.v[1];
+    v[2] = rhs.v[2];
+    v[3] = rhs.v[3];
+}
+
+dmath::mat4::mat4() {}
+
+dmath::mat4::mat4( double a, double b, double c, double d, double e, double f, double g, double h,
+                   double i, double j, double k, double l, double mm, double n, double o,
+                   double p ) {
+    m[0] = a;
+    m[1] = b;
+    m[2] = c;
+    m[3] = d;
+    m[4] = e;
+    m[5] = f;
+    m[6] = g;
+    m[7] = h;
+    m[8] = i;
+    m[9] = j;
+    m[10] = k;
+    m[11] = l;
+    m[12] = mm;
+    m[13] = n;
+    m[14] = o;
+    m[15] = p;
+}
+
+dmath::mat4::mat4( const mat4 &rhs ) {
+    for ( int i = 0; i < 16; i++ ) {
+        m[i] = rhs.m[i];
+    }
+}
+
+dmath::versor::versor(){}
+
+/*------------------------------VECTOR FUNCTIONS------------------------------*/
+
+dmath::vec3 dmath::vec3::operator+( const vec3 &rhs ) const {
+    dmath::vec3 vc;
+    vc.v[0] = v[0] + rhs.v[0];
+    vc.v[1] = v[1] + rhs.v[1];
+    vc.v[2] = v[2] + rhs.v[2];
+    return vc;
+}
+
+dmath::vec3 &dmath::vec3::operator+=( const vec3 &rhs ) {
+    v[0] += rhs.v[0];
+    v[1] += rhs.v[1];
+    v[2] += rhs.v[2];
+    return *this;
+}
+
+dmath::vec3 dmath::vec3::operator-( const vec3 &rhs ) const {
+    dmath::vec3 vc;
+    vc.v[0] = v[0] - rhs.v[0];
+    vc.v[1] = v[1] - rhs.v[1];
+    vc.v[2] = v[2] - rhs.v[2];
+    return vc;
+}
+
+dmath::vec3 &dmath::vec3::operator-=( const vec3 &rhs ) {
+    v[0] -= rhs.v[0];
+    v[1] -= rhs.v[1];
+    v[2] -= rhs.v[2];
+    return *this;
+}
+
+dmath::vec3 dmath::vec3::operator*( double rhs ) const {
+    dmath::vec3 vc;
+    vc.v[0] = v[0] * rhs;
+    vc.v[1] = v[1] * rhs;
+    vc.v[2] = v[2] * rhs;
+    return vc;
+}
+
+dmath::vec3 &dmath::vec3::operator*=( double rhs ) {
+    v[0] = v[0] * rhs;
+    v[1] = v[1] * rhs;
+    v[2] = v[2] * rhs;
+    return *this;
+}
+
+dmath::vec3 &dmath::vec3::operator=( const vec3 &rhs ) {
+    v[0] = rhs.v[0];
+    v[1] = rhs.v[1];
+    v[2] = rhs.v[2];
+    return *this;
+}
+
+dmath::vec4 dmath::vec4::operator*( double rhs ) const {
+    dmath::vec4 vc;
+    vc.v[0] = v[0] * rhs;
+    vc.v[1] = v[1] * rhs;
+    vc.v[2] = v[2] * rhs;
+    vc.v[3] = v[3] * rhs;
+    return vc;
+}
+
+dmath::vec4 dmath::vec4::operator+( double rhs ) const {
+    dmath::vec4 vc;
+    vc.v[0] = v[0] + rhs;
+    vc.v[1] = v[1] + rhs;
+    vc.v[2] = v[2] + rhs;
+    vc.v[3] = v[3] + rhs;
+    return vc;
+}
+
+dmath::vec4 dmath::vec4::operator+( const vec4 &rhs ) const{
+    dmath::vec4 vc;
+    vc.v[0] = v[0] + rhs.v[0];
+    vc.v[1] = v[1] + rhs.v[1];
+    vc.v[2] = v[2] + rhs.v[2];
+    vc.v[3] = v[3] + rhs.v[3];
+    return vc;
+}
+
+dmath::vec4 dmath::vec4::operator-( double rhs ) const {
+    dmath::vec4 vc;
+    vc.v[0] = v[0] - rhs;
+    vc.v[1] = v[1] - rhs;
+    vc.v[2] = v[2] - rhs;
+    vc.v[3] = v[3] - rhs;
+    return vc;
+}
+
+dmath::vec4 dmath::vec4::operator-( const vec4 &rhs ) const{
+    dmath::vec4 vc;
+    vc.v[0] = v[0] - rhs.v[0];
+    vc.v[1] = v[1] - rhs.v[1];
+    vc.v[2] = v[2] - rhs.v[2];
+    vc.v[3] = v[3] - rhs.v[3];
+    return vc;
+}
+
+/*------------------------------MATRIX FUNCTIONS------------------------------*/
+
+dmath::vec4 dmath::mat4::operator*( const vec4 &rhs ) const {
+    // 0x + 4y + 8z + 12w
+    double x = m[0] * rhs.v[0] + m[4] * rhs.v[1] + m[8] * rhs.v[2] + m[12] * rhs.v[3];
+    // 1x + 5y + 9z + 13w
+    double y = m[1] * rhs.v[0] + m[5] * rhs.v[1] + m[9] * rhs.v[2] + m[13] * rhs.v[3];
+    // 2x + 6y + 10z + 14w
+    double z = m[2] * rhs.v[0] + m[6] * rhs.v[1] + m[10] * rhs.v[2] + m[14] * rhs.v[3];
+    // 3x + 7y + 11z + 15w
+    double w = m[3] * rhs.v[0] + m[7] * rhs.v[1] + m[11] * rhs.v[2] + m[15] * rhs.v[3];
+    return vec4( x, y, z, w );
+}
+
+dmath::mat4 dmath::mat4::operator*( const mat4 &rhs ) const {
+    mat4 r = zero_mat4();
+    int r_index = 0;
+    for ( int col = 0; col < 4; col++ ) {
+        for ( int row = 0; row < 4; row++ ) {
+            double sum = 0.0;
+            for ( int i = 0; i < 4; i++ ) {
+                sum += rhs.m[i + col * 4] * m[row + i * 4];
+            }
+            r.m[r_index] = sum;
+            r_index++;
+        }
+    }
+    return r;
+}
+
+dmath::mat4 &dmath::mat4::operator=( const mat4 &rhs ) {
+    for ( int i = 0; i < 16; i++ ) {
+        m[i] = rhs.m[i];
+    }
+    return *this;
+}
+
+dmath::mat4 dmath::zero_mat4(){
+    return dmath::mat4( 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+                        0.0, 0.0, 0.0, 0.0, 0.0 );
+}
+
+dmath::mat4 dmath::identity_mat4() {
+    return dmath::mat4( 1.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 0.0, 1.0,
+                        0.0, 0.0, 0.0, 0.0, 1.0 );
+}
+
+dmath::mat4 dmath::translate( const mat4 &m, const vec3 &v ) {
+    mat4 m_t = dmath::identity_mat4();
+    m_t.m[12] = v.v[0];
+    m_t.m[13] = v.v[1];
+    m_t.m[14] = v.v[2];
+    return m_t * m;
+}
+
+dmath::mat4 dmath::inverse( const mat4 &mm ) {
+    double det = determinant( mm );
+    /* there is no inverse if determinant is zero (not likely unless scale is
+    broken) */
+    if ( 0.0 == det ) {
+        fprintf( stderr, "WARNING. matrix has no determinant. can not invert\n" );
+        return mm;
+    }
+    double inv_det = 1.0 / det;
+
+    return mat4(
+        inv_det * ( mm.m[9] * mm.m[14] * mm.m[7] - mm.m[13] * mm.m[10] * mm.m[7] +
+                    mm.m[13] * mm.m[6] * mm.m[11] - mm.m[5] * mm.m[14] * mm.m[11] -
+                    mm.m[9] * mm.m[6] * mm.m[15] + mm.m[5] * mm.m[10] * mm.m[15] ),
+        inv_det * ( mm.m[13] * mm.m[10] * mm.m[3] - mm.m[9] * mm.m[14] * mm.m[3] -
+                    mm.m[13] * mm.m[2] * mm.m[11] + mm.m[1] * mm.m[14] * mm.m[11] +
+                    mm.m[9] * mm.m[2] * mm.m[15] - mm.m[1] * mm.m[10] * mm.m[15] ),
+        inv_det * ( mm.m[5] * mm.m[14] * mm.m[3] - mm.m[13] * mm.m[6] * mm.m[3] +
+                    mm.m[13] * mm.m[2] * mm.m[7] - mm.m[1] * mm.m[14] * mm.m[7] -
+                    mm.m[5] * mm.m[2] * mm.m[15] + mm.m[1] * mm.m[6] * mm.m[15] ),
+        inv_det * ( mm.m[9] * mm.m[6] * mm.m[3] - mm.m[5] * mm.m[10] * mm.m[3] -
+                    mm.m[9] * mm.m[2] * mm.m[7] + mm.m[1] * mm.m[10] * mm.m[7] +
+                    mm.m[5] * mm.m[2] * mm.m[11] - mm.m[1] * mm.m[6] * mm.m[11] ),
+        inv_det * ( mm.m[12] * mm.m[10] * mm.m[7] - mm.m[8] * mm.m[14] * mm.m[7] -
+                    mm.m[12] * mm.m[6] * mm.m[11] + mm.m[4] * mm.m[14] * mm.m[11] +
+                    mm.m[8] * mm.m[6] * mm.m[15] - mm.m[4] * mm.m[10] * mm.m[15] ),
+        inv_det * ( mm.m[8] * mm.m[14] * mm.m[3] - mm.m[12] * mm.m[10] * mm.m[3] +
+                    mm.m[12] * mm.m[2] * mm.m[11] - mm.m[0] * mm.m[14] * mm.m[11] -
+                    mm.m[8] * mm.m[2] * mm.m[15] + mm.m[0] * mm.m[10] * mm.m[15] ),
+        inv_det * ( mm.m[12] * mm.m[6] * mm.m[3] - mm.m[4] * mm.m[14] * mm.m[3] -
+                    mm.m[12] * mm.m[2] * mm.m[7] + mm.m[0] * mm.m[14] * mm.m[7] +
+                    mm.m[4] * mm.m[2] * mm.m[15] - mm.m[0] * mm.m[6] * mm.m[15] ),
+        inv_det * ( mm.m[4] * mm.m[10] * mm.m[3] - mm.m[8] * mm.m[6] * mm.m[3] +
+                    mm.m[8] * mm.m[2] * mm.m[7] - mm.m[0] * mm.m[10] * mm.m[7] -
+                    mm.m[4] * mm.m[2] * mm.m[11] + mm.m[0] * mm.m[6] * mm.m[11] ),
+        inv_det * ( mm.m[8] * mm.m[13] * mm.m[7] - mm.m[12] * mm.m[9] * mm.m[7] +
+                    mm.m[12] * mm.m[5] * mm.m[11] - mm.m[4] * mm.m[13] * mm.m[11] -
+                    mm.m[8] * mm.m[5] * mm.m[15] + mm.m[4] * mm.m[9] * mm.m[15] ),
+        inv_det * ( mm.m[12] * mm.m[9] * mm.m[3] - mm.m[8] * mm.m[13] * mm.m[3] -
+                    mm.m[12] * mm.m[1] * mm.m[11] + mm.m[0] * mm.m[13] * mm.m[11] +
+                    mm.m[8] * mm.m[1] * mm.m[15] - mm.m[0] * mm.m[9] * mm.m[15] ),
+        inv_det * ( mm.m[4] * mm.m[13] * mm.m[3] - mm.m[12] * mm.m[5] * mm.m[3] +
+                    mm.m[12] * mm.m[1] * mm.m[7] - mm.m[0] * mm.m[13] * mm.m[7] -
+                    mm.m[4] * mm.m[1] * mm.m[15] + mm.m[0] * mm.m[5] * mm.m[15] ),
+        inv_det * ( mm.m[8] * mm.m[5] * mm.m[3] - mm.m[4] * mm.m[9] * mm.m[3] -
+                    mm.m[8] * mm.m[1] * mm.m[7] + mm.m[0] * mm.m[9] * mm.m[7] +
+                    mm.m[4] * mm.m[1] * mm.m[11] - mm.m[0] * mm.m[5] * mm.m[11] ),
+        inv_det * ( mm.m[12] * mm.m[9] * mm.m[6] - mm.m[8] * mm.m[13] * mm.m[6] -
+                    mm.m[12] * mm.m[5] * mm.m[10] + mm.m[4] * mm.m[13] * mm.m[10] +
+                    mm.m[8] * mm.m[5] * mm.m[14] - mm.m[4] * mm.m[9] * mm.m[14] ),
+        inv_det * ( mm.m[8] * mm.m[13] * mm.m[2] - mm.m[12] * mm.m[9] * mm.m[2] +
+                    mm.m[12] * mm.m[1] * mm.m[10] - mm.m[0] * mm.m[13] * mm.m[10] -
+                    mm.m[8] * mm.m[1] * mm.m[14] + mm.m[0] * mm.m[9] * mm.m[14] ),
+        inv_det * ( mm.m[12] * mm.m[5] * mm.m[2] - mm.m[4] * mm.m[13] * mm.m[2] -
+                    mm.m[12] * mm.m[1] * mm.m[6] + mm.m[0] * mm.m[13] * mm.m[6] +
+                    mm.m[4] * mm.m[1] * mm.m[14] - mm.m[0] * mm.m[5] * mm.m[14] ),
+        inv_det * ( mm.m[4] * mm.m[9] * mm.m[2] - mm.m[8] * mm.m[5] * mm.m[2] +
+                    mm.m[8] * mm.m[1] * mm.m[6] - mm.m[0] * mm.m[9] * mm.m[6] -
+                    mm.m[4] * mm.m[1] * mm.m[10] + mm.m[0] * mm.m[5] * mm.m[10] ) );
+}
+
+double dmath::determinant( const mat4 &mm ) {
+    return mm.m[12] * mm.m[9] * mm.m[6] * mm.m[3] -
+           mm.m[8] * mm.m[13] * mm.m[6] * mm.m[3] -
+           mm.m[12] * mm.m[5] * mm.m[10] * mm.m[3] +
+           mm.m[4] * mm.m[13] * mm.m[10] * mm.m[3] +
+           mm.m[8] * mm.m[5] * mm.m[14] * mm.m[3] -
+           mm.m[4] * mm.m[9] * mm.m[14] * mm.m[3] -
+           mm.m[12] * mm.m[9] * mm.m[2] * mm.m[7] +
+           mm.m[8] * mm.m[13] * mm.m[2] * mm.m[7] +
+           mm.m[12] * mm.m[1] * mm.m[10] * mm.m[7] -
+           mm.m[0] * mm.m[13] * mm.m[10] * mm.m[7] -
+           mm.m[8] * mm.m[1] * mm.m[14] * mm.m[7] +
+           mm.m[0] * mm.m[9] * mm.m[14] * mm.m[7] +
+           mm.m[12] * mm.m[5] * mm.m[2] * mm.m[11] -
+           mm.m[4] * mm.m[13] * mm.m[2] * mm.m[11] -
+           mm.m[12] * mm.m[1] * mm.m[6] * mm.m[11] +
+           mm.m[0] * mm.m[13] * mm.m[6] * mm.m[11] +
+           mm.m[4] * mm.m[1] * mm.m[14] * mm.m[11] -
+           mm.m[0] * mm.m[5] * mm.m[14] * mm.m[11] -
+           mm.m[8] * mm.m[5] * mm.m[2] * mm.m[15] +
+           mm.m[4] * mm.m[9] * mm.m[2] * mm.m[15] +
+           mm.m[8] * mm.m[1] * mm.m[6] * mm.m[15] -
+           mm.m[0] * mm.m[9] * mm.m[6] * mm.m[15] -
+           mm.m[4] * mm.m[1] * mm.m[10] * mm.m[15] +
+           mm.m[0] * mm.m[5] * mm.m[10] * mm.m[15];
+}
+
+/*------------------------------VERSOR FUNCTIONS------------------------------*/
+
+dmath::versor dmath::versor::operator*( double rhs ) const {
+    versor result;
+    result.q[0] = q[0] * rhs;
+    result.q[1] = q[1] * rhs;
+    result.q[2] = q[2] * rhs;
+    result.q[3] = q[3] * rhs;
+    return result;
+}
+
+dmath::versor dmath::versor::operator*( const versor &rhs ) const {
+    versor result;
+    result.q[0] =
+        rhs.q[0] * q[0] - rhs.q[1] * q[1] - rhs.q[2] * q[2] - rhs.q[3] * q[3];
+    result.q[1] =
+        rhs.q[0] * q[1] + rhs.q[1] * q[0] - rhs.q[2] * q[3] + rhs.q[3] * q[2];
+    result.q[2] =
+        rhs.q[0] * q[2] + rhs.q[1] * q[3] + rhs.q[2] * q[0] - rhs.q[3] * q[1];
+    result.q[3] =
+        rhs.q[0] * q[3] - rhs.q[1] * q[2] + rhs.q[2] * q[1] + rhs.q[3] * q[0];
+    // re-normalise in case of mangling
+    return dmath::normalise( result );
+}
+
+dmath::versor dmath::versor::operator+( const versor &rhs ) const {
+    versor result;
+    result.q[0] = rhs.q[0] + q[0];
+    result.q[1] = rhs.q[1] + q[1];
+    result.q[2] = rhs.q[2] + q[2];
+    result.q[3] = rhs.q[3] + q[3];
+    // re-normalise in case of mangling
+    return dmath::normalise( result );
+}
+
+dmath::versor dmath::normalise( versor &q ) {
+    double sum = q.q[0] * q.q[0] + q.q[1] * q.q[1] + q.q[2] * q.q[2] + q.q[3] * q.q[3];
+    const double thresh = 0.0001;
+    if ( fabs( 1.0 - sum ) < thresh ) {
+        return q;
+    }
+    double mag = sqrt( sum );
+    return q / mag;
+}
+
+dmath::versor dmath::versor::operator/( double rhs ) const {
+    versor result;
+    result.q[0] = q[0] / rhs;
+    result.q[1] = q[1] / rhs;
+    result.q[2] = q[2] / rhs;
+    result.q[3] = q[3] / rhs;
+    return result;
+}
+
+dmath::mat4 dmath::quat_to_mat4( const versor &q ) {
+    double w = q.q[0];
+    double x = q.q[1];
+    double y = q.q[2];
+    double z = q.q[3];
+    return mat4( 1.0 - 2.0 * y * y - 2.0 * z * z, 2.0 * x * y + 2.0 * w * z,
+                 2.0 * x * z - 2.0 * w * y, 0.0, 2.0 * x * y - 2.0 * w * z,
+                 1.0 - 2.0 * x * x - 2.0 * z * z, 2.0 * y * z + 2.0 * w * x,
+                 0.0, 2.0 * x * z + 2.0 * w * y, 2.0 * y * z - 2.0 *w * x,
+                 1.0 - 2.0 * x * x - 2.0 * y * y, 0.0, 0.0, 0.0, 0.0, 1.0 );
+}
+
+dmath::versor dmath::quat_from_axis_rad( double radians, double x, double y, double z ) {
+    versor result;
+    result.q[0] = cos( radians / 2.0 );
+    result.q[1] = sin( radians / 2.0 ) * x;
+    result.q[2] = sin( radians / 2.0 ) * y;
+    result.q[3] = sin( radians / 2.0 ) * z;
+    return result;
+}
+
