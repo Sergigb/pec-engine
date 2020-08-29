@@ -268,13 +268,26 @@ bool BasePart::hasFreeAttPoint() const{
 
 void BasePart::renderOther(){
     if(m_show_editor_menu){
+        std::stringstream ss;
         ImVec2 mousepos = ImGui::GetMousePos();
+        ss << m_unique_id;
 
         ImGui::SetNextWindowPos(mousepos, ImGuiCond_Appearing);
         ImGui::SetNextWindowSize(ImVec2(300.f, 200.f), ImGuiCond_Appearing);
-        ImGui::Begin(m_fancy_name.c_str(), &m_show_editor_menu);
+        ImGui::Begin((m_fancy_name + ss.str()).c_str(), &m_show_editor_menu);
 
         ImGui::ColorEdit3("Mesh color", m_mesh_color.v);
+
+        ImGui::Checkbox("Set m_has_transform", &m_has_transform);
+
+        ImGui::DragFloat4("1st row", &m_mesh_transform.m[0], 0.1f);
+        ImGui::DragFloat4("2nd row", &m_mesh_transform.m[4], 0.1f);
+        ImGui::DragFloat4("3rd row", &m_mesh_transform.m[8], 0.1f);
+        ImGui::DragFloat4("4th row", &m_mesh_transform.m[12], 0.1f);
+
+        if(ImGui::Button("Set identity")){
+            m_mesh_transform = math::identity_mat4();
+        }
 
         ImGui::End();
     }
