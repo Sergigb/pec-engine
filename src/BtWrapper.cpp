@@ -1,14 +1,16 @@
 #include "BtWrapper.hpp"
 #include "Object.hpp"
+#include "Camera.hpp"
 
 
 BtWrapper::BtWrapper(){
     init(btVector3(0.0, -9.81, 0.0));
 }
 
-BtWrapper::BtWrapper(const btVector3& gravity, render_buffers* buff_manager, thread_monitor* thread_monitor){
+BtWrapper::BtWrapper(const btVector3& gravity, render_buffers* buff_manager, thread_monitor* thread_monitor, const Camera* camera){
     m_thread_monitor = thread_monitor;
     m_buffers = buff_manager;
+    m_camera = camera;
 
     init(gravity);
 }
@@ -172,6 +174,8 @@ double BtWrapper::getAverageLoadTime() const{
 
 void BtWrapper::updateBuffer(std::vector<object_transform>* buffer_){
     const btCollisionObjectArray& col_object_array = m_dynamics_world->getCollisionObjectArray();
+    dmath::vec3 cam_origin = m_camera->getCamPosition();
+    btVector3 btv_cam_origin(cam_origin.v[0], cam_origin.v[1], cam_origin.v[2]);
 
     buffer_->clear();
     for(int i=0; i<col_object_array.size(); i++){
@@ -180,8 +184,17 @@ void BtWrapper::updateBuffer(std::vector<object_transform>* buffer_){
             continue;
         }
         try{
-            std::shared_ptr<Object> obj_sptr = obj->getSharedPtr();    
-            buffer_->emplace_back(object_transform{obj_sptr, obj->getRigidBodyTransformSingle()});
+            math::mat4 mat;
+            double b_transform[16];
+
+            obj->getRigidBodyTransformDouble(b_transform);
+            b_transform[12] -= btv_cam_origin.getX();   // object is transformed wrt camera origin
+            b_transform[13] -= btv_cam_origin.getY();
+            b_transform[14] -= btv_cam_origin.getZ();
+            std::copy(b_transform, b_transform + 16, mat.m);
+
+            std::shared_ptr<Object> obj_sptr = obj->getSharedPtr();
+            buffer_->emplace_back(object_transform{obj_sptr, mat});
         }
         catch(std::bad_weak_ptr& e) {
             std::string name;
