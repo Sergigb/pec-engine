@@ -10,18 +10,17 @@
 #include "Input.hpp"
 #include "log.hpp"
 
-using namespace math;
-
 
 class WindowHandler;
 
 
 class Camera{
     private:
-        vec3 m_cam_pos, m_cam_translation;
-        vec4 m_fwd, m_rgt, m_up;
-        versor m_cam_orientation;
-        mat4 m_proj_mat, m_view_matrix;
+        dmath::vec3 m_cam_pos, m_cam_translation;
+        dmath::vec4 m_fwd, m_rgt, m_up;
+        dmath::versor m_cam_orientation;
+        math::mat4 m_proj_mat;
+        dmath::mat4 m_view_matrix;
         float m_cam_speed, m_cam_heading_speed, m_near, m_far, m_fovy, m_ar;
         double m_previous_frame_time;
         bool m_has_moved, m_proj_change, m_fb_callback;
@@ -33,29 +32,28 @@ class Camera{
         void updateViewMatrix();
     public:
         Camera();
-        Camera(const vec3& pos, float fovy, float ar, float near, float far, const Input* input_ptr);
+        Camera(const dmath::vec3& pos, float fovy, float ar, float near, float far, const Input* input_ptr);
         ~Camera(); 
 
-        void setCameraOrientation(const versor* orientation);
-        void setCameraOrientationFromAxisRad(float cam_heading, const vec3* axis);
-        void setCameraOrientationFromAxisDeg(float cam_heading, const vec3* axis);
+        void setCameraOrientation(const dmath::versor* orientation);
+        void setCameraOrientationFromAxisRad(float cam_heading, const dmath::vec3* axis);
         void setSpeed(float speed);
         void setAngularSpeed(float speed);
         void setWindowHandler(const WindowHandler* window_handler);
         void createProjMat(float near, float far, float fovy, float ar);
         void onFramebufferSizeUpdate(int width, int heigth);
 
-        void rotateCameraYaw(float degrees);
-        void rotateCameraRoll(float degrees);
-        void rotateCameraPitch(float degrees);
-        void moveCamera(const vec3* motion);
+        void rotateCameraYaw(double degrees);
+        void rotateCameraRoll(double degrees);
+        void rotateCameraPitch(double degrees);
+        void moveCamera(const dmath::vec3* motion);
 
         bool hasMoved() const;
         bool projChanged() const;
-        mat4 getViewMatrix() const;
-        mat4 getProjMatrix() const;
-        vec3 getCamPosition() const;
-        void castRayMousePos(float dist, math::vec3& ray_start_world, math::vec3& ray_end_world_ext) const;
+        math::mat4 getViewMatrix() const;
+        math::mat4 getProjMatrix() const;
+        dmath::vec3 getCamPosition() const;
+        void castRayMousePos(float dist, dmath::vec3& ray_start_world, dmath::vec3& ray_end_world_ext) const;
 
         void update();
 };

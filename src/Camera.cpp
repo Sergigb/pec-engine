@@ -3,13 +3,13 @@
 
 
 Camera::Camera(){
-    m_cam_translation = vec3(0.0f, 0.0f, 0.0f);
-    m_fwd = vec4(0.0f, 0.0f, -1.0f, 0.0f);
-    m_rgt = vec4(1.0f, 0.0f, 0.0f, 0.0f);
-    m_up = vec4(0.0f, 1.0f, 0.0f, 0.0f);
-    m_cam_pos = vec3(0.f, 0.f, 5.0f);
-    m_cam_orientation = quat_from_axis_rad(0.0f, 0.0f, 1.0f, 0.0f);
-    m_proj_mat = perspective(67.0f, 1.0, 0.1f, 1000.0f);
+    m_cam_translation = dmath::vec3(0.0f, 0.0f, 0.0f);
+    m_fwd = dmath::vec4(0.0f, 0.0f, -1.0f, 0.0f);
+    m_rgt = dmath::vec4(1.0f, 0.0f, 0.0f, 0.0f);
+    m_up = dmath::vec4(0.0f, 1.0f, 0.0f, 0.0f);
+    m_cam_pos = dmath::vec3(0.f, 0.f, 5.0f);
+    m_cam_orientation = dmath::quat_from_axis_rad(0.0f, 0.0f, 1.0f, 0.0f);
+    m_proj_mat = math::perspective(67.0f, 1.0, 0.1f, 1000.0f);
     m_input = nullptr;
     m_cam_speed = 3.5f;
     m_cam_heading_speed = 3.5f;
@@ -26,14 +26,14 @@ Camera::Camera(){
 }
 
 
-Camera::Camera(const vec3& pos, float fovy, float ar, float near, float far, const Input* input_ptr){
+Camera::Camera(const dmath::vec3& pos, float fovy, float ar, float near, float far, const Input* input_ptr){
     m_cam_pos = pos;
-    m_cam_translation = vec3(0.0f, 0.0f, 0.0f);
-    m_fwd = vec4(0.0f, 0.0f, -1.0f, 0.0f);
-    m_rgt = vec4(1.0f, 0.0f, 0.0f, 0.0f);
-    m_up = vec4(0.0f, 1.0f, 0.0f, 0.0f);
-    m_cam_orientation = quat_from_axis_rad(0.0f, 0.0f, 0.0f, 0.0f);
-    m_proj_mat = perspective(fovy, ar, near, far);
+    m_cam_translation = dmath::vec3(0.0f, 0.0f, 0.0f);
+    m_fwd = dmath::vec4(0.0f, 0.0f, -1.0f, 0.0f);
+    m_rgt = dmath::vec4(1.0f, 0.0f, 0.0f, 0.0f);
+    m_up = dmath::vec4(0.0f, 1.0f, 0.0f, 0.0f);
+    m_cam_orientation = dmath::quat_from_axis_rad(0.0f, 0.0f, 0.0f, 0.0f);
+    m_proj_mat = math::perspective(fovy, ar, near, far);
     m_input = input_ptr;
     m_cam_speed = 3.5f;
     m_cam_heading_speed = 3.5f;
@@ -54,18 +54,13 @@ Camera::~Camera(){
 }
 
 
-void Camera::setCameraOrientation(const versor* orientation){
+void Camera::setCameraOrientation(const dmath::versor* orientation){
     m_cam_orientation = *orientation; 
 }
 
 
-void Camera::setCameraOrientationFromAxisRad(float cam_heading, const vec3* axis){
-    m_cam_orientation = quat_from_axis_rad(-cam_heading, axis->v[0], axis->v[1], axis->v[2]);    
-}
-
-
-void Camera::setCameraOrientationFromAxisDeg(float cam_heading, const vec3* axis){
-    m_cam_orientation = quat_from_axis_deg(-cam_heading, axis->v[0], axis->v[1], axis->v[2]);    
+void Camera::setCameraOrientationFromAxisRad(float cam_heading, const dmath::vec3* axis){
+    m_cam_orientation = dmath::quat_from_axis_rad(-cam_heading, axis->v[0], axis->v[1], axis->v[2]);    
 }
 
 
@@ -74,85 +69,90 @@ void Camera::createProjMat(float near, float far, float fovy, float ar){
     m_far = far;
     m_fovy = fovy;
     m_ar = ar;
-    m_proj_mat = perspective(m_fovy, m_ar, m_near, m_far);
+    m_proj_mat = math::perspective(m_fovy, m_ar, m_near, m_far);
 }
 
 void Camera::onFramebufferSizeUpdate(int width, int height){
-    m_proj_mat = perspective(m_fovy, (float)width/(float)height, m_near, m_far);
+    m_proj_mat = math::perspective(m_fovy, (float)width/(float)height, m_near, m_far);
     m_fb_callback = true;
 }
 
 
-mat4 Camera::getViewMatrix() const{
-    return m_view_matrix;
+math::mat4 Camera::getViewMatrix() const{
+    /* This should be precomputed, doesn't matter right now because we still have the single precision problem*/
+    math::mat4 m(m_view_matrix.m[0], m_view_matrix.m[1], m_view_matrix.m[2], m_view_matrix.m[3], 
+                 m_view_matrix.m[4], m_view_matrix.m[5], m_view_matrix.m[6], m_view_matrix.m[7], 
+                 m_view_matrix.m[8], m_view_matrix.m[9], m_view_matrix.m[10], m_view_matrix.m[11], 
+                 m_view_matrix.m[12], m_view_matrix.m[13], m_view_matrix.m[14], m_view_matrix.m[15]);
+    return m;
 }
 
 
-mat4 Camera::getProjMatrix() const{
+math::mat4 Camera::getProjMatrix() const{
     return m_proj_mat;
 }
 
 
 // TODO: maybe put all these three functions in one function?
-void Camera::rotateCameraYaw(float degrees){
-    mat4 R;
-    versor q_yaw = quat_from_axis_rad(degrees, 0.0f, 1.0f, 0.0f); // rotate around the y vector to keep the right vector parallel to the "ground"
+void Camera::rotateCameraYaw(double degrees){
+    dmath::mat4 R;
+    dmath::versor q_yaw = dmath::quat_from_axis_rad(degrees, 0.0f, 1.0f, 0.0f); // rotate around the y vector to keep the right vector parallel to the "ground"
 
     m_cam_orientation = q_yaw * m_cam_orientation;
-    R = quat_to_mat4(m_cam_orientation);
-    m_fwd = R * vec4(0.0, 0.0, -1.0, 0.0);
-    m_rgt = R * vec4(1.0, 0.0, 0.0, 0.0);
-    m_up = R * vec4(0.0, 1.0, 0.0, 0.0);
+    R = dmath::quat_to_mat4(m_cam_orientation);
+    m_fwd = R * dmath::vec4(0.0, 0.0, -1.0, 0.0);
+    m_rgt = R * dmath::vec4(1.0, 0.0, 0.0, 0.0);
+    m_up = R * dmath::vec4(0.0, 1.0, 0.0, 0.0);
 }
 
 
-void Camera::rotateCameraRoll(float degrees){
-    mat4 R;
-    versor q_pitch = quat_from_axis_rad(degrees, m_fwd.v[0], m_fwd.v[1], m_fwd.v[2]);
+void Camera::rotateCameraRoll(double degrees){
+    dmath::mat4 R;
+    dmath::versor q_pitch = dmath::quat_from_axis_rad(degrees, m_fwd.v[0], m_fwd.v[1], m_fwd.v[2]);
 
     m_cam_orientation = q_pitch * m_cam_orientation;
-    R = quat_to_mat4(m_cam_orientation);
-    m_fwd = R * vec4(0.0, 0.0, -1.0, 0.0);
-    m_rgt = R * vec4(1.0, 0.0, 0.0, 0.0);
-    m_up = R * vec4(0.0, 1.0, 0.0, 0.0);
+    R = dmath::quat_to_mat4(m_cam_orientation);
+    m_fwd = R * dmath::vec4(0.0, 0.0, -1.0, 0.0);
+    m_rgt = R * dmath::vec4(1.0, 0.0, 0.0, 0.0);
+    m_up = R * dmath::vec4(0.0, 1.0, 0.0, 0.0);
 }
 
 
-void Camera::rotateCameraPitch(float degrees){
-    mat4 R;
-    versor q_roll = quat_from_axis_rad(degrees, m_rgt.v[0], m_rgt.v[1], m_rgt.v[2]);
+void Camera::rotateCameraPitch(double degrees){
+    dmath::mat4 R;
+    dmath::versor q_roll = dmath::quat_from_axis_rad(degrees, m_rgt.v[0], m_rgt.v[1], m_rgt.v[2]);
 
     m_cam_orientation = q_roll * m_cam_orientation;
-    R = quat_to_mat4(m_cam_orientation);
-    m_fwd = R * vec4(0.0, 0.0, -1.0, 0.0);
-    m_rgt = R * vec4(1.0, 0.0, 0.0, 0.0);
-    m_up = R * vec4(0.0, 1.0, 0.0, 0.0);
+    R = dmath::quat_to_mat4(m_cam_orientation);
+    m_fwd = R * dmath::vec4(0.0, 0.0, -1.0, 0.0);
+    m_rgt = R * dmath::vec4(1.0, 0.0, 0.0, 0.0);
+    m_up = R * dmath::vec4(0.0, 1.0, 0.0, 0.0);
 }
 
 
-void Camera::moveCamera(const vec3* motion){
+void Camera::moveCamera(const dmath::vec3* motion){
     m_cam_translation += *motion;
 }
 
 void Camera::updateViewMatrix(){
-    mat4 R, T;
+    dmath::mat4 R, T;
     
-    m_cam_pos = m_cam_pos + vec3(m_fwd) * -m_cam_translation.v[2];
-    m_cam_pos = m_cam_pos + vec3(m_up) * m_cam_translation.v[1];
-    m_cam_pos = m_cam_pos + vec3(m_rgt) * m_cam_translation.v[0];
-    T = translate(identity_mat4(), vec3(m_cam_pos));
-    R = quat_to_mat4(m_cam_orientation);
+    m_cam_pos = m_cam_pos + dmath::vec3(m_fwd) * -m_cam_translation.v[2];
+    m_cam_pos = m_cam_pos + dmath::vec3(m_up) * m_cam_translation.v[1];
+    m_cam_pos = m_cam_pos + dmath::vec3(m_rgt) * m_cam_translation.v[0];
+    T = dmath::translate(dmath::identity_mat4(), dmath::vec3(m_cam_pos));
+    R = dmath::quat_to_mat4(m_cam_orientation);
 
-    m_cam_translation = vec3(0.0f, 0.0f, 0.0f);
+    m_cam_translation = dmath::vec3(0.0f, 0.0f, 0.0f);
 
-    m_view_matrix = inverse(R) * inverse(T);
+    m_view_matrix = dmath::inverse(R) * dmath::inverse(T);
 }
 
 
 void Camera::update(){
     double elapsed_time, current_frame_time = glfwGetTime();
     float cam_yaw = 0.0f, cam_pitch = 0.0f, cam_roll = 0.0f, speed_mult = 1.0f;
-    mat4 R, T;
+    dmath::mat4 R, T;
 
     elapsed_time = current_frame_time - m_previous_frame_time;
     m_previous_frame_time = current_frame_time;
@@ -262,7 +262,7 @@ bool Camera::projChanged() const{
 }
 
 
-vec3 Camera::getCamPosition() const{
+dmath::vec3 Camera::getCamPosition() const{
     return m_cam_pos;
 }
 
@@ -272,36 +272,41 @@ void Camera::setWindowHandler(const WindowHandler* window_handler){
 }
 
 
-void Camera::castRayMousePos(float dist, math::vec3& ray_start_world, math::vec3& ray_end_world_ext) const{
+void Camera::castRayMousePos(float dist, dmath::vec3& ray_start_world, dmath::vec3& ray_end_world_ext) const{
     // ray_end_world_ext is ray_start_world + ray_direction * dist
-    math::vec4 ray_start, ray_end, ray_end_world, ray_start_world_vec4;
-    math::mat4 M;
-    math::vec3 ray_dir;
+    dmath::vec4 ray_start, ray_end, ray_end_world, ray_start_world_vec4;
+    dmath::mat4 M, d_proj_mat;
+    dmath::vec3 ray_dir;
     double mouse_x, mouse_y;
     int fb_width, fb_height;
+
+    math::mat4 m(m_proj_mat.m[0], m_proj_mat.m[1], m_proj_mat.m[2], m_proj_mat.m[3], 
+                 m_proj_mat.m[4], m_proj_mat.m[5], m_proj_mat.m[6], m_proj_mat.m[7], 
+                 m_proj_mat.m[8], m_proj_mat.m[9], m_proj_mat.m[10], m_proj_mat.m[11], 
+                 m_proj_mat.m[12], m_proj_mat.m[13], m_proj_mat.m[14], m_proj_mat.m[15]);
 
     m_window_handler->getFramebufferSize(fb_width, fb_height);
 
     m_input->getMousePos(mouse_x, mouse_y);
     mouse_y = fb_height - mouse_y; // y is inverted
     
-    ray_start = math::vec4(((float)mouse_x/fb_width - 0.5) * 2.0,
-                           (mouse_y/(float)fb_height - 0.5) * 2.0,
-                           -1.0, 1.0);
-    ray_end = math::vec4(((float)mouse_x/fb_width - 0.5) * 2.0,
-                         (mouse_y/(float)fb_height - 0.5) * 2.0,
-                         0.0, 1.0);
+    ray_start = dmath::vec4(((float)mouse_x/fb_width - 0.5) * 2.0,
+                            (mouse_y/(float)fb_height - 0.5) * 2.0,
+                            -1.0, 1.0);
+    ray_end = dmath::vec4(((float)mouse_x/fb_width - 0.5) * 2.0,
+                          (mouse_y/(float)fb_height - 0.5) * 2.0,
+                          0.0, 1.0);
 
-    M = math::inverse(m_proj_mat * m_view_matrix);
+    M = dmath::inverse(d_proj_mat * m_view_matrix);
 
     ray_start_world_vec4 = M * ray_start;
     ray_start_world_vec4 = ray_start_world_vec4 / ray_start_world_vec4.v[3];
     ray_end_world = M * ray_end;
     ray_end_world = ray_end_world / ray_end_world.v[3];
 
-    ray_dir = math::normalise(ray_end_world - ray_start_world_vec4);
+    ray_dir = dmath::normalise(ray_end_world - ray_start_world_vec4);
 
-    ray_start_world = math::vec3(ray_start_world_vec4);
+    ray_start_world = dmath::vec3(ray_start_world_vec4);
     ray_end_world_ext = ray_start_world + ray_dir * dist; // ray end extended according to dist (in meters)
 }
 
