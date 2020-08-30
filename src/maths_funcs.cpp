@@ -888,6 +888,12 @@ dmath::vec3::vec3( const vec3 &rhs ){
     v[2] = rhs.v[2];
 }
 
+dmath::vec3::vec3( const vec4 &vv ) {
+    v[0] = vv.v[0];
+    v[1] = vv.v[1];
+    v[2] = vv.v[2];
+}
+
 dmath::vec4::vec4(){}
 
 dmath::vec4::vec4( double x, double y, double z, double w ) {
@@ -1007,7 +1013,7 @@ dmath::vec4 dmath::vec4::operator+( double rhs ) const {
     return vc;
 }
 
-dmath::vec4 dmath::vec4::operator+( const vec4 &rhs ) const{
+dmath::vec4 dmath::vec4::operator+( const vec4 &rhs ) const {
     dmath::vec4 vc;
     vc.v[0] = v[0] + rhs.v[0];
     vc.v[1] = v[1] + rhs.v[1];
@@ -1025,13 +1031,39 @@ dmath::vec4 dmath::vec4::operator-( double rhs ) const {
     return vc;
 }
 
-dmath::vec4 dmath::vec4::operator-( const vec4 &rhs ) const{
+dmath::vec4 dmath::vec4::operator-( const vec4 &rhs ) const {
     dmath::vec4 vc;
     vc.v[0] = v[0] - rhs.v[0];
     vc.v[1] = v[1] - rhs.v[1];
     vc.v[2] = v[2] - rhs.v[2];
     vc.v[3] = v[3] - rhs.v[3];
     return vc;
+}
+
+dmath::vec4 dmath::vec4::operator/( double rhs ) const {
+    dmath::vec4 vc;
+    vc.v[0] = v[0] / rhs;
+    vc.v[1] = v[1] / rhs;
+    vc.v[2] = v[2] / rhs;
+    vc.v[3] = v[3] / rhs;
+    return vc;
+}
+
+dmath::vec4 dmath::normalise(const vec4 &v) {
+    dmath::vec4 vb;
+    double l = length( v );
+    if ( 0.0f == l ) {
+        return dmath::vec4( 0.0f, 0.0f, 0.0f, 0.0f );
+    }
+    vb.v[0] = v.v[0] / l;
+    vb.v[1] = v.v[1] / l;
+    vb.v[2] = v.v[2] / l;
+    vb.v[3] = v.v[3] / l;
+    return vb;
+}
+
+double dmath::length( const vec4 &v ) {
+    return sqrt( v.v[0] * v.v[0] + v.v[1] * v.v[1] + v.v[2] * v.v[2] + v.v[3] * v.v[3] );
 }
 
 /*------------------------------MATRIX FUNCTIONS------------------------------*/

@@ -173,11 +173,13 @@ namespace math{
 
 
 namespace dmath{ // double precision for the camera
+    struct vec4;
 
     struct vec3 {
         vec3();
         vec3( double x, double y, double z );
         vec3( const vec3 &rhs );
+        vec3( const vec4 &vv );
         vec3 operator+( const vec3 &rhs ) const;
         vec3 &operator+=( const vec3 &rhs );
         vec3 operator-( const vec3 &rhs ) const;
@@ -199,6 +201,7 @@ namespace dmath{ // double precision for the camera
         vec4 operator+( const vec4 &rhs ) const;
         vec4 operator-( double rhs ) const;
         vec4 operator-( const vec4 &rhs ) const;
+        vec4 operator/( double rhs ) const;
 
         double v[4];
     };
@@ -225,6 +228,9 @@ namespace dmath{ // double precision for the camera
         double q[4];
     };
 
+    // vector functions
+    vec4 normalise(const vec4 &v );
+    double length( const vec4 &v );
     // matrix functions
     mat4 zero_mat4();
     mat4 identity_mat4();
