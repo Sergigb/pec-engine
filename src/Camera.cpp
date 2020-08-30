@@ -88,6 +88,16 @@ math::mat4 Camera::getViewMatrix() const{
 }
 
 
+math::mat4 Camera::getCenteredViewMatrix() const{
+    math::mat4 m(m_view_matrix.m[0], m_view_matrix.m[1], m_view_matrix.m[2], m_view_matrix.m[3], 
+                 m_view_matrix.m[4], m_view_matrix.m[5], m_view_matrix.m[6], m_view_matrix.m[7], 
+                 m_view_matrix.m[8], m_view_matrix.m[9], m_view_matrix.m[10], m_view_matrix.m[11], 
+                 0.0, 0.0, 0.0, m_view_matrix.m[15]);
+
+    return m;
+}
+
+
 math::mat4 Camera::getProjMatrix() const{
     return m_proj_mat;
 }
