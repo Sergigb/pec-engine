@@ -179,7 +179,7 @@ void RenderContext::render(){
     const math::mat4* view_mat;
     std::mutex* lock;
 
-    std::chrono::steady_clock::time_point start_scene, end_scene_start_gui, end_gui;
+    std::chrono::steady_clock::time_point start_scene, end_scene_start_gui, end_gui_start_imgui, end_imgui;
 
     //clean up this shit
 
@@ -256,14 +256,18 @@ void RenderContext::render(){
     }
     glEnable(GL_DEPTH_TEST);
 
-    end_gui = std::chrono::steady_clock::now();
-
-    std::chrono::duration<double, std::micro> load_time_scene = end_scene_start_gui - start_scene;
-    std::chrono::duration<double, std::micro> load_time_gui = end_gui - end_scene_start_gui;
-    m_rscene_acc_load_time += load_time_scene.count();
-    m_rgui_acc_load_time += load_time_gui.count();
+    end_gui_start_imgui = std::chrono::steady_clock::now();
 
     renderImGui();
+
+    end_imgui = std::chrono::steady_clock::now();
+
+    std::chrono::duration<double, std::micro> load_time_scene = end_scene_start_gui - start_scene;
+    std::chrono::duration<double, std::micro> load_time_gui = end_gui_start_imgui - end_scene_start_gui;
+    std::chrono::duration<double, std::micro> load_time_imgui = end_imgui - end_gui_start_imgui;
+    m_rscene_acc_load_time += load_time_scene.count();
+    m_rgui_acc_load_time += load_time_gui.count();
+    m_rimgui_acc_load_time += load_time_imgui.count();
 
     if(m_draw_overlay){
         m_debug_overlay->setRenderedObjects(num_rendered);
@@ -345,7 +349,7 @@ void RenderContext::start(){
 
 void RenderContext::run(){
     std::chrono::steady_clock::time_point start, end;
-    double accumulated_load = 0.0, render_load_time, scene_render_time, gui_render_time;
+    double accumulated_load = 0.0, render_load_time, scene_render_time, gui_render_time, imgui_render_time;
     int ticks_since_last_update = 0;
 
     // this should be enough to transfer the opengl context to the current thread
@@ -368,10 +372,12 @@ void RenderContext::run(){
             render_load_time = accumulated_load / 60000.0;
             scene_render_time = m_rscene_acc_load_time / 60000.0;
             gui_render_time = m_rgui_acc_load_time / 60000.0;
-            m_debug_overlay->setRenderTimes(render_load_time, scene_render_time, gui_render_time);
+            imgui_render_time = m_rimgui_acc_load_time / 60000.0;
+            m_debug_overlay->setRenderTimes(render_load_time, scene_render_time, gui_render_time, imgui_render_time);
             accumulated_load = 0.0;
             m_rscene_acc_load_time = 0.0;
             m_rgui_acc_load_time = 0.0;
+            m_rimgui_acc_load_time = 0.0;
             ticks_since_last_update = 0;
         }
         else{

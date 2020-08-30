@@ -74,7 +74,8 @@ void DebugOverlay::render(){
     oss2.clear();
     oss2 << "Render time: " << std::setprecision(3) << m_render_load_time 
          << "ms - Scene render: " << std::setprecision(3) << m_rscene_load_time
-         << "ms - GUI render: " << std::setprecision(3) << m_rgui_load_time << "ms";
+         << "ms - GUI render: " << std::setprecision(3) << m_rgui_load_time
+         << "ms - ImGui render: " << std::setprecision(3) << m_rimgui_load_time << "ms";
     mbstowcs(buffer2, oss2.str().c_str(), 128);
     m_text_dynamic_text->addString(buffer2, 15, 145, 1, STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
 
@@ -127,9 +128,10 @@ void debug_info_box(Text2D** t, int fb_width, int fb_height, const FontAtlas* fo
 }
 
 
-void DebugOverlay::setRenderTimes(double render_load_time, double rscene_load_time, double rgui_load_time){
+void DebugOverlay::setRenderTimes(double render_load_time, double rscene_load_time, double rgui_load_time, double rimgui_load_time){
     m_render_load_time = render_load_time;
     m_rscene_load_time = rscene_load_time;
     m_rgui_load_time = rgui_load_time;
+    m_rimgui_load_time = rimgui_load_time;
 }
 
