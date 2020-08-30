@@ -257,7 +257,7 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
         }
     }
     else{
-        math::vec3 ray_start_world, ray_end_world;
+        dmath::vec3 ray_start_world, ray_end_world;
         btQuaternion user_rotation(0.0, 0.0, 0.0);
         m_camera->castRayMousePos(1000.f, ray_start_world, ray_end_world);
         btCollisionWorld::ClosestRayResultCallback ray_callback(btVector3(ray_start_world.v[0], ray_start_world.v[1], ray_start_world.v[2]),
@@ -363,7 +363,7 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
 
 void App::pickObject(){
     double mousey, mousex;
-    math::vec3 ray_start_world, ray_end_world;
+    dmath::vec3 ray_start_world, ray_end_world;
     Object* obj;
 
     m_input->getMousePos(mousex, mousey);
@@ -442,7 +442,7 @@ void App::logic(){
             part->setCollisionFilters(part->getCollisionFilters() | CG_RAY_EDITOR_RADIAL);
         }
         else{
-            math::vec3 ray_start_world, ray_end_world;
+            dmath::vec3 ray_start_world, ray_end_world;
             m_camera->castRayMousePos(10.f, ray_start_world, ray_end_world);
             m_asset_manager->m_add_body_buffer.emplace_back(add_body_msg{part.get(), btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]),
                                                             btVector3(0.0, 0.0, 0.0), btQuaternion::getIdentity()});
@@ -490,7 +490,7 @@ void App::clearScene(){
 
 
 void App::onLeftMouseButton(){
-    math::vec3 ray_start_world, ray_end_world;
+    dmath::vec3 ray_start_world, ray_end_world;
     Object* obj;
     BasePart* part;
 

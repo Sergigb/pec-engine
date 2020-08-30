@@ -41,11 +41,7 @@ class App : public BaseApp{
 
         void onLeftMouseButton();
         void getUserRotation(btQuaternion& rotation, const btQuaternion& current_rotation);
-        void modelsInit();
-        void objectsInit();
-        void loadParts();
         void logic();
-        void processCommandBuffers();
         void clearScene();
         void deleteCurrent();
         void getClosestAtt(float& closest_dist, math::vec4& closest_att_point_world, BasePart*& closest, BasePart* part);
