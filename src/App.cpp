@@ -58,16 +58,17 @@ void App::run(){
             deleteCurrent();
         }
 
+        m_input->update();
+        m_window_handler->update();
+        m_camera->update();
+        m_frustum->extractPlanes(m_camera->getCenteredViewMatrix(), m_camera->getProjMatrix(), false);
+
         {  //wake up physics thread
             std::unique_lock<std::mutex> lck2(m_thread_monitor.mtx_start);
             m_thread_monitor.worker_start = true;
             m_thread_monitor.cv_start.notify_all();
         }
 
-        m_input->update();
-        m_window_handler->update();
-        m_camera->update();
-        m_frustum->extractPlanes(m_camera->getViewMatrix(), m_camera->getProjMatrix(), false);
         if(!m_render_context->imGuiWantCaptureMouse()){
             m_gui_action = m_editor_gui->update();
         }

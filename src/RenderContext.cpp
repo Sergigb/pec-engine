@@ -79,7 +79,7 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
     m_debug_overlay.reset(new DebugOverlay(fb_width, fb_height, this));
 
     // other gl stuff
-    m_color_clear = math::vec4(0.2f, 0.2f, 0.2f, 1.0f);
+    m_color_clear = math::vec4(0.428, 0.706f, 0.751f, 1.0f);
 
     glClearColor(m_color_clear.v[0], m_color_clear.v[1], m_color_clear.v[2], m_color_clear.v[3]);
 
@@ -181,11 +181,11 @@ void RenderContext::render(){
 
 
     glUseProgram(m_pb_notex_shader);
-    glUniformMatrix4fv(m_pb_notex_view_mat, 1, GL_FALSE, m_camera->getViewMatrix().m);
+    glUniformMatrix4fv(m_pb_notex_view_mat, 1, GL_FALSE, m_camera->getCenteredViewMatrix().m);
     glUniformMatrix4fv(m_pb_notex_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
 
     glUseProgram(m_pb_shader);
-    glUniformMatrix4fv(m_pb_view_mat, 1, GL_FALSE, m_camera->getViewMatrix().m);
+    glUniformMatrix4fv(m_pb_view_mat, 1, GL_FALSE, m_camera->getCenteredViewMatrix().m);
     glUniformMatrix4fv(m_pb_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
 
     if(m_update_projection){
