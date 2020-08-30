@@ -213,12 +213,14 @@ void BtWrapper::updateBuffers(){
 
     if(m_buffers->last_updated == buffer_2 || m_buffers->last_updated == none){
         if(m_buffers->buffer1_lock.try_lock()){
+            m_buffers->view_mat1 = m_camera->getCenteredViewMatrix();
             updateBuffer(&m_buffers->buffer1);
             m_buffers->last_updated = buffer_1;
             m_buffers->buffer1_lock.unlock();
         }
         else{
             m_buffers->buffer2_lock.lock(); // very unlikely to not get the lock
+            m_buffers->view_mat2 = m_camera->getCenteredViewMatrix();
             updateBuffer(&m_buffers->buffer2);
             m_buffers->last_updated = buffer_2;
             m_buffers->buffer2_lock.unlock();
@@ -226,11 +228,13 @@ void BtWrapper::updateBuffers(){
     }
     else{
         if(m_buffers->buffer2_lock.try_lock()){
+            m_buffers->view_mat2 = m_camera->getCenteredViewMatrix();
             updateBuffer(&m_buffers->buffer2);
             m_buffers->last_updated = buffer_2;
             m_buffers->buffer2_lock.unlock();
         }
         else{
+            m_buffers->view_mat1 = m_camera->getCenteredViewMatrix();
             m_buffers->buffer1_lock.lock();
             updateBuffer(&m_buffers->buffer1);
             m_buffers->last_updated = buffer_1;

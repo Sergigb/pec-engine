@@ -21,6 +21,8 @@ enum buffer_manager: char{none = 0, buffer_1 = 1, buffer_2 = 2};
 struct render_buffers{
     std::vector<object_transform> buffer1;
     std::vector<object_transform> buffer2;
+    math::mat4 view_mat1;
+    math::mat4 view_mat2;
     std::mutex buffer1_lock;
     std::mutex buffer2_lock;
     buffer_manager last_updated;

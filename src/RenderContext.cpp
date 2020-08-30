@@ -175,18 +175,14 @@ void RenderContext::renderAttPoints(const BasePart* part, int& num_rendered, con
 
 void RenderContext::render(){
     int num_rendered = 0;
+    const std::vector<object_transform>* buff;
+    const math::mat4* view_mat;
+    std::mutex* lock;
+
     std::chrono::steady_clock::time_point start_scene, end_scene_start_gui, end_gui;
 
     //clean up this shit
 
-
-    glUseProgram(m_pb_notex_shader);
-    glUniformMatrix4fv(m_pb_notex_view_mat, 1, GL_FALSE, m_camera->getCenteredViewMatrix().m);
-    glUniformMatrix4fv(m_pb_notex_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
-
-    glUseProgram(m_pb_shader);
-    glUniformMatrix4fv(m_pb_view_mat, 1, GL_FALSE, m_camera->getCenteredViewMatrix().m);
-    glUniformMatrix4fv(m_pb_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
 
     if(m_update_projection){
         math::mat4 projection = math::orthographic(m_fb_width, 0, m_fb_height, 0, 1.0f , -1.0f);
@@ -215,26 +211,34 @@ void RenderContext::render(){
     if(m_buffers->last_updated != none){
         if(m_buffers->last_updated == buffer_1){
             m_buffers->buffer1_lock.lock(); // extremely unlikely to not get the lock
-            for(uint i=0; i<m_buffers->buffer1.size(); i++){
-                BasePart* part = dynamic_cast<BasePart*>(m_buffers->buffer1.at(i).object_ptr.get());
-                if(part){
-                    renderAttPoints(part, num_rendered, m_buffers->buffer1.at(i).transform);
-                }
-                num_rendered += m_buffers->buffer1.at(i).object_ptr->render(m_buffers->buffer1.at(i).transform);
-            }
-            m_buffers->buffer1_lock.unlock();
+            buff = &m_buffers->buffer1;
+            view_mat = &m_buffers->view_mat1;
+            lock = &m_buffers->buffer1_lock;
         }
         else{
             m_buffers->buffer2_lock.lock();
-            for(uint i=0; i<m_buffers->buffer2.size(); i++){
-                BasePart* part = dynamic_cast<BasePart*>(m_buffers->buffer2.at(i).object_ptr.get());
-                if(part){
-                    renderAttPoints(part, num_rendered, m_buffers->buffer2.at(i).transform);
-                }
-                num_rendered += m_buffers->buffer2.at(i).object_ptr->render(m_buffers->buffer2.at(i).transform);
-            }
-            m_buffers->buffer2_lock.unlock();
+            buff = &m_buffers->buffer2;
+            view_mat = &m_buffers->view_mat2;
+            lock = &m_buffers->buffer2_lock;
         }
+
+        // buffer update
+        glUseProgram(m_pb_notex_shader);
+        glUniformMatrix4fv(m_pb_notex_view_mat, 1, GL_FALSE, view_mat->m);
+        glUniformMatrix4fv(m_pb_notex_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
+
+        glUseProgram(m_pb_shader);
+        glUniformMatrix4fv(m_pb_view_mat, 1, GL_FALSE, view_mat->m);
+        glUniformMatrix4fv(m_pb_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
+
+        for(uint i=0; i<buff->size(); i++){
+            BasePart* part = dynamic_cast<BasePart*>(buff->at(i).object_ptr.get());
+            if(part){
+                renderAttPoints(part, num_rendered, buff->at(i).transform);
+            }
+            num_rendered += buff->at(i).object_ptr->render(buff->at(i).transform);
+        }
+        lock->unlock();
     }
 
     end_scene_start_gui = std::chrono::steady_clock::now();
