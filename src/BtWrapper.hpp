@@ -28,6 +28,7 @@
 
 
 class Object;
+class Camera;
 
 class BtWrapper{
     private:
@@ -52,9 +53,12 @@ class BtWrapper{
 
         // synchronization
         struct render_buffers* m_buffers;
+
+        // matrixes should be stored in the render buffers
+        const Camera* m_camera;
     public:
         BtWrapper();
-        BtWrapper(const btVector3& gravity, render_buffers* buff_manager, thread_monitor* thread_monitor);
+        BtWrapper(const btVector3& gravity, render_buffers* buff_manager, thread_monitor* thread_monitor, const Camera* camera);
         ~BtWrapper();
 
         void addRigidBody(btRigidBody* body, short group, short mask);
