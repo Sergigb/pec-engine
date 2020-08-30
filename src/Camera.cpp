@@ -280,10 +280,10 @@ void Camera::castRayMousePos(float dist, dmath::vec3& ray_start_world, dmath::ve
     double mouse_x, mouse_y;
     int fb_width, fb_height;
 
-    math::mat4 m(m_proj_mat.m[0], m_proj_mat.m[1], m_proj_mat.m[2], m_proj_mat.m[3], 
-                 m_proj_mat.m[4], m_proj_mat.m[5], m_proj_mat.m[6], m_proj_mat.m[7], 
-                 m_proj_mat.m[8], m_proj_mat.m[9], m_proj_mat.m[10], m_proj_mat.m[11], 
-                 m_proj_mat.m[12], m_proj_mat.m[13], m_proj_mat.m[14], m_proj_mat.m[15]);
+    d_proj_mat = dmath::mat4(m_proj_mat.m[0], m_proj_mat.m[1], m_proj_mat.m[2], m_proj_mat.m[3], 
+                             m_proj_mat.m[4], m_proj_mat.m[5], m_proj_mat.m[6], m_proj_mat.m[7], 
+                             m_proj_mat.m[8], m_proj_mat.m[9], m_proj_mat.m[10], m_proj_mat.m[11], 
+                             m_proj_mat.m[12], m_proj_mat.m[13], m_proj_mat.m[14], m_proj_mat.m[15]);
 
     m_window_handler->getFramebufferSize(fb_width, fb_height);
 
