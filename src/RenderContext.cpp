@@ -270,8 +270,10 @@ void RenderContext::render(){
     m_rimgui_acc_load_time += load_time_imgui.count();
 
     if(m_draw_overlay){
+        glDisable(GL_DEPTH_TEST);
         m_debug_overlay->setRenderedObjects(num_rendered);
         m_debug_overlay->render();
+        glEnable(GL_DEPTH_TEST);
     }
 }
 

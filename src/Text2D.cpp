@@ -179,8 +179,6 @@ void Text2D::updateBuffers(){
 
 
 void Text2D::render(){
-    glDisable(GL_DEPTH_TEST);
-
     if(m_update_buffer){
         updateBuffers();
         m_update_buffer = false;
@@ -193,8 +191,6 @@ void Text2D::render(){
 
     m_font_atlas->bindTexture();
     glDrawElements(GL_TRIANGLES, m_num_indices, GL_UNSIGNED_SHORT, NULL);
-
-    glEnable(GL_DEPTH_TEST);
 }
 
 
