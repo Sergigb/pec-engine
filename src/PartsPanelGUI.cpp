@@ -233,17 +233,23 @@ int PartsPanelGUI::update(float mouse_x, float mouse_y){
     double scx, scy;
     float disp;
 
-    UNUSED(mouse_x);
+    if(m_render_context->imGuiWantCaptureMouse()){
+        m_item_mouseover = ITEM_MOUSEOVER_NONE;
+        return PANEL_ACTION_NONE;
+    }
+
     mouse_y = m_fb_height - mouse_y; // change the vertical origin for convenience
 
     m_input->getScroll(scx, scy);
     disp = m_panel_scroll.v[1] + PANEL_SCROLL_STEP * -scy;
-    if(disp >= 0 && disp + m_fb_height < m_master_parts_list->size() * ITEM_SEPARATION + PANEL_SCROLL_MARGIN){
-        m_panel_scroll.v[1] += PANEL_SCROLL_STEP * -scy;
-        m_text->setDisplacement(m_panel_scroll);
-    }
 
     if(mouse_x > 0 && mouse_x < m_fb_width && mouse_y > 0 && mouse_y < m_fb_height){
+        
+        if(disp >= 0 && disp + m_fb_height < m_master_parts_list->size() * ITEM_SEPARATION + PANEL_SCROLL_MARGIN){
+            m_panel_scroll.v[1] += PANEL_SCROLL_STEP * -scy;
+            m_text->setDisplacement(m_panel_scroll);
+        }
+
         int i = (mouse_y + m_panel_scroll.v[1]) / ITEM_SEPARATION;
         if((uint)i < m_master_parts_list->size()){
             m_item_mouseover = i;

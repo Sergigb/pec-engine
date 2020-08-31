@@ -69,9 +69,7 @@ void App::run(){
             m_thread_monitor.cv_start.notify_all();
         }
 
-        if(!m_render_context->imGuiWantCaptureMouse()){
-            m_gui_action = m_editor_gui->update();
-        }
+        m_gui_action = m_editor_gui->update();
 
         logic();
 

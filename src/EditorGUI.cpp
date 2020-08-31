@@ -423,6 +423,13 @@ int EditorGUI::update(){
     posx = (double)posx;
     posy = m_fb_height - (double)posy;
 
+    lp_action = m_parts_panel->update(posx - EDITOR_GUI_PP_MARGIN, posy - EDITOR_GUI_PP_MARGIN - EDITOR_GUI_PP_LOW_MARGIN); // transform coord origin
+
+    if(m_render_context->imGuiWantCaptureMouse()){
+        m_button_mouseover = -1;
+        return EDITOR_ACTION_NONE;
+    }
+
     m_button_mouseover = -1;
     if(posy > m_fb_height - EDITOR_GUI_TP_H){ // mouse over top panel
         for(int i=0; i < EDITOR_GUI_N_BUTTONS; i++){
@@ -438,8 +445,6 @@ int EditorGUI::update(){
             }
         }
     }
-
-    lp_action = m_parts_panel->update(posx - EDITOR_GUI_PP_MARGIN, posy - EDITOR_GUI_PP_MARGIN - EDITOR_GUI_PP_LOW_MARGIN); // transform coord origin
 
     if(posx > DELETE_AREA_ORIGIN && posy > DELETE_AREA_ORIGIN && posx < EDITOR_GUI_LP_W - DELETE_AREA_MARGIN && 
        posy < EDITOR_GUI_PP_MARGIN + EDITOR_GUI_PP_LOW_MARGIN - DELETE_AREA_MARGIN){
