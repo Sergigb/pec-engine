@@ -11,6 +11,8 @@ AssetManager::AssetManager(RenderContext* render_context, const Frustum* frustum
     m_frustum = frustum;
     m_bt_wrapper = bt_wrapper;
 
+    m_asset_manager_interface = AssetManagerInterface(this);
+
     modelsInit(); // temporal
     objectsInit();
     loadParts();
@@ -63,7 +65,7 @@ void AssetManager::loadParts(){
     std::unique_ptr<btCollisionShape> sphere_shape(new btSphereShape(1.0));
     std::unique_ptr<btCollisionShape> cone(new btConeShape(0.5, 1.70));
 
-    std::unique_ptr<BasePart> separator(new BasePart(m_separator.get(), m_bt_wrapper, cylinder_shape_separator.get(), btScalar(10.0), 555));
+    std::unique_ptr<BasePart> separator(new BasePart(m_separator.get(), m_bt_wrapper, cylinder_shape_separator.get(), btScalar(10.0), 555, &m_asset_manager_interface));
     separator->setColor(math::vec3(0.75, 0.75, 0.75));
     separator->setParentAttachmentPoint(math::vec3(0.0, 0.065, 0.0), math::vec3(0.0, 0.0, 0.0));
     separator->addAttachmentPoint(math::vec3(0.0, -0.065, 0.0), math::vec3(0.0, 0.0, 0.0));
@@ -79,7 +81,7 @@ void AssetManager::loadParts(){
         std::cerr << "Failed to inset part with id " << 555 << " (collided with " << res.first->first << ")" << std::endl;
     }
 
-    std::unique_ptr<BasePart> com_module(new BasePart(m_com_module.get(), m_bt_wrapper, cone.get(), btScalar(10.0), 444));
+    std::unique_ptr<BasePart> com_module(new BasePart(m_com_module.get(), m_bt_wrapper, cone.get(), btScalar(10.0), 444, &m_asset_manager_interface));
     com_module->setColor(math::vec3(0.75, 0.75, 0.75));
     com_module->setParentAttachmentPoint(math::vec3(0.0, 0.605, 0.0), math::vec3(0.0, 0.0, 0.0));
     com_module->addAttachmentPoint(math::vec3(0.0, -0.653, 0.0), math::vec3(0.0, 0.0, 0.0));
@@ -95,7 +97,7 @@ void AssetManager::loadParts(){
         std::cerr << "Failed to inset part with id " << 444 << " (collided with " << res.first->first << ")" << std::endl;
     }
 
-    std::unique_ptr<BasePart> tank(new BasePart(m_tank.get(), m_bt_wrapper, cylinder_shape_tank.get(), btScalar(10.0), 222));
+    std::unique_ptr<BasePart> tank(new BasePart(m_tank.get(), m_bt_wrapper, cylinder_shape_tank.get(), btScalar(10.0), 222, &m_asset_manager_interface));
     tank->setColor(math::vec3(0.75, 0.75, 0.75));
     tank->setParentAttachmentPoint(math::vec3(0.0, 5.0, 0.0), math::vec3(0.0, 0.0, 0.0));
     tank->addAttachmentPoint(math::vec3(0.0, -5.0, 0.0), math::vec3(0.0, 0.0, 0.0));
@@ -111,7 +113,7 @@ void AssetManager::loadParts(){
         std::cerr << "Failed to inset part with id " << 222 << " (collided with " << res.first->first << ")" << std::endl;
     }
 
-    std::unique_ptr<BasePart> tank2(new BasePart(m_tank2.get(), m_bt_wrapper, cylinder_shape_tank2.get(), btScalar(10.0), 111));
+    std::unique_ptr<BasePart> tank2(new BasePart(m_tank2.get(), m_bt_wrapper, cylinder_shape_tank2.get(), btScalar(10.0), 111, &m_asset_manager_interface));
     tank2->setColor(math::vec3(0.75, 0.75, 0.75));
     tank2->setParentAttachmentPoint(math::vec3(0.0, 2.5, 0.0), math::vec3(0.0, 0.0, 0.0));
     tank2->addAttachmentPoint(math::vec3(0.0, -2.5, 0.0), math::vec3(0.0, 0.0, 0.0));
@@ -127,7 +129,7 @@ void AssetManager::loadParts(){
         std::cerr << "Failed to inset part with id " << 111 << " (collided with " << res.first->first << ")" << std::endl;
     }
 
-    std::unique_ptr<BasePart> engine(new BasePart(m_engine.get(), m_bt_wrapper, cylinder_shape.get(), btScalar(10.0), 333));
+    std::unique_ptr<BasePart> engine(new BasePart(m_engine.get(), m_bt_wrapper, cylinder_shape.get(), btScalar(10.0), 333, &m_asset_manager_interface));
     engine->setColor(math::vec3(0.75, 0.75, 0.75));
     engine->setParentAttachmentPoint(math::vec3(0.0, 0.43459, 0.0), math::vec3(0.0, 0.0, 0.0));
     engine->addAttachmentPoint(math::vec3(0.0, -0.848, 0.0), math::vec3(0.0, 0.0, 0.0));
@@ -180,6 +182,11 @@ void AssetManager::processCommandBuffers(bool physics_pause){
         m_remove_part_constraint_buffer.at(i)->removeParentConstraint();
     }
     m_remove_part_constraint_buffer.clear();
+
+    for(uint i=0; i < m_add_vessel_buffer.size(); i++){
+        m_editor_vessels.insert({m_add_vessel_buffer.at(i)->getId(), m_add_vessel_buffer.at(i)});
+    }
+    m_add_vessel_buffer.clear();
 }
 
 

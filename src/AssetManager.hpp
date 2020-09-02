@@ -6,6 +6,8 @@
 #include <cstdint>
 #include <map>
 
+#include "AssetManagerInterface.hpp"
+
 
 class Model;
 class Object;
@@ -38,6 +40,9 @@ class AssetManager{
         RenderContext* m_render_context;
         const Frustum* m_frustum;
         BtWrapper* m_bt_wrapper;
+
+        friend class AssetManagerInterface;
+        AssetManagerInterface m_asset_manager_interface;
     public:
         std::vector<std::shared_ptr<Object>> m_objects;
         std::vector<std::unique_ptr<btCollisionShape>> m_collision_shapes;
@@ -48,6 +53,7 @@ class AssetManager{
         std::vector<BasePart*> m_remove_part_constraint_buffer;
         std::vector<struct add_contraint_msg> m_add_constraint_buffer;
         std::vector<struct add_body_msg> m_add_body_buffer;
+        std::vector<std::shared_ptr<Vessel>> m_add_vessel_buffer;
 
         std::map<std::uint32_t, std::shared_ptr<BasePart>> m_editor_subtrees;
         std::map<std::uint32_t, std::shared_ptr<Vessel>> m_editor_vessels;
