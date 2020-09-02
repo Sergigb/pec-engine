@@ -28,10 +28,11 @@ class AssetManager{
         void modelsInit();
 
         // this will be a vector
-        std::unique_ptr<Model> m_cube_model;
+        std::unique_ptr<Model> m_engine;
+        std::unique_ptr<Model> m_tank;
+        std::unique_ptr<Model> m_tank2;
         std::unique_ptr<Model> m_terrain_model;
-        std::unique_ptr<Model> m_sphere_model;
-        std::unique_ptr<Model> m_cylinder_model;
+        std::unique_ptr<Model> m_com_module;
 
         RenderContext* m_render_context;
         const Frustum* m_frustum;

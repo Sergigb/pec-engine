@@ -23,10 +23,11 @@ AssetManager::~AssetManager(){
 
 
 void AssetManager::modelsInit(){
-    m_cube_model.reset(new Model("../data/cube.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum, m_render_context,math::vec3(0.5, 0.0, 0.5)));
+    m_engine.reset(new Model("../data/engine.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum, m_render_context, math::vec3(0.25, 0.25, 0.25)));
+    m_tank.reset(new Model("../data/tank.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum, m_render_context, math::vec3(0.25, 0.25, 0.25)));
+    m_tank2.reset(new Model("../data/tank2.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum, m_render_context, math::vec3(0.25, 0.25, 0.25)));
     m_terrain_model.reset(new Model("../data/bigcube.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum, m_render_context, math::vec3(0.75, 0.75, 0.75)));
-    m_sphere_model.reset(new Model("../data/sphere.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum, m_render_context, math::vec3(0.75, 0.75, 0.75)));
-    m_cylinder_model.reset(new Model("../data/cylinder.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum, m_render_context, math::vec3(0.25, 0.25, 0.25)));
+    m_com_module.reset(new Model("../data/capsule.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum, m_render_context, math::vec3(0.75, 0.75, 0.75)));
 }
 
 
@@ -50,77 +51,86 @@ void AssetManager::loadParts(){
     // for now I'm just adding cubes as parts, just for testing
     btQuaternion quat;
     quat.setEuler(0, 0, 0);
+    typedef std::map<std::uint32_t, std::unique_ptr<BasePart>>::iterator map_iterator;
+    std::pair<map_iterator, bool> res;
 
     std::unique_ptr<btCollisionShape> cube_shape(new btBoxShape(btVector3(1,1,1)));
-
-    int howmany = 35;
-    for(int i=0; i<howmany; i++){
-        std::uint32_t ID = i + 5; // change in the future to something else
-
-        std::unique_ptr<BasePart> cube(new BasePart(m_cube_model.get(), m_bt_wrapper, cube_shape.get(), btScalar(10.0), ID));
-        cube->setColor(math::vec3(1.0-(1./howmany)*i, 0.0, (1./howmany)*i));
-        cube->setParentAttachmentPoint(math::vec3(0.0, 1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
-        cube->setFreeAttachmentPoint(math::vec3(-1.0, 0.0, 0.0), math::vec3(-1.0, 0.0, 0.0));
-        cube->addAttachmentPoint(math::vec3(1.0, 0.0, 0.0), math::vec3(0.0, 0.0, 0.0));
-        cube->addAttachmentPoint(math::vec3(0.0, -1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
-        cube->addAttachmentPoint(math::vec3(1.0, 0.0, 1.0), math::vec3(0.0, 0.0, 0.0));
-        cube->setName(std::string("test_part_id_") + std::to_string(ID));
-        cube->setFancyName(std::string("Placeholder object ") + std::to_string(ID));
-        cube->setCollisionGroup(CG_DEFAULT | CG_PART);
-        cube->setCollisionFilters(~CG_RAY_EDITOR_RADIAL); // by default, do not collide with radial attach. ray tests
-
-        typedef std::map<std::uint32_t, std::unique_ptr<BasePart>>::iterator map_iterator;
-        std::pair<map_iterator, bool> res = m_master_parts.insert({ID, std::move(cube)});
-
-        if(!res.second){
-            log("Failed to inset part with id ", ID, " (collided with ", res.first->first, ")");
-            std::cerr << "Failed to inset part with id " << ID << " (collided with " << res.first->first << ")" << std::endl;
-        }
-    }
-
     std::unique_ptr<btCollisionShape> cylinder_shape(new btCylinderShape(btVector3(1,1,1)));
+    std::unique_ptr<btCollisionShape> cylinder_shape_tank(new btCylinderShape(btVector3(1.0, 5.0, 1.0)));
+    std::unique_ptr<btCollisionShape> cylinder_shape_tank2(new btCylinderShape(btVector3(1.0, 2.5, 1.0)));
+    std::unique_ptr<btCollisionShape> sphere_shape(new btSphereShape(1.0));
+    std::unique_ptr<btCollisionShape> cone(new btConeShape(0.5, 1.70));
 
-    std::unique_ptr<BasePart> cylinder(new BasePart(m_cylinder_model.get(), m_bt_wrapper, cylinder_shape.get(), btScalar(10.0), 100));
-    cylinder->setColor(math::vec3(1.0, 0.0, 1.0));
-    cylinder->setParentAttachmentPoint(math::vec3(0.0, 1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
-    cylinder->setFreeAttachmentPoint(math::vec3(1.0, 0.0, 0.0), math::vec3(1.0, 0.0, 0.0));
-    cylinder->addAttachmentPoint(math::vec3(1.0, 0.0, 0.0), math::vec3(0.0, 0.0, 0.0));
-    cylinder->setName(std::string("cylinder") + std::to_string(100));
-    cylinder->setFancyName(std::string("Cylinder ") + std::to_string(100));
-    cylinder->setCollisionGroup(CG_DEFAULT | CG_PART);
-    cylinder->setCollisionFilters(~CG_RAY_EDITOR_RADIAL); // by default, do not collide with radial attach. ray tests
+    std::unique_ptr<BasePart> com_module(new BasePart(m_com_module.get(), m_bt_wrapper, cone.get(), btScalar(10.0), 444));
+    com_module->setColor(math::vec3(0.75, 0.75, 0.75));
+    com_module->setParentAttachmentPoint(math::vec3(0.0, 0.605, 0.0), math::vec3(0.0, 0.0, 0.0));
+    com_module->addAttachmentPoint(math::vec3(0.0, -0.653, 0.0), math::vec3(0.0, 0.0, 0.0));
+    com_module->setName(std::string("command_module_") + std::to_string(444));
+    com_module->setFancyName("Command Module");
+    com_module->setCollisionGroup(CG_DEFAULT | CG_PART);
+    com_module->setCollisionFilters(~CG_RAY_EDITOR_RADIAL);
 
-    typedef std::map<std::uint32_t, std::unique_ptr<BasePart>>::iterator map_iterator;
-    std::pair<map_iterator, bool> res = m_master_parts.insert({100, std::move(cylinder)});
+    res = m_master_parts.insert({444, std::move(com_module)});
 
     if(!res.second){
-        log("Failed to inset part with id ", 100, " (collided with ", res.first->first, ")");
-        std::cerr << "Failed to inset part with id " << 100 << " (collided with " << res.first->first << ")" << std::endl;
+        log("Failed to inset part with id ", 444, " (collided with ", res.first->first, ")");
+        std::cerr << "Failed to inset part with id " << 444 << " (collided with " << res.first->first << ")" << std::endl;
     }
 
-    std::unique_ptr<btCollisionShape> sphere_shape(new btSphereShape(1.0));
+    std::unique_ptr<BasePart> tank(new BasePart(m_tank.get(), m_bt_wrapper, cylinder_shape_tank.get(), btScalar(10.0), 222));
+    tank->setColor(math::vec3(0.75, 0.75, 0.75));
+    tank->setParentAttachmentPoint(math::vec3(0.0, 5.0, 0.0), math::vec3(0.0, 0.0, 0.0));
+    tank->addAttachmentPoint(math::vec3(0.0, -5.0, 0.0), math::vec3(0.0, 0.0, 0.0));
+    tank->setName(std::string("tank_") + std::to_string(222));
+    tank->setFancyName("Tank");
+    tank->setCollisionGroup(CG_DEFAULT | CG_PART);
+    tank->setCollisionFilters(~CG_RAY_EDITOR_RADIAL);
 
-    std::unique_ptr<BasePart> sphere(new BasePart(m_sphere_model.get(), m_bt_wrapper, sphere_shape.get(), btScalar(10.0), 101));
-    sphere->setColor(math::vec3(1.0, 0.0, 1.0));
-    sphere->setParentAttachmentPoint(math::vec3(0.0, 1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
-    sphere->setFreeAttachmentPoint(math::vec3(0.0, 0.0, 1.0), math::vec3(0.0, 0.0, 1.0));
-    sphere->addAttachmentPoint(math::vec3(0.0, -1.0, 0.0), math::vec3(0.0, 0.0, 0.0));
-    sphere->setName(std::string("sphere_") + std::to_string(101));
-    sphere->setFancyName(std::string("Sphere ") + std::to_string(101));
-    sphere->setCollisionGroup(CG_DEFAULT | CG_PART);
-    sphere->setCollisionFilters(~CG_RAY_EDITOR_RADIAL); // by default, do not collide with radial attach. ray tests
-
-    typedef std::map<std::uint32_t, std::unique_ptr<BasePart>>::iterator map_iterator;
-    res = m_master_parts.insert({101, std::move(sphere)});
+    res = m_master_parts.insert({222, std::move(tank)});
 
     if(!res.second){
-        log("Failed to inset part with id ", 101, " (collided with ", res.first->first, ")");
-        std::cerr << "Failed to inset part with id " << 101 << " (collided with " << res.first->first << ")" << std::endl;
+        log("Failed to inset part with id ", 222, " (collided with ", res.first->first, ")");
+        std::cerr << "Failed to inset part with id " << 222 << " (collided with " << res.first->first << ")" << std::endl;
+    }
+
+    std::unique_ptr<BasePart> tank2(new BasePart(m_tank2.get(), m_bt_wrapper, cylinder_shape_tank2.get(), btScalar(10.0), 111));
+    tank2->setColor(math::vec3(0.75, 0.75, 0.75));
+    tank2->setParentAttachmentPoint(math::vec3(0.0, 2.5, 0.0), math::vec3(0.0, 0.0, 0.0));
+    tank2->addAttachmentPoint(math::vec3(0.0, -2.5, 0.0), math::vec3(0.0, 0.0, 0.0));
+    tank2->setName(std::string("tank_") + std::to_string(111));
+    tank2->setFancyName("Tank 2");
+    tank2->setCollisionGroup(CG_DEFAULT | CG_PART);
+    tank2->setCollisionFilters(~CG_RAY_EDITOR_RADIAL);
+
+    res = m_master_parts.insert({111, std::move(tank2)});
+
+    if(!res.second){
+        log("Failed to inset part with id ", 111, " (collided with ", res.first->first, ")");
+        std::cerr << "Failed to inset part with id " << 111 << " (collided with " << res.first->first << ")" << std::endl;
+    }
+
+    std::unique_ptr<BasePart> engine(new BasePart(m_engine.get(), m_bt_wrapper, cylinder_shape.get(), btScalar(10.0), 333));
+    engine->setColor(math::vec3(0.75, 0.75, 0.75));
+    engine->setParentAttachmentPoint(math::vec3(0.0, 0.43459, 0.0), math::vec3(0.0, 0.0, 0.0));
+    engine->addAttachmentPoint(math::vec3(0.0, -0.848, 0.0), math::vec3(0.0, 0.0, 0.0));
+    engine->setName(std::string("engine_") + std::to_string(333));
+    engine->setFancyName("Engine");
+    engine->setCollisionGroup(CG_DEFAULT | CG_PART);
+    engine->setCollisionFilters(~CG_RAY_EDITOR_RADIAL);
+
+    res = m_master_parts.insert({333, std::move(engine)});
+
+    if(!res.second){
+        log("Failed to inset part with id ", 333, " (collided with ", res.first->first, ")");
+        std::cerr << "Failed to inset part with id " << 333 << " (collided with " << res.first->first << ")" << std::endl;
     }
 
     m_collision_shapes.push_back(std::move(sphere_shape));
     m_collision_shapes.push_back(std::move(cube_shape));
     m_collision_shapes.push_back(std::move(cylinder_shape));
+    m_collision_shapes.push_back(std::move(cylinder_shape_tank));
+    m_collision_shapes.push_back(std::move(cylinder_shape_tank2));
+    m_collision_shapes.push_back(std::move(cone));
 }
 
 
