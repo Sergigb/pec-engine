@@ -298,3 +298,7 @@ void BasePart::onEditorRightMouseButton(){
     m_show_editor_menu = true;
 }
 
+void BasePart::onSimulationRightMouseButton(){
+    
+}
+

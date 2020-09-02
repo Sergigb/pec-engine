@@ -72,6 +72,7 @@ class BasePart : public Object{
 
         virtual void renderOther();
         virtual void onEditorRightMouseButton();
+        virtual void onSimulationRightMouseButton();
 
         btQuaternion m_user_rotation;
 };

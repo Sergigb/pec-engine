@@ -505,7 +505,13 @@ void App::onLeftMouseButton(){
 
     if(obj){
         part = static_cast<BasePart*>(obj);
-        part->onEditorRightMouseButton();
+        if(m_physics_pause){
+            part->onEditorRightMouseButton();
+        }
+        else{
+            part->onSimulationRightMouseButton();
+        }
+        
     }
 }
 
