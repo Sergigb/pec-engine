@@ -37,6 +37,7 @@ class BasePart : public Object{
         AssetManagerInterface* m_asset_manager;
 
         void decoupleAll();
+        void decoupleSelf();
     public:
         BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager);
         BasePart(const BasePart& part);

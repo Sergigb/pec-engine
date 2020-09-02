@@ -294,9 +294,13 @@ void BasePart::renderOther(){
             m_mesh_transform = math::identity_mat4();
         }
 
-        if(ImGui::Button("Decouple all")){
+        if(ImGui::Button("Decouple childs")){
             decoupleAll();
         }
+        if(ImGui::Button("Decouple self")){
+            decoupleSelf();
+        }
+
 
         ImGui::End();
     }
@@ -320,5 +324,21 @@ void BasePart::decoupleAll(){
         m_asset_manager->addVessel(vessel);
     }
     m_childs.clear();
+}
+
+
+void BasePart::decoupleSelf(){
+    std::shared_ptr<BasePart> ourselves = m_vessel->removeChild(this);
+
+    if(ourselves.get() == nullptr){
+        std::cerr << "BasePart::decoupleSelf - part with id " << m_unique_id << " tried to decouple itself but owner vessel returned a null pointer" << std::endl;
+        log("BasePart::decoupleSelf - part with id ", m_unique_id, " tried to decouple itself but owner vessel returned a null pointer");
+
+        return;
+    }
+
+    std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(ourselves);
+    m_asset_manager->removePartConstraint(this);
+    m_asset_manager->addVessel(vessel);
 }
 
