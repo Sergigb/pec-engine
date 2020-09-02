@@ -209,6 +209,15 @@ std::shared_ptr<BasePart> Vessel::removeChildById(std::uint32_t child_id){
     std::shared_ptr<BasePart> child_sptr;
     try{
         BasePart* child = m_node_map_by_id.at(child_id);
+
+        if(child->isRoot()){
+            std::cerr << "Vessel::removeChild - child with id " << child->getUniqueId()
+                      << " is the root and can not be removed" << std::endl;
+            log("Vessel::removeChild - child with id ", child->getUniqueId(),
+                " is the root and can not be removed");
+            return child_sptr;
+        }
+
         BasePart* parent = child->getParent();
 
         child->setParent(nullptr);
@@ -222,7 +231,7 @@ std::shared_ptr<BasePart> Vessel::removeChildById(std::uint32_t child_id){
     catch(const std::out_of_range& oor){
         std::cerr << "Vessel::removeChildById - could not remove child with id " << child_id 
                   << " because it does not belong to this vessel (" << m_vessel_id << ") - " << oor.what() << std::endl;    
-        log("Vessel::removeChildById - could not remove child with id", child_id,
+        log("Vessel::removeChildById - could not remove child with id ", child_id,
             " because it does not belong to this vessel (", m_vessel_id, ") - ", oor.what());
 
         return child_sptr;
@@ -237,6 +246,13 @@ std::shared_ptr<BasePart> Vessel::removeChild(BasePart* child){
                   << " as it does not belong to this vessel (" << m_vessel_id << ")" << std::endl;
         log("Vessel::removeChild - could not remove child with id ", child->getUniqueId(),
             " as it does not belong to this vessel (", m_vessel_id, ")");
+        return child_sptr;
+    }
+    if(child->isRoot()){
+        std::cerr << "Vessel::removeChild - child with id " << child->getUniqueId()
+                  << " is the root and can not be removed" << std::endl;
+        log("Vessel::removeChild - child with id ", child->getUniqueId(),
+            " is the root and can not be removed");
         return child_sptr;
     }
     BasePart* parent = child->getParent();
