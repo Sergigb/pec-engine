@@ -1,7 +1,9 @@
 #include "BasePart.hpp"
+#include "Vessel.hpp"
+#include "AssetManagerInterface.hpp"
 
 
-BasePart::BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID) : 
+BasePart::BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager) : 
     Object(model, bt_wrapper, col_shape, mass, baseID){
     m_parent = nullptr;
     m_vessel = nullptr;
@@ -10,6 +12,7 @@ BasePart::BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_sh
     m_has_parent_att = false;
     m_has_free_att = false;
     m_show_editor_menu = false;
+    m_asset_manager = asset_manager;
 }
 
 
@@ -21,6 +24,7 @@ BasePart::BasePart(){
     m_has_parent_att = false;
     m_has_free_att = false;
     m_show_editor_menu = false;
+    m_asset_manager = nullptr;
 }
 
 
@@ -43,6 +47,7 @@ BasePart::BasePart(const BasePart& part) : Object(part) {
     m_has_parent_att = part.m_has_parent_att;
     m_has_free_att = part.m_has_free_att;
     m_show_editor_menu = false;
+    m_asset_manager = part.m_asset_manager;
 }
 
 
@@ -273,7 +278,7 @@ void BasePart::renderOther(){
         ss << m_unique_id;
 
         ImGui::SetNextWindowPos(mousepos, ImGuiCond_Appearing);
-        ImGui::SetNextWindowSize(ImVec2(300.f, 200.f), ImGuiCond_Appearing);
+        ImGui::SetNextWindowSize(ImVec2(300.f, 300.f), ImGuiCond_Appearing);
         ImGui::Begin((m_fancy_name + ss.str()).c_str(), &m_show_editor_menu);
 
         ImGui::ColorEdit3("Mesh color", m_mesh_color.v);
@@ -289,6 +294,10 @@ void BasePart::renderOther(){
             m_mesh_transform = math::identity_mat4();
         }
 
+        if(ImGui::Button("Decouple all")){
+            decoupleAll();
+        }
+
         ImGui::End();
     }
 }
@@ -298,7 +307,18 @@ void BasePart::onEditorRightMouseButton(){
     m_show_editor_menu = true;
 }
 
+
 void BasePart::onSimulationRightMouseButton(){
     
+}
+
+
+void BasePart::decoupleAll(){
+    for(uint i=0; i < m_childs.size(); i++){
+        std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(m_childs.at(i));
+        m_asset_manager->removePartConstraint(m_childs.at(i).get());
+        m_asset_manager->addVessel(vessel);
+    }
+    m_childs.clear();
 }
 

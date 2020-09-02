@@ -14,6 +14,7 @@
 
 
 class Vessel;
+class AssetManagerInterface;
 
 
 struct attachment_point{
@@ -32,8 +33,12 @@ class BasePart : public Object{
         Vessel* m_vessel;
         bool m_is_root, m_has_parent_att, m_has_free_att;
         bool m_show_editor_menu;
+
+        AssetManagerInterface* m_asset_manager;
+
+        void decoupleAll();
     public:
-        BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID);
+        BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager);
         BasePart(const BasePart& part);
         BasePart();
         ~BasePart();
