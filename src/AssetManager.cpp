@@ -28,6 +28,7 @@ void AssetManager::modelsInit(){
     m_tank2.reset(new Model("../data/tank2.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum, m_render_context, math::vec3(0.25, 0.25, 0.25)));
     m_terrain_model.reset(new Model("../data/bigcube.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum, m_render_context, math::vec3(0.75, 0.75, 0.75)));
     m_com_module.reset(new Model("../data/capsule.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum, m_render_context, math::vec3(0.75, 0.75, 0.75)));
+    m_separator.reset(new Model("../data/separator.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum, m_render_context, math::vec3(0.75, 0.75, 0.75)));
 }
 
 
@@ -58,8 +59,25 @@ void AssetManager::loadParts(){
     std::unique_ptr<btCollisionShape> cylinder_shape(new btCylinderShape(btVector3(1,1,1)));
     std::unique_ptr<btCollisionShape> cylinder_shape_tank(new btCylinderShape(btVector3(1.0, 5.0, 1.0)));
     std::unique_ptr<btCollisionShape> cylinder_shape_tank2(new btCylinderShape(btVector3(1.0, 2.5, 1.0)));
+    std::unique_ptr<btCollisionShape> cylinder_shape_separator(new btCylinderShape(btVector3(1.0, 0.065, 1.0)));
     std::unique_ptr<btCollisionShape> sphere_shape(new btSphereShape(1.0));
     std::unique_ptr<btCollisionShape> cone(new btConeShape(0.5, 1.70));
+
+    std::unique_ptr<BasePart> separator(new BasePart(m_separator.get(), m_bt_wrapper, cylinder_shape_separator.get(), btScalar(10.0), 555));
+    separator->setColor(math::vec3(0.75, 0.75, 0.75));
+    separator->setParentAttachmentPoint(math::vec3(0.0, 0.065, 0.0), math::vec3(0.0, 0.0, 0.0));
+    separator->addAttachmentPoint(math::vec3(0.0, -0.065, 0.0), math::vec3(0.0, 0.0, 0.0));
+    separator->setName(std::string("separator_") + std::to_string(555));
+    separator->setFancyName("Separator");
+    separator->setCollisionGroup(CG_DEFAULT | CG_PART);
+    separator->setCollisionFilters(~CG_RAY_EDITOR_RADIAL);
+
+    res = m_master_parts.insert({555, std::move(separator)});
+
+    if(!res.second){
+        log("Failed to inset part with id ", 555, " (collided with ", res.first->first, ")");
+        std::cerr << "Failed to inset part with id " << 555 << " (collided with " << res.first->first << ")" << std::endl;
+    }
 
     std::unique_ptr<BasePart> com_module(new BasePart(m_com_module.get(), m_bt_wrapper, cone.get(), btScalar(10.0), 444));
     com_module->setColor(math::vec3(0.75, 0.75, 0.75));
@@ -131,6 +149,7 @@ void AssetManager::loadParts(){
     m_collision_shapes.push_back(std::move(cylinder_shape_tank));
     m_collision_shapes.push_back(std::move(cylinder_shape_tank2));
     m_collision_shapes.push_back(std::move(cone));
+    m_collision_shapes.push_back(std::move(cylinder_shape_separator));
 }
 
 

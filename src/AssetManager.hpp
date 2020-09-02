@@ -33,6 +33,7 @@ class AssetManager{
         std::unique_ptr<Model> m_tank2;
         std::unique_ptr<Model> m_terrain_model;
         std::unique_ptr<Model> m_com_module;
+        std::unique_ptr<Model> m_separator;
 
         RenderContext* m_render_context;
         const Frustum* m_frustum;
