@@ -13,6 +13,7 @@ BasePart::BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_sh
     m_has_free_att = false;
     m_show_editor_menu = false;
     m_asset_manager = asset_manager;
+    m_properties = 0;
 }
 
 
@@ -25,6 +26,7 @@ BasePart::BasePart(){
     m_has_free_att = false;
     m_show_editor_menu = false;
     m_asset_manager = nullptr;
+    m_properties = 0;
 }
 
 
@@ -48,6 +50,7 @@ BasePart::BasePart(const BasePart& part) : Object(part) {
     m_has_free_att = part.m_has_free_att;
     m_show_editor_menu = false;
     m_asset_manager = part.m_asset_manager;
+    m_properties = part.m_properties;
 }
 
 
@@ -294,13 +297,22 @@ void BasePart::renderOther(){
             m_mesh_transform = math::identity_mat4();
         }
 
-        if(ImGui::Button("Decouple childs")){
-            decoupleAll();
+        // this is for testing now
+        if(m_properties & PART_DECOUPLES_CHILDS){
+            if(ImGui::Button("Decouple childs")){
+                decoupleAll();
+            }
         }
-        if(ImGui::Button("Decouple self")){
-            decoupleSelf();
+        if(m_properties & PART_DECOUPLES){
+            if(ImGui::Button("Decouple self")){
+                decoupleSelf();
+            }
         }
-
+        if(m_properties & PART_HAS_ENGINE){
+            if(ImGui::Button("Start engine (does nothing)")){
+                // ~~
+            }
+        }
 
         ImGui::End();
     }
@@ -340,5 +352,10 @@ void BasePart::decoupleSelf(){
     std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(ourselves);
     m_asset_manager->removePartConstraint(this);
     m_asset_manager->addVessel(vessel);
+}
+
+
+void BasePart::setProperties(long long int flags){
+    m_properties = flags;
 }
 

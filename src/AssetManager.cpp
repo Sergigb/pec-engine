@@ -73,6 +73,7 @@ void AssetManager::loadParts(){
     separator->setFancyName("Separator");
     separator->setCollisionGroup(CG_DEFAULT | CG_PART);
     separator->setCollisionFilters(~CG_RAY_EDITOR_RADIAL);
+    separator->setProperties(PART_DECOUPLES_CHILDS | PART_DECOUPLES);
 
     res = m_master_parts.insert({555, std::move(separator)});
 
@@ -89,6 +90,7 @@ void AssetManager::loadParts(){
     com_module->setFancyName("Command Module");
     com_module->setCollisionGroup(CG_DEFAULT | CG_PART);
     com_module->setCollisionFilters(~CG_RAY_EDITOR_RADIAL);
+    com_module->setProperties(PART_IS_CM);
 
     res = m_master_parts.insert({444, std::move(com_module)});
 
@@ -137,6 +139,7 @@ void AssetManager::loadParts(){
     engine->setFancyName("Engine");
     engine->setCollisionGroup(CG_DEFAULT | CG_PART);
     engine->setCollisionFilters(~CG_RAY_EDITOR_RADIAL);
+    engine->setProperties(PART_HAS_ENGINE);
 
     res = m_master_parts.insert({333, std::move(engine)});
 

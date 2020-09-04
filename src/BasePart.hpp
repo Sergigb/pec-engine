@@ -23,6 +23,13 @@ struct attachment_point{
 };
 
 
+// basic properties
+#define PART_DECOUPLES 1
+#define PART_DECOUPLES_CHILDS 2
+#define PART_IS_CM 4
+#define PART_HAS_ENGINE 8
+
+
 class BasePart : public Object{
     private:
         struct attachment_point m_parent_att_point, m_free_att_point;
@@ -33,6 +40,7 @@ class BasePart : public Object{
         Vessel* m_vessel;
         bool m_is_root, m_has_parent_att, m_has_free_att;
         bool m_show_editor_menu;
+        long long int m_properties;
 
         AssetManagerInterface* m_asset_manager;
 
@@ -60,6 +68,7 @@ class BasePart : public Object{
         void setCollisionMaskSubTree(short mask);
         bool hasParentAttPoint() const;
         bool hasFreeAttPoint() const;
+        void setProperties(long long int flags);
 
         const std::vector<struct attachment_point>* getAttachmentPoints() const;
         const btTypedConstraint* getParentConstraint() const;
