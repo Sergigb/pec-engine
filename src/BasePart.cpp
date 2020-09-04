@@ -309,7 +309,7 @@ void BasePart::renderOther(){
             }
         }
         if(m_properties & PART_HAS_ENGINE){
-            if(ImGui::Button("Start engine (does nothing)")){
+            if(ImGui::Button("Start engine (does nothing).")){
                 // ~~
             }
         }
