@@ -8,7 +8,7 @@ OBJPATH = ../bin
 EXECPATH = ../bin
 PARTSPAHT = parts
 
-MAINSRCS = main.cpp log.cpp utils.cpp gl_utils.cpp maths_funcs.cpp Camera.cpp Input.cpp WindowHandler.cpp Text2D.cpp FontAtlas.cpp Frustum.cpp DebugOverlay.cpp Model.cpp BtWrapper.cpp Object.cpp RenderContext.cpp App.cpp BaseApp.cpp BasePart.cpp EditorGUI.cpp PartsPanelGUI.cpp id_manager.cpp Vessel.cpp AssetManager.cpp AssetManagerInterface.cpp
+MAINSRCS = main.cpp log.cpp utils.cpp gl_utils.cpp maths_funcs.cpp Camera.cpp Input.cpp WindowHandler.cpp Text2D.cpp FontAtlas.cpp Frustum.cpp DebugOverlay.cpp Model.cpp BtWrapper.cpp Object.cpp RenderContext.cpp App.cpp BaseApp.cpp BasePart.cpp EditorGUI.cpp PartsPanelGUI.cpp id_manager.cpp Vessel.cpp AssetManager.cpp AssetManagerInterface.cpp Player.cpp
 MAINOBJS = $(foreach source, $(MAINSRCS), $(OBJPATH)/$(source:.cpp=.o))
 
 IMGUISRCS = $(wildcard ../thirdparty/imgui/*.cpp)
