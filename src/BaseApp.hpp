@@ -18,6 +18,7 @@
 #include "maths_funcs.hpp"
 #include "multithreading.hpp"
 #include "AssetManager.hpp"
+#include "Player.hpp"
 
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/btBulletDynamicsCommon.h>
@@ -35,6 +36,7 @@ class BaseApp{
         std::unique_ptr<RenderContext> m_render_context;
         std::unique_ptr<BtWrapper> m_bt_wrapper;
         std::unique_ptr<AssetManager> m_asset_manager;
+        std::unique_ptr<Player> m_player;
 
         // buffers used to synchronize the physics and rendering
         struct render_buffers m_buffers;

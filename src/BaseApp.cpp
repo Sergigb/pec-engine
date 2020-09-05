@@ -26,6 +26,7 @@ void BaseApp::init(int gl_width, int gl_height){
     m_window_handler->setRenderContext(m_render_context.get());
     m_bt_wrapper.reset(new BtWrapper(btVector3(0, -9.81, 0), &m_buffers, &m_thread_monitor, m_camera.get()));
     m_asset_manager.reset(new AssetManager(m_render_context.get(), m_frustum.get(), m_bt_wrapper.get()));
+    m_player.reset(new Player(m_camera.get(), m_asset_manager.get(), m_input.get()));
 
     std::unique_ptr<Model> att_model(new Model("../data/sphere.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum.get(), m_render_context.get(), math::vec3(1.0, 0.0, 0.0)));
     m_render_context->setAttPointModel(&att_model);
