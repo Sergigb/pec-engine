@@ -23,7 +23,7 @@ class Camera{
         dmath::mat4 m_view_matrix;
         float m_cam_speed, m_cam_heading_speed, m_near, m_far, m_fovy, m_ar;
         double m_previous_frame_time;
-        bool m_has_moved, m_proj_change, m_fb_callback;
+        bool m_proj_change, m_fb_callback;
         int m_cam_input_mode;
 
         const WindowHandler* m_window_handler;
@@ -42,13 +42,16 @@ class Camera{
         void setWindowHandler(const WindowHandler* window_handler);
         void createProjMat(float near, float far, float fovy, float ar);
         void onFramebufferSizeUpdate(int width, int heigth);
+        void setForwardVector(const dmath::vec4 vec);
+        void setRightVector(const dmath::vec4 vec);
+        void setUpVector(const dmath::vec4 vec);
 
         void rotateCameraYaw(double degrees);
         void rotateCameraRoll(double degrees);
         void rotateCameraPitch(double degrees);
         void moveCamera(const dmath::vec3* motion);
+        void setCameraTranslation(const dmath::vec3& translation);
 
-        bool hasMoved() const;
         bool projChanged() const;
         math::mat4 getViewMatrix() const;
         math::mat4 getProjMatrix() const;
@@ -57,6 +60,7 @@ class Camera{
         void castRayMousePos(float dist, dmath::vec3& ray_start_world, dmath::vec3& ray_end_world_ext) const;
 
         void update();
+        void freeCameraUpdate();
 };
 
 

@@ -18,7 +18,6 @@ Camera::Camera(){
     m_far = 100.f;
     m_fovy = 67.f;
     m_ar = 1.f;
-    m_has_moved = false;
     m_proj_change = false;
     m_fb_callback = false;
     m_cam_input_mode = GLFW_CURSOR_NORMAL;
@@ -42,7 +41,6 @@ Camera::Camera(const dmath::vec3& pos, float fovy, float ar, float near, float f
     m_far = far;
     m_fovy = fovy;
     m_ar = ar;
-    m_has_moved = false;
     m_proj_change = false;
     m_fb_callback = false;
     m_cam_input_mode = GLFW_CURSOR_NORMAL;
@@ -160,22 +158,109 @@ void Camera::updateViewMatrix(){
 
 
 void Camera::update(){
-    double elapsed_time, current_frame_time = glfwGetTime();
-    float cam_yaw = 0.0f, cam_pitch = 0.0f, cam_roll = 0.0f, speed_mult = 1.0f;
-    dmath::mat4 R, T;
-
-    elapsed_time = current_frame_time - m_previous_frame_time;
-    m_previous_frame_time = current_frame_time;
-
     if(m_fb_callback){
         m_proj_change = true;
         m_fb_callback = false;
     }
     else if(m_proj_change)
         m_proj_change = false;
+
+    updateViewMatrix();
+}
+
+
+void Camera::setSpeed(float speed){
+    m_cam_speed = speed;
+}
+
+
+void Camera::setAngularSpeed(float speed){
+    m_cam_heading_speed = speed;
+}
+
+
+bool Camera::projChanged() const{
+    return m_proj_change;
+}
+
+
+dmath::vec3 Camera::getCamPosition() const{
+    return m_cam_pos;
+}
+
+
+void Camera::setWindowHandler(const WindowHandler* window_handler){
+    m_window_handler = window_handler;
+}
+
+
+void Camera::castRayMousePos(float dist, dmath::vec3& ray_start_world, dmath::vec3& ray_end_world_ext) const{
+    // ray_end_world_ext is ray_start_world + ray_direction * dist
+    dmath::vec4 ray_start, ray_end, ray_end_world, ray_start_world_vec4;
+    dmath::mat4 M, d_proj_mat;
+    dmath::vec3 ray_dir;
+    double mouse_x, mouse_y;
+    int fb_width, fb_height;
+
+    d_proj_mat = dmath::mat4(m_proj_mat.m[0], m_proj_mat.m[1], m_proj_mat.m[2], m_proj_mat.m[3], 
+                             m_proj_mat.m[4], m_proj_mat.m[5], m_proj_mat.m[6], m_proj_mat.m[7], 
+                             m_proj_mat.m[8], m_proj_mat.m[9], m_proj_mat.m[10], m_proj_mat.m[11], 
+                             m_proj_mat.m[12], m_proj_mat.m[13], m_proj_mat.m[14], m_proj_mat.m[15]);
+
+    m_window_handler->getFramebufferSize(fb_width, fb_height);
+
+    m_input->getMousePos(mouse_x, mouse_y);
+    mouse_y = fb_height - mouse_y; // y is inverted
     
+    ray_start = dmath::vec4(((float)mouse_x/fb_width - 0.5) * 2.0,
+                            (mouse_y/(float)fb_height - 0.5) * 2.0,
+                            -1.0, 1.0);
+    ray_end = dmath::vec4(((float)mouse_x/fb_width - 0.5) * 2.0,
+                          (mouse_y/(float)fb_height - 0.5) * 2.0,
+                          0.0, 1.0);
+
+    M = dmath::inverse(d_proj_mat * m_view_matrix);
+
+    ray_start_world_vec4 = M * ray_start;
+    ray_start_world_vec4 = ray_start_world_vec4 / ray_start_world_vec4.v[3];
+    ray_end_world = M * ray_end;
+    ray_end_world = ray_end_world / ray_end_world.v[3];
+
+    ray_dir = dmath::normalise(ray_end_world - ray_start_world_vec4);
+
+    ray_start_world = dmath::vec3(ray_start_world_vec4);
+    ray_end_world_ext = ray_start_world + ray_dir * dist; // ray end extended according to dist (in meters)
+}
+
+
+void Camera::setForwardVector(const dmath::vec4 vec){
+    m_fwd = vec;
+}
+
+
+void Camera::setRightVector(const dmath::vec4 vec){
+    m_rgt = vec;
+}
+
+
+void Camera::setUpVector(const dmath::vec4 vec){
+    m_up = vec;
+}
+
+
+void Camera::setCameraTranslation(const dmath::vec3& translation){
+    m_cam_translation = translation;
+}
+
+
+void Camera::freeCameraUpdate(){
+    double elapsed_time, current_frame_time = glfwGetTime();
+    float cam_yaw = 0.0f, cam_pitch = 0.0f, cam_roll = 0.0f, speed_mult = 1.0f;
+
+    elapsed_time = current_frame_time - m_previous_frame_time;
+    m_previous_frame_time = current_frame_time;
+
     if(!m_input->keyboardPressed() && !m_input->mouseMoved()){
-        m_has_moved = false;
         return;
     }
 
@@ -247,76 +332,5 @@ void Camera::update(){
         cam_roll += m_cam_heading_speed * elapsed_time;
         rotateCameraRoll(cam_roll);
     }
-    m_has_moved = true;
-    updateViewMatrix();
-}
-
-
-void Camera::setSpeed(float speed){
-    m_cam_speed = speed;
-}
-
-
-void Camera::setAngularSpeed(float speed){
-    m_cam_heading_speed = speed;
-}
-
-
-bool Camera::hasMoved() const{
-    return m_has_moved;
-}
-
-
-bool Camera::projChanged() const{
-    return m_proj_change;
-}
-
-
-dmath::vec3 Camera::getCamPosition() const{
-    return m_cam_pos;
-}
-
-
-void Camera::setWindowHandler(const WindowHandler* window_handler){
-    m_window_handler = window_handler;
-}
-
-
-void Camera::castRayMousePos(float dist, dmath::vec3& ray_start_world, dmath::vec3& ray_end_world_ext) const{
-    // ray_end_world_ext is ray_start_world + ray_direction * dist
-    dmath::vec4 ray_start, ray_end, ray_end_world, ray_start_world_vec4;
-    dmath::mat4 M, d_proj_mat;
-    dmath::vec3 ray_dir;
-    double mouse_x, mouse_y;
-    int fb_width, fb_height;
-
-    d_proj_mat = dmath::mat4(m_proj_mat.m[0], m_proj_mat.m[1], m_proj_mat.m[2], m_proj_mat.m[3], 
-                             m_proj_mat.m[4], m_proj_mat.m[5], m_proj_mat.m[6], m_proj_mat.m[7], 
-                             m_proj_mat.m[8], m_proj_mat.m[9], m_proj_mat.m[10], m_proj_mat.m[11], 
-                             m_proj_mat.m[12], m_proj_mat.m[13], m_proj_mat.m[14], m_proj_mat.m[15]);
-
-    m_window_handler->getFramebufferSize(fb_width, fb_height);
-
-    m_input->getMousePos(mouse_x, mouse_y);
-    mouse_y = fb_height - mouse_y; // y is inverted
-    
-    ray_start = dmath::vec4(((float)mouse_x/fb_width - 0.5) * 2.0,
-                            (mouse_y/(float)fb_height - 0.5) * 2.0,
-                            -1.0, 1.0);
-    ray_end = dmath::vec4(((float)mouse_x/fb_width - 0.5) * 2.0,
-                          (mouse_y/(float)fb_height - 0.5) * 2.0,
-                          0.0, 1.0);
-
-    M = dmath::inverse(d_proj_mat * m_view_matrix);
-
-    ray_start_world_vec4 = M * ray_start;
-    ray_start_world_vec4 = ray_start_world_vec4 / ray_start_world_vec4.v[3];
-    ray_end_world = M * ray_end;
-    ray_end_world = ray_end_world / ray_end_world.v[3];
-
-    ray_dir = dmath::normalise(ray_end_world - ray_start_world_vec4);
-
-    ray_start_world = dmath::vec3(ray_start_world_vec4);
-    ray_end_world_ext = ray_start_world + ray_dir * dist; // ray end extended according to dist (in meters)
 }
 
