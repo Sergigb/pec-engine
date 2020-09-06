@@ -1,3 +1,5 @@
+#include <cmath>
+
 #include "Camera.hpp"
 #include "WindowHandler.hpp"
 
@@ -22,7 +24,10 @@ Camera::Camera(){
     m_fb_callback = false;
     m_cam_input_mode = GLFW_CURSOR_NORMAL;
     updateViewMatrix();
-    m_elapsed_time = 0;
+    m_elapsed_time = 0.0;
+    m_polar_angle = 0.0;
+    m_azimuthal_angle = 0.0;
+    m_radial_distance = 10.0;
 }
 
 
@@ -46,7 +51,10 @@ Camera::Camera(const dmath::vec3& pos, float fovy, float ar, float near, float f
     m_fb_callback = false;
     m_cam_input_mode = GLFW_CURSOR_NORMAL;
     updateViewMatrix();
-    m_elapsed_time = 0;
+    m_elapsed_time = 0.0;
+    m_polar_angle = 0.0;
+    m_azimuthal_angle = 0.0;
+    m_radial_distance = 10.0;
 }
 
 Camera::~Camera(){
@@ -335,5 +343,63 @@ void Camera::freeCameraUpdate(){
         cam_roll += m_cam_heading_speed * m_elapsed_time;
         rotateCameraRoll(cam_roll);
     }
+}
+
+
+void Camera::orbitalCameraUpdate(){
+    double x, y, z;
+
+    if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2] && m_cam_input_mode == GLFW_CURSOR_NORMAL){
+        glfwSetInputMode(m_window_handler->getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+        m_cam_input_mode = GLFW_CURSOR_DISABLED;
+    }
+    else if(!m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2] && m_cam_input_mode == GLFW_CURSOR_DISABLED){
+        glfwSetInputMode(m_window_handler->getWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        m_cam_input_mode = GLFW_CURSOR_NORMAL;
+    }
+
+    if(m_input->mouseMoved() && m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2]){
+        double dif_x, dif_y, posx, posy, mouse_posx_last, mouse_posy_last;
+        m_input->getMousePos(posx, posy);
+        m_input->getMousePosPrev(mouse_posx_last, mouse_posy_last);
+        dif_x = mouse_posx_last - posx;
+        dif_y = mouse_posy_last - posy;
+        
+        m_polar_angle += dif_y * 0.1 * m_elapsed_time;
+        m_azimuthal_angle += dif_x * 0.1 * m_elapsed_time;
+
+        /*if(m_polar_angle > M_PI || m_polar_angle < 0){
+            m_polar_angle = std::abs(M_PI - m_polar_angle);
+        }
+        if(m_azimuthal_angle > M_PI || m_polar_angle < 0){
+            m_azimuthal_angle = std::abs(M_PI - m_polar_angle);
+        }*/
+
+    }
+
+    x = std::sin(m_polar_angle) * std::cos(m_azimuthal_angle);
+    y = std::sin(m_polar_angle) * std::sin(m_azimuthal_angle);
+    z = std::cos(m_polar_angle);
+    /*std::cout << x << "   " << y << "   " << z << std::endl;
+    std::cout << m_rgt.v[0] << "   " << m_rgt.v[1] << "   " << m_rgt.v[2] << std::endl;
+    std::cout << std::endl;*/
+
+
+    m_fwd = dmath::vec4(-x, -y, -z, 0.0);
+    dmath::vec3 up(0.0, 1.0, 0.0);
+    m_rgt = dmath::normalise(dmath::vec4(dmath::cross(dmath::vec3(m_fwd), up), 0.0));
+
+    m_up = dmath::normalise(dmath::vec4(dmath::cross(dmath::vec3(m_fwd), dmath::vec3(m_rgt)), 0.0));
+
+    math::mat3 R(m_rgt.v[0], m_rgt.v[1], m_rgt.v[2],
+                 m_up.v[0], m_up.v[1], m_up.v[2],
+                 m_fwd.v[0], m_fwd.v[1], m_fwd.v[2]);
+    math::versor v = math::from_mat3(R);
+    m_cam_orientation.q[0] = v.q[0];
+    m_cam_orientation.q[1] = v.q[1];
+    m_cam_orientation.q[2] = v.q[2];
+    m_cam_orientation.q[3] = v.q[3];
+
+    m_cam_pos -= m_fwd * 10;
 }
 

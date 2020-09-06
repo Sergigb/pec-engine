@@ -26,6 +26,9 @@ class Camera{
         bool m_proj_change, m_fb_callback;
         int m_cam_input_mode;
 
+        // oribital camera params
+        double m_polar_angle, m_azimuthal_angle, m_radial_distance;
+
         const WindowHandler* m_window_handler;
         const Input* m_input;
 
@@ -61,6 +64,7 @@ class Camera{
 
         void update();
         void freeCameraUpdate();
+        void orbitalCameraUpdate();
 };
 
 
