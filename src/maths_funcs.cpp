@@ -383,6 +383,10 @@ float math::distance( const vec4 &a, const vec4 &b ) {
     return sqrt( x_diff * x_diff + y_diff * y_diff + z_diff * z_diff + w_diff * w_diff );
 }
 
+float math::distance_plane_point( const vec4 &plane, const vec3 &point ) {
+    return (fabs(point.v[0] * plane.v[0] + point.v[1] * plane.v[1] + point.v[2] * plane.v[2] + plane.v[3]) / sqrt(math::length(point)));
+}
+
 math::vec3 math::arb_perpendicular( const vec3& v ) {
     vec3 pv(0.0f, 0.0f, 0.0f);
     if(v.v[1] == 0 && v.v[2] == 0){
@@ -939,6 +943,13 @@ dmath::mat4::mat4( const mat4 &rhs ) {
     }
 }
 
+dmath::vec4::vec4( const vec3 &vv, double w ) {
+    v[0] = vv.v[0];
+    v[1] = vv.v[1];
+    v[2] = vv.v[2];
+    v[3] = w;
+}
+
 dmath::versor::versor(){}
 
 /*------------------------------VECTOR FUNCTIONS------------------------------*/
@@ -1064,6 +1075,13 @@ dmath::vec4 dmath::normalise(const vec4 &v) {
 
 double dmath::length( const vec4 &v ) {
     return sqrt( v.v[0] * v.v[0] + v.v[1] * v.v[1] + v.v[2] * v.v[2] + v.v[3] * v.v[3] );
+}
+
+dmath::vec3 dmath::cross( const vec3 &a, const vec3 &b ) {
+    double x = a.v[1] * b.v[2] - a.v[2] * b.v[1];
+    double y = a.v[2] * b.v[0] - a.v[0] * b.v[2];
+    double z = a.v[0] * b.v[1] - a.v[1] * b.v[0];
+    return vec3( x, y, z );
 }
 
 /*------------------------------MATRIX FUNCTIONS------------------------------*/

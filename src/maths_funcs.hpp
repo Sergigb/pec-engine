@@ -138,6 +138,7 @@ namespace math{
     float distance(const vec2 &a, const vec2 &b);
     float distance(const vec3 &a, const vec3 &b);
     float distance(const vec4 &a, const vec4 &b);
+    float distance_plane_point( const vec4 &plane, const vec3 &point );
     vec3 arb_perpendicular( const vec3& v );
     // matrix functions
     mat3 zero_mat3();
@@ -196,6 +197,7 @@ namespace dmath{ // double precision for the camera
         vec4();
         vec4( double x, double y, double z, double w );
         vec4( const vec4 &rhs );
+        vec4( const vec3 &vv, double w );
         vec4 operator*( double rhs ) const;
         vec4 operator+( double rhs ) const;
         vec4 operator+( const vec4 &rhs ) const;
@@ -231,6 +233,7 @@ namespace dmath{ // double precision for the camera
     // vector functions
     vec4 normalise(const vec4 &v );
     double length( const vec4 &v );
+    vec3 cross( const vec3 &a, const vec3 &b );
     // matrix functions
     mat4 zero_mat4();
     mat4 identity_mat4();
