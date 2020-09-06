@@ -22,6 +22,7 @@ Camera::Camera(){
     m_fb_callback = false;
     m_cam_input_mode = GLFW_CURSOR_NORMAL;
     updateViewMatrix();
+    m_elapsed_time = 0;
 }
 
 
@@ -45,6 +46,7 @@ Camera::Camera(const dmath::vec3& pos, float fovy, float ar, float near, float f
     m_fb_callback = false;
     m_cam_input_mode = GLFW_CURSOR_NORMAL;
     updateViewMatrix();
+    m_elapsed_time = 0;
 }
 
 Camera::~Camera(){
@@ -158,6 +160,11 @@ void Camera::updateViewMatrix(){
 
 
 void Camera::update(){
+    double current_frame_time = glfwGetTime();
+
+    m_elapsed_time = current_frame_time - m_previous_frame_time;
+    m_previous_frame_time = current_frame_time;
+
     if(m_fb_callback){
         m_proj_change = true;
         m_fb_callback = false;
@@ -254,11 +261,7 @@ void Camera::setCameraTranslation(const dmath::vec3& translation){
 
 
 void Camera::freeCameraUpdate(){
-    double elapsed_time, current_frame_time = glfwGetTime();
     float cam_yaw = 0.0f, cam_pitch = 0.0f, cam_roll = 0.0f, speed_mult = 1.0f;
-
-    elapsed_time = current_frame_time - m_previous_frame_time;
-    m_previous_frame_time = current_frame_time;
 
     if(!m_input->keyboardPressed() && !m_input->mouseMoved()){
         return;
@@ -280,8 +283,8 @@ void Camera::freeCameraUpdate(){
         dif_x = mouse_posx_last - posx;
         dif_y = mouse_posy_last - posy;
         
-        cam_pitch += dif_y * 0.25 * elapsed_time;
-        cam_yaw += dif_x * 0.25 * elapsed_time;
+        cam_pitch += dif_y * 0.25 * m_elapsed_time;
+        cam_yaw += dif_x * 0.25 * m_elapsed_time;
 
         rotateCameraPitch(cam_pitch);
         rotateCameraYaw(cam_yaw);
@@ -291,45 +294,45 @@ void Camera::freeCameraUpdate(){
         speed_mult = 4.0f;
 
     if(m_input->pressed_keys[GLFW_KEY_A] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){
-        m_cam_translation.v[0] -= m_cam_speed * speed_mult * elapsed_time;
+        m_cam_translation.v[0] -= m_cam_speed * speed_mult * m_elapsed_time;
     }
     if(m_input->pressed_keys[GLFW_KEY_D] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){
-        m_cam_translation.v[0] += m_cam_speed * speed_mult * elapsed_time;
+        m_cam_translation.v[0] += m_cam_speed * speed_mult * m_elapsed_time;
     }
     if(m_input->pressed_keys[GLFW_KEY_Z] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){
-        m_cam_translation.v[1] -= m_cam_speed * elapsed_time;
+        m_cam_translation.v[1] -= m_cam_speed * m_elapsed_time;
     }
     if(m_input->pressed_keys[GLFW_KEY_C] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){
-        m_cam_translation.v[1] += m_cam_speed * elapsed_time;
+        m_cam_translation.v[1] += m_cam_speed * m_elapsed_time;
     }
     if(m_input->pressed_keys[GLFW_KEY_W] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){
-        m_cam_translation.v[2] -= m_cam_speed * speed_mult * elapsed_time;
+        m_cam_translation.v[2] -= m_cam_speed * speed_mult * m_elapsed_time;
     }
     if(m_input->pressed_keys[GLFW_KEY_S] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){
-        m_cam_translation.v[2] += m_cam_speed * speed_mult * elapsed_time;
+        m_cam_translation.v[2] += m_cam_speed * speed_mult * m_elapsed_time;
     }
     if(m_input->pressed_keys[GLFW_KEY_LEFT] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){
-        cam_yaw += m_cam_heading_speed * elapsed_time;
+        cam_yaw += m_cam_heading_speed * m_elapsed_time;
         rotateCameraYaw(cam_yaw);
     }
     if(m_input->pressed_keys[GLFW_KEY_RIGHT] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){
-        cam_yaw -= m_cam_heading_speed * elapsed_time;
+        cam_yaw -= m_cam_heading_speed * m_elapsed_time;
         rotateCameraYaw(cam_yaw);
     }
     if(m_input->pressed_keys[GLFW_KEY_UP] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){
-        cam_pitch += m_cam_heading_speed * elapsed_time;
+        cam_pitch += m_cam_heading_speed * m_elapsed_time;
         rotateCameraPitch(cam_pitch);
     }
     if(m_input->pressed_keys[GLFW_KEY_DOWN] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){
-        cam_pitch -= m_cam_heading_speed * elapsed_time;
+        cam_pitch -= m_cam_heading_speed * m_elapsed_time;
         rotateCameraPitch(cam_pitch);
     }
     if(m_input->pressed_keys[GLFW_KEY_Q] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){
-        cam_roll -= m_cam_heading_speed * elapsed_time;
+        cam_roll -= m_cam_heading_speed * m_elapsed_time;
         rotateCameraRoll(cam_roll);
     }
     if(m_input->pressed_keys[GLFW_KEY_E] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){
-        cam_roll += m_cam_heading_speed * elapsed_time;
+        cam_roll += m_cam_heading_speed * m_elapsed_time;
         rotateCameraRoll(cam_roll);
     }
 }

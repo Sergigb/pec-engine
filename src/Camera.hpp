@@ -22,7 +22,7 @@ class Camera{
         math::mat4 m_proj_mat;
         dmath::mat4 m_view_matrix;
         float m_cam_speed, m_cam_heading_speed, m_near, m_far, m_fovy, m_ar;
-        double m_previous_frame_time;
+        double m_previous_frame_time, m_elapsed_time;
         bool m_proj_change, m_fb_callback;
         int m_cam_input_mode;
 
