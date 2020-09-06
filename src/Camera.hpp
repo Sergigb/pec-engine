@@ -50,7 +50,7 @@ class Camera{
         void rotateCameraRoll(double degrees);
         void rotateCameraPitch(double degrees);
         void moveCamera(const dmath::vec3* motion);
-        void setCameraTranslation(const dmath::vec3& translation);
+        void setCameraPosition(const dmath::vec3& translation);
 
         bool projChanged() const;
         math::mat4 getViewMatrix() const;

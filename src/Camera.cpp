@@ -255,8 +255,8 @@ void Camera::setUpVector(const dmath::vec4 vec){
 }
 
 
-void Camera::setCameraTranslation(const dmath::vec3& translation){
-    m_cam_translation = translation;
+void Camera::setCameraPosition(const dmath::vec3& translation){
+    m_cam_pos = translation;
 }
 
 
