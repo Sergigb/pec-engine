@@ -25,7 +25,7 @@ Camera::Camera(){
     m_cam_input_mode = GLFW_CURSOR_NORMAL;
     updateViewMatrix();
     m_elapsed_time = 0.0;
-    m_polar_angle = 0.0;
+    m_polar_angle = M_PI / 2;
     m_azimuthal_angle = 0.0;
     m_radial_distance = 10.0;
 }
@@ -52,7 +52,7 @@ Camera::Camera(const dmath::vec3& pos, float fovy, float ar, float near, float f
     m_cam_input_mode = GLFW_CURSOR_NORMAL;
     updateViewMatrix();
     m_elapsed_time = 0.0;
-    m_polar_angle = 0.0;
+    m_polar_angle = M_PI / 2;
     m_azimuthal_angle = 0.0;
     m_radial_distance = 10.0;
 }
@@ -158,7 +158,7 @@ void Camera::updateViewMatrix(){
     m_cam_pos = m_cam_pos + dmath::vec3(m_fwd) * -m_cam_translation.v[2];
     m_cam_pos = m_cam_pos + dmath::vec3(m_up) * m_cam_translation.v[1];
     m_cam_pos = m_cam_pos + dmath::vec3(m_rgt) * m_cam_translation.v[0];
-    T = dmath::translate(dmath::identity_mat4(), dmath::vec3(m_cam_pos));
+    T = dmath::translate(dmath::identity_mat4(), m_cam_pos);
     R = dmath::quat_to_mat4(m_cam_orientation);
 
     m_cam_translation = dmath::vec3(0.0f, 0.0f, 0.0f);
@@ -179,8 +179,6 @@ void Camera::update(){
     }
     else if(m_proj_change)
         m_proj_change = false;
-
-    updateViewMatrix();
 }
 
 
@@ -271,6 +269,8 @@ void Camera::setCameraPosition(const dmath::vec3& translation){
 void Camera::freeCameraUpdate(){
     float cam_yaw = 0.0f, cam_pitch = 0.0f, cam_roll = 0.0f, speed_mult = 1.0f;
 
+    update();
+
     if(!m_input->keyboardPressed() && !m_input->mouseMoved()){
         return;
     }
@@ -343,11 +343,16 @@ void Camera::freeCameraUpdate(){
         cam_roll += m_cam_heading_speed * m_elapsed_time;
         rotateCameraRoll(cam_roll);
     }
+    updateViewMatrix();
 }
 
 
 void Camera::orbitalCameraUpdate(){
     double x, y, z;
+    dmath::mat4 R, T;
+    dmath::vec3 up(0.0, 1.0, 0.0);
+
+    update();
 
     if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2] && m_cam_input_mode == GLFW_CURSOR_NORMAL){
         glfwSetInputMode(m_window_handler->getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
@@ -365,41 +370,42 @@ void Camera::orbitalCameraUpdate(){
         dif_x = mouse_posx_last - posx;
         dif_y = mouse_posy_last - posy;
         
-        m_polar_angle += dif_y * 0.1 * m_elapsed_time;
-        m_azimuthal_angle += dif_x * 0.1 * m_elapsed_time;
+        m_polar_angle -= dif_y * 0.1 * m_elapsed_time;
+        m_azimuthal_angle -= dif_x * 0.1 * m_elapsed_time;
 
-        /*if(m_polar_angle > M_PI || m_polar_angle < 0){
-            m_polar_angle = std::abs(M_PI - m_polar_angle);
+        if(m_polar_angle < 0){
+            m_polar_angle = 0.01;
         }
-        if(m_azimuthal_angle > M_PI || m_polar_angle < 0){
-            m_azimuthal_angle = std::abs(M_PI - m_polar_angle);
-        }*/
-
+        else if(m_polar_angle > M_PI){
+            m_polar_angle = M_PI;
+        }
+        if(m_azimuthal_angle > M_PI*2){
+            m_azimuthal_angle = m_azimuthal_angle - M_PI*2;
+        }
+        else if(m_azimuthal_angle < 0){
+            m_azimuthal_angle = M_PI*2 - m_azimuthal_angle;
+        }
     }
 
     x = std::sin(m_polar_angle) * std::cos(m_azimuthal_angle);
-    y = std::sin(m_polar_angle) * std::sin(m_azimuthal_angle);
-    z = std::cos(m_polar_angle);
-    /*std::cout << x << "   " << y << "   " << z << std::endl;
-    std::cout << m_rgt.v[0] << "   " << m_rgt.v[1] << "   " << m_rgt.v[2] << std::endl;
-    std::cout << std::endl;*/
-
+    z = std::sin(m_polar_angle) * std::sin(m_azimuthal_angle);
+    y = std::cos(m_polar_angle);
 
     m_fwd = dmath::vec4(-x, -y, -z, 0.0);
-    dmath::vec3 up(0.0, 1.0, 0.0);
-    m_rgt = dmath::normalise(dmath::vec4(dmath::cross(dmath::vec3(m_fwd), up), 0.0));
-
+    m_rgt = dmath::normalise(dmath::vec4(dmath::cross(up, dmath::vec3(m_fwd)), 0.0));
     m_up = dmath::normalise(dmath::vec4(dmath::cross(dmath::vec3(m_fwd), dmath::vec3(m_rgt)), 0.0));
 
-    math::mat3 R(m_rgt.v[0], m_rgt.v[1], m_rgt.v[2],
-                 m_up.v[0], m_up.v[1], m_up.v[2],
-                 m_fwd.v[0], m_fwd.v[1], m_fwd.v[2]);
-    math::versor v = math::from_mat3(R);
-    m_cam_orientation.q[0] = v.q[0];
-    m_cam_orientation.q[1] = v.q[1];
-    m_cam_orientation.q[2] = v.q[2];
-    m_cam_orientation.q[3] = v.q[3];
+    R = dmath::mat4(m_rgt.v[0], m_rgt.v[1], m_rgt.v[2], 0.0,
+                    m_up.v[0], m_up.v[1], m_up.v[2], 0.0,
+                    m_fwd.v[0], m_fwd.v[1], m_fwd.v[2], 0.0,
+                    0.0, 0.0, 0.0, 1.0);
 
-    m_cam_pos -= m_fwd * 10;
+    m_cam_pos.v[0] += m_fwd.v[0] * 10;
+    m_cam_pos.v[1] += m_fwd.v[1] * 10;
+    m_cam_pos.v[2] += m_fwd.v[2] * 10;
+
+    T = dmath::translate(dmath::identity_mat4(), m_cam_pos);
+
+    m_view_matrix = dmath::inverse(R) * dmath::inverse(T);
 }
 

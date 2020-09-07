@@ -60,7 +60,6 @@ void App::run(){
 
         m_input->update();
         m_window_handler->update();
-        m_camera->update();
         m_frustum->extractPlanes(m_camera->getCenteredViewMatrix(), m_camera->getProjMatrix(), false);
         m_player->update();
 
