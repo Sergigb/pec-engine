@@ -6,7 +6,11 @@
 #include <cstdint>
 #include <map>
 
+#define BT_USE_DOUBLE_PRECISION
+#include <bullet/btBulletDynamicsCommon.h>
+
 #include "AssetManagerInterface.hpp"
+#include "buffers.hpp"
 
 
 class Model;
@@ -17,11 +21,7 @@ class Vessel;
 class RenderContext;
 class Frustum;
 class BtWrapper;
-
-struct set_motion_state_msg;
-struct add_contraint_msg;
-struct add_body_msg;
-
+class Camera;
 
 class AssetManager{
     private:
@@ -40,9 +40,14 @@ class AssetManager{
         RenderContext* m_render_context;
         const Frustum* m_frustum;
         BtWrapper* m_bt_wrapper;
+        const Camera* m_camera;
 
         friend class AssetManagerInterface;
         AssetManagerInterface m_asset_manager_interface;
+
+        // render buffers
+        struct render_buffers* m_buffers;
+        void updateBuffer(std::vector<object_transform>* buffer_);
     public:
         std::vector<std::shared_ptr<Object>> m_objects;
         std::vector<std::unique_ptr<btCollisionShape>> m_collision_shapes;
@@ -58,10 +63,11 @@ class AssetManager{
         std::map<std::uint32_t, std::shared_ptr<BasePart>> m_editor_subtrees;
         std::map<std::uint32_t, std::shared_ptr<Vessel>> m_editor_vessels;
 
-        AssetManager(RenderContext* render_context, const Frustum* frustum, BtWrapper* bt_wrapper);
+        AssetManager(RenderContext* render_context, const Frustum* frustum, BtWrapper* bt_wrapper, render_buffers* buff_manager, Camera* camera);
         ~AssetManager();
 
         void processCommandBuffers(bool physics_pause);
+        void updateBuffers();
 
         /*Editor methods, only call them before calling logic() and waking up the physics thread*/
         void clearSceneEditor();
