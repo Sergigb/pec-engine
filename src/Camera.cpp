@@ -400,12 +400,24 @@ void Camera::orbitalCameraUpdate(){
                     m_fwd.v[0], m_fwd.v[1], m_fwd.v[2], 0.0,
                     0.0, 0.0, 0.0, 1.0);
 
-    m_cam_pos.v[0] += m_fwd.v[0] * 10;
-    m_cam_pos.v[1] += m_fwd.v[1] * 10;
-    m_cam_pos.v[2] += m_fwd.v[2] * 10;
+    m_cam_pos.v[0] += m_fwd.v[0] * m_radial_distance;
+    m_cam_pos.v[1] += m_fwd.v[1] * m_radial_distance;
+    m_cam_pos.v[2] += m_fwd.v[2] * m_radial_distance;
 
     T = dmath::translate(dmath::identity_mat4(), m_cam_pos);
 
     m_view_matrix = dmath::inverse(R) * dmath::inverse(T);
+}
+
+
+void Camera::setOrbitalCamDistance(double distance){
+    m_radial_distance = distance;
+}
+
+
+void Camera::incrementOrbitalCamDistance(double increment){
+    if(m_radial_distance + increment > 1.0){
+        m_radial_distance += increment;
+    }
 }
 

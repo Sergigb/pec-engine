@@ -48,6 +48,8 @@ class Camera{
         void setForwardVector(const dmath::vec4 vec);
         void setRightVector(const dmath::vec4 vec);
         void setUpVector(const dmath::vec4 vec);
+        void setOrbitalCamDistance(double distance);
+        void incrementOrbitalCamDistance(double increment);
 
         void rotateCameraYaw(double degrees);
         void rotateCameraRoll(double degrees);

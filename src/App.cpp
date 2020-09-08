@@ -466,6 +466,14 @@ void App::logic(){
         }
     }
 
+    // this should be cleaned up
+
+    double scx, scy;
+    m_input->getScroll(scx, scy);
+    if((scy) && !m_render_context->imGuiWantCaptureMouse() && !m_gui_action){
+        m_camera->incrementOrbitalCamDistance(-scy * 5.0); // we should check the camera mode
+    }
+
     if(m_input->pressed_keys[GLFW_KEY_F12] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
         m_render_context->toggleDebugOverlay();
     }
