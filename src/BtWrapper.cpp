@@ -1,16 +1,13 @@
 #include "BtWrapper.hpp"
 #include "Object.hpp"
-#include "Camera.hpp"
 
 
 BtWrapper::BtWrapper(){
     init(btVector3(0.0, -9.81, 0.0));
 }
 
-BtWrapper::BtWrapper(const btVector3& gravity, render_buffers* buff_manager, thread_monitor* thread_monitor, const Camera* camera){
+BtWrapper::BtWrapper(const btVector3& gravity, thread_monitor* thread_monitor){
     m_thread_monitor = thread_monitor;
-    m_buffers = buff_manager;
-    m_camera = camera;
 
     init(gravity);
 }
@@ -147,7 +144,6 @@ void BtWrapper::runSimulation(btScalar time_step, int max_sub_steps){
         if(!m_simulation_paused){
             m_dynamics_world->stepSimulation(time_step , max_sub_steps);
         }
-        updateBuffers();
 
         loop_end_load = std::chrono::steady_clock::now();
 
@@ -172,76 +168,7 @@ double BtWrapper::getAverageLoadTime() const{
 }
 
 
-void BtWrapper::updateBuffer(std::vector<object_transform>* buffer_){
-    const btCollisionObjectArray& col_object_array = m_dynamics_world->getCollisionObjectArray();
-    dmath::vec3 cam_origin = m_camera->getCamPosition();
-    btVector3 btv_cam_origin(cam_origin.v[0], cam_origin.v[1], cam_origin.v[2]);
-
-    buffer_->clear();
-    for(int i=0; i<col_object_array.size(); i++){
-        Object* obj = static_cast<Object *>(col_object_array.at(i)->getUserPointer());
-        if(obj->renderIgnore()){ // ignore if the object should be destroyed
-            continue;
-        }
-        try{
-            math::mat4 mat;
-            double b_transform[16];
-
-            obj->getRigidBodyTransformDouble(b_transform);
-            b_transform[12] -= btv_cam_origin.getX();   // object is transformed wrt camera origin
-            b_transform[13] -= btv_cam_origin.getY();
-            b_transform[14] -= btv_cam_origin.getZ();
-            std::copy(b_transform, b_transform + 16, mat.m);
-
-            std::shared_ptr<Object> obj_sptr = obj->getSharedPtr();
-            buffer_->emplace_back(object_transform{obj_sptr, mat});
-        }
-        catch(std::bad_weak_ptr& e) {
-            std::string name;
-            obj->getFancyName(name);
-            std::cout << "BtWrapper::updateBuffer - Warning, weak ptr for object " << name << " with id " << obj->getBaseId() << '\n';
-        }
-    }
+const btDiscreteDynamicsWorld* BtWrapper::getDynamicsWorld() const{
+    return m_dynamics_world.get();
 }
 
-
-void BtWrapper::updateBuffers(){
-    /*std::chrono::duration<double, std::micro> time;
-    std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
-    std::chrono::steady_clock::time_point end;*/
-    
-
-    if(m_buffers->last_updated == buffer_2 || m_buffers->last_updated == none){
-        if(m_buffers->buffer1_lock.try_lock()){
-            m_buffers->view_mat1 = m_camera->getCenteredViewMatrix();
-            updateBuffer(&m_buffers->buffer1);
-            m_buffers->last_updated = buffer_1;
-            m_buffers->buffer1_lock.unlock();
-        }
-        else{
-            m_buffers->buffer2_lock.lock(); // very unlikely to not get the lock
-            m_buffers->view_mat2 = m_camera->getCenteredViewMatrix();
-            updateBuffer(&m_buffers->buffer2);
-            m_buffers->last_updated = buffer_2;
-            m_buffers->buffer2_lock.unlock();
-        }
-    }
-    else{
-        if(m_buffers->buffer2_lock.try_lock()){
-            m_buffers->view_mat2 = m_camera->getCenteredViewMatrix();
-            updateBuffer(&m_buffers->buffer2);
-            m_buffers->last_updated = buffer_2;
-            m_buffers->buffer2_lock.unlock();
-        }
-        else{
-            m_buffers->view_mat1 = m_camera->getCenteredViewMatrix();
-            m_buffers->buffer1_lock.lock();
-            updateBuffer(&m_buffers->buffer1);
-            m_buffers->last_updated = buffer_1;
-            m_buffers->buffer1_lock.unlock();
-        }
-    }
-    /*end = std::chrono::steady_clock::now();
-    time = end - start;
-    std::cout << "copy time: " << time.count() << std::endl;*/
-}

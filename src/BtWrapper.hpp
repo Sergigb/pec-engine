@@ -13,7 +13,6 @@
 
 #include "log.hpp"
 #include "maths_funcs.hpp"
-#include "buffers.hpp"
 #include "multithreading.hpp"
 
 
@@ -28,7 +27,6 @@
 
 
 class Object;
-class Camera;
 
 class BtWrapper{
     private:
@@ -41,8 +39,6 @@ class BtWrapper{
         void init(const btVector3& gravity);
 
         void runSimulation(btScalar time_step, int max_sub_steps);
-        void updateBuffers();
-        void updateBuffer(std::vector<object_transform>* buffer_);
         void noticeLogic();
         void waitLogic();
 
@@ -50,15 +46,9 @@ class BtWrapper{
         bool m_simulation_paused, m_end_simulation;
         double m_average_load;
         struct thread_monitor* m_thread_monitor;
-
-        // synchronization
-        struct render_buffers* m_buffers;
-
-        // matrixes should be stored in the render buffers
-        const Camera* m_camera;
     public:
         BtWrapper();
-        BtWrapper(const btVector3& gravity, render_buffers* buff_manager, thread_monitor* thread_monitor, const Camera* camera);
+        BtWrapper(const btVector3& gravity, thread_monitor* thread_monitor);
         ~BtWrapper();
 
         void addRigidBody(btRigidBody* body, short group, short mask);
@@ -69,6 +59,7 @@ class BtWrapper{
         Object* testRay(btCollisionWorld::ClosestRayResultCallback& ray_callback, const btVector3& ray_start, const btVector3& ray_end) const;
         void updateCollisionWorldSingleAABB(btRigidBody* body);
         double getAverageLoadTime() const;
+        const btDiscreteDynamicsWorld* getDynamicsWorld() const;
 
         void startSimulation(btScalar time_step, int max_sub_steps);
         void stopSimulation();
