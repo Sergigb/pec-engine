@@ -19,6 +19,9 @@ class Player{
         ~Player();
 
         void update();
+
+        // this method should be called by the player controlled vessel
+        void onVesselDestroy();
 };
 
 

@@ -12,6 +12,8 @@
 #include "BtWrapper.hpp" // collision flags
 
 
+class Player;
+
 class Vessel{
     private:
         std::string m_vessel_name, m_vessel_desc;
@@ -19,6 +21,8 @@ class Vessel{
         std::vector<BasePart*> m_node_list;
         std::map<std::uint32_t, BasePart*> m_node_map_by_id;
         std::uint32_t m_vessel_id;
+
+        Player* m_player; // player controlling the vessel
 
         void updateNodes(); // updates node list and map
     public:
@@ -28,7 +32,8 @@ class Vessel{
 
         void setVesselName(const std::string& name);
         void setVesselDescription(const std::string& description);
-        //void setRoot(BasePart* part);
+        //void setRoot(BasePart* pat);
+        void setPlayer(Player* player);
 
         /* These functions should only be used in the editor */
         bool addChildById(std::shared_ptr<BasePart>& child, std::uint32_t parent_id);

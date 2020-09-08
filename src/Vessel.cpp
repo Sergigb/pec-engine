@@ -1,9 +1,11 @@
 #include "Vessel.hpp"
+#include "Player.hpp"
 
 
 Vessel::Vessel(){
     m_vessel_root = nullptr;
     create_id(m_vessel_id, VESSEL_SET);
+    m_player = nullptr;
 }
 
 
@@ -13,11 +15,14 @@ Vessel::Vessel(std::shared_ptr<BasePart>& vessel_root){
     m_vessel_root->updateSubTreeVessel(this);
     create_id(m_vessel_id, VESSEL_SET);
     updateNodes();
+    m_player = nullptr;
 }
 
 
 Vessel::~Vessel(){
-
+    if(m_player){
+        m_player->onVesselDestroy();
+    }
 }
 
 
@@ -266,4 +271,8 @@ std::shared_ptr<BasePart> Vessel::removeChild(BasePart* child){
     return child_sptr;                
 }
 
+
+void Vessel::setPlayer(Player* player){
+    m_player = player;
+}
 
