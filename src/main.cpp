@@ -11,15 +11,15 @@
 int main(int argc, char* argv[]){
     UNUSED(argc); UNUSED(argv);
 
-	if(change_cwd_to_selfpath() == EXIT_FAILURE)
-		std::cerr << "Could not change the cwd to executable path, proceeding" << std::endl;
+    if(change_cwd_to_selfpath() == EXIT_FAILURE)
+        std::cerr << "Could not change the cwd to executable path, proceeding" << std::endl;
 
-	log_start();
+    log_start();
 
     App* app = new App();
     app->run();
     delete app;
 
-	return EXIT_SUCCESS;
+    return EXIT_SUCCESS;
 }
 
