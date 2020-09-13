@@ -1262,6 +1262,18 @@ dmath::versor dmath::versor::operator+( const versor &rhs ) const {
     return dmath::normalise( result );
 }
 
+dmath::vec3 dmath::normalise( const vec3 &v ) {
+    dmath::vec3 vb;
+    double l = length( v );
+    if ( 0.0f == l ) {
+        return dmath::vec3( 0.0f, 0.0f, 0.0f );
+    }
+    vb.v[0] = v.v[0] / l;
+    vb.v[1] = v.v[1] / l;
+    vb.v[2] = v.v[2] / l;
+    return vb;
+}
+
 dmath::versor dmath::normalise( versor &q ) {
     double sum = q.q[0] * q.q[0] + q.q[1] * q.q[1] + q.q[2] * q.q[2] + q.q[3] * q.q[3];
     const double thresh = 0.0001;
@@ -1272,6 +1284,10 @@ dmath::versor dmath::normalise( versor &q ) {
     return q / mag;
 }
 
+double dmath::length( const vec3 &v ) {
+    return sqrt( v.v[0] * v.v[0] + v.v[1] * v.v[1] + v.v[2] * v.v[2] );
+}
+
 dmath::versor dmath::versor::operator/( double rhs ) const {
     versor result;
     result.q[0] = q[0] / rhs;
@@ -1279,6 +1295,14 @@ dmath::versor dmath::versor::operator/( double rhs ) const {
     result.q[2] = q[2] / rhs;
     result.q[3] = q[3] / rhs;
     return result;
+}
+
+double dmath::distance( const vec3 &a, const vec3 &b ) {
+    double x_diff = a.v[0] - b.v[0];
+    double y_diff = a.v[1] - b.v[1];
+    double z_diff = a.v[2] - b.v[2];
+
+    return sqrt( x_diff * x_diff + y_diff * y_diff + z_diff * z_diff );
 }
 
 dmath::mat4 dmath::quat_to_mat4( const versor &q ) {

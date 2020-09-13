@@ -231,9 +231,12 @@ namespace dmath{ // double precision for the camera
     };
 
     // vector functions
+    vec3 normalise(const vec3 &v );
     vec4 normalise(const vec4 &v );
+    double length( const vec3 &v );
     double length( const vec4 &v );
     vec3 cross( const vec3 &a, const vec3 &b );
+    double distance(const vec3 &a, const vec3 &b);
     // matrix functions
     mat4 zero_mat4();
     mat4 identity_mat4();
