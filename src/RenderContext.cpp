@@ -36,6 +36,19 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
 
     // shader setup (I don't like how this is organised)
 
+    m_planet_shader = create_programme_from_files("../shaders/planet_vs.glsl",
+                                                    "../shaders/planet_fs.glsl");
+    log_programme_info(m_planet_shader);
+    m_planet_view_mat = glGetUniformLocation(m_planet_shader, "view");
+    m_planet_proj_mat = glGetUniformLocation(m_planet_shader, "proj");
+    m_planet_light_pos = glGetUniformLocation(m_planet_shader, "light_pos");
+    m_planet_relative_pos = glGetUniformLocation(m_planet_shader, "relative_planet");
+
+    glUseProgram(m_planet_shader);
+    glUniformMatrix4fv(m_planet_view_mat, 1, GL_FALSE, m_camera->getViewMatrix().m);
+    glUniformMatrix4fv(m_planet_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
+    glUniform3fv(m_planet_light_pos, 1, math::vec3(0.0, 0.0, 0.0).v);
+
     m_pb_notex_shader = create_programme_from_files("../shaders/phong_blinn_color_vs.glsl",
                                                     "../shaders/phong_blinn_color_fs.glsl");
     log_programme_info(m_pb_notex_shader);
@@ -93,6 +106,7 @@ RenderContext::~RenderContext(){
     glDeleteShader(m_pb_shader);
     glDeleteShader(m_text_shader);
     glDeleteShader(m_gui_shader);
+    glDeleteShader(m_planet_shader);
 }
 
 
@@ -229,6 +243,10 @@ void RenderContext::render(){
         glUniformMatrix4fv(m_pb_view_mat, 1, GL_FALSE, view_mat->m);
         glUniformMatrix4fv(m_pb_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
 
+        glUseProgram(m_planet_shader);
+        glUniformMatrix4fv(m_planet_view_mat, 1, GL_FALSE, view_mat->m);
+        glUniformMatrix4fv(m_planet_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
+
         for(uint i=0; i<buff->size(); i++){
             BasePart* part = dynamic_cast<BasePart*>(buff->at(i).object_ptr.get());
             if(part){
@@ -281,6 +299,8 @@ void RenderContext::setLightPosition(const math::vec3& pos) const{
     glUniform3fv(m_pb_notex_light_pos, 1, pos.v);
     glUseProgram(m_pb_shader);
     glUniform3fv(m_pb_light_pos, 1, pos.v);
+    glUseProgram(m_planet_shader);
+    glUniform3fv(m_planet_light_pos, 1, pos.v);
 }
 
 
@@ -294,6 +314,8 @@ GLuint RenderContext::getShader(int shader) const{
             return m_text_shader;
         case SHADER_GUI:
             return m_gui_shader;
+        case SHADER_PLANET:
+            return m_planet_shader;
         default:
             return 0;
     }
@@ -465,5 +487,47 @@ bool RenderContext::imGuiWantCaptureKeyboard() const{
     ImGuiIO& io = ImGui::GetIO();
 
     return io.WantCaptureKeyboard;
+}
+
+
+void RenderContext::contextUpdatePlanetarium(){
+    if(m_update_fb){
+        m_update_fb = false;
+        m_update_projection = true;
+        glViewport(0, 0, m_fb_width, m_fb_height);
+    }
+
+    if(m_update_projection){
+        math::mat4 projection = math::orthographic(m_fb_width, 0, m_fb_height, 0, 1.0f , -1.0f);
+        glUseProgram(m_text_shader);
+        glUniformMatrix4fv(m_text_proj_mat, 1, GL_FALSE, projection.m);
+        glUseProgram(m_gui_shader);
+        glUniformMatrix4fv(m_gui_proj_mat, 1, GL_FALSE, projection.m);
+
+        m_debug_overlay->onFramebufferSizeUpdate(m_fb_width, m_fb_height);
+
+        m_update_projection = false;
+    }
+
+    glClearColor(m_color_clear.v[0], m_color_clear.v[1], m_color_clear.v[2], m_color_clear.v[3]);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glUseProgram(m_pb_notex_shader);
+    glUniformMatrix4fv(m_pb_notex_view_mat, 1, GL_FALSE, m_camera->getCenteredViewMatrix().m);
+    glUniformMatrix4fv(m_pb_notex_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
+
+    glUseProgram(m_pb_shader);
+    glUniformMatrix4fv(m_pb_view_mat, 1, GL_FALSE, m_camera->getCenteredViewMatrix().m);
+    glUniformMatrix4fv(m_pb_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
+
+    glUseProgram(m_planet_shader);
+    glUniformMatrix4fv(m_planet_view_mat, 1, GL_FALSE, m_camera->getCenteredViewMatrix().m);
+    glUniformMatrix4fv(m_planet_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
+
+    if(m_draw_overlay){
+        glDisable(GL_DEPTH_TEST);
+        m_debug_overlay->render();
+        glEnable(GL_DEPTH_TEST);
+    }
 }
 

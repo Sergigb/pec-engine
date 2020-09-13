@@ -29,6 +29,7 @@
 #define SHADER_PHONG_BLINN_NO_TEXTURE 2
 #define SHADER_TEXT 3
 #define SHADER_GUI 4
+#define SHADER_PLANET 5
 
 // gui modes, only editor for now
 #define GUI_MODE_NONE 0
@@ -49,6 +50,9 @@ class RenderContext{
 
         GLint m_gui_proj_mat;
         GLuint m_gui_shader;
+
+        GLint m_planet_view_mat, m_planet_proj_mat, m_planet_light_pos, m_planet_relative_pos;
+        GLuint m_planet_shader;
         // shaders //
 
         GLuint m_bound_vao;
@@ -112,6 +116,8 @@ class RenderContext{
         void getDefaultFbSize(float& width, float& height) const;
         bool imGuiWantCaptureMouse() const;
         bool imGuiWantCaptureKeyboard() const;
+
+        void contextUpdatePlanetarium();
 };
 
 
