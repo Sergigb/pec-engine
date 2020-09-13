@@ -166,6 +166,7 @@ int Model::loadScene(const std::string& pFile){
 
 int Model::render(const math::mat4& transform) const{
     if(m_frustum->checkBox(m_aabb.vert, transform)){
+    ///if(m_frustum->checkSphere(math::vec3(transform.m[12], transform.m[13], transform.m[14]), m_cs_radius)){
         m_render_context->useProgram(m_shader_programme);
         m_render_context->bindVao(m_vao);
 
@@ -183,5 +184,20 @@ int Model::render(const math::mat4& transform) const{
     else{
         return 0;
     }
+}
+
+
+void Model::render_terrain(const math::mat4& transform) const{
+    m_render_context->useProgram(m_shader_programme);
+    m_render_context->bindVao(m_vao);
+
+    if(m_has_texture){
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, m_tex_id);
+    }
+
+    glUniform4fv(m_color_location, 1, m_mesh_color.v);
+    glUniformMatrix4fv(m_model_mat_location, 1, GL_FALSE, transform.m);
+    glDrawElements(GL_TRIANGLES, m_num_faces * 3, GL_UNSIGNED_INT, NULL);
 }
 

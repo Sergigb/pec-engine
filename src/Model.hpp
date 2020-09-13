@@ -37,6 +37,7 @@ class Model{
 
         void setMeshColor(const math::vec4& mesh_color);
         int render(const math::mat4& transform) const;
+        void render_terrain(const math::mat4& transform) const;
 
 };
 
