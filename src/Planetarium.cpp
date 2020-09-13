@@ -28,51 +28,163 @@ Planetarium::~Planetarium(){
 }
 
 
+void set_transform(struct surface_node& node, const struct surface_node& parent, int sign_side_1, int sign_side_2){
+	node.patch_translation = parent.patch_translation;
+	switch(node.side){
+        case SIDE_PX:
+            node.patch_translation.v[1] += (node.scale / 2) * sign_side_1;
+            node.patch_translation.v[2] += (node.scale / 2) * sign_side_2;
+            break;
+
+        case SIDE_NX:
+            node.patch_translation.v[1] += (node.scale / 2) * sign_side_1;
+            node.patch_translation.v[2] += (node.scale / 2) * sign_side_2;
+            break;
+
+        case SIDE_PY:
+            node.patch_translation.v[0] += (node.scale / 2) * sign_side_1;
+            node.patch_translation.v[2] += (node.scale / 2) * sign_side_2;
+            break;
+
+        case SIDE_NY:
+            node.patch_translation.v[0] += (node.scale / 2) * sign_side_1;
+            node.patch_translation.v[2] += (node.scale / 2) * sign_side_2;
+            break;
+
+        case SIDE_PZ:
+            node.patch_translation.v[0] += (node.scale / 2) * sign_side_1;
+            node.patch_translation.v[1] += (node.scale / 2) * sign_side_2;
+            break;
+
+        case SIDE_NZ:
+            node.patch_translation.v[0] += (node.scale / 2) * sign_side_1;
+            node.patch_translation.v[1] += (node.scale / 2) * sign_side_2;
+            break;
+    }
+}
+
+
+void build_childs(struct surface_node& node, int num_levels){
+	node.childs[0].reset(new struct surface_node);
+	node.childs[0]->scale = node.scale / 2.0;
+	node.childs[0]->base_rotation = node.base_rotation;
+	node.childs[0]->color = node.color;
+	node.childs[0]->level = node.level + 1;
+	node.childs[0]->side = node.side;
+	set_transform(*node.childs[0].get(), node, 1, 1);
+
+	node.childs[1].reset(new struct surface_node);
+	node.childs[1]->scale = node.scale / 2.0;
+	node.childs[1]->base_rotation = node.base_rotation;
+	node.childs[1]->color = node.color;
+	node.childs[1]->level = node.level + 1;
+	node.childs[1]->side = node.side;
+	set_transform(*node.childs[1].get(), node, 1, -1);
+
+	node.childs[2].reset(new struct surface_node);
+	node.childs[2]->scale = node.scale / 2.0;
+	node.childs[2]->base_rotation = node.base_rotation;
+	node.childs[2]->color = node.color;
+	node.childs[2]->level = node.level + 1;
+	node.childs[2]->side = node.side;
+	set_transform(*node.childs[2].get(), node, -1, 1);
+
+	node.childs[3].reset(new struct surface_node);
+	node.childs[3]->scale = node.scale / 2.0;
+	node.childs[3]->base_rotation = node.base_rotation;
+	node.childs[3]->color = node.color;
+	node.childs[3]->level = node.level + 1;
+	node.childs[3]->side = node.side;
+	set_transform(*node.childs[3].get(), node, -1, -1);
+
+	if(node.level + 2 <= num_levels){
+		for(uint i = 0; i < 4; i++){
+			build_childs(*node.childs[i].get(), num_levels);
+		}
+	}
+}
+
+
 void build_surface(struct planet_surface& surface){
+	short num_levels = surface.max_levels;
+
 	surface.surface_tree[0].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
 	surface.surface_tree[0].scale = 1.0;
 	surface.surface_tree[0].base_rotation = dmath::quat_from_axis_rad(0.0, 0.0, 0.0, 0.0);
 	surface.surface_tree[0].color = math::vec4(1.0, 0.0, 0.0, 1.0);
+	surface.surface_tree[0].level = 1;
+	surface.surface_tree[0].side = SIDE_PX;
+	build_childs(surface.surface_tree[0], num_levels);
 
 	surface.surface_tree[1].patch_translation = dmath::vec3(-0.5, 0.0, 0.0);
 	surface.surface_tree[1].scale = 1.0;
 	surface.surface_tree[1].base_rotation = dmath::quat_from_axis_rad(M_PI, 0.0, 1.0, 0.0);
 	surface.surface_tree[1].color = math::vec4(0.0, 1.0, 0.0, 1.0);
+	surface.surface_tree[1].level = 1;
+	surface.surface_tree[1].side = SIDE_NX;
+	build_childs(surface.surface_tree[1], num_levels);
 
 	surface.surface_tree[2].patch_translation = dmath::vec3(0.0, 0.5, 0.0);
 	surface.surface_tree[2].scale = 1.0;
 	surface.surface_tree[2].base_rotation = dmath::quat_from_axis_rad(M_PI/2, 0.0, 0.0, 1.0);
 	surface.surface_tree[2].color = math::vec4(0.0, 0.0, 1.0, 1.0);
+	surface.surface_tree[2].level = 1;
+	surface.surface_tree[2].side = SIDE_PY;
+	build_childs(surface.surface_tree[2], num_levels);
 
 	surface.surface_tree[3].patch_translation = dmath::vec3(0.0, -0.5, 0.0);
 	surface.surface_tree[3].scale = 1.0;
 	surface.surface_tree[3].base_rotation = dmath::quat_from_axis_rad(-M_PI/2, 0.0, 0.0, 1.0);
 	surface.surface_tree[3].color = math::vec4(1.0, 0.0, 1.0, 1.0);
+	surface.surface_tree[3].level = 1;
+	surface.surface_tree[3].side = SIDE_NY;
+	build_childs(surface.surface_tree[3], num_levels);
 
 	surface.surface_tree[4].patch_translation = dmath::vec3(0.0, 0.0, 0.5);
 	surface.surface_tree[4].scale = 1.0;
 	surface.surface_tree[4].base_rotation = dmath::quat_from_axis_rad(-M_PI/2, 0.0, 1.0, 0.0);
 	surface.surface_tree[4].color = math::vec4(1.0, 1.0, 0.0, 1.0);
+	surface.surface_tree[4].level = 1;
+	surface.surface_tree[4].side = SIDE_PZ;
+	build_childs(surface.surface_tree[4], num_levels);
 
 	surface.surface_tree[5].patch_translation = dmath::vec3(0.0, 0.0, -0.5);
 	surface.surface_tree[5].scale = 1.0;
 	surface.surface_tree[5].base_rotation = dmath::quat_from_axis_rad(M_PI/2, 0.0, 1.0, 0.0);
 	surface.surface_tree[5].color = math::vec4(0.0, 1.0, 1.0, 1.0);
+	surface.surface_tree[5].level = 1;
+	surface.surface_tree[5].side = SIDE_NZ;
+	build_childs(surface.surface_tree[5], num_levels);
 }
 
 
-void Planetarium::render_side(const struct surface_node& surface_subtree, GLuint shader, GLuint relative_planet_location, Model& model, math::mat4& planet_transform_world){
-	dmath::mat4 dtransform_planet_relative = dmath::identity_mat4();
-	math::mat4 transform_planet_relative;
-	dtransform_planet_relative = dmath::quat_to_mat4(surface_subtree.base_rotation);
-	dtransform_planet_relative = dmath::translate(dtransform_planet_relative, surface_subtree.patch_translation);
-	std::copy(dtransform_planet_relative.m, dtransform_planet_relative.m + 16, transform_planet_relative.m);        	
+// ugly but temporal
+void Planetarium::render_side(const struct surface_node& node, GLuint relative_planet_location, Model& model, math::mat4& planet_transform_world, int max_level, dmath::vec3& cam_origin, double sea_level){
+    dmath::vec3 path_translation_normd = dmath::normalise(node.patch_translation) * sea_level;
+    double distance = dmath::distance(path_translation_normd, cam_origin);
+	if(node.scale * sea_level * 2 > distance && node.level < max_level){
+		for(uint i = 0; i < 4; i++){
+			render_side(*node.childs[i].get(), relative_planet_location, model, planet_transform_world, max_level, cam_origin, sea_level);
+		}
+		return;
+	}
 
-	m_render_context->useProgram(shader);
+	dmath::mat4 dtransform_planet_relative = dmath::identity_mat4();
+	math::mat4 transform_planet_relative, scale_transform;
+	dtransform_planet_relative = dmath::quat_to_mat4(node.base_rotation);
+	dtransform_planet_relative = dmath::translate(dtransform_planet_relative, node.patch_translation);
+	std::copy(dtransform_planet_relative.m, dtransform_planet_relative.m + 16, transform_planet_relative.m);
+
+	scale_transform = math::identity_mat4();
+	scale_transform.m[0] = node.scale;
+	scale_transform.m[5] = node.scale;
+	scale_transform.m[10] = node.scale;
+	transform_planet_relative = transform_planet_relative * scale_transform;
+
     glUniformMatrix4fv(relative_planet_location, 1, GL_FALSE, transform_planet_relative.m);
 
-    model.setMeshColor(surface_subtree.color);
-	model.render(planet_transform_world);
+    model.setMeshColor(node.color);
+	model.render_terrain(planet_transform_world);
 }
 
 
@@ -81,14 +193,20 @@ void Planetarium::run(){
     dmath::mat4 planet_transform = dmath::identity_mat4();
 
     struct planet_surface surface;
+    surface.max_levels = 7;
+    surface.planet_sea_level = 1000.f;
     build_surface(surface);
 
-	m_camera->setCameraPosition(dmath::vec3(2.0, 0.0, 0.0));
+	m_camera->setCameraPosition(dmath::vec3(1000.0, 0.0, 0.0));
+    m_camera->setSpeed(100.0f);
 
-	//glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glDisable(GL_CULL_FACE);
 
     GLuint shader = m_render_context->getShader(SHADER_PLANET);
     GLuint relative_planet_location = glGetUniformLocation(shader, "relative_planet");
+    GLuint planet_radius_location = glGetUniformLocation(shader, "planet_radius");
+
+    m_render_context->toggleDebugOverlay();
 
     while (!glfwWindowShouldClose(m_window_handler->getWindow())){
         m_input->update();
@@ -100,7 +218,6 @@ void Planetarium::run(){
 
         dmath::vec3 cam_translation = m_camera->getCamPosition();
 
-
         ////////////////////
 
         math::mat4 planet_transform_world;
@@ -110,9 +227,15 @@ void Planetarium::run(){
         dplanet_transform_world.m[14] -= cam_translation.v[2];
     	std::copy(dplanet_transform_world.m, dplanet_transform_world.m + 16, planet_transform_world.m);     
 
+		m_render_context->useProgram(shader);
+    	glUniform1f(planet_radius_location, surface.planet_sea_level);
+
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         for(uint i=0; i < 6; i++){
-        	render_side(surface.surface_tree[i], shader, relative_planet_location, base, planet_transform_world);
+            //dmath::vec3 t(1000.0, 0.0, 0.0);
+        	render_side(surface.surface_tree[i], relative_planet_location, base, planet_transform_world, surface.max_levels, cam_translation, surface.planet_sea_level);
         }
+        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         m_render_context->setLightPosition(math::vec3(cam_translation.v[0], cam_translation.v[1], cam_translation.v[2]));
 
