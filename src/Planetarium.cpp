@@ -32,49 +32,10 @@ Planetarium::~Planetarium(){
 
 void set_transform(struct surface_node& node, const struct surface_node& parent, int sign_side_1, int sign_side_2){
 	node.patch_translation = parent.patch_translation;
-	switch(node.side){
-        case SIDE_PX:
-            node.patch_translation.v[1] += (node.scale / 2) * sign_side_1;
-            node.patch_translation.v[2] += (node.scale / 2) * sign_side_2;
-            node.tex_shift.v[0] = node.patch_translation.v[1];
-            node.tex_shift.v[1] = node.patch_translation.v[2];
-            break;
-
-        case SIDE_NX:
-            node.patch_translation.v[1] += (node.scale / 2) * sign_side_1;
-            node.patch_translation.v[2] += (node.scale / 2) * sign_side_2;
-            node.tex_shift.v[0] = node.patch_translation.v[1];
-            node.tex_shift.v[1] = node.patch_translation.v[2];
-            break;
-
-        case SIDE_PY:
-            node.patch_translation.v[0] += (node.scale / 2) * sign_side_1;
-            node.patch_translation.v[2] += (node.scale / 2) * sign_side_2;
-            node.tex_shift.v[0] = node.patch_translation.v[0];
-            node.tex_shift.v[1] = node.patch_translation.v[2];
-            break;
-
-        case SIDE_NY:
-            node.patch_translation.v[0] += (node.scale / 2) * sign_side_1;
-            node.patch_translation.v[2] += (node.scale / 2) * sign_side_2;
-            node.tex_shift.v[0] = node.patch_translation.v[0];
-            node.tex_shift.v[1] = node.patch_translation.v[2];
-            break;
-
-        case SIDE_PZ:
-            node.patch_translation.v[0] += (node.scale / 2) * sign_side_1;
-            node.patch_translation.v[1] += (node.scale / 2) * sign_side_2;
-            node.tex_shift.v[0] = node.patch_translation.v[0];
-            node.tex_shift.v[1] = node.patch_translation.v[1];
-            break;
-
-        case SIDE_NZ:
-            node.patch_translation.v[0] += (node.scale / 2) * sign_side_1;
-            node.patch_translation.v[1] += (node.scale / 2) * sign_side_2;
-            node.tex_shift.v[0] = node.patch_translation.v[0];
-            node.tex_shift.v[1] = node.patch_translation.v[1];
-            break;
-    }
+    node.patch_translation.v[1] += (node.scale / 2) * sign_side_1;
+    node.patch_translation.v[2] += (node.scale / 2) * sign_side_2;
+    node.tex_shift.v[0] = node.patch_translation.v[1];
+    node.tex_shift.v[1] = node.patch_translation.v[2];
 }
 
 
@@ -143,7 +104,7 @@ void build_surface(struct planet_surface& surface){
     surface.surface_tree[0].has_texture = true;
 	build_childs(surface.surface_tree[0], num_levels);
 
-	surface.surface_tree[1].patch_translation = dmath::vec3(-0.5, 0.0, 0.0);
+	surface.surface_tree[1].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
     surface.surface_tree[1].tex_shift = math::vec2(0.0, 0.0);
 	surface.surface_tree[1].scale = 1.0;
 	surface.surface_tree[1].base_rotation = dmath::quat_from_axis_rad(M_PI, 0.0, 1.0, 0.0);
@@ -152,7 +113,7 @@ void build_surface(struct planet_surface& surface){
     surface.surface_tree[1].has_texture = true;
 	build_childs(surface.surface_tree[1], num_levels);
 
-	surface.surface_tree[2].patch_translation = dmath::vec3(0.0, 0.5, 0.0);
+	surface.surface_tree[2].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
     surface.surface_tree[2].tex_shift = math::vec2(0.0, 0.0);
 	surface.surface_tree[2].scale = 1.0;
 	surface.surface_tree[2].base_rotation = dmath::quat_from_axis_rad(M_PI/2, 0.0, 0.0, 1.0);
@@ -161,7 +122,7 @@ void build_surface(struct planet_surface& surface){
     surface.surface_tree[2].has_texture = true;
 	build_childs(surface.surface_tree[2], num_levels);
 
-	surface.surface_tree[3].patch_translation = dmath::vec3(0.0, -0.5, 0.0);
+	surface.surface_tree[3].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
     surface.surface_tree[3].tex_shift = math::vec2(0.0, 0.0);
 	surface.surface_tree[3].scale = 1.0;
 	surface.surface_tree[3].base_rotation = dmath::quat_from_axis_rad(-M_PI/2, 0.0, 0.0, 1.0);
@@ -170,7 +131,7 @@ void build_surface(struct planet_surface& surface){
     surface.surface_tree[3].has_texture = true;
 	build_childs(surface.surface_tree[3], num_levels);
 
-	surface.surface_tree[4].patch_translation = dmath::vec3(0.0, 0.0, 0.5);
+	surface.surface_tree[4].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
 	surface.surface_tree[4].tex_shift = math::vec2(0.0, 0.0);
     surface.surface_tree[4].scale = 1.0;
 	surface.surface_tree[4].base_rotation = dmath::quat_from_axis_rad(-M_PI/2, 0.0, 1.0, 0.0);
@@ -179,7 +140,7 @@ void build_surface(struct planet_surface& surface){
     surface.surface_tree[4].has_texture = true;
 	build_childs(surface.surface_tree[4], num_levels);
 
-	surface.surface_tree[5].patch_translation = dmath::vec3(0.0, 0.0, -0.5);
+	surface.surface_tree[5].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
 	surface.surface_tree[5].tex_shift = math::vec2(0.0, 0.0);
     surface.surface_tree[5].scale = 1.0;
 	surface.surface_tree[5].base_rotation = dmath::quat_from_axis_rad(M_PI/2, 0.0, 1.0, 0.0);
@@ -203,10 +164,11 @@ void Planetarium::render_side(const struct surface_node& node, Model& model, mat
 		return;
 	}
 
-	dmath::mat4 dtransform_planet_relative = dmath::identity_mat4();
+	dmath::mat4 dtransform_rotation, dtransform_planet_relative = dmath::identity_mat4();
 	math::mat4 transform_planet_relative, scale_transform;
-	dtransform_planet_relative = dmath::quat_to_mat4(node.base_rotation);
+	dtransform_rotation = dmath::quat_to_mat4(node.base_rotation);
 	dtransform_planet_relative = dmath::translate(dtransform_planet_relative, node.patch_translation);
+    dtransform_planet_relative = dtransform_rotation * dtransform_planet_relative;
 	std::copy(dtransform_planet_relative.m, dtransform_planet_relative.m + 16, transform_planet_relative.m);
 
 	scale_transform = math::identity_mat4();
