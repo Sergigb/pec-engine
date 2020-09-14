@@ -75,18 +75,15 @@ void build_childs(struct surface_node& node, int num_levels){
 	}
 }
 
-GLuint tex_id;
 
-
-void build_surface(struct planet_surface& surface){
-	short num_levels = surface.max_levels;
+void bind_texture(struct surface_node& node, const char* filename){
     int tex_x, tex_y, n_channels;
 
-    unsigned char* data = stbi_load("../data/earth_textures/1.png", &tex_x, &tex_y, &n_channels, 0);
+    unsigned char* data = stbi_load(filename, &tex_x, &tex_y, &n_channels, 0);
 
-    glGenTextures(1, &tex_id);
+    glGenTextures(1, &node.tex_id);
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, tex_id);
+    glBindTexture(GL_TEXTURE_2D, node.tex_id);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex_x, tex_y, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -94,6 +91,11 @@ void build_surface(struct planet_surface& surface){
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
     stbi_image_free(data);
+}
+
+
+void build_surface(struct planet_surface& surface){
+	short num_levels = surface.max_levels;
 
 	surface.surface_tree[0].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
     surface.surface_tree[0].tex_shift = math::vec2(0.0, 0.0);
@@ -103,6 +105,7 @@ void build_surface(struct planet_surface& surface){
 	surface.surface_tree[0].side = SIDE_PX;
     surface.surface_tree[0].has_texture = true;
 	build_childs(surface.surface_tree[0], num_levels);
+    bind_texture(surface.surface_tree[0], "../data/earth_textures/0.png");
 
 	surface.surface_tree[1].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
     surface.surface_tree[1].tex_shift = math::vec2(0.0, 0.0);
@@ -112,6 +115,7 @@ void build_surface(struct planet_surface& surface){
 	surface.surface_tree[1].side = SIDE_NX;
     surface.surface_tree[1].has_texture = true;
 	build_childs(surface.surface_tree[1], num_levels);
+    bind_texture(surface.surface_tree[1], "../data/earth_textures/2.png");
 
 	surface.surface_tree[2].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
     surface.surface_tree[2].tex_shift = math::vec2(0.0, 0.0);
@@ -121,6 +125,7 @@ void build_surface(struct planet_surface& surface){
 	surface.surface_tree[2].side = SIDE_PY;
     surface.surface_tree[2].has_texture = true;
 	build_childs(surface.surface_tree[2], num_levels);
+    bind_texture(surface.surface_tree[2], "../data/earth_textures/4.png");
 
 	surface.surface_tree[3].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
     surface.surface_tree[3].tex_shift = math::vec2(0.0, 0.0);
@@ -130,6 +135,7 @@ void build_surface(struct planet_surface& surface){
 	surface.surface_tree[3].side = SIDE_NY;
     surface.surface_tree[3].has_texture = true;
 	build_childs(surface.surface_tree[3], num_levels);
+    bind_texture(surface.surface_tree[3], "../data/earth_textures/5.png");
 
 	surface.surface_tree[4].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
 	surface.surface_tree[4].tex_shift = math::vec2(0.0, 0.0);
@@ -139,6 +145,7 @@ void build_surface(struct planet_surface& surface){
 	surface.surface_tree[4].side = SIDE_PZ;
     surface.surface_tree[4].has_texture = true;
 	build_childs(surface.surface_tree[4], num_levels);
+    bind_texture(surface.surface_tree[4], "../data/earth_textures/3.png");
 
 	surface.surface_tree[5].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
 	surface.surface_tree[5].tex_shift = math::vec2(0.0, 0.0);
@@ -148,6 +155,7 @@ void build_surface(struct planet_surface& surface){
 	surface.surface_tree[5].side = SIDE_NZ;
     surface.surface_tree[5].has_texture = true;
 	build_childs(surface.surface_tree[5], num_levels);
+    bind_texture(surface.surface_tree[5], "../data/earth_textures/1.png");
 }
 
 
@@ -155,9 +163,10 @@ GLuint relative_planet_location, patch_scale_location, tex_shift_location;
 
 // ugly but temporal
 void Planetarium::render_side(const struct surface_node& node, Model& model, math::mat4& planet_transform_world, int max_level, dmath::vec3& cam_origin, double sea_level){
-    dmath::vec3 path_translation_normd = dmath::normalise(node.patch_translation) * sea_level;
+    // path_translation_normd should be precomputed
+    dmath::vec3 path_translation_normd = dmath::vec3(dmath::quat_to_mat4(node.base_rotation) * dmath::vec4(dmath::normalise(node.patch_translation), 1.0)) * sea_level;
     double distance = dmath::distance(path_translation_normd, cam_origin);
-	if(node.scale * sea_level * 3 > distance && node.level < max_level){
+	if(node.scale * sea_level * 1.5 > distance && node.level < max_level){
 		for(uint i = 0; i < 4; i++){
 			render_side(*node.childs[i].get(), model, planet_transform_world, max_level, cam_origin, sea_level);
 		}
@@ -191,12 +200,13 @@ void Planetarium::run(){
     dmath::mat4 planet_transform = dmath::identity_mat4();
 
     struct planet_surface surface;
-    surface.max_levels = 3;
-    surface.planet_sea_level = 10.f;
+    surface.max_levels = 9;
+    surface.planet_sea_level = 6300000.f;
     build_surface(surface);
 
-	m_camera->setCameraPosition(dmath::vec3(10.0, 0.0, 0.0));
-    m_camera->setSpeed(3.0f);
+	m_camera->setCameraPosition(dmath::vec3(6300000.0, 0.0, 0.0));
+    m_camera->setSpeed(630000.0f);
+    m_camera->createProjMat(1.0, 63000000, 67.0, 1.0);
 
     //glDisable(GL_CULL_FACE);
 
@@ -206,7 +216,7 @@ void Planetarium::run(){
     tex_shift_location = glGetUniformLocation(shader, "tex_shift");
     GLuint planet_radius_location = glGetUniformLocation(shader, "planet_radius");
 
-    //m_render_context->toggleDebugOverlay();
+    m_render_context->toggleDebugOverlay();
 
     while (!glfwWindowShouldClose(m_window_handler->getWindow())){
         m_input->update();
@@ -229,12 +239,15 @@ void Planetarium::run(){
 
 		m_render_context->useProgram(shader);
     	glUniform1f(planet_radius_location, surface.planet_sea_level);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, tex_id);
+        glfwSwapInterval(0);
 
         //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         for(uint i=0; i < 6; i++){
             //dmath::vec3 t(1000.0, 0.0, 0.0);
+
+            glActiveTexture(GL_TEXTURE0);
+            glBindTexture(GL_TEXTURE_2D, surface.surface_tree[i].tex_id);
+
         	render_side(surface.surface_tree[i], base, planet_transform_world, surface.max_levels, cam_translation, surface.planet_sea_level);
         }
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
