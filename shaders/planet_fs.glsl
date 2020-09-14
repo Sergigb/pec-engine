@@ -1,11 +1,12 @@
 #version 410
 
 in vec3 normal_eye, position_eye;
+in vec2 st;
 out vec4 frag_colour;
 
 uniform mat4 view;
 uniform vec3 light_pos;
-uniform vec4 object_color;
+uniform sampler2D tex;
 
 // fixed point light properties
 vec3 Ls = vec3 (1.0, 1.0, 1.0); // specular colour
@@ -41,6 +42,9 @@ void main() {
 
     vec3 Is = Ls * Ks * specular_factor; // final specular intensity
 
+    vec4 texel = texture(tex, st);
+
     // final colour
-    frag_colour = vec4(object_color.xyz * (Is + Id + Ia), object_color.w);
+    //frag_colour = vec4(texel.xyz * (Is + Id + Ia), 1.0);
+    frag_colour = vec4(texel.xyz, 1.0);
 }
