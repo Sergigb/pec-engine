@@ -1,6 +1,7 @@
 #ifndef PLANETARIUM_HPP
 #define PLANETARIUM_HPP
 
+#include <GL/glew.h>
 #include <memory>
 
 #include "BaseApp.hpp"
@@ -16,13 +17,14 @@
 
 struct surface_node{
     dmath::vec3 patch_translation;
+    math::vec2 tex_shift;
     double scale; // scale = 1/depth
     dmath::versor base_rotation;
-    math::vec4 color;
     std::unique_ptr<struct surface_node> childs[4];
-    bool is_leaf;
+    bool has_texture;
     short level;
     char side;
+    GLuint tex_id;
 };
 
 
@@ -40,7 +42,7 @@ class Planetarium : public BaseApp{
         // application default font atlas
         std::unique_ptr<FontAtlas> m_def_font_atlas;
 
-        void render_side(const struct surface_node& surface_subtree, GLuint relative_planet_location, Model& model, math::mat4& planet_transform, int level, dmath::vec3& cam_origin, double sea_level);
+        void render_side(const struct surface_node& surface_subtree, Model& model, math::mat4& planet_transform, int level, dmath::vec3& cam_origin, double sea_level);
     public:
         Planetarium();
         Planetarium(int gl_width, int gl_height);

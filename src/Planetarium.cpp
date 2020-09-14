@@ -1,3 +1,5 @@
+#include <stb/stb_image.h>
+
 #include "Planetarium.hpp"
 #include "Model.hpp"
 #include "maths_funcs.hpp"
@@ -34,31 +36,43 @@ void set_transform(struct surface_node& node, const struct surface_node& parent,
         case SIDE_PX:
             node.patch_translation.v[1] += (node.scale / 2) * sign_side_1;
             node.patch_translation.v[2] += (node.scale / 2) * sign_side_2;
+            node.tex_shift.v[0] = node.patch_translation.v[1];
+            node.tex_shift.v[1] = node.patch_translation.v[2];
             break;
 
         case SIDE_NX:
             node.patch_translation.v[1] += (node.scale / 2) * sign_side_1;
             node.patch_translation.v[2] += (node.scale / 2) * sign_side_2;
+            node.tex_shift.v[0] = node.patch_translation.v[1];
+            node.tex_shift.v[1] = node.patch_translation.v[2];
             break;
 
         case SIDE_PY:
             node.patch_translation.v[0] += (node.scale / 2) * sign_side_1;
             node.patch_translation.v[2] += (node.scale / 2) * sign_side_2;
+            node.tex_shift.v[0] = node.patch_translation.v[0];
+            node.tex_shift.v[1] = node.patch_translation.v[2];
             break;
 
         case SIDE_NY:
             node.patch_translation.v[0] += (node.scale / 2) * sign_side_1;
             node.patch_translation.v[2] += (node.scale / 2) * sign_side_2;
+            node.tex_shift.v[0] = node.patch_translation.v[0];
+            node.tex_shift.v[1] = node.patch_translation.v[2];
             break;
 
         case SIDE_PZ:
             node.patch_translation.v[0] += (node.scale / 2) * sign_side_1;
             node.patch_translation.v[1] += (node.scale / 2) * sign_side_2;
+            node.tex_shift.v[0] = node.patch_translation.v[0];
+            node.tex_shift.v[1] = node.patch_translation.v[1];
             break;
 
         case SIDE_NZ:
             node.patch_translation.v[0] += (node.scale / 2) * sign_side_1;
             node.patch_translation.v[1] += (node.scale / 2) * sign_side_2;
+            node.tex_shift.v[0] = node.patch_translation.v[0];
+            node.tex_shift.v[1] = node.patch_translation.v[1];
             break;
     }
 }
@@ -68,7 +82,6 @@ void build_childs(struct surface_node& node, int num_levels){
 	node.childs[0].reset(new struct surface_node);
 	node.childs[0]->scale = node.scale / 2.0;
 	node.childs[0]->base_rotation = node.base_rotation;
-	node.childs[0]->color = node.color;
 	node.childs[0]->level = node.level + 1;
 	node.childs[0]->side = node.side;
 	set_transform(*node.childs[0].get(), node, 1, 1);
@@ -76,7 +89,6 @@ void build_childs(struct surface_node& node, int num_levels){
 	node.childs[1].reset(new struct surface_node);
 	node.childs[1]->scale = node.scale / 2.0;
 	node.childs[1]->base_rotation = node.base_rotation;
-	node.childs[1]->color = node.color;
 	node.childs[1]->level = node.level + 1;
 	node.childs[1]->side = node.side;
 	set_transform(*node.childs[1].get(), node, 1, -1);
@@ -84,7 +96,6 @@ void build_childs(struct surface_node& node, int num_levels){
 	node.childs[2].reset(new struct surface_node);
 	node.childs[2]->scale = node.scale / 2.0;
 	node.childs[2]->base_rotation = node.base_rotation;
-	node.childs[2]->color = node.color;
 	node.childs[2]->level = node.level + 1;
 	node.childs[2]->side = node.side;
 	set_transform(*node.childs[2].get(), node, -1, 1);
@@ -92,7 +103,6 @@ void build_childs(struct surface_node& node, int num_levels){
 	node.childs[3].reset(new struct surface_node);
 	node.childs[3]->scale = node.scale / 2.0;
 	node.childs[3]->base_rotation = node.base_rotation;
-	node.childs[3]->color = node.color;
 	node.childs[3]->level = node.level + 1;
 	node.childs[3]->side = node.side;
 	set_transform(*node.childs[3].get(), node, -1, -1);
@@ -104,67 +114,91 @@ void build_childs(struct surface_node& node, int num_levels){
 	}
 }
 
+GLuint tex_id;
+
 
 void build_surface(struct planet_surface& surface){
 	short num_levels = surface.max_levels;
+    int tex_x, tex_y, n_channels;
+
+    unsigned char* data = stbi_load("../data/earth_textures/1.png", &tex_x, &tex_y, &n_channels, 0);
+
+    glGenTextures(1, &tex_id);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, tex_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex_x, tex_y, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    stbi_image_free(data);
 
 	surface.surface_tree[0].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
+    surface.surface_tree[0].tex_shift = math::vec2(0.0, 0.0);
 	surface.surface_tree[0].scale = 1.0;
 	surface.surface_tree[0].base_rotation = dmath::quat_from_axis_rad(0.0, 0.0, 0.0, 0.0);
-	surface.surface_tree[0].color = math::vec4(1.0, 0.0, 0.0, 1.0);
 	surface.surface_tree[0].level = 1;
 	surface.surface_tree[0].side = SIDE_PX;
+    surface.surface_tree[0].has_texture = true;
 	build_childs(surface.surface_tree[0], num_levels);
 
 	surface.surface_tree[1].patch_translation = dmath::vec3(-0.5, 0.0, 0.0);
+    surface.surface_tree[1].tex_shift = math::vec2(0.0, 0.0);
 	surface.surface_tree[1].scale = 1.0;
 	surface.surface_tree[1].base_rotation = dmath::quat_from_axis_rad(M_PI, 0.0, 1.0, 0.0);
-	surface.surface_tree[1].color = math::vec4(0.0, 1.0, 0.0, 1.0);
 	surface.surface_tree[1].level = 1;
 	surface.surface_tree[1].side = SIDE_NX;
+    surface.surface_tree[1].has_texture = true;
 	build_childs(surface.surface_tree[1], num_levels);
 
 	surface.surface_tree[2].patch_translation = dmath::vec3(0.0, 0.5, 0.0);
+    surface.surface_tree[2].tex_shift = math::vec2(0.0, 0.0);
 	surface.surface_tree[2].scale = 1.0;
 	surface.surface_tree[2].base_rotation = dmath::quat_from_axis_rad(M_PI/2, 0.0, 0.0, 1.0);
-	surface.surface_tree[2].color = math::vec4(0.0, 0.0, 1.0, 1.0);
 	surface.surface_tree[2].level = 1;
 	surface.surface_tree[2].side = SIDE_PY;
+    surface.surface_tree[2].has_texture = true;
 	build_childs(surface.surface_tree[2], num_levels);
 
 	surface.surface_tree[3].patch_translation = dmath::vec3(0.0, -0.5, 0.0);
+    surface.surface_tree[3].tex_shift = math::vec2(0.0, 0.0);
 	surface.surface_tree[3].scale = 1.0;
 	surface.surface_tree[3].base_rotation = dmath::quat_from_axis_rad(-M_PI/2, 0.0, 0.0, 1.0);
-	surface.surface_tree[3].color = math::vec4(1.0, 0.0, 1.0, 1.0);
 	surface.surface_tree[3].level = 1;
 	surface.surface_tree[3].side = SIDE_NY;
+    surface.surface_tree[3].has_texture = true;
 	build_childs(surface.surface_tree[3], num_levels);
 
 	surface.surface_tree[4].patch_translation = dmath::vec3(0.0, 0.0, 0.5);
-	surface.surface_tree[4].scale = 1.0;
+	surface.surface_tree[4].tex_shift = math::vec2(0.0, 0.0);
+    surface.surface_tree[4].scale = 1.0;
 	surface.surface_tree[4].base_rotation = dmath::quat_from_axis_rad(-M_PI/2, 0.0, 1.0, 0.0);
-	surface.surface_tree[4].color = math::vec4(1.0, 1.0, 0.0, 1.0);
 	surface.surface_tree[4].level = 1;
 	surface.surface_tree[4].side = SIDE_PZ;
+    surface.surface_tree[4].has_texture = true;
 	build_childs(surface.surface_tree[4], num_levels);
 
 	surface.surface_tree[5].patch_translation = dmath::vec3(0.0, 0.0, -0.5);
-	surface.surface_tree[5].scale = 1.0;
+	surface.surface_tree[5].tex_shift = math::vec2(0.0, 0.0);
+    surface.surface_tree[5].scale = 1.0;
 	surface.surface_tree[5].base_rotation = dmath::quat_from_axis_rad(M_PI/2, 0.0, 1.0, 0.0);
-	surface.surface_tree[5].color = math::vec4(0.0, 1.0, 1.0, 1.0);
 	surface.surface_tree[5].level = 1;
 	surface.surface_tree[5].side = SIDE_NZ;
+    surface.surface_tree[5].has_texture = true;
 	build_childs(surface.surface_tree[5], num_levels);
 }
 
 
+GLuint relative_planet_location, patch_scale_location, tex_shift_location;
+
 // ugly but temporal
-void Planetarium::render_side(const struct surface_node& node, GLuint relative_planet_location, Model& model, math::mat4& planet_transform_world, int max_level, dmath::vec3& cam_origin, double sea_level){
+void Planetarium::render_side(const struct surface_node& node, Model& model, math::mat4& planet_transform_world, int max_level, dmath::vec3& cam_origin, double sea_level){
     dmath::vec3 path_translation_normd = dmath::normalise(node.patch_translation) * sea_level;
     double distance = dmath::distance(path_translation_normd, cam_origin);
-	if(node.scale * sea_level * 2 > distance && node.level < max_level){
+	if(node.scale * sea_level * 3 > distance && node.level < max_level){
 		for(uint i = 0; i < 4; i++){
-			render_side(*node.childs[i].get(), relative_planet_location, model, planet_transform_world, max_level, cam_origin, sea_level);
+			render_side(*node.childs[i].get(), model, planet_transform_world, max_level, cam_origin, sea_level);
 		}
 		return;
 	}
@@ -181,9 +215,11 @@ void Planetarium::render_side(const struct surface_node& node, GLuint relative_p
 	scale_transform.m[10] = node.scale;
 	transform_planet_relative = transform_planet_relative * scale_transform;
 
+    glUniform1f(patch_scale_location, node.scale);
     glUniformMatrix4fv(relative_planet_location, 1, GL_FALSE, transform_planet_relative.m);
+    glUniform2fv(tex_shift_location, 1, node.tex_shift.v);
 
-    model.setMeshColor(node.color);
+    model.setMeshColor(math::vec4(0.0, 0.0, 0.0, 1.0));
 	model.render_terrain(planet_transform_world);
 }
 
@@ -193,20 +229,22 @@ void Planetarium::run(){
     dmath::mat4 planet_transform = dmath::identity_mat4();
 
     struct planet_surface surface;
-    surface.max_levels = 7;
-    surface.planet_sea_level = 1000.f;
+    surface.max_levels = 3;
+    surface.planet_sea_level = 10.f;
     build_surface(surface);
 
-	m_camera->setCameraPosition(dmath::vec3(1000.0, 0.0, 0.0));
-    m_camera->setSpeed(100.0f);
+	m_camera->setCameraPosition(dmath::vec3(10.0, 0.0, 0.0));
+    m_camera->setSpeed(3.0f);
 
     //glDisable(GL_CULL_FACE);
 
     GLuint shader = m_render_context->getShader(SHADER_PLANET);
-    GLuint relative_planet_location = glGetUniformLocation(shader, "relative_planet");
+    relative_planet_location = glGetUniformLocation(shader, "relative_planet");
+    patch_scale_location = glGetUniformLocation(shader, "patch_scale");
+    tex_shift_location = glGetUniformLocation(shader, "tex_shift");
     GLuint planet_radius_location = glGetUniformLocation(shader, "planet_radius");
 
-    m_render_context->toggleDebugOverlay();
+    //m_render_context->toggleDebugOverlay();
 
     while (!glfwWindowShouldClose(m_window_handler->getWindow())){
         m_input->update();
@@ -229,15 +267,17 @@ void Planetarium::run(){
 
 		m_render_context->useProgram(shader);
     	glUniform1f(planet_radius_location, surface.planet_sea_level);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, tex_id);
 
-        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         for(uint i=0; i < 6; i++){
             //dmath::vec3 t(1000.0, 0.0, 0.0);
-        	render_side(surface.surface_tree[i], relative_planet_location, base, planet_transform_world, surface.max_levels, cam_translation, surface.planet_sea_level);
+        	render_side(surface.surface_tree[i], base, planet_transform_world, surface.max_levels, cam_translation, surface.planet_sea_level);
         }
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
-        m_render_context->setLightPosition(math::vec3(cam_translation.v[0], cam_translation.v[1], cam_translation.v[2]));
+        //m_render_context->setLightPosition(math::vec3(cam_translation.v[0], cam_translation.v[1], cam_translation.v[2]));
 
         glfwSwapBuffers(m_window_handler->getWindow());
     }
