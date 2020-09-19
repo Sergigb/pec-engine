@@ -13,8 +13,8 @@ out vec2 st;
 void main() {
     st = ((-vertex_position.zy) * patch_scale) - (tex_shift.yx - 0.5);
 
-	vec3 position_eye_norm = normalize(vec3(relative_planet * vec4(vertex_position, 1.0))) * planet_radius;
-	position_eye = vec3(view * model * vec4(position_eye_norm, 1.0));
+    vec3 position_eye_norm = normalize(vec3(relative_planet * vec4(vertex_position, 1.0))) * planet_radius;
+    position_eye = vec3(view * model * vec4(position_eye_norm, 1.0));
     normal_eye = vec3(view * model * vec4(position_eye_norm, 0.0));
     gl_Position = proj * vec4 (position_eye, 1.0);
 }

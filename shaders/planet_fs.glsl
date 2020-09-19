@@ -45,6 +45,5 @@ void main() {
     vec4 texel = texture(tex, st);
 
     // final colour
-    //frag_colour = vec4(texel.xyz * (Is + Id + Ia), 1.0);
-    frag_colour = vec4(texel.xyz, 1.0);
+    frag_colour = vec4(texel.xyz * (Is + Id + Ia), 1.0);
 }
