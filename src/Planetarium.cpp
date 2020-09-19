@@ -138,7 +138,7 @@ void build_surface(struct planet_surface& surface){
 	surface.surface_tree[1].level = 1;
 	surface.surface_tree[1].side = SIDE_NX;
     surface.surface_tree[1].has_texture = true;
-    bind_texture(surface.surface_tree[1], "../data/earth_textures/2_0_0.png");
+    bind_texture(surface.surface_tree[1], "../data/earth_textures/1_0_0.png");
 	build_childs(surface.surface_tree[1], num_levels);
 
 	surface.surface_tree[2].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
@@ -148,7 +148,7 @@ void build_surface(struct planet_surface& surface){
 	surface.surface_tree[2].level = 1;
 	surface.surface_tree[2].side = SIDE_PY;
     surface.surface_tree[2].has_texture = true;
-    bind_texture(surface.surface_tree[2], "../data/earth_textures/4_0_0.png");
+    bind_texture(surface.surface_tree[2], "../data/earth_textures/2_0_0.png");
 	build_childs(surface.surface_tree[2], num_levels);
 
 	surface.surface_tree[3].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
@@ -158,7 +158,7 @@ void build_surface(struct planet_surface& surface){
 	surface.surface_tree[3].level = 1;
 	surface.surface_tree[3].side = SIDE_NY;
     surface.surface_tree[3].has_texture = true;
-    bind_texture(surface.surface_tree[3], "../data/earth_textures/5_0_0.png");
+    bind_texture(surface.surface_tree[3], "../data/earth_textures/3_0_0.png");
 	build_childs(surface.surface_tree[3], num_levels);
 
     surface.surface_tree[5].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
@@ -168,7 +168,7 @@ void build_surface(struct planet_surface& surface){
     surface.surface_tree[5].level = 1;
     surface.surface_tree[5].side = SIDE_PZ;
     surface.surface_tree[5].has_texture = true;
-    bind_texture(surface.surface_tree[5], "../data/earth_textures/1_0_0.png");
+    bind_texture(surface.surface_tree[5], "../data/earth_textures/4_0_0.png");
     build_childs(surface.surface_tree[5], num_levels);
 
 	surface.surface_tree[4].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
@@ -178,7 +178,7 @@ void build_surface(struct planet_surface& surface){
 	surface.surface_tree[4].level = 1;
 	surface.surface_tree[4].side = SIDE_NZ;
     surface.surface_tree[4].has_texture = true;
-    bind_texture(surface.surface_tree[4], "../data/earth_textures/3_0_0.png");
+    bind_texture(surface.surface_tree[4], "../data/earth_textures/5_0_0.png");
 	build_childs(surface.surface_tree[4], num_levels);
 }
 
