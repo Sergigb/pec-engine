@@ -45,6 +45,8 @@ void build_childs(struct surface_node& node, int num_levels){
 	node.childs[0]->base_rotation = node.base_rotation;
 	node.childs[0]->level = node.level + 1;
 	node.childs[0]->side = node.side;
+    node.childs[0]->has_texture = false;
+    node.childs[0]->tex_id = node.tex_id;
 	set_transform(*node.childs[0].get(), node, 1, 1);
 
 	node.childs[1].reset(new struct surface_node);
@@ -52,6 +54,8 @@ void build_childs(struct surface_node& node, int num_levels){
 	node.childs[1]->base_rotation = node.base_rotation;
 	node.childs[1]->level = node.level + 1;
 	node.childs[1]->side = node.side;
+    node.childs[1]->has_texture = false;
+    node.childs[1]->tex_id = node.tex_id;
 	set_transform(*node.childs[1].get(), node, 1, -1);
 
 	node.childs[2].reset(new struct surface_node);
@@ -59,6 +63,8 @@ void build_childs(struct surface_node& node, int num_levels){
 	node.childs[2]->base_rotation = node.base_rotation;
 	node.childs[2]->level = node.level + 1;
 	node.childs[2]->side = node.side;
+    node.childs[2]->has_texture = false;
+    node.childs[2]->tex_id = node.tex_id;
 	set_transform(*node.childs[2].get(), node, -1, 1);
 
 	node.childs[3].reset(new struct surface_node);
@@ -66,6 +72,8 @@ void build_childs(struct surface_node& node, int num_levels){
 	node.childs[3]->base_rotation = node.base_rotation;
 	node.childs[3]->level = node.level + 1;
 	node.childs[3]->side = node.side;
+    node.childs[3]->has_texture = false;
+    node.childs[3]->tex_id = node.tex_id;
 	set_transform(*node.childs[3].get(), node, -1, -1);
 
 	if(node.level + 2 <= num_levels){
@@ -74,6 +82,22 @@ void build_childs(struct surface_node& node, int num_levels){
 		}
 	}
 }
+
+
+/*
+
+  texture name: level_x_y
+
+  frist level: 0_0_0.png, 1_0_0.png, 2_0_0.png...
+  second level: 0_0_0.png, 0_0_1.png, 0_1_0.png, 0_1_1.png, 1_0_0.png, 1_0_1.png, 1_1_0.png...
+
+  levels with texture:
+    -level 1
+    -level 2
+    -I'll see
+
+
+*/
 
 
 void bind_texture(struct surface_node& node, const char* filename){
@@ -100,12 +124,12 @@ void build_surface(struct planet_surface& surface){
 	surface.surface_tree[0].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
     surface.surface_tree[0].tex_shift = math::vec2(0.0, 0.0);
 	surface.surface_tree[0].scale = 1.0;
-	surface.surface_tree[0].base_rotation = dmath::quat_from_axis_rad(0.0, 0.0, 0.0, 0.0);
+	surface.surface_tree[0].base_rotation = dmath::quat_from_axis_rad(0.0, 1.0, 0.0, 0.0);
 	surface.surface_tree[0].level = 1;
 	surface.surface_tree[0].side = SIDE_PX;
     surface.surface_tree[0].has_texture = true;
+    bind_texture(surface.surface_tree[0], "../data/earth_textures/0_0_0.png");
 	build_childs(surface.surface_tree[0], num_levels);
-    bind_texture(surface.surface_tree[0], "../data/earth_textures/0.png");
 
 	surface.surface_tree[1].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
     surface.surface_tree[1].tex_shift = math::vec2(0.0, 0.0);
@@ -114,8 +138,8 @@ void build_surface(struct planet_surface& surface){
 	surface.surface_tree[1].level = 1;
 	surface.surface_tree[1].side = SIDE_NX;
     surface.surface_tree[1].has_texture = true;
+    bind_texture(surface.surface_tree[1], "../data/earth_textures/2_0_0.png");
 	build_childs(surface.surface_tree[1], num_levels);
-    bind_texture(surface.surface_tree[1], "../data/earth_textures/2.png");
 
 	surface.surface_tree[2].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
     surface.surface_tree[2].tex_shift = math::vec2(0.0, 0.0);
@@ -124,8 +148,8 @@ void build_surface(struct planet_surface& surface){
 	surface.surface_tree[2].level = 1;
 	surface.surface_tree[2].side = SIDE_PY;
     surface.surface_tree[2].has_texture = true;
+    bind_texture(surface.surface_tree[2], "../data/earth_textures/4_0_0.png");
 	build_childs(surface.surface_tree[2], num_levels);
-    bind_texture(surface.surface_tree[2], "../data/earth_textures/4.png");
 
 	surface.surface_tree[3].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
     surface.surface_tree[3].tex_shift = math::vec2(0.0, 0.0);
@@ -134,28 +158,28 @@ void build_surface(struct planet_surface& surface){
 	surface.surface_tree[3].level = 1;
 	surface.surface_tree[3].side = SIDE_NY;
     surface.surface_tree[3].has_texture = true;
+    bind_texture(surface.surface_tree[3], "../data/earth_textures/5_0_0.png");
 	build_childs(surface.surface_tree[3], num_levels);
-    bind_texture(surface.surface_tree[3], "../data/earth_textures/5.png");
+
+    surface.surface_tree[5].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
+    surface.surface_tree[5].tex_shift = math::vec2(0.0, 0.0);
+    surface.surface_tree[5].scale = 1.0;
+    surface.surface_tree[5].base_rotation = dmath::quat_from_axis_rad(M_PI/2, 0.0, 1.0, 0.0);
+    surface.surface_tree[5].level = 1;
+    surface.surface_tree[5].side = SIDE_PZ;
+    surface.surface_tree[5].has_texture = true;
+    bind_texture(surface.surface_tree[5], "../data/earth_textures/1_0_0.png");
+    build_childs(surface.surface_tree[5], num_levels);
 
 	surface.surface_tree[4].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
 	surface.surface_tree[4].tex_shift = math::vec2(0.0, 0.0);
     surface.surface_tree[4].scale = 1.0;
 	surface.surface_tree[4].base_rotation = dmath::quat_from_axis_rad(-M_PI/2, 0.0, 1.0, 0.0);
 	surface.surface_tree[4].level = 1;
-	surface.surface_tree[4].side = SIDE_PZ;
+	surface.surface_tree[4].side = SIDE_NZ;
     surface.surface_tree[4].has_texture = true;
+    bind_texture(surface.surface_tree[4], "../data/earth_textures/3_0_0.png");
 	build_childs(surface.surface_tree[4], num_levels);
-    bind_texture(surface.surface_tree[4], "../data/earth_textures/3.png");
-
-	surface.surface_tree[5].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
-	surface.surface_tree[5].tex_shift = math::vec2(0.0, 0.0);
-    surface.surface_tree[5].scale = 1.0;
-	surface.surface_tree[5].base_rotation = dmath::quat_from_axis_rad(M_PI/2, 0.0, 1.0, 0.0);
-	surface.surface_tree[5].level = 1;
-	surface.surface_tree[5].side = SIDE_NZ;
-    surface.surface_tree[5].has_texture = true;
-	build_childs(surface.surface_tree[5], num_levels);
-    bind_texture(surface.surface_tree[5], "../data/earth_textures/1.png");
 }
 
 
@@ -172,6 +196,9 @@ void Planetarium::render_side(const struct surface_node& node, Model& model, mat
 		}
 		return;
 	}
+
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, node.tex_id);
 
 	dmath::mat4 dtransform_rotation, dtransform_planet_relative = dmath::identity_mat4();
 	math::mat4 transform_planet_relative, scale_transform;
@@ -196,11 +223,11 @@ void Planetarium::render_side(const struct surface_node& node, Model& model, mat
 
 
 void Planetarium::run(){
-	Model base("../data/base.dae", nullptr, m_render_context->getShader(SHADER_PLANET), m_frustum.get(), m_render_context.get(), math::vec3(1.0, 1.0, 1.0));
+	Model base("../data/base64.dae", nullptr, m_render_context->getShader(SHADER_PLANET), m_frustum.get(), m_render_context.get(), math::vec3(1.0, 1.0, 1.0));
     dmath::mat4 planet_transform = dmath::identity_mat4();
 
     struct planet_surface surface;
-    surface.max_levels = 9;
+    surface.max_levels = 2;
     surface.planet_sea_level = 6300000.f;
     build_surface(surface);
 
@@ -209,6 +236,8 @@ void Planetarium::run(){
     m_camera->createProjMat(1.0, 63000000, 67.0, 1.0);
 
     //glDisable(GL_CULL_FACE);
+
+    m_render_context->setLightPosition(math::vec3(63000000000.0, 0.0, 0.0));
 
     GLuint shader = m_render_context->getShader(SHADER_PLANET);
     relative_planet_location = glGetUniformLocation(shader, "relative_planet");
@@ -239,14 +268,11 @@ void Planetarium::run(){
 
 		m_render_context->useProgram(shader);
     	glUniform1f(planet_radius_location, surface.planet_sea_level);
-        glfwSwapInterval(0);
+        //glfwSwapInterval(0);
 
         //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         for(uint i=0; i < 6; i++){
-            //dmath::vec3 t(1000.0, 0.0, 0.0);
-
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, surface.surface_tree[i].tex_id);
+            //dmath::vec3 t(6300000.0, 0.0, 0.0);
 
         	render_side(surface.surface_tree[i], base, planet_transform_world, surface.max_levels, cam_translation, surface.planet_sea_level);
         }

@@ -7,12 +7,12 @@
 #include "BaseApp.hpp"
 
 
-#define SIDE_PX 1
-#define SIDE_NX 2
-#define SIDE_PY 3
-#define SIDE_NY 4
-#define SIDE_PZ 5
-#define SIDE_NZ 6
+#define SIDE_PX 0
+#define SIDE_NX 1
+#define SIDE_PY 2
+#define SIDE_NY 3
+#define SIDE_PZ 4
+#define SIDE_NZ 5
 
 
 struct surface_node{
