@@ -33,7 +33,7 @@ Planetarium::~Planetarium(){
 
 
 void set_transform(struct surface_node& node, const struct surface_node& parent, int sign_side_1, int sign_side_2){
-	node.patch_translation = parent.patch_translation;
+    node.patch_translation = parent.patch_translation;
     node.patch_translation.v[1] += (node.scale / 2) * sign_side_1;
     node.patch_translation.v[2] += (node.scale / 2) * sign_side_2;
     node.tex_shift.v[0] = 0.0f;//node.patch_translation.v[1];
@@ -49,9 +49,12 @@ void set_transform(struct surface_node& node, const struct surface_node& parent,
   second level: 2_0_0_0.png, 2_0_0_1.png, 2_0_1_0.png, 2_0_1_1.png, 2_1_0_0.png, 2_1_0_1.png, 2_1_1_0.png...
 
   levels with texture:
-    -level 1
-    -level 2
-    -I'll see
+    -level 1 - 1k - always loaded
+    -level 2 - 1k - always loaded
+    -level 3 - 1k - will be dynamically loaded
+    -level 4 - no texture
+    -level 5 - no texture
+    -level 6 - 1k - will be dynamically loaded
 
 
 */
@@ -76,11 +79,11 @@ void bind_texture(struct surface_node& node){
 
 
 void build_childs(struct surface_node& node, int num_levels){
-	node.childs[0].reset(new struct surface_node);
-	node.childs[0]->scale = node.scale / 2.0;
-	node.childs[0]->base_rotation = node.base_rotation;
-	node.childs[0]->level = node.level + 1;
-	node.childs[0]->side = node.side;
+    node.childs[0].reset(new struct surface_node);
+    node.childs[0]->scale = node.scale / 2.0;
+    node.childs[0]->base_rotation = node.base_rotation;
+    node.childs[0]->level = node.level + 1;
+    node.childs[0]->side = node.side;
     node.childs[0]->has_texture = true;
     node.childs[0]->x = 2 * node.x;
     node.childs[0]->y = 2 * node.y;
@@ -90,13 +93,13 @@ void build_childs(struct surface_node& node, int num_levels){
                                   << node.childs[0]->x << "_"
                                   << node.childs[0]->y << ".png";
     bind_texture(*node.childs[0]);
-	set_transform(*node.childs[0].get(), node, 1, 1);
+    set_transform(*node.childs[0].get(), node, 1, 1);
 
-	node.childs[1].reset(new struct surface_node);
-	node.childs[1]->scale = node.scale / 2.0;
-	node.childs[1]->base_rotation = node.base_rotation;
-	node.childs[1]->level = node.level + 1;
-	node.childs[1]->side = node.side;
+    node.childs[1].reset(new struct surface_node);
+    node.childs[1]->scale = node.scale / 2.0;
+    node.childs[1]->base_rotation = node.base_rotation;
+    node.childs[1]->level = node.level + 1;
+    node.childs[1]->side = node.side;
     node.childs[1]->has_texture = true;
 
     node.childs[1]->x = 2 * node.x + 1;
@@ -108,13 +111,13 @@ void build_childs(struct surface_node& node, int num_levels){
                                   << node.childs[1]->y << ".png";
     bind_texture(*node.childs[1]);
 
-	set_transform(*node.childs[1].get(), node, -1, 1);
+    set_transform(*node.childs[1].get(), node, -1, 1);
 
-	node.childs[2].reset(new struct surface_node);
-	node.childs[2]->scale = node.scale / 2.0;
-	node.childs[2]->base_rotation = node.base_rotation;
-	node.childs[2]->level = node.level + 1;
-	node.childs[2]->side = node.side;
+    node.childs[2].reset(new struct surface_node);
+    node.childs[2]->scale = node.scale / 2.0;
+    node.childs[2]->base_rotation = node.base_rotation;
+    node.childs[2]->level = node.level + 1;
+    node.childs[2]->side = node.side;
     node.childs[2]->has_texture = true;
 
     node.childs[2]->x = 2 * node.x;
@@ -126,13 +129,13 @@ void build_childs(struct surface_node& node, int num_levels){
                                   << node.childs[2]->y << ".png";
     bind_texture(*node.childs[2]);
 
-	set_transform(*node.childs[2].get(), node, 1, -1);
+    set_transform(*node.childs[2].get(), node, 1, -1);
 
-	node.childs[3].reset(new struct surface_node);
-	node.childs[3]->scale = node.scale / 2.0;
-	node.childs[3]->base_rotation = node.base_rotation;
-	node.childs[3]->level = node.level + 1;
-	node.childs[3]->side = node.side;
+    node.childs[3].reset(new struct surface_node);
+    node.childs[3]->scale = node.scale / 2.0;
+    node.childs[3]->base_rotation = node.base_rotation;
+    node.childs[3]->level = node.level + 1;
+    node.childs[3]->side = node.side;
     node.childs[3]->has_texture = true;
 
     node.childs[3]->x = 2 * node.x + 1;
@@ -144,26 +147,26 @@ void build_childs(struct surface_node& node, int num_levels){
                                   << node.childs[3]->y << ".png";
     bind_texture(*node.childs[3]);
 
-	set_transform(*node.childs[3].get(), node, -1, -1);
+    set_transform(*node.childs[3].get(), node, -1, -1);
 
-	if(node.level + 2 <= num_levels){
-		for(uint i = 0; i < 4; i++){
-			build_childs(*node.childs[i].get(), num_levels);
-		}
-	}
+    if(node.level + 2 <= num_levels){
+        for(uint i = 0; i < 4; i++){
+            build_childs(*node.childs[i].get(), num_levels);
+        }
+    }
 }
 
 
 void build_surface(struct planet_surface& surface){
-	short num_levels = surface.max_levels;
+    short num_levels = surface.max_levels;
 
     // put all this shit in a for ffs
-	surface.surface_tree[0].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
+    surface.surface_tree[0].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
     surface.surface_tree[0].tex_shift = math::vec2(0.0, 0.0);
-	surface.surface_tree[0].scale = 1.0;
-	surface.surface_tree[0].base_rotation = dmath::quat_from_axis_rad(0.0, 1.0, 0.0, 0.0);
-	surface.surface_tree[0].level = 1;
-	surface.surface_tree[0].side = SIDE_PX;
+    surface.surface_tree[0].scale = 1.0;
+    surface.surface_tree[0].base_rotation = dmath::quat_from_axis_rad(0.0, 1.0, 0.0, 0.0);
+    surface.surface_tree[0].level = 1;
+    surface.surface_tree[0].side = SIDE_PX;
     surface.surface_tree[0].has_texture = true;
     surface.surface_tree[0].x = 0;
     surface.surface_tree[0].y = 0;
@@ -173,14 +176,14 @@ void build_surface(struct planet_surface& surface){
                                           << surface.surface_tree[0].x << "_"
                                           << surface.surface_tree[0].y << ".png";
     bind_texture(surface.surface_tree[0]);
-	build_childs(surface.surface_tree[0], num_levels);
+    build_childs(surface.surface_tree[0], num_levels);
 
-	surface.surface_tree[1].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
+    surface.surface_tree[1].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
     surface.surface_tree[1].tex_shift = math::vec2(0.0, 0.0);
-	surface.surface_tree[1].scale = 1.0;
-	surface.surface_tree[1].base_rotation = dmath::quat_from_axis_rad(M_PI, 0.0, 1.0, 0.0);
-	surface.surface_tree[1].level = 1;
-	surface.surface_tree[1].side = SIDE_NX;
+    surface.surface_tree[1].scale = 1.0;
+    surface.surface_tree[1].base_rotation = dmath::quat_from_axis_rad(M_PI, 0.0, 1.0, 0.0);
+    surface.surface_tree[1].level = 1;
+    surface.surface_tree[1].side = SIDE_NX;
     surface.surface_tree[1].has_texture = true;
     surface.surface_tree[1].x = 0;
     surface.surface_tree[1].y = 0;
@@ -190,14 +193,14 @@ void build_surface(struct planet_surface& surface){
                                           << (short)surface.surface_tree[1].side << "_" 
                                           << surface.surface_tree[1].x << "_"
                                           << surface.surface_tree[1].y << ".png";
-	build_childs(surface.surface_tree[1], num_levels);
+    build_childs(surface.surface_tree[1], num_levels);
 
-	surface.surface_tree[2].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
+    surface.surface_tree[2].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
     surface.surface_tree[2].tex_shift = math::vec2(0.0, 0.0);
-	surface.surface_tree[2].scale = 1.0;
-	surface.surface_tree[2].base_rotation = dmath::quat_from_axis_rad(M_PI/2, 0.0, 0.0, 1.0);
-	surface.surface_tree[2].level = 1;
-	surface.surface_tree[2].side = SIDE_PY;
+    surface.surface_tree[2].scale = 1.0;
+    surface.surface_tree[2].base_rotation = dmath::quat_from_axis_rad(M_PI/2, 0.0, 0.0, 1.0);
+    surface.surface_tree[2].level = 1;
+    surface.surface_tree[2].side = SIDE_PY;
     surface.surface_tree[2].has_texture = true;
     surface.surface_tree[2].x = 0;
     surface.surface_tree[2].y = 0;
@@ -207,14 +210,14 @@ void build_surface(struct planet_surface& surface){
                                           << surface.surface_tree[2].x << "_"
                                           << surface.surface_tree[2].y << ".png";
     bind_texture(surface.surface_tree[2]);
-	build_childs(surface.surface_tree[2], num_levels);
+    build_childs(surface.surface_tree[2], num_levels);
 
-	surface.surface_tree[3].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
+    surface.surface_tree[3].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
     surface.surface_tree[3].tex_shift = math::vec2(0.0, 0.0);
-	surface.surface_tree[3].scale = 1.0;
-	surface.surface_tree[3].base_rotation = dmath::quat_from_axis_rad(-M_PI/2, 0.0, 0.0, 1.0);
-	surface.surface_tree[3].level = 1;
-	surface.surface_tree[3].side = SIDE_NY;
+    surface.surface_tree[3].scale = 1.0;
+    surface.surface_tree[3].base_rotation = dmath::quat_from_axis_rad(-M_PI/2, 0.0, 0.0, 1.0);
+    surface.surface_tree[3].level = 1;
+    surface.surface_tree[3].side = SIDE_NY;
     surface.surface_tree[3].has_texture = true;
     surface.surface_tree[3].x = 0;
     surface.surface_tree[3].y = 0;
@@ -224,7 +227,7 @@ void build_surface(struct planet_surface& surface){
                                           << surface.surface_tree[3].x << "_"
                                           << surface.surface_tree[3].y << ".png";
     bind_texture(surface.surface_tree[3]);
-	build_childs(surface.surface_tree[3], num_levels);
+    build_childs(surface.surface_tree[3], num_levels);
 
     surface.surface_tree[4].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
     surface.surface_tree[4].tex_shift = math::vec2(0.0, 0.0);
@@ -243,12 +246,12 @@ void build_surface(struct planet_surface& surface){
     bind_texture(surface.surface_tree[4]);
     build_childs(surface.surface_tree[4], num_levels);
 
-	surface.surface_tree[5].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
-	surface.surface_tree[5].tex_shift = math::vec2(0.0, 0.0);
+    surface.surface_tree[5].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
+    surface.surface_tree[5].tex_shift = math::vec2(0.0, 0.0);
     surface.surface_tree[5].scale = 1.0;
-	surface.surface_tree[5].base_rotation = dmath::quat_from_axis_rad(-M_PI/2, 0.0, 1.0, 0.0);
-	surface.surface_tree[5].level = 1;
-	surface.surface_tree[5].side = SIDE_NZ;
+    surface.surface_tree[5].base_rotation = dmath::quat_from_axis_rad(-M_PI/2, 0.0, 1.0, 0.0);
+    surface.surface_tree[5].level = 1;
+    surface.surface_tree[5].side = SIDE_NZ;
     surface.surface_tree[5].has_texture = true;
     surface.surface_tree[5].x = 0;
     surface.surface_tree[5].y = 0;
@@ -258,7 +261,7 @@ void build_surface(struct planet_surface& surface){
                                           << surface.surface_tree[5].x << "_"
                                           << surface.surface_tree[5].y << ".png";
     bind_texture(surface.surface_tree[5]);
-	build_childs(surface.surface_tree[5], num_levels);
+    build_childs(surface.surface_tree[5], num_levels);
 }
 
 
@@ -269,40 +272,40 @@ void Planetarium::render_side(const struct surface_node& node, Model& model, mat
     // path_translation_normd should be precomputed
     dmath::vec3 path_translation_normd = dmath::vec3(dmath::quat_to_mat4(node.base_rotation) * dmath::vec4(dmath::normalise(node.patch_translation), 1.0)) * sea_level;
     double distance = dmath::distance(path_translation_normd, cam_origin);
-	if(node.scale * sea_level * 1.5 > distance && node.level < max_level){
-		for(uint i = 0; i < 4; i++){
-			render_side(*node.childs[i].get(), model, planet_transform_world, max_level, cam_origin, sea_level);
-		}
-		return;
-	}
+    if(node.scale * sea_level * 1.5 > distance && node.level < max_level){
+        for(uint i = 0; i < 4; i++){
+            render_side(*node.childs[i].get(), model, planet_transform_world, max_level, cam_origin, sea_level);
+        }
+        return;
+    }
 
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, node.tex_id);
 
-	dmath::mat4 dtransform_rotation, dtransform_planet_relative = dmath::identity_mat4();
-	math::mat4 transform_planet_relative, scale_transform;
-	dtransform_rotation = dmath::quat_to_mat4(node.base_rotation);
-	dtransform_planet_relative = dmath::translate(dtransform_planet_relative, node.patch_translation);
+    dmath::mat4 dtransform_rotation, dtransform_planet_relative = dmath::identity_mat4();
+    math::mat4 transform_planet_relative, scale_transform;
+    dtransform_rotation = dmath::quat_to_mat4(node.base_rotation);
+    dtransform_planet_relative = dmath::translate(dtransform_planet_relative, node.patch_translation);
     dtransform_planet_relative = dtransform_rotation * dtransform_planet_relative;
-	std::copy(dtransform_planet_relative.m, dtransform_planet_relative.m + 16, transform_planet_relative.m);
+    std::copy(dtransform_planet_relative.m, dtransform_planet_relative.m + 16, transform_planet_relative.m);
 
-	scale_transform = math::identity_mat4();
-	scale_transform.m[0] = node.scale;
-	scale_transform.m[5] = node.scale;
-	scale_transform.m[10] = node.scale;
-	transform_planet_relative = transform_planet_relative * scale_transform;
+    scale_transform = math::identity_mat4();
+    scale_transform.m[0] = node.scale;
+    scale_transform.m[5] = node.scale;
+    scale_transform.m[10] = node.scale;
+    transform_planet_relative = transform_planet_relative * scale_transform;
 
     glUniform1f(patch_scale_location, 1.0f); // for now its ok because we have 2 levels with textures, when we have levels with no textures theyll need to be scaled
     glUniformMatrix4fv(relative_planet_location, 1, GL_FALSE, transform_planet_relative.m);
     glUniform2fv(tex_shift_location, 1, node.tex_shift.v);
 
     model.setMeshColor(math::vec4(0.0, 0.0, 0.0, 1.0));
-	model.render_terrain(planet_transform_world);
+    model.render_terrain(planet_transform_world);
 }
 
 
 void Planetarium::run(){
-	Model base("../data/base64.dae", nullptr, m_render_context->getShader(SHADER_PLANET), m_frustum.get(), m_render_context.get(), math::vec3(1.0, 1.0, 1.0));
+    Model base("../data/base64.dae", nullptr, m_render_context->getShader(SHADER_PLANET), m_frustum.get(), m_render_context.get(), math::vec3(1.0, 1.0, 1.0));
     dmath::mat4 planet_transform = dmath::identity_mat4();
 
     struct planet_surface surface;
@@ -310,7 +313,7 @@ void Planetarium::run(){
     surface.planet_sea_level = 6300000.f;
     build_surface(surface);
 
-	m_camera->setCameraPosition(dmath::vec3(6300000.0, 0.0, 0.0));
+    m_camera->setCameraPosition(dmath::vec3(6300000.0, 0.0, 0.0));
     m_camera->setSpeed(630000.0f);
     m_camera->createProjMat(1.0, 63000000, 67.0, 1.0);
 
@@ -343,17 +346,17 @@ void Planetarium::run(){
         dplanet_transform_world.m[12] -= cam_translation.v[0];
         dplanet_transform_world.m[13] -= cam_translation.v[1];
         dplanet_transform_world.m[14] -= cam_translation.v[2];
-    	std::copy(dplanet_transform_world.m, dplanet_transform_world.m + 16, planet_transform_world.m);     
+        std::copy(dplanet_transform_world.m, dplanet_transform_world.m + 16, planet_transform_world.m);     
 
-		m_render_context->useProgram(shader);
-    	glUniform1f(planet_radius_location, surface.planet_sea_level);
+        m_render_context->useProgram(shader);
+        glUniform1f(planet_radius_location, surface.planet_sea_level);
         //glfwSwapInterval(0);
 
         //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         for(uint i=0; i < 6; i++){
             //dmath::vec3 t(6300000.0, 0.0, 0.0);
 
-        	render_side(surface.surface_tree[i], base, planet_transform_world, surface.max_levels, cam_translation, surface.planet_sea_level);
+            render_side(surface.surface_tree[i], base, planet_transform_world, surface.max_levels, cam_translation, surface.planet_sea_level);
         }
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
