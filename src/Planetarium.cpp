@@ -1,3 +1,5 @@
+#include <string>
+#include <iostream>
 #include <stb/stb_image.h>
 
 #include "Planetarium.hpp"
@@ -34,62 +36,17 @@ void set_transform(struct surface_node& node, const struct surface_node& parent,
 	node.patch_translation = parent.patch_translation;
     node.patch_translation.v[1] += (node.scale / 2) * sign_side_1;
     node.patch_translation.v[2] += (node.scale / 2) * sign_side_2;
-    node.tex_shift.v[0] = node.patch_translation.v[1];
-    node.tex_shift.v[1] = node.patch_translation.v[2];
-}
-
-
-void build_childs(struct surface_node& node, int num_levels){
-	node.childs[0].reset(new struct surface_node);
-	node.childs[0]->scale = node.scale / 2.0;
-	node.childs[0]->base_rotation = node.base_rotation;
-	node.childs[0]->level = node.level + 1;
-	node.childs[0]->side = node.side;
-    node.childs[0]->has_texture = false;
-    node.childs[0]->tex_id = node.tex_id;
-	set_transform(*node.childs[0].get(), node, 1, 1);
-
-	node.childs[1].reset(new struct surface_node);
-	node.childs[1]->scale = node.scale / 2.0;
-	node.childs[1]->base_rotation = node.base_rotation;
-	node.childs[1]->level = node.level + 1;
-	node.childs[1]->side = node.side;
-    node.childs[1]->has_texture = false;
-    node.childs[1]->tex_id = node.tex_id;
-	set_transform(*node.childs[1].get(), node, 1, -1);
-
-	node.childs[2].reset(new struct surface_node);
-	node.childs[2]->scale = node.scale / 2.0;
-	node.childs[2]->base_rotation = node.base_rotation;
-	node.childs[2]->level = node.level + 1;
-	node.childs[2]->side = node.side;
-    node.childs[2]->has_texture = false;
-    node.childs[2]->tex_id = node.tex_id;
-	set_transform(*node.childs[2].get(), node, -1, 1);
-
-	node.childs[3].reset(new struct surface_node);
-	node.childs[3]->scale = node.scale / 2.0;
-	node.childs[3]->base_rotation = node.base_rotation;
-	node.childs[3]->level = node.level + 1;
-	node.childs[3]->side = node.side;
-    node.childs[3]->has_texture = false;
-    node.childs[3]->tex_id = node.tex_id;
-	set_transform(*node.childs[3].get(), node, -1, -1);
-
-	if(node.level + 2 <= num_levels){
-		for(uint i = 0; i < 4; i++){
-			build_childs(*node.childs[i].get(), num_levels);
-		}
-	}
+    node.tex_shift.v[0] = 0.0f;//node.patch_translation.v[1];
+    node.tex_shift.v[1] = 0.0f;//node.patch_translation.v[2];
 }
 
 
 /*
 
-  texture name: level_x_y
+  texture name: level_side_x_y
 
-  frist level: 0_0_0.png, 1_0_0.png, 2_0_0.png...
-  second level: 0_0_0.png, 0_0_1.png, 0_1_0.png, 0_1_1.png, 1_0_0.png, 1_0_1.png, 1_1_0.png...
+  frist level: 1_0_0_0.png, 1_1_0_0.png, 1_2_0_0.png, 1_3_0_0.png
+  second level: 2_0_0_0.png, 2_0_0_1.png, 2_0_1_0.png, 2_0_1_1.png, 2_1_0_0.png, 2_1_0_1.png, 2_1_1_0.png...
 
   levels with texture:
     -level 1
@@ -100,10 +57,10 @@ void build_childs(struct surface_node& node, int num_levels){
 */
 
 
-void bind_texture(struct surface_node& node, const char* filename){
+void bind_texture(struct surface_node& node){
     int tex_x, tex_y, n_channels;
 
-    unsigned char* data = stbi_load(filename, &tex_x, &tex_y, &n_channels, 0);
+    unsigned char* data = stbi_load(node.texture_fname.str().c_str(), &tex_x, &tex_y, &n_channels, 0);
 
     glGenTextures(1, &node.tex_id);
     glActiveTexture(GL_TEXTURE0);
@@ -118,9 +75,89 @@ void bind_texture(struct surface_node& node, const char* filename){
 }
 
 
+void build_childs(struct surface_node& node, int num_levels){
+	node.childs[0].reset(new struct surface_node);
+	node.childs[0]->scale = node.scale / 2.0;
+	node.childs[0]->base_rotation = node.base_rotation;
+	node.childs[0]->level = node.level + 1;
+	node.childs[0]->side = node.side;
+    node.childs[0]->has_texture = true;
+    node.childs[0]->x = 2 * node.x;
+    node.childs[0]->y = 2 * node.y;
+    node.childs[0]->texture_fname << "../data/earth_textures/"
+                                  << node.childs[0]->level << "_" 
+                                  << (short)node.childs[0]->side << "_" 
+                                  << node.childs[0]->x << "_"
+                                  << node.childs[0]->y << ".png";
+    bind_texture(*node.childs[0]);
+	set_transform(*node.childs[0].get(), node, 1, 1);
+
+	node.childs[1].reset(new struct surface_node);
+	node.childs[1]->scale = node.scale / 2.0;
+	node.childs[1]->base_rotation = node.base_rotation;
+	node.childs[1]->level = node.level + 1;
+	node.childs[1]->side = node.side;
+    node.childs[1]->has_texture = true;
+
+    node.childs[1]->x = 2 * node.x + 1;
+    node.childs[1]->y = 2 * node.y;
+    node.childs[1]->texture_fname << "../data/earth_textures/"
+                                  << node.childs[1]->level << "_" 
+                                  << (short)node.childs[1]->side << "_" 
+                                  << node.childs[1]->x << "_"
+                                  << node.childs[1]->y << ".png";
+    bind_texture(*node.childs[1]);
+
+	set_transform(*node.childs[1].get(), node, -1, 1);
+
+	node.childs[2].reset(new struct surface_node);
+	node.childs[2]->scale = node.scale / 2.0;
+	node.childs[2]->base_rotation = node.base_rotation;
+	node.childs[2]->level = node.level + 1;
+	node.childs[2]->side = node.side;
+    node.childs[2]->has_texture = true;
+
+    node.childs[2]->x = 2 * node.x;
+    node.childs[2]->y = 2 * node.y + 1;
+    node.childs[2]->texture_fname << "../data/earth_textures/"
+                                  << node.childs[2]->level << "_" 
+                                  << (short)node.childs[2]->side << "_" 
+                                  << node.childs[2]->x << "_"
+                                  << node.childs[2]->y << ".png";
+    bind_texture(*node.childs[2]);
+
+	set_transform(*node.childs[2].get(), node, 1, -1);
+
+	node.childs[3].reset(new struct surface_node);
+	node.childs[3]->scale = node.scale / 2.0;
+	node.childs[3]->base_rotation = node.base_rotation;
+	node.childs[3]->level = node.level + 1;
+	node.childs[3]->side = node.side;
+    node.childs[3]->has_texture = true;
+
+    node.childs[3]->x = 2 * node.x + 1;
+    node.childs[3]->y = 2 * node.y + 1;
+    node.childs[3]->texture_fname << "../data/earth_textures/"
+                                  << node.childs[3]->level << "_" 
+                                  << (short)node.childs[3]->side << "_" 
+                                  << node.childs[3]->x << "_"
+                                  << node.childs[3]->y << ".png";
+    bind_texture(*node.childs[3]);
+
+	set_transform(*node.childs[3].get(), node, -1, -1);
+
+	if(node.level + 2 <= num_levels){
+		for(uint i = 0; i < 4; i++){
+			build_childs(*node.childs[i].get(), num_levels);
+		}
+	}
+}
+
+
 void build_surface(struct planet_surface& surface){
 	short num_levels = surface.max_levels;
 
+    // put all this shit in a for ffs
 	surface.surface_tree[0].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
     surface.surface_tree[0].tex_shift = math::vec2(0.0, 0.0);
 	surface.surface_tree[0].scale = 1.0;
@@ -128,7 +165,14 @@ void build_surface(struct planet_surface& surface){
 	surface.surface_tree[0].level = 1;
 	surface.surface_tree[0].side = SIDE_PX;
     surface.surface_tree[0].has_texture = true;
-    bind_texture(surface.surface_tree[0], "../data/earth_textures/0_0_0.png");
+    surface.surface_tree[0].x = 0;
+    surface.surface_tree[0].y = 0;
+    surface.surface_tree[0].texture_fname << "../data/earth_textures/"
+                                          << surface.surface_tree[0].level << "_" 
+                                          << (short)surface.surface_tree[0].side << "_" 
+                                          << surface.surface_tree[0].x << "_"
+                                          << surface.surface_tree[0].y << ".png";
+    bind_texture(surface.surface_tree[0]);
 	build_childs(surface.surface_tree[0], num_levels);
 
 	surface.surface_tree[1].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
@@ -138,7 +182,14 @@ void build_surface(struct planet_surface& surface){
 	surface.surface_tree[1].level = 1;
 	surface.surface_tree[1].side = SIDE_NX;
     surface.surface_tree[1].has_texture = true;
-    bind_texture(surface.surface_tree[1], "../data/earth_textures/1_0_0.png");
+    surface.surface_tree[1].x = 0;
+    surface.surface_tree[1].y = 0;
+    bind_texture(surface.surface_tree[1]);
+    surface.surface_tree[1].texture_fname << "../data/earth_textures/"
+                                          << surface.surface_tree[1].level << "_" 
+                                          << (short)surface.surface_tree[1].side << "_" 
+                                          << surface.surface_tree[1].x << "_"
+                                          << surface.surface_tree[1].y << ".png";
 	build_childs(surface.surface_tree[1], num_levels);
 
 	surface.surface_tree[2].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
@@ -148,7 +199,14 @@ void build_surface(struct planet_surface& surface){
 	surface.surface_tree[2].level = 1;
 	surface.surface_tree[2].side = SIDE_PY;
     surface.surface_tree[2].has_texture = true;
-    bind_texture(surface.surface_tree[2], "../data/earth_textures/2_0_0.png");
+    surface.surface_tree[2].x = 0;
+    surface.surface_tree[2].y = 0;
+    surface.surface_tree[2].texture_fname << "../data/earth_textures/"
+                                          << surface.surface_tree[2].level << "_" 
+                                          << (short)surface.surface_tree[2].side << "_" 
+                                          << surface.surface_tree[2].x << "_"
+                                          << surface.surface_tree[2].y << ".png";
+    bind_texture(surface.surface_tree[2]);
 	build_childs(surface.surface_tree[2], num_levels);
 
 	surface.surface_tree[3].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
@@ -158,28 +216,49 @@ void build_surface(struct planet_surface& surface){
 	surface.surface_tree[3].level = 1;
 	surface.surface_tree[3].side = SIDE_NY;
     surface.surface_tree[3].has_texture = true;
-    bind_texture(surface.surface_tree[3], "../data/earth_textures/3_0_0.png");
+    surface.surface_tree[3].x = 0;
+    surface.surface_tree[3].y = 0;
+    surface.surface_tree[3].texture_fname << "../data/earth_textures/"
+                                          << surface.surface_tree[3].level << "_" 
+                                          << (short)surface.surface_tree[3].side << "_" 
+                                          << surface.surface_tree[3].x << "_"
+                                          << surface.surface_tree[3].y << ".png";
+    bind_texture(surface.surface_tree[3]);
 	build_childs(surface.surface_tree[3], num_levels);
 
-    surface.surface_tree[5].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
-    surface.surface_tree[5].tex_shift = math::vec2(0.0, 0.0);
-    surface.surface_tree[5].scale = 1.0;
-    surface.surface_tree[5].base_rotation = dmath::quat_from_axis_rad(M_PI/2, 0.0, 1.0, 0.0);
-    surface.surface_tree[5].level = 1;
-    surface.surface_tree[5].side = SIDE_PZ;
-    surface.surface_tree[5].has_texture = true;
-    bind_texture(surface.surface_tree[5], "../data/earth_textures/4_0_0.png");
-    build_childs(surface.surface_tree[5], num_levels);
-
-	surface.surface_tree[4].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
-	surface.surface_tree[4].tex_shift = math::vec2(0.0, 0.0);
+    surface.surface_tree[4].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
+    surface.surface_tree[4].tex_shift = math::vec2(0.0, 0.0);
     surface.surface_tree[4].scale = 1.0;
-	surface.surface_tree[4].base_rotation = dmath::quat_from_axis_rad(-M_PI/2, 0.0, 1.0, 0.0);
-	surface.surface_tree[4].level = 1;
-	surface.surface_tree[4].side = SIDE_NZ;
+    surface.surface_tree[4].base_rotation = dmath::quat_from_axis_rad(M_PI/2, 0.0, 1.0, 0.0);
+    surface.surface_tree[4].level = 1;
+    surface.surface_tree[4].side = SIDE_PZ;
     surface.surface_tree[4].has_texture = true;
-    bind_texture(surface.surface_tree[4], "../data/earth_textures/5_0_0.png");
-	build_childs(surface.surface_tree[4], num_levels);
+    surface.surface_tree[4].x = 0;
+    surface.surface_tree[4].y = 0;
+    surface.surface_tree[4].texture_fname << "../data/earth_textures/"
+                                          << surface.surface_tree[4].level << "_" 
+                                          << (short)surface.surface_tree[4].side << "_" 
+                                          << surface.surface_tree[4].x << "_"
+                                          << surface.surface_tree[4].y << ".png";
+    bind_texture(surface.surface_tree[4]);
+    build_childs(surface.surface_tree[4], num_levels);
+
+	surface.surface_tree[5].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
+	surface.surface_tree[5].tex_shift = math::vec2(0.0, 0.0);
+    surface.surface_tree[5].scale = 1.0;
+	surface.surface_tree[5].base_rotation = dmath::quat_from_axis_rad(-M_PI/2, 0.0, 1.0, 0.0);
+	surface.surface_tree[5].level = 1;
+	surface.surface_tree[5].side = SIDE_NZ;
+    surface.surface_tree[5].has_texture = true;
+    surface.surface_tree[5].x = 0;
+    surface.surface_tree[5].y = 0;
+    surface.surface_tree[5].texture_fname << "../data/earth_textures/"
+                                          << surface.surface_tree[5].level << "_" 
+                                          << (short)surface.surface_tree[5].side << "_" 
+                                          << surface.surface_tree[5].x << "_"
+                                          << surface.surface_tree[5].y << ".png";
+    bind_texture(surface.surface_tree[5]);
+	build_childs(surface.surface_tree[5], num_levels);
 }
 
 
@@ -213,7 +292,7 @@ void Planetarium::render_side(const struct surface_node& node, Model& model, mat
 	scale_transform.m[10] = node.scale;
 	transform_planet_relative = transform_planet_relative * scale_transform;
 
-    glUniform1f(patch_scale_location, node.scale);
+    glUniform1f(patch_scale_location, 1.0f); // for now its ok because we have 2 levels with textures, when we have levels with no textures theyll need to be scaled
     glUniformMatrix4fv(relative_planet_location, 1, GL_FALSE, transform_planet_relative.m);
     glUniform2fv(tex_shift_location, 1, node.tex_shift.v);
 

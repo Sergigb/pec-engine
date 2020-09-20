@@ -3,6 +3,7 @@
 
 #include <GL/glew.h>
 #include <memory>
+#include <iomanip>
 
 #include "BaseApp.hpp"
 
@@ -22,9 +23,10 @@ struct surface_node{
     dmath::versor base_rotation;
     std::unique_ptr<struct surface_node> childs[4];
     bool has_texture;
-    short level;
+    short level, x, y;
     char side;
     GLuint tex_id;
+    std::ostringstream texture_fname;
 };
 
 
