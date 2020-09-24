@@ -1,5 +1,7 @@
 #include <string>
 #include <iostream>
+#include <thread>
+
 #include <stb/stb_image.h>
 
 #include "Planetarium.hpp"
@@ -62,12 +64,33 @@ void set_transform(struct surface_node& node, const struct surface_node& parent,
 
 void bind_texture(struct surface_node& node){
     int tex_x, tex_y, n_channels;
+    std::ostringstream fname;
 
-    unsigned char* data = stbi_load(node.texture_fname.str().c_str(), &tex_x, &tex_y, &n_channels, 0);
+    if(node.level <= 2){
+        glGenTextures(1, &node.tex_id);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, node.tex_id);
+        fname << "../data/earth_textures/"
+              << node.level << "_" 
+              << (short)node.side << "_" 
+              << node.x << "_"
+              << node.y << ".png";
+        node.texture_loaded = true;
+    }
+    else{
+        glGenTextures(1, &node.tex_id_lod);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, node.tex_id_lod);
+        fname << "../data/earth_textures/thumb_"
+              << node.level << "_" 
+              << (short)node.side << "_" 
+              << node.x << "_"
+              << node.y << ".png";
+        node.texture_loaded = false;
+    }
 
-    glGenTextures(1, &node.tex_id);
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, node.tex_id);
+    unsigned char* data = stbi_load(fname.str().c_str(), &tex_x, &tex_y, &n_channels, 0);
+
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex_x, tex_y, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -87,11 +110,8 @@ void build_childs(struct surface_node& node, int num_levels){
     node.childs[0]->has_texture = true;
     node.childs[0]->x = 2 * node.x;
     node.childs[0]->y = 2 * node.y;
-    node.childs[0]->texture_fname << "../data/earth_textures/"
-                                  << node.childs[0]->level << "_" 
-                                  << (short)node.childs[0]->side << "_" 
-                                  << node.childs[0]->x << "_"
-                                  << node.childs[0]->y << ".png";
+    node.childs[0]->texture_loaded = false;
+    node.childs[0]->loading = false;
     bind_texture(*node.childs[0]);
     set_transform(*node.childs[0].get(), node, 1, 1);
 
@@ -101,14 +121,10 @@ void build_childs(struct surface_node& node, int num_levels){
     node.childs[1]->level = node.level + 1;
     node.childs[1]->side = node.side;
     node.childs[1]->has_texture = true;
-
     node.childs[1]->x = 2 * node.x + 1;
     node.childs[1]->y = 2 * node.y;
-    node.childs[1]->texture_fname << "../data/earth_textures/"
-                                  << node.childs[1]->level << "_" 
-                                  << (short)node.childs[1]->side << "_" 
-                                  << node.childs[1]->x << "_"
-                                  << node.childs[1]->y << ".png";
+    node.childs[1]->texture_loaded = false;
+    node.childs[1]->loading = false;
     bind_texture(*node.childs[1]);
 
     set_transform(*node.childs[1].get(), node, -1, 1);
@@ -119,14 +135,10 @@ void build_childs(struct surface_node& node, int num_levels){
     node.childs[2]->level = node.level + 1;
     node.childs[2]->side = node.side;
     node.childs[2]->has_texture = true;
-
     node.childs[2]->x = 2 * node.x;
     node.childs[2]->y = 2 * node.y + 1;
-    node.childs[2]->texture_fname << "../data/earth_textures/"
-                                  << node.childs[2]->level << "_" 
-                                  << (short)node.childs[2]->side << "_" 
-                                  << node.childs[2]->x << "_"
-                                  << node.childs[2]->y << ".png";
+    node.childs[2]->texture_loaded = false;
+    node.childs[2]->loading = false;
     bind_texture(*node.childs[2]);
 
     set_transform(*node.childs[2].get(), node, 1, -1);
@@ -137,14 +149,10 @@ void build_childs(struct surface_node& node, int num_levels){
     node.childs[3]->level = node.level + 1;
     node.childs[3]->side = node.side;
     node.childs[3]->has_texture = true;
-
     node.childs[3]->x = 2 * node.x + 1;
     node.childs[3]->y = 2 * node.y + 1;
-    node.childs[3]->texture_fname << "../data/earth_textures/"
-                                  << node.childs[3]->level << "_" 
-                                  << (short)node.childs[3]->side << "_" 
-                                  << node.childs[3]->x << "_"
-                                  << node.childs[3]->y << ".png";
+    node.childs[3]->texture_loaded = false;
+    node.childs[3]->loading = false;
     bind_texture(*node.childs[3]);
 
     set_transform(*node.childs[3].get(), node, -1, -1);
@@ -170,11 +178,8 @@ void build_surface(struct planet_surface& surface){
     surface.surface_tree[0].has_texture = true;
     surface.surface_tree[0].x = 0;
     surface.surface_tree[0].y = 0;
-    surface.surface_tree[0].texture_fname << "../data/earth_textures/"
-                                          << surface.surface_tree[0].level << "_" 
-                                          << (short)surface.surface_tree[0].side << "_" 
-                                          << surface.surface_tree[0].x << "_"
-                                          << surface.surface_tree[0].y << ".png";
+    surface.surface_tree[0].texture_loaded = false;
+    surface.surface_tree[0].loading = false;
     bind_texture(surface.surface_tree[0]);
     build_childs(surface.surface_tree[0], num_levels);
 
@@ -187,12 +192,9 @@ void build_surface(struct planet_surface& surface){
     surface.surface_tree[1].has_texture = true;
     surface.surface_tree[1].x = 0;
     surface.surface_tree[1].y = 0;
+    surface.surface_tree[1].texture_loaded = false;
+    surface.surface_tree[1].loading = false;
     bind_texture(surface.surface_tree[1]);
-    surface.surface_tree[1].texture_fname << "../data/earth_textures/"
-                                          << surface.surface_tree[1].level << "_" 
-                                          << (short)surface.surface_tree[1].side << "_" 
-                                          << surface.surface_tree[1].x << "_"
-                                          << surface.surface_tree[1].y << ".png";
     build_childs(surface.surface_tree[1], num_levels);
 
     surface.surface_tree[2].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
@@ -204,11 +206,8 @@ void build_surface(struct planet_surface& surface){
     surface.surface_tree[2].has_texture = true;
     surface.surface_tree[2].x = 0;
     surface.surface_tree[2].y = 0;
-    surface.surface_tree[2].texture_fname << "../data/earth_textures/"
-                                          << surface.surface_tree[2].level << "_" 
-                                          << (short)surface.surface_tree[2].side << "_" 
-                                          << surface.surface_tree[2].x << "_"
-                                          << surface.surface_tree[2].y << ".png";
+    surface.surface_tree[2].texture_loaded = false;
+    surface.surface_tree[2].loading = false;
     bind_texture(surface.surface_tree[2]);
     build_childs(surface.surface_tree[2], num_levels);
 
@@ -221,11 +220,8 @@ void build_surface(struct planet_surface& surface){
     surface.surface_tree[3].has_texture = true;
     surface.surface_tree[3].x = 0;
     surface.surface_tree[3].y = 0;
-    surface.surface_tree[3].texture_fname << "../data/earth_textures/"
-                                          << surface.surface_tree[3].level << "_" 
-                                          << (short)surface.surface_tree[3].side << "_" 
-                                          << surface.surface_tree[3].x << "_"
-                                          << surface.surface_tree[3].y << ".png";
+    surface.surface_tree[3].texture_loaded = false;
+    surface.surface_tree[3].loading = false;
     bind_texture(surface.surface_tree[3]);
     build_childs(surface.surface_tree[3], num_levels);
 
@@ -238,11 +234,8 @@ void build_surface(struct planet_surface& surface){
     surface.surface_tree[4].has_texture = true;
     surface.surface_tree[4].x = 0;
     surface.surface_tree[4].y = 0;
-    surface.surface_tree[4].texture_fname << "../data/earth_textures/"
-                                          << surface.surface_tree[4].level << "_" 
-                                          << (short)surface.surface_tree[4].side << "_" 
-                                          << surface.surface_tree[4].x << "_"
-                                          << surface.surface_tree[4].y << ".png";
+    surface.surface_tree[4].texture_loaded = false;
+    surface.surface_tree[4].loading = false;
     bind_texture(surface.surface_tree[4]);
     build_childs(surface.surface_tree[4], num_levels);
 
@@ -255,11 +248,8 @@ void build_surface(struct planet_surface& surface){
     surface.surface_tree[5].has_texture = true;
     surface.surface_tree[5].x = 0;
     surface.surface_tree[5].y = 0;
-    surface.surface_tree[5].texture_fname << "../data/earth_textures/"
-                                          << surface.surface_tree[5].level << "_" 
-                                          << (short)surface.surface_tree[5].side << "_" 
-                                          << surface.surface_tree[5].x << "_"
-                                          << surface.surface_tree[5].y << ".png";
+    surface.surface_tree[5].texture_loaded = false;
+    surface.surface_tree[5].loading = false;
     bind_texture(surface.surface_tree[5]);
     build_childs(surface.surface_tree[5], num_levels);
 }
@@ -267,8 +257,36 @@ void build_surface(struct planet_surface& surface){
 
 GLuint relative_planet_location, patch_scale_location, tex_shift_location;
 
+void async_bind_texture(struct surface_node* node){
+    int tex_x, tex_y, n_channels;
+    std::ostringstream fname;
+
+    fname << "../data/earth_textures/"
+          << node->level << "_" 
+          << (short)node->side << "_" 
+          << node->x << "_"
+          << node->y << ".png";
+
+    glGenTextures(1, &node->tex_id);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, node->tex_id);
+
+    unsigned char* data = stbi_load(fname.str().c_str(), &tex_x, &tex_y, &n_channels, 0);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex_x, tex_y, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    stbi_image_free(data);
+
+    node->texture_loaded = true;
+    node->loading = false;
+}
+
 // ugly but temporal
-void Planetarium::render_side(const struct surface_node& node, Model& model, math::mat4& planet_transform_world, int max_level, dmath::vec3& cam_origin, double sea_level){
+void Planetarium::render_side(struct surface_node& node, Model& model, math::mat4& planet_transform_world, int max_level, dmath::vec3& cam_origin, double sea_level){
     // path_translation_normd should be precomputed
     dmath::vec3 path_translation_normd = dmath::vec3(dmath::quat_to_mat4(node.base_rotation) * dmath::vec4(dmath::normalise(node.patch_translation), 1.0)) * sea_level;
     double distance = dmath::distance(path_translation_normd, cam_origin);
@@ -280,7 +298,21 @@ void Planetarium::render_side(const struct surface_node& node, Model& model, mat
     }
 
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, node.tex_id);
+
+    if(node.texture_loaded){
+        glBindTexture(GL_TEXTURE_2D, node.tex_id);
+    }
+    else{
+        if(!node.loading){
+            node.loading = true;
+            // problem with the code below: glBindTexture can't be called from a thread that doesn't have the opengl context. We can do I/O, but the actual texture
+            // binding has to be done from the main thread.
+            //std::thread thread(async_bind_texture, &node);
+            //thread.detach();
+            async_bind_texture(&node); // will change to load in a separate thread, but we can't bind there!
+        }
+        glBindTexture(GL_TEXTURE_2D, node.tex_id_lod);
+    }    
 
     dmath::mat4 dtransform_rotation, dtransform_planet_relative = dmath::identity_mat4();
     math::mat4 transform_planet_relative, scale_transform;
@@ -309,11 +341,11 @@ void Planetarium::run(){
     dmath::mat4 planet_transform = dmath::identity_mat4();
 
     struct planet_surface surface;
-    surface.max_levels = 2;
+    surface.max_levels = 3;
     surface.planet_sea_level = 6300000.f;
     build_surface(surface);
 
-    m_camera->setCameraPosition(dmath::vec3(6300000.0, 0.0, 0.0));
+    m_camera->setCameraPosition(dmath::vec3(7300000.0, 0.0, 0.0));
     m_camera->setSpeed(630000.0f);
     m_camera->createProjMat(1.0, 63000000, 67.0, 1.0);
 

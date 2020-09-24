@@ -3,7 +3,7 @@
 
 #include <GL/glew.h>
 #include <memory>
-#include <iomanip>
+#include <vector>
 
 #include "BaseApp.hpp"
 
@@ -22,11 +22,10 @@ struct surface_node{
     double scale; // scale = 1/depth
     dmath::versor base_rotation;
     std::unique_ptr<struct surface_node> childs[4];
-    bool has_texture;
+    bool has_texture, texture_loaded, loading;
     short level, x, y;
     char side;
-    GLuint tex_id;
-    std::ostringstream texture_fname;
+    GLuint tex_id, tex_id_lod;
 };
 
 
@@ -34,6 +33,7 @@ struct planet_surface{
     struct surface_node surface_tree[6];
     short max_levels;
     double planet_sea_level;
+    //std::vector<struct surface_node*> l3_loaded_nodes;
 };
 
 
@@ -44,7 +44,7 @@ class Planetarium : public BaseApp{
         // application default font atlas
         std::unique_ptr<FontAtlas> m_def_font_atlas;
 
-        void render_side(const struct surface_node& surface_subtree, Model& model, math::mat4& planet_transform, int level, dmath::vec3& cam_origin, double sea_level);
+        void render_side(struct surface_node& surface_subtree, Model& model, math::mat4& planet_transform, int level, dmath::vec3& cam_origin, double sea_level);
     public:
         Planetarium();
         Planetarium(int gl_width, int gl_height);
