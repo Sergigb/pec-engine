@@ -298,7 +298,7 @@ void Camera::freeCameraUpdate(){
         rotateCameraYaw(cam_yaw);
     }
 
-    if(m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT])
+    if(m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT))
         speed_mult = 4.0f;
 
     if(m_input->pressed_keys[GLFW_KEY_A] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){
