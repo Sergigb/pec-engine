@@ -13,10 +13,10 @@
 #define INPUT_MBUTTON_REPEAT    0x02
 #define INPUT_MBUTTON_RELEASE   0x04
 
-#define INPUT_KEY_UP        0x00
-#define INPUT_KEY_DOWN      0x01
-#define INPUT_KEY_REPEAT    0x02
-#define INPUT_KEY_RELEASE   0x04
+#define INPUT_KEY_UP        0x01
+#define INPUT_KEY_DOWN      0x02
+#define INPUT_KEY_REPEAT    0x04
+#define INPUT_KEY_RELEASE   0x08
 
 
 class Input{

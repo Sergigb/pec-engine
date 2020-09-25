@@ -2,7 +2,7 @@
 
 
 Input::Input(){
-    std::memset(pressed_keys, 0, (GLFW_KEY_LAST + 1));
+    std::memset(pressed_keys, INPUT_KEY_UP, (GLFW_KEY_LAST + 1));
     std::memset(pressed_mbuttons, 0, (GLFW_MOUSE_BUTTON_LAST + 1));
     m_mouse_posx = 0;
     m_mouse_posy = 0;
@@ -23,8 +23,10 @@ void Input::onKeyboardInput(int key, int scancode, int action, int mods){
 
     if(key == GLFW_KEY_UNKNOWN) return;
     if(action == GLFW_PRESS){
+        if(pressed_keys[key] & INPUT_KEY_UP){
+            m_keys_pressed.push_back(key);
+        }
         pressed_keys[key] = INPUT_KEY_DOWN;
-        m_keys_pressed.push_back(key);
     }
     else if(action == GLFW_RELEASE){
         pressed_keys[key] = INPUT_KEY_RELEASE;
@@ -85,10 +87,9 @@ void Input::update(){
             ++it;
         }
         else if(pressed_keys[key] & INPUT_KEY_RELEASE){
-            pressed_keys[key] = 0;
+            pressed_keys[key] = INPUT_KEY_UP;
             it = m_keys_pressed.erase(it);
         }
-
     }
 }
 
