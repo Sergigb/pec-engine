@@ -112,6 +112,7 @@ void build_childs(struct surface_node& node, int num_levels){
     node.childs[0]->y = 2 * node.y;
     node.childs[0]->texture_loaded = false;
     node.childs[0]->loading = false;
+    node.childs[0]->tiks_since_last_use = 0;
     bind_texture(*node.childs[0]);
     set_transform(*node.childs[0].get(), node, 1, 1);
 
@@ -125,6 +126,7 @@ void build_childs(struct surface_node& node, int num_levels){
     node.childs[1]->y = 2 * node.y;
     node.childs[1]->texture_loaded = false;
     node.childs[1]->loading = false;
+    node.childs[1]->tiks_since_last_use = 0;
     bind_texture(*node.childs[1]);
 
     set_transform(*node.childs[1].get(), node, -1, 1);
@@ -139,6 +141,7 @@ void build_childs(struct surface_node& node, int num_levels){
     node.childs[2]->y = 2 * node.y + 1;
     node.childs[2]->texture_loaded = false;
     node.childs[2]->loading = false;
+    node.childs[2]->tiks_since_last_use = 0;
     bind_texture(*node.childs[2]);
 
     set_transform(*node.childs[2].get(), node, 1, -1);
@@ -153,6 +156,7 @@ void build_childs(struct surface_node& node, int num_levels){
     node.childs[3]->y = 2 * node.y + 1;
     node.childs[3]->texture_loaded = false;
     node.childs[3]->loading = false;
+    node.childs[3]->tiks_since_last_use = 0;
     bind_texture(*node.childs[3]);
 
     set_transform(*node.childs[3].get(), node, -1, -1);
@@ -180,6 +184,7 @@ void build_surface(struct planet_surface& surface){
     surface.surface_tree[0].y = 0;
     surface.surface_tree[0].texture_loaded = false;
     surface.surface_tree[0].loading = false;
+    surface.surface_tree[0].tiks_since_last_use = 0;
     bind_texture(surface.surface_tree[0]);
     build_childs(surface.surface_tree[0], num_levels);
 
@@ -194,6 +199,7 @@ void build_surface(struct planet_surface& surface){
     surface.surface_tree[1].y = 0;
     surface.surface_tree[1].texture_loaded = false;
     surface.surface_tree[1].loading = false;
+    surface.surface_tree[1].tiks_since_last_use = 0;
     bind_texture(surface.surface_tree[1]);
     build_childs(surface.surface_tree[1], num_levels);
 
@@ -208,6 +214,7 @@ void build_surface(struct planet_surface& surface){
     surface.surface_tree[2].y = 0;
     surface.surface_tree[2].texture_loaded = false;
     surface.surface_tree[2].loading = false;
+    surface.surface_tree[2].tiks_since_last_use = 0;
     bind_texture(surface.surface_tree[2]);
     build_childs(surface.surface_tree[2], num_levels);
 
@@ -222,6 +229,7 @@ void build_surface(struct planet_surface& surface){
     surface.surface_tree[3].y = 0;
     surface.surface_tree[3].texture_loaded = false;
     surface.surface_tree[3].loading = false;
+    surface.surface_tree[3].tiks_since_last_use = 0;
     bind_texture(surface.surface_tree[3]);
     build_childs(surface.surface_tree[3], num_levels);
 
@@ -236,6 +244,7 @@ void build_surface(struct planet_surface& surface){
     surface.surface_tree[4].y = 0;
     surface.surface_tree[4].texture_loaded = false;
     surface.surface_tree[4].loading = false;
+    surface.surface_tree[4].tiks_since_last_use = 0;
     bind_texture(surface.surface_tree[4]);
     build_childs(surface.surface_tree[4], num_levels);
 
@@ -250,6 +259,7 @@ void build_surface(struct planet_surface& surface){
     surface.surface_tree[5].y = 0;
     surface.surface_tree[5].texture_loaded = false;
     surface.surface_tree[5].loading = false;
+    surface.surface_tree[5].tiks_since_last_use = 0;
     bind_texture(surface.surface_tree[5]);
     build_childs(surface.surface_tree[5], num_levels);
 }
@@ -281,6 +291,8 @@ void async_bind_texture(struct surface_node* node){
 
     stbi_image_free(data);
 
+    l3_loaded_nodes.push_back(node);
+    node->tiks_since_last_use = 0;
     node->texture_loaded = true;
     node->loading = false;
 }
@@ -301,6 +313,8 @@ void Planetarium::render_side(struct surface_node& node, Model& model, math::mat
 
     if(node.texture_loaded){
         glBindTexture(GL_TEXTURE_2D, node.tex_id);
+        node.tiks_since_last_use = 0;
+
     }
     else{
         if(!node.loading){
@@ -333,6 +347,25 @@ void Planetarium::render_side(struct surface_node& node, Model& model, math::mat
 
     model.setMeshColor(math::vec4(0.0, 0.0, 0.0, 1.0));
     model.render_terrain(planet_transform_world);
+}
+
+
+void texture_free(){
+    std::vector<struct surface_node*>::iterator it = l3_loaded_nodes.begin();
+
+    while(it != l3_loaded_nodes.end()){
+        struct surface_node* node = *it;
+        if(node->tiks_since_last_use >= 100){
+            glDeleteTextures(1, &node->tex_id);
+            node->texture_loaded = false;
+            it = l3_loaded_nodes.erase(it);
+            std::cout << "Freed texture at level 3, side " << (short)node->side << ", x:" << node->x << ", y:" << node->y << " (currently loaded: " << l3_loaded_nodes.size() << ")" << std::endl;
+        }
+        else{
+            node->tiks_since_last_use++;
+            it++;
+        }
+    }
 }
 
 
@@ -391,6 +424,8 @@ void Planetarium::run(){
             render_side(surface.surface_tree[i], base, planet_transform_world, surface.max_levels, cam_translation, surface.planet_sea_level);
         }
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+        texture_free();
 
         //m_render_context->setLightPosition(math::vec3(cam_translation.v[0], cam_translation.v[1], cam_translation.v[2]));
 

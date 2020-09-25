@@ -24,7 +24,7 @@ struct surface_node{
     std::unique_ptr<struct surface_node> childs[4];
     bool has_texture, texture_loaded, loading;
     short level, x, y;
-    char side;
+    char side, tiks_since_last_use;
     GLuint tex_id, tex_id_lod;
 };
 
@@ -33,8 +33,9 @@ struct planet_surface{
     struct surface_node surface_tree[6];
     short max_levels;
     double planet_sea_level;
-    //std::vector<struct surface_node*> l3_loaded_nodes;
 };
+
+std::vector<struct surface_node*> l3_loaded_nodes; // this should go into planet_surface but really I don't care right now
 
 
 class Planetarium : public BaseApp{
