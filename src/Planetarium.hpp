@@ -22,10 +22,12 @@ struct surface_node{
     double scale; // scale = 1/depth
     dmath::versor base_rotation;
     std::unique_ptr<struct surface_node> childs[4];
-    bool has_texture, texture_loaded, loading;
+    bool has_texture, texture_loaded, loading, data_ready;
     short level, x, y;
     char side, tiks_since_last_use;
     GLuint tex_id, tex_id_lod;
+    unsigned char* data;
+    int tex_x, tex_y;
 };
 
 
@@ -34,8 +36,6 @@ struct planet_surface{
     short max_levels;
     double planet_sea_level;
 };
-
-std::vector<struct surface_node*> l3_loaded_nodes; // this should go into planet_surface but really I don't care right now
 
 
 class Planetarium : public BaseApp{
