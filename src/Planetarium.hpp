@@ -15,8 +15,8 @@
 #define SIDE_PZ 4
 #define SIDE_NZ 5
 
-#define TEXTURE_LOCATION GL_TEXTURE0 + 0
-#define ELEVATION_LOCATION GL_TEXTURE0 + 1
+#define TEXTURE_LOCATION 0
+#define ELEVATION_LOCATION 1
 
 
 struct surface_node{

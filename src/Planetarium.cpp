@@ -51,8 +51,6 @@ void set_transform(struct surface_node& node, const struct surface_node& parent,
 
         node.tex_shift.v[0] = parent.tex_shift.v[0] + (1.0 / scale) * sign_side_1;
         node.tex_shift.v[1] = parent.tex_shift.v[1] + (1.0 / scale) * sign_side_2;
-        print(node.tex_shift);
-        std::cout << (1.0 / scale) * sign_side_1 << ", " << (1.0 / scale) * sign_side_2 << std::endl;;
     }
 
 }
@@ -267,7 +265,6 @@ void async_texture_load(struct surface_node* node){
 
 void bind_loaded_texture(struct surface_node& node){
     glGenTextures(1, &node.tex_id);
-    glActiveTexture(TEXTURE_LOCATION);
     glBindTexture(GL_TEXTURE_2D, node.tex_id);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, node.tex_x, node.tex_y, 0, GL_RGB, GL_UNSIGNED_BYTE, node.data);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
@@ -301,9 +298,9 @@ void Planetarium::render_side(struct surface_node& node, Model& model, math::mat
         return;
     }
 
-    glActiveTexture(TEXTURE_LOCATION);
-
     if(node.level > 3){
+        glActiveTexture(GL_TEXTURE0);
+        glEnable(GL_TEXTURE_2D);
         if(node.uppermost_textured_parent->texture_loaded){
             glBindTexture(GL_TEXTURE_2D, node.uppermost_textured_parent->tex_id);
             node.uppermost_textured_parent->tiks_since_last_use = 0;  
@@ -320,10 +317,13 @@ void Planetarium::render_side(struct surface_node& node, Model& model, math::mat
 
             glBindTexture(GL_TEXTURE_2D, node.uppermost_textured_parent->tex_id_lod);
         }
-        glActiveTexture(ELEVATION_LOCATION);
+        glActiveTexture(GL_TEXTURE1);
+        glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, node.uppermost_textured_parent->e_tex_id);
     }
     else{
+        glActiveTexture(GL_TEXTURE0);
+        glEnable(GL_TEXTURE_2D);
         if(node.texture_loaded){
             glBindTexture(GL_TEXTURE_2D, node.tex_id);
             node.tiks_since_last_use = 0;
@@ -340,7 +340,8 @@ void Planetarium::render_side(struct surface_node& node, Model& model, math::mat
 
             glBindTexture(GL_TEXTURE_2D, node.tex_id_lod);
         }
-        glActiveTexture(ELEVATION_LOCATION);
+        glActiveTexture(GL_TEXTURE1);
+        glEnable(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, node.e_tex_id);
     }
 
