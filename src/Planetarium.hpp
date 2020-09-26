@@ -34,6 +34,7 @@ struct surface_node{
     unsigned char* data;
     int tex_x, tex_y;
     float texture_scale;
+    struct surface_node* uppermost_textured_parent;
 };
 
 
