@@ -33,6 +33,7 @@ struct surface_node{
     GLuint e_tex_id, e_tex_id_lod;
     unsigned char* data;
     int tex_x, tex_y;
+    float texture_scale;
 };
 
 

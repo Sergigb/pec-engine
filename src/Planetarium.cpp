@@ -138,73 +138,48 @@ void bind_elevation_texture(struct surface_node& node){
 
 
 void build_childs(struct surface_node& node, int num_levels){
-    node.childs[0].reset(new struct surface_node);
-    node.childs[0]->scale = node.scale / 2.0;
-    node.childs[0]->base_rotation = node.base_rotation;
-    node.childs[0]->level = node.level + 1;
-    node.childs[0]->side = node.side;
-    node.childs[0]->has_texture = true;
+
+    for(uint i=0; i < 4; i++){
+        node.childs[i].reset(new struct surface_node);
+    }
+
     node.childs[0]->x = 2 * node.x;
     node.childs[0]->y = 2 * node.y;
-    node.childs[0]->texture_loaded = false;
-    node.childs[0]->loading = false;
-    node.childs[0]->tiks_since_last_use = 0;
-    node.childs[0]->data_ready = false;
-    node.childs[0]->has_elevation = true;
-    bind_texture(*node.childs[0]);
-    bind_elevation_texture(*node.childs[0]);
-    set_transform(*node.childs[0].get(), node, 1, 1);
 
-    node.childs[1].reset(new struct surface_node);
-    node.childs[1]->scale = node.scale / 2.0;
-    node.childs[1]->base_rotation = node.base_rotation;
-    node.childs[1]->level = node.level + 1;
-    node.childs[1]->side = node.side;
-    node.childs[1]->has_texture = true;
     node.childs[1]->x = 2 * node.x + 1;
     node.childs[1]->y = 2 * node.y;
-    node.childs[1]->texture_loaded = false;
-    node.childs[1]->loading = false;
-    node.childs[1]->tiks_since_last_use = 0;
-    node.childs[1]->data_ready = false;
-    node.childs[1]->has_elevation = true;
-    bind_texture(*node.childs[1]);
-    bind_elevation_texture(*node.childs[1]);
-    set_transform(*node.childs[1].get(), node, -1, 1);
 
-    node.childs[2].reset(new struct surface_node);
-    node.childs[2]->scale = node.scale / 2.0;
-    node.childs[2]->base_rotation = node.base_rotation;
-    node.childs[2]->level = node.level + 1;
-    node.childs[2]->side = node.side;
-    node.childs[2]->has_texture = true;
     node.childs[2]->x = 2 * node.x;
     node.childs[2]->y = 2 * node.y + 1;
-    node.childs[2]->texture_loaded = false;
-    node.childs[2]->loading = false;
-    node.childs[2]->tiks_since_last_use = 0;
-    node.childs[2]->data_ready = false;
-    node.childs[2]->has_elevation = true;
-    bind_elevation_texture(*node.childs[2]);
-    bind_texture(*node.childs[2]);
 
-    set_transform(*node.childs[2].get(), node, 1, -1);
-
-    node.childs[3].reset(new struct surface_node);
-    node.childs[3]->scale = node.scale / 2.0;
-    node.childs[3]->base_rotation = node.base_rotation;
-    node.childs[3]->level = node.level + 1;
-    node.childs[3]->side = node.side;
-    node.childs[3]->has_texture = true;
     node.childs[3]->x = 2 * node.x + 1;
     node.childs[3]->y = 2 * node.y + 1;
-    node.childs[3]->texture_loaded = false;
-    node.childs[3]->loading = false;
-    node.childs[3]->tiks_since_last_use = 0;
-    node.childs[3]->data_ready = false;
-    node.childs[3]->has_elevation = true;
-    bind_texture(*node.childs[3]);
-    bind_elevation_texture(*node.childs[3]);
+
+
+    for(uint i=0; i < 4; i++){
+        node.childs[i]->scale = node.scale / 2.0;
+        node.childs[i]->base_rotation = node.base_rotation;
+        node.childs[i]->level = node.level + 1;
+        node.childs[i]->side = node.side;
+        node.childs[i]->has_texture = true;
+        node.childs[i]->texture_loaded = false;
+        node.childs[i]->loading = false;
+        node.childs[i]->tiks_since_last_use = 0;
+        node.childs[i]->data_ready = false;
+        node.childs[i]->has_elevation = true;
+        if(node.level < 3){
+            node.childs[i]->texture_scale = 1.0;
+        }
+        else {
+            node.childs[i]->texture_scale = node.childs[i]->texture_scale / 2.0;
+        }
+        bind_texture(*node.childs[i]);
+        bind_elevation_texture(*node.childs[i]);
+    }
+
+    set_transform(*node.childs[0].get(), node, 1, 1);
+    set_transform(*node.childs[1].get(), node, -1, 1);
+    set_transform(*node.childs[2].get(), node, 1, -1);
     set_transform(*node.childs[3].get(), node, -1, -1);
 
     if(node.level + 2 <= num_levels){
@@ -218,113 +193,38 @@ void build_childs(struct surface_node& node, int num_levels){
 void build_surface(struct planet_surface& surface){
     short num_levels = surface.max_levels;
 
-    // put all this shit in a for ffs
-    surface.surface_tree[0].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
-    surface.surface_tree[0].tex_shift = math::vec2(0.0, 0.0);
-    surface.surface_tree[0].scale = 1.0;
-    surface.surface_tree[0].base_rotation = dmath::quat_from_axis_rad(0.0, 1.0, 0.0, 0.0);
-    surface.surface_tree[0].level = 1;
     surface.surface_tree[0].side = SIDE_PX;
-    surface.surface_tree[0].has_texture = true;
-    surface.surface_tree[0].x = 0;
-    surface.surface_tree[0].y = 0;
-    surface.surface_tree[0].texture_loaded = false;
-    surface.surface_tree[0].loading = false;
-    surface.surface_tree[0].tiks_since_last_use = 0;
-    surface.surface_tree[0].data_ready = false;
-    surface.surface_tree[0].has_elevation = true;
-    bind_texture(surface.surface_tree[0]);
-    bind_elevation_texture(surface.surface_tree[0]);
-    build_childs(surface.surface_tree[0], num_levels);
-
-    surface.surface_tree[1].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
-    surface.surface_tree[1].tex_shift = math::vec2(0.0, 0.0);
-    surface.surface_tree[1].scale = 1.0;
-    surface.surface_tree[1].base_rotation = dmath::quat_from_axis_rad(M_PI, 0.0, 1.0, 0.0);
-    surface.surface_tree[1].level = 1;
     surface.surface_tree[1].side = SIDE_NX;
-    surface.surface_tree[1].has_texture = true;
-    surface.surface_tree[1].x = 0;
-    surface.surface_tree[1].y = 0;
-    surface.surface_tree[1].texture_loaded = false;
-    surface.surface_tree[1].loading = false;
-    surface.surface_tree[1].tiks_since_last_use = 0;
-    surface.surface_tree[1].data_ready = false;
-    surface.surface_tree[1].has_elevation = true;
-    bind_texture(surface.surface_tree[1]);
-    bind_elevation_texture(surface.surface_tree[1]);
-    build_childs(surface.surface_tree[1], num_levels);
-
-    surface.surface_tree[2].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
-    surface.surface_tree[2].tex_shift = math::vec2(0.0, 0.0);
-    surface.surface_tree[2].scale = 1.0;
-    surface.surface_tree[2].base_rotation = dmath::quat_from_axis_rad(M_PI/2, 0.0, 0.0, 1.0);
-    surface.surface_tree[2].level = 1;
     surface.surface_tree[2].side = SIDE_PY;
-    surface.surface_tree[2].has_texture = true;
-    surface.surface_tree[2].x = 0;
-    surface.surface_tree[2].y = 0;
-    surface.surface_tree[2].texture_loaded = false;
-    surface.surface_tree[2].loading = false;
-    surface.surface_tree[2].tiks_since_last_use = 0;
-    surface.surface_tree[2].has_elevation = true;
-    bind_texture(surface.surface_tree[2]);
-    bind_elevation_texture(surface.surface_tree[2]);
-    build_childs(surface.surface_tree[2], num_levels);
-
-    surface.surface_tree[3].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
-    surface.surface_tree[3].tex_shift = math::vec2(0.0, 0.0);
-    surface.surface_tree[3].scale = 1.0;
-    surface.surface_tree[3].base_rotation = dmath::quat_from_axis_rad(-M_PI/2, 0.0, 0.0, 1.0);
-    surface.surface_tree[3].level = 1;
     surface.surface_tree[3].side = SIDE_NY;
-    surface.surface_tree[3].has_texture = true;
-    surface.surface_tree[3].x = 0;
-    surface.surface_tree[3].y = 0;
-    surface.surface_tree[3].texture_loaded = false;
-    surface.surface_tree[3].loading = false;
-    surface.surface_tree[3].tiks_since_last_use = 0;
-    surface.surface_tree[3].data_ready = false;
-    surface.surface_tree[3].has_elevation = true;
-    bind_texture(surface.surface_tree[3]);
-    bind_elevation_texture(surface.surface_tree[3]);
-    build_childs(surface.surface_tree[3], num_levels);
-
-    surface.surface_tree[4].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
-    surface.surface_tree[4].tex_shift = math::vec2(0.0, 0.0);
-    surface.surface_tree[4].scale = 1.0;
-    surface.surface_tree[4].base_rotation = dmath::quat_from_axis_rad(M_PI/2, 0.0, 1.0, 0.0);
-    surface.surface_tree[4].level = 1;
     surface.surface_tree[4].side = SIDE_PZ;
-    surface.surface_tree[4].has_texture = true;
-    surface.surface_tree[4].x = 0;
-    surface.surface_tree[4].y = 0;
-    surface.surface_tree[4].texture_loaded = false;
-    surface.surface_tree[4].loading = false;
-    surface.surface_tree[4].tiks_since_last_use = 0;
-    surface.surface_tree[4].data_ready = false;
-    surface.surface_tree[4].has_elevation = true;
-    bind_texture(surface.surface_tree[4]);
-    bind_elevation_texture(surface.surface_tree[4]);
-    build_childs(surface.surface_tree[4], num_levels);
-
-    surface.surface_tree[5].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
-    surface.surface_tree[5].tex_shift = math::vec2(0.0, 0.0);
-    surface.surface_tree[5].scale = 1.0;
-    surface.surface_tree[5].base_rotation = dmath::quat_from_axis_rad(-M_PI/2, 0.0, 1.0, 0.0);
-    surface.surface_tree[5].level = 1;
     surface.surface_tree[5].side = SIDE_NZ;
-    surface.surface_tree[5].has_texture = true;
-    surface.surface_tree[5].x = 0;
-    surface.surface_tree[5].y = 0;
-    surface.surface_tree[5].texture_loaded = false;
-    surface.surface_tree[5].loading = false;
-    surface.surface_tree[5].tiks_since_last_use = 0;
-    surface.surface_tree[5].data_ready = false;
-    surface.surface_tree[5].has_elevation = true;
-    bind_texture(surface.surface_tree[5]);
-    bind_elevation_texture(surface.surface_tree[5]);
-    build_childs(surface.surface_tree[5], num_levels);
+    
+    surface.surface_tree[0].base_rotation = dmath::quat_from_axis_rad(0.0, 1.0, 0.0, 0.0);
+    surface.surface_tree[1].base_rotation = dmath::quat_from_axis_rad(M_PI, 0.0, 1.0, 0.0);
+    surface.surface_tree[2].base_rotation = dmath::quat_from_axis_rad(M_PI/2, 0.0, 0.0, 1.0);
+    surface.surface_tree[3].base_rotation = dmath::quat_from_axis_rad(-M_PI/2, 0.0, 0.0, 1.0);
+    surface.surface_tree[4].base_rotation = dmath::quat_from_axis_rad(M_PI/2, 0.0, 1.0, 0.0);
+    surface.surface_tree[5].base_rotation = dmath::quat_from_axis_rad(-M_PI/2, 0.0, 1.0, 0.0);
+
+    for(uint i=0; i < 6; i++){
+        surface.surface_tree[i].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
+        surface.surface_tree[i].tex_shift = math::vec2(0.0, 0.0);
+        surface.surface_tree[i].scale = 1.0;
+        surface.surface_tree[i].level = 1;
+        surface.surface_tree[i].has_texture = true;
+        surface.surface_tree[i].x = 0;
+        surface.surface_tree[i].y = 0;
+        surface.surface_tree[i].texture_loaded = false;
+        surface.surface_tree[i].loading = false;
+        surface.surface_tree[i].tiks_since_last_use = 0;
+        surface.surface_tree[i].data_ready = false;
+        surface.surface_tree[i].has_elevation = true;
+        surface.surface_tree[i].texture_scale = 1.0;
+        bind_texture(surface.surface_tree[i]);
+        bind_elevation_texture(surface.surface_tree[i]);
+        build_childs(surface.surface_tree[i], num_levels);
+    }
 }
 
 
@@ -366,7 +266,7 @@ void bind_loaded_texture(struct surface_node& node){
 }
 
 
-GLuint relative_planet_location, patch_scale_location, tex_shift_location;
+GLuint relative_planet_location, texture_scale_location, tex_shift_location;
 
 
 // ugly but temporal
@@ -416,7 +316,7 @@ void Planetarium::render_side(struct surface_node& node, Model& model, math::mat
     scale_transform.m[10] = node.scale;
     transform_planet_relative = transform_planet_relative * scale_transform;
 
-    glUniform1f(patch_scale_location, 1.0f); // for now its ok because we have 2 levels with textures, when we have levels with no textures theyll need to be scaled
+    glUniform1f(texture_scale_location, 1.0f); // for now its ok because we have 2 levels with textures, when we have levels with no textures theyll need to be scaled
     glUniformMatrix4fv(relative_planet_location, 1, GL_FALSE, transform_planet_relative.m);
     glUniform2fv(tex_shift_location, 1, node.tex_shift.v);
 
@@ -463,7 +363,7 @@ void Planetarium::run(){
 
     GLuint shader = m_render_context->getShader(SHADER_PLANET);
     relative_planet_location = glGetUniformLocation(shader, "relative_planet");
-    patch_scale_location = glGetUniformLocation(shader, "patch_scale");
+    texture_scale_location = glGetUniformLocation(shader, "texture_scale");
     tex_shift_location = glGetUniformLocation(shader, "tex_shift");
     GLuint planet_radius_location = glGetUniformLocation(shader, "planet_radius");
 
