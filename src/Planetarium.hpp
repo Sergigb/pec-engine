@@ -15,6 +15,9 @@
 #define SIDE_PZ 4
 #define SIDE_NZ 5
 
+#define TEXTURE_LOCATION GL_TEXTURE0 + 0
+#define ELEVATION_LOCATION GL_TEXTURE0 + 1
+
 
 struct surface_node{
     dmath::vec3 patch_translation;
@@ -23,9 +26,11 @@ struct surface_node{
     dmath::versor base_rotation;
     std::unique_ptr<struct surface_node> childs[4];
     bool has_texture, texture_loaded, loading, data_ready;
+    bool has_elevation;
     short level, x, y;
     char side, tiks_since_last_use;
     GLuint tex_id, tex_id_lod;
+    GLuint e_tex_id, e_tex_id_lod;
     unsigned char* data;
     int tex_x, tex_y;
 };
