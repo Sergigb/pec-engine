@@ -52,7 +52,7 @@ class Planetarium : public BaseApp{
         // application default font atlas
         std::unique_ptr<FontAtlas> m_def_font_atlas;
 
-        void render_side(struct surface_node& surface_subtree, Model& model, math::mat4& planet_transform, int level, dmath::vec3& cam_origin, double sea_level);
+        void render_side(struct surface_node& surface_subtree, math::mat4& planet_transform, int level, dmath::vec3& cam_origin, double sea_level);
     public:
         Planetarium();
         Planetarium(int gl_width, int gl_height);

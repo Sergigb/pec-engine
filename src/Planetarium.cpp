@@ -1,6 +1,7 @@
 #include <string>
 #include <iostream>
 #include <thread>
+#include <math.h>
 
 #include <stb/stb_image.h>
 
@@ -37,7 +38,6 @@ Planetarium::~Planetarium(){
 }
 
 
-#include <math.h>       /* pow */
 void set_transform(struct surface_node& node, const struct surface_node& parent, int sign_side_1, int sign_side_2){
     node.patch_translation = parent.patch_translation;
     node.patch_translation.v[1] += (node.scale / 2) * sign_side_1;
@@ -52,7 +52,6 @@ void set_transform(struct surface_node& node, const struct surface_node& parent,
         node.tex_shift.v[0] = parent.tex_shift.v[0] + (1.0 / scale) * sign_side_1;
         node.tex_shift.v[1] = parent.tex_shift.v[1] + (1.0 / scale) * sign_side_2;
     }
-
 }
 
 
@@ -285,15 +284,19 @@ void bind_loaded_texture(struct surface_node& node){
 
 GLuint relative_planet_location, texture_scale_location, tex_shift_location;
 
+Model* base32;
+Model* base64;
+Model* base128;
+
 
 // ugly but temporal
-void Planetarium::render_side(struct surface_node& node, Model& model, math::mat4& planet_transform_world, int max_level, dmath::vec3& cam_origin, double sea_level){
+void Planetarium::render_side(struct surface_node& node, math::mat4& planet_transform_world, int max_level, dmath::vec3& cam_origin, double sea_level){
     // path_translation_normd should be precomputed
     dmath::vec3 path_translation_normd = dmath::vec3(dmath::quat_to_mat4(node.base_rotation) * dmath::vec4(dmath::normalise(node.patch_translation), 1.0)) * sea_level;
     double distance = dmath::distance(path_translation_normd, cam_origin);
     if(node.scale * sea_level * 1.5 > distance && node.level < max_level){
         for(uint i = 0; i < 4; i++){
-            render_side(*node.childs[i].get(), model, planet_transform_world, max_level, cam_origin, sea_level);
+            render_side(*node.childs[i].get(), planet_transform_world, max_level, cam_origin, sea_level);
         }
         return;
     }
@@ -362,8 +365,16 @@ void Planetarium::render_side(struct surface_node& node, Model& model, math::mat
     glUniformMatrix4fv(relative_planet_location, 1, GL_FALSE, transform_planet_relative.m);
     glUniform2fv(tex_shift_location, 1, node.tex_shift.v);
 
-    model.setMeshColor(math::vec4(0.0, 0.0, 0.0, 1.0));
-    model.render_terrain(planet_transform_world);
+    if(node.level >= 1 && node.level < 3){
+        base32->render_terrain(planet_transform_world);
+    }
+    else if(node.level >= 3 && node.level < 6){
+        base64->render_terrain(planet_transform_world);
+    }
+    else{
+        base128->render_terrain(planet_transform_world);
+    }
+    
 }
 
 
@@ -387,7 +398,14 @@ void texture_free(){
 
 
 void Planetarium::run(){
-    Model base("../data/base64.dae", nullptr, m_render_context->getShader(SHADER_PLANET), m_frustum.get(), m_render_context.get(), math::vec3(1.0, 1.0, 1.0));
+    bool polygon_mode_lines = false;
+
+    base32 = new Model("../data/base32.dae", nullptr, m_render_context->getShader(SHADER_PLANET), m_frustum.get(), m_render_context.get(), math::vec3(1.0, 1.0, 1.0));
+    base64 = new Model("../data/base64.dae", nullptr, m_render_context->getShader(SHADER_PLANET), m_frustum.get(), m_render_context.get(), math::vec3(1.0, 1.0, 1.0));
+    base128 = new Model("../data/base128.dae", nullptr, m_render_context->getShader(SHADER_PLANET), m_frustum.get(), m_render_context.get(), math::vec3(1.0, 1.0, 1.0));
+    base32->setMeshColor(math::vec4(0.0, 0.0, 0.0, 1.0));
+    base64->setMeshColor(math::vec4(0.0, 0.0, 0.0, 1.0));
+    base128->setMeshColor(math::vec4(0.0, 0.0, 0.0, 1.0));
     dmath::mat4 planet_transform = dmath::identity_mat4();
 
     struct planet_surface surface;
@@ -442,12 +460,28 @@ void Planetarium::run(){
         glUniform1f(planet_radius_location, surface.planet_sea_level);
         //glfwSwapInterval(0);
 
-        //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        if(m_input->pressed_keys[GLFW_KEY_L] & INPUT_KEY_RELEASE){
+            if(polygon_mode_lines){
+                polygon_mode_lines = false;
+            }
+            else{
+                polygon_mode_lines = true;
+            }
+        }
+
+        if(polygon_mode_lines){
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        }
+        else{
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
+
         for(uint i=0; i < 6; i++){
             //dmath::vec3 t(6300000.0, 0.0, 0.0);
 
-            render_side(surface.surface_tree[i], base, planet_transform_world, surface.max_levels, cam_translation, surface.planet_sea_level);
+            render_side(surface.surface_tree[i], planet_transform_world, surface.max_levels, cam_translation, surface.planet_sea_level);
         }
+
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         texture_free();
