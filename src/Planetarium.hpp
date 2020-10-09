@@ -31,8 +31,8 @@ struct surface_node{
     char side, tiks_since_last_use;
     GLuint tex_id, tex_id_lod;
     GLuint e_tex_id, e_tex_id_lod;
-    unsigned char* data;
-    int tex_x, tex_y;
+    unsigned char* data, * data_elevation;
+    int tex_x, tex_y, e_tex_x, e_tex_y;
     float texture_scale;
     struct surface_node* uppermost_textured_parent;
 };

@@ -10,7 +10,7 @@
 #include "maths_funcs.hpp"
 
 
-std::vector<struct surface_node*> l3_loaded_nodes; // this should go into planet_surface but really I don't care right now
+std::vector<struct surface_node*> loaded_nodes; // this should go into planet_surface but really I don't care right now
 
 
 Planetarium::Planetarium() : BaseApp(){
@@ -80,7 +80,7 @@ void bind_texture(struct surface_node& node){
     int tex_x, tex_y, n_channels;
     std::ostringstream fname;
 
-    if(node.level <= 2){
+    if(node.level <= 1){
         glGenTextures(1, &node.tex_id);
         glBindTexture(GL_TEXTURE_2D, node.tex_id);
         fname << "../data/earth_textures/"
@@ -117,7 +117,7 @@ void bind_elevation_texture(struct surface_node& node){
     int tex_x, tex_y, n_channels;
     std::ostringstream fname;
 
-    if(node.level <= 9999){  // load all levels
+    if(node.level <= 1){
         glGenTextures(1, &node.e_tex_id);
         glBindTexture(GL_TEXTURE_2D, node.e_tex_id);
         fname << "../data/earth_textures/elevation/e_"
@@ -255,6 +255,17 @@ void async_texture_load(struct surface_node* node){
 
     node->data = stbi_load(fname.str().c_str(), &node->tex_x, &node->tex_y, &n_channels, 0);
 
+    fname.str("");
+    fname.clear();
+
+    fname << "../data/earth_textures/elevation/e_"
+          << node->level << "_" 
+          << (short)node->side << "_" 
+          << node->x << "_"
+          << node->y << ".png";
+
+    node->data_elevation = stbi_load(fname.str().c_str(), &node->e_tex_x, &node->e_tex_y, &n_channels, 0);
+
     //std::cout << "Loaded texture: " << fname.str() << std::endl;
 
     node->data_ready = true;
@@ -275,7 +286,17 @@ void bind_loaded_texture(struct surface_node& node){
 
     stbi_image_free(node.data);
 
-    l3_loaded_nodes.push_back(&node);
+    glGenTextures(1, &node.e_tex_id);
+    glBindTexture(GL_TEXTURE_2D, node.e_tex_id);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RED, node.e_tex_x, node.e_tex_y, 0, GL_RED, GL_UNSIGNED_BYTE, node.data_elevation);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+
+    stbi_image_free(node.data_elevation);
+
+    loaded_nodes.push_back(&node);
     node.tiks_since_last_use = 0;
     node.texture_loaded = true;
     node.data_ready = false;
@@ -301,11 +322,14 @@ void Planetarium::render_side(struct surface_node& node, math::mat4& planet_tran
         return;
     }
 
+    glActiveTexture(GL_TEXTURE0);
     if(node.level > 3){
-        glActiveTexture(GL_TEXTURE0);
-        glEnable(GL_TEXTURE_2D);
         if(node.uppermost_textured_parent->texture_loaded){
             glBindTexture(GL_TEXTURE_2D, node.uppermost_textured_parent->tex_id);
+
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, node.uppermost_textured_parent->e_tex_id);
+
             node.uppermost_textured_parent->tiks_since_last_use = 0;  
         }
         else{
@@ -319,16 +343,18 @@ void Planetarium::render_side(struct surface_node& node, math::mat4& planet_tran
             }
 
             glBindTexture(GL_TEXTURE_2D, node.uppermost_textured_parent->tex_id_lod);
+
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, node.uppermost_textured_parent->e_tex_id_lod);
         }
-        glActiveTexture(GL_TEXTURE1);
-        glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, node.uppermost_textured_parent->e_tex_id);
     }
     else{
-        glActiveTexture(GL_TEXTURE0);
-        glEnable(GL_TEXTURE_2D);
         if(node.texture_loaded){
             glBindTexture(GL_TEXTURE_2D, node.tex_id);
+
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, node.e_tex_id);
+
             node.tiks_since_last_use = 0;
         }
         else{
@@ -342,10 +368,10 @@ void Planetarium::render_side(struct surface_node& node, math::mat4& planet_tran
             }
 
             glBindTexture(GL_TEXTURE_2D, node.tex_id_lod);
+
+            glActiveTexture(GL_TEXTURE1);
+            glBindTexture(GL_TEXTURE_2D, node.e_tex_id_lod);
         }
-        glActiveTexture(GL_TEXTURE1);
-        glEnable(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, node.e_tex_id);
     }
 
     dmath::mat4 dtransform_rotation, dtransform_planet_relative = dmath::identity_mat4();
@@ -368,7 +394,7 @@ void Planetarium::render_side(struct surface_node& node, math::mat4& planet_tran
     if(node.level >= 1 && node.level < 3){
         base32->render_terrain(planet_transform_world);
     }
-    else if(node.level >= 3 && node.level < 6){
+    else if(node.level >= 3 && node.level < 7){ // 128x128 disabled
         base64->render_terrain(planet_transform_world);
     }
     else{
@@ -379,15 +405,16 @@ void Planetarium::render_side(struct surface_node& node, math::mat4& planet_tran
 
 
 void texture_free(){
-    std::vector<struct surface_node*>::iterator it = l3_loaded_nodes.begin();
+    std::vector<struct surface_node*>::iterator it = loaded_nodes.begin();
 
-    while(it != l3_loaded_nodes.end()){
+    while(it != loaded_nodes.end()){
         struct surface_node* node = *it;
         if(node->tiks_since_last_use >= 100){
             glDeleteTextures(1, &node->tex_id);
+            glDeleteTextures(1, &node->e_tex_id);
             node->texture_loaded = false;
-            it = l3_loaded_nodes.erase(it);
-            //std::cout << "Freed texture at level 3, side " << (short)node->side << ", x:" << node->x << ", y:" << node->y << " (currently loaded: " << l3_loaded_nodes.size() << ")" << std::endl;
+            it = loaded_nodes.erase(it);
+            //std::cout << "Freed texture at level 3, side " << (short)node->side << ", x:" << node->x << ", y:" << node->y << " (currently loaded: " << loaded_nodes.size() << ")" << std::endl;
         }
         else{
             node->tiks_since_last_use++;
