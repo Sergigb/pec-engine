@@ -243,6 +243,9 @@ namespace dmath{ // double precision for the camera
     mat4 translate( const mat4 &m, const vec3 &v );
     mat4 inverse( const mat4 &mm );
     double determinant( const mat4 &mm );
+    mat4 rotate_x_deg( const mat4 &m, double deg );
+    mat4 rotate_y_deg( const mat4 &m, double deg );
+    mat4 rotate_z_deg( const mat4 &m, double deg );
     //versor functions
     mat4 quat_to_mat4( const versor &q );
     versor normalise( versor &q );

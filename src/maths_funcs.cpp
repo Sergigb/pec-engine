@@ -1305,6 +1305,36 @@ double dmath::distance( const vec3 &a, const vec3 &b ) {
     return sqrt( x_diff * x_diff + y_diff * y_diff + z_diff * z_diff );
 }
 
+dmath::mat4 dmath::rotate_x_deg( const mat4 &m, double deg ) {
+    double rad = deg * ONE_DEG_IN_RAD;
+    mat4 m_r = dmath::identity_mat4();
+    m_r.m[5] = cos( rad );
+    m_r.m[9] = -sin( rad );
+    m_r.m[6] = sin( rad );
+    m_r.m[10] = cos( rad );
+    return m_r * m;
+}
+
+dmath::mat4 dmath::rotate_y_deg( const mat4 &m, double deg ) {
+    double rad = deg * ONE_DEG_IN_RAD;
+    mat4 m_r = dmath::identity_mat4();
+    m_r.m[0] = cos( rad );
+    m_r.m[8] = sin( rad );
+    m_r.m[2] = -sin( rad );
+    m_r.m[10] = cos( rad );
+    return m_r * m;
+}
+
+dmath::mat4 dmath::rotate_z_deg( const mat4 &m, double deg ) {
+    double rad = deg * ONE_DEG_IN_RAD;
+    mat4 m_r = dmath::identity_mat4();
+    m_r.m[0] = cos( rad );
+    m_r.m[4] = -sin( rad );
+    m_r.m[1] = sin( rad );
+    m_r.m[5] = cos( rad );
+    return m_r * m;
+}
+
 dmath::mat4 dmath::quat_to_mat4( const versor &q ) {
     double w = q.q[0];
     double x = q.q[1];
