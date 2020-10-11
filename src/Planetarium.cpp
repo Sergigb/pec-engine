@@ -104,15 +104,15 @@ void bind_texture(struct surface_node& node){
         node.texture_loaded = false;
     }
 
-    node.data = stbi_load(fname.str().c_str(), &tex_x, &tex_y, &n_channels, 0);
+    unsigned char* data = stbi_load(fname.str().c_str(), &tex_x, &tex_y, &n_channels, 0);
 
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex_x, tex_y, 0, GL_RGB, GL_UNSIGNED_BYTE, node.data);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, tex_x, tex_y, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-    stbi_image_free(node.data);
+    stbi_image_free(data);
 }
 
 
@@ -199,7 +199,7 @@ void build_childs(struct surface_node& node, int num_levels){
     set_transform(*node.childs[2].get(), node, 1, -1);
     set_transform(*node.childs[3].get(), node, -1, -1);
 
-    if(node.level + 2 <= num_levels){
+    if(node.level + 2 <= num_levels){ // node.level + 2 ----> build the childs of the childs you have just built... confusing
         for(uint i = 0; i < 4; i++){
             build_childs(*node.childs[i].get(), num_levels);
         }
@@ -232,7 +232,6 @@ void build_surface(struct planet_surface& surface){
         surface.surface_tree[i].has_texture = true;
         surface.surface_tree[i].x = 0;
         surface.surface_tree[i].y = 0;
-        surface.surface_tree[i].texture_loaded = false;
         surface.surface_tree[i].loading = false;
         surface.surface_tree[i].ticks_since_last_use = 0;
         surface.surface_tree[i].data_ready = false;
@@ -289,7 +288,7 @@ void bind_loaded_texture(struct surface_node& node){
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-    std::cout << "Texture bound: " << std::endl;
+    //std::cout << "Texture bound: " << std::endl;
 
     stbi_image_free(node.data);
 
@@ -323,9 +322,9 @@ void bind_loaded_textures(){
 
 GLuint relative_planet_location, texture_scale_location, tex_shift_location;
 
-Model* base32;
-Model* base64;
-Model* base128;
+std::unique_ptr<Model> base32;
+std::unique_ptr<Model> base64;
+std::unique_ptr<Model> base128;
 
 
 // ugly but temporal
@@ -434,12 +433,36 @@ void texture_free(){
 }
 
 
+void clean_side(struct surface_node& node, int num_levels){ // num_levels should be a macro in the future
+    /*
+    Warning: we are not checking if there's any thread loading textures in the background, this should be done in the future!
+    */
+    if(node.level != 1){ // first level doesn't have lod
+        glDeleteTextures(1, &node.tex_id_lod);
+        glDeleteTextures(1, &node.e_tex_id_lod);
+    }
+    if(node.texture_loaded){
+        glDeleteTextures(1, &node.tex_id);
+        glDeleteTextures(1, &node.e_tex_id);
+    }
+    if(node.data_ready){
+        stbi_image_free(node.data);
+        stbi_image_free(node.data_elevation);
+    }
+    if(node.level < 3){  // I ONLY HAVE 3 LEVELS WITH TEXTURE!
+        for(uint i=0; i < 4; i++){
+            clean_side(*node.childs[i], num_levels);
+        }
+    }
+}
+
+
 void Planetarium::run(){
     bool polygon_mode_lines = false;
 
-    base32 = new Model("../data/base32.dae", nullptr, m_render_context->getShader(SHADER_PLANET), m_frustum.get(), m_render_context.get(), math::vec3(1.0, 1.0, 1.0));
-    base64 = new Model("../data/base64.dae", nullptr, m_render_context->getShader(SHADER_PLANET), m_frustum.get(), m_render_context.get(), math::vec3(1.0, 1.0, 1.0));
-    base128 = new Model("../data/base128.dae", nullptr, m_render_context->getShader(SHADER_PLANET), m_frustum.get(), m_render_context.get(), math::vec3(1.0, 1.0, 1.0));
+    base32.reset(new Model("../data/base32.dae", nullptr, m_render_context->getShader(SHADER_PLANET), m_frustum.get(), m_render_context.get(), math::vec3(1.0, 1.0, 1.0)));
+    base64.reset(new Model("../data/base64.dae", nullptr, m_render_context->getShader(SHADER_PLANET), m_frustum.get(), m_render_context.get(), math::vec3(1.0, 1.0, 1.0)));
+    base128.reset(new Model("../data/base128.dae", nullptr, m_render_context->getShader(SHADER_PLANET), m_frustum.get(), m_render_context.get(), math::vec3(1.0, 1.0, 1.0)));
     base32->setMeshColor(math::vec4(0.0, 0.0, 0.0, 1.0));
     base64->setMeshColor(math::vec4(0.0, 0.0, 0.0, 1.0));
     base128->setMeshColor(math::vec4(0.0, 0.0, 0.0, 1.0));
@@ -528,6 +551,10 @@ void Planetarium::run(){
         //m_render_context->setLightPosition(math::vec3(cam_translation.v[0], cam_translation.v[1], cam_translation.v[2]));
 
         glfwSwapBuffers(m_window_handler->getWindow());
+    }
+
+    for(uint i=0; i < 6; i++){
+        clean_side(surface.surface_tree[i], surface.max_levels);
     }
 
     m_window_handler->terminate();
