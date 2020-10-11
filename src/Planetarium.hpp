@@ -28,7 +28,7 @@ struct surface_node{
     bool has_texture, texture_loaded, loading, data_ready;
     bool has_elevation;
     short level, x, y;
-    char side, tiks_since_last_use;
+    char side, ticks_since_last_use;
     GLuint tex_id, tex_id_lod;
     GLuint e_tex_id, e_tex_id_lod;
     unsigned char* data, * data_elevation;
