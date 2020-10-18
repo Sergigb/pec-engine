@@ -45,7 +45,7 @@ void App::run(){
     int ticks_since_last_update = 0;
 
     m_render_context->setEditorMode(GUI_MODE_EDITOR);
-    m_bt_wrapper->startSimulation(1.f / 60.f, 2);
+    m_bt_wrapper->startSimulation(1.f / 60.f, 0);
     m_render_context->start();
     while (!glfwWindowShouldClose(m_window_handler->getWindow())){
         loop_start_load = std::chrono::steady_clock::now();
@@ -61,8 +61,6 @@ void App::run(){
         m_input->update();
         m_window_handler->update();
         m_frustum->extractPlanes(m_camera->getCenteredViewMatrix(), m_camera->getProjMatrix(), false);
-        m_player->update();
-        m_asset_manager->updateBuffers();
 
         {  //wake up physics thread
             std::unique_lock<std::mutex> lck2(m_thread_monitor.mtx_start);
@@ -99,6 +97,9 @@ void App::run(){
             m_thread_monitor.worker_ended = false;
         }
 
+        m_player->update();
+        m_asset_manager->updateBuffers();
+        
         // load ends here
 
         loop_end_load = std::chrono::steady_clock::now();
