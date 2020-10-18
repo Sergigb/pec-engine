@@ -14,6 +14,7 @@ BasePart::BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_sh
     m_show_editor_menu = false;
     m_asset_manager = asset_manager;
     m_properties = 0;
+    m_show_game_menu = false;
 }
 
 
@@ -27,6 +28,7 @@ BasePart::BasePart(){
     m_show_editor_menu = false;
     m_asset_manager = nullptr;
     m_properties = 0;
+    m_show_game_menu = false;
 }
 
 
@@ -51,6 +53,7 @@ BasePart::BasePart(const BasePart& part) : Object(part) {
     m_show_editor_menu = false;
     m_asset_manager = part.m_asset_manager;
     m_properties = part.m_properties;
+    m_show_game_menu = false;
 }
 
 
@@ -286,18 +289,18 @@ void BasePart::renderOther(){
 
         ImGui::ColorEdit3("Mesh color", m_mesh_color.v);
 
-        ImGui::Checkbox("Set m_has_transform", &m_has_transform);
+        ImGui::End();
+    }
+    else if(m_show_game_menu){
+        std::stringstream ss;
+        ImVec2 mousepos = ImGui::GetMousePos();
+        ss << m_unique_id;
 
-        ImGui::DragFloat4("1st row", &m_mesh_transform.m[0], 0.1f);
-        ImGui::DragFloat4("2nd row", &m_mesh_transform.m[4], 0.1f);
-        ImGui::DragFloat4("3rd row", &m_mesh_transform.m[8], 0.1f);
-        ImGui::DragFloat4("4th row", &m_mesh_transform.m[12], 0.1f);
+        ImGui::SetNextWindowPos(mousepos, ImGuiCond_Appearing);
+        ImGui::SetNextWindowSize(ImVec2(300.f, 300.f), ImGuiCond_Appearing);
+        ImGui::Begin((m_fancy_name + ss.str()).c_str(), &m_show_game_menu);
 
-        if(ImGui::Button("Set identity")){
-            m_mesh_transform = math::identity_mat4();
-        }
-
-        // this is for testing now
+        // this shouldn't be treated in the render thread, this will have to be dealt with in the update method
         if(m_properties & PART_DECOUPLES_CHILDS){
             if(ImGui::Button("Decouple childs")){
                 decoupleAll();
@@ -306,11 +309,6 @@ void BasePart::renderOther(){
         if(m_properties & PART_DECOUPLES){
             if(ImGui::Button("Decouple self")){
                 decoupleSelf();
-            }
-        }
-        if(m_properties & PART_HAS_ENGINE){
-            if(ImGui::Button("Start engine (does nothing).")){
-                // ~~
             }
         }
 
@@ -325,7 +323,7 @@ void BasePart::onEditorRightMouseButton(){
 
 
 void BasePart::onSimulationRightMouseButton(){
-    
+    m_show_game_menu = true;
 }
 
 
