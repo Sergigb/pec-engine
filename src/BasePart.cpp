@@ -15,6 +15,9 @@ BasePart::BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_sh
     m_asset_manager = asset_manager;
     m_properties = 0;
     m_show_game_menu = false;
+    m_decouple_self = false;
+    m_decouple_childs = false;
+    m_action = false;
 }
 
 
@@ -29,6 +32,9 @@ BasePart::BasePart(){
     m_asset_manager = nullptr;
     m_properties = 0;
     m_show_game_menu = false;
+    m_decouple_self = false;
+    m_decouple_childs = false;
+    m_action = false;
 }
 
 
@@ -303,12 +309,18 @@ void BasePart::renderOther(){
         // this shouldn't be treated in the render thread, this will have to be dealt with in the update method
         if(m_properties & PART_DECOUPLES_CHILDS){
             if(ImGui::Button("Decouple childs")){
-                decoupleAll();
+                m_action_mtx.lock();
+                m_action = true;
+                m_decouple_childs = true;
+                m_action_mtx.unlock();
             }
         }
         if(m_properties & PART_DECOUPLES){
             if(ImGui::Button("Decouple self")){
-                decoupleSelf();
+                m_action_mtx.lock();
+                m_action = true;
+                m_decouple_self = true;
+                m_action_mtx.unlock();
             }
         }
 
@@ -355,5 +367,23 @@ void BasePart::decoupleSelf(){
 
 void BasePart::setProperties(long long int flags){
     m_properties = flags;
+}
+
+
+void BasePart::update(){
+    if(m_action){ // GUI action
+        if(m_decouple_childs){
+            decoupleAll();
+        }
+        if(m_decouple_self){
+            decoupleSelf();
+        }
+
+        m_action_mtx.lock();
+        m_decouple_childs = false;
+        m_decouple_self = false;
+        m_action = false;
+        m_action_mtx.unlock();
+    }
 }
 

@@ -72,6 +72,9 @@ class AssetManager{
         /*Editor methods, only call them before calling logic() and waking up the physics thread*/
         void clearSceneEditor();
         void deleteObjectEditor(BasePart* part, std::uint32_t& vessel_id);
+
+        /* Simulation vessels update, this may not need to be here since m_editor_vessels is public */
+        void updateVessels();
 };
 
 

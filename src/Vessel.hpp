@@ -53,6 +53,8 @@ class Vessel{
         const std::vector<BasePart*>* getParts() const;
         std::uint32_t getId() const;
         void printVessel() const;
+
+        void update();
 };
 
 

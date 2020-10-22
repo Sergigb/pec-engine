@@ -70,6 +70,10 @@ void App::run(){
 
         m_gui_action = m_editor_gui->update();
 
+        if(!m_physics_pause){ /* Update vessels and parts */
+            m_asset_manager->updateVessels();
+        }
+
         logic();
 
         m_render_context->setDebugOverlayTimes(m_bt_wrapper->getAverageLoadTime(), average_load, average_sleep);

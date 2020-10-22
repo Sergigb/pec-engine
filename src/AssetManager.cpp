@@ -302,3 +302,14 @@ void AssetManager::updateBuffers(){
     std::cout << "copy time: " << time.count() << std::endl;*/
 }
 
+
+void AssetManager::updateVessels(){
+    std::map<std::uint32_t, std::shared_ptr<Vessel>>::iterator it;
+
+    int i = 0;
+    for(it=m_editor_vessels.begin(); it != m_editor_vessels.end(); it++){
+        it->second->update();
+        i++;
+    }
+}
+

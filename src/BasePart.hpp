@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <memory>
+#include <mutex>
 
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/btBulletDynamicsCommon.h>
@@ -39,7 +40,9 @@ class BasePart : public Object{
         std::vector<std::shared_ptr<BasePart>> m_childs;
         Vessel* m_vessel;
         bool m_is_root, m_has_parent_att, m_has_free_att;
-        bool m_show_editor_menu;
+        bool m_show_editor_menu, m_show_game_menu;
+        bool m_decouple_self, m_decouple_childs, m_action;
+        std::mutex m_action_mtx;
         long long int m_properties;
 
         AssetManagerInterface* m_asset_manager;
@@ -79,7 +82,6 @@ class BasePart : public Object{
         int render();
         int render(math::mat4 body_transform);
 
-        // I don't know if I should make these private (friending Vessel)
         const BasePart* getParent() const;
         BasePart* getParent();
         std::vector<std::shared_ptr<BasePart>>* getChilds();
@@ -88,6 +90,8 @@ class BasePart : public Object{
         virtual void renderOther();
         virtual void onEditorRightMouseButton();
         virtual void onSimulationRightMouseButton();
+
+        virtual void update();
 
         btQuaternion m_user_rotation;
 };

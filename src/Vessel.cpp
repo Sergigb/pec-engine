@@ -276,3 +276,10 @@ void Vessel::setPlayer(Player* player){
     m_player = player;
 }
 
+
+void Vessel::update(){
+    for(uint i=0; i < m_node_list.size(); i++){
+        m_node_list.at(i)->update();
+    }
+}
+
