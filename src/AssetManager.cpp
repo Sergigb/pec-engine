@@ -166,6 +166,7 @@ void AssetManager::processCommandBuffers(bool physics_pause){
         struct apply_force_msg& msg = m_apply_force_buffer.at(i);
         msg.part->m_body->applyForce(msg.force, msg.rel_pos);
     }
+    m_apply_force_buffer.clear();
     for(uint i=0; i < m_set_motion_state_buffer.size(); i++){
         struct set_motion_state_msg& msg = m_set_motion_state_buffer.at(i);
         msg.object->setMotionState(msg.origin, msg.initial_rotation);
