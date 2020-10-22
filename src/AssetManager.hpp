@@ -59,6 +59,7 @@ class AssetManager{
         std::vector<struct add_contraint_msg> m_add_constraint_buffer;
         std::vector<struct add_body_msg> m_add_body_buffer;
         std::vector<std::shared_ptr<Vessel>> m_add_vessel_buffer;
+        std::vector<struct apply_force_msg> m_apply_force_buffer;
 
         std::map<std::uint32_t, std::shared_ptr<BasePart>> m_editor_subtrees;
         std::map<std::uint32_t, std::shared_ptr<Vessel>> m_editor_vessels;

@@ -8,6 +8,8 @@ class Vessel;
 class AssetManager;
 class BasePart;
 
+struct apply_force_msg;
+
 
 class AssetManagerInterface{
     private:
@@ -19,6 +21,7 @@ class AssetManagerInterface{
 
         void addVessel(std::shared_ptr<Vessel>& vessel);
         void removePartConstraint(BasePart* part);
+        void applyForce(apply_force_msg& msg);
 };
 
 

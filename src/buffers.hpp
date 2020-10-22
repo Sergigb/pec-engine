@@ -58,4 +58,11 @@ struct add_body_msg{
 };
 
 
+struct apply_force_msg{
+    BasePart* part;
+    btVector3 force;
+    btVector3 rel_pos;
+};
+
+
 #endif

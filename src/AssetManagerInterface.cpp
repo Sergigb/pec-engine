@@ -25,5 +25,9 @@ void AssetManagerInterface::addVessel(std::shared_ptr<Vessel>& vessel){
 
 void AssetManagerInterface::removePartConstraint(BasePart* part){
     m_asset_manager->m_remove_part_constraint_buffer.emplace_back(part);
+}
 
+
+void AssetManagerInterface::applyForce(apply_force_msg& msg){
+    m_asset_manager->m_apply_force_buffer.emplace_back(msg);
 }
