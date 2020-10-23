@@ -14,61 +14,61 @@
 
 
 Player::Player(Camera* camera, AssetManager* asset_manager, Input* input){
-	m_camera = camera;
-	m_vessel = nullptr;
-	m_asset_manager = asset_manager;
-	m_input = input;
+    m_camera = camera;
+    m_vessel = nullptr;
+    m_asset_manager = asset_manager;
+    m_input = input;
 }
 
 
 Player::~Player(){
-	m_vessel = nullptr;
+    m_vessel = nullptr;
 }
 
 
 void Player::update(){
-	if(!m_vessel){
-		m_camera->freeCameraUpdate();
-	}
-	else{
-		double mass = 0.0; // we're doing this here for now, I think this should be done in the update method of the vessels
-		std::vector<BasePart*>* parts =  m_vessel->getParts();
-		btVector3 com;
+    if(!m_vessel){
+        m_camera->freeCameraUpdate();
+    }
+    else{
+        double mass = 0.0; // we're doing this here for now, I think this should be done in the update method of the vessels
+        std::vector<BasePart*>* parts =  m_vessel->getParts();
+        btVector3 com;
 
-		// very ugly, but ok for now... we probably don't need two loops
-		for(uint i=0; i < parts->size(); i++){
-			mass += 1.0 / parts->at(i)->m_body->getInvMass();
-		}
+        // very ugly, but ok for now... we probably don't need two loops
+        for(uint i=0; i < parts->size(); i++){
+            mass += 1.0 / parts->at(i)->m_body->getInvMass();
+        }
 
-		for(uint i=0; i < parts->size(); i++){
-			btTransform trans;
-			btVector3 origin;
+        for(uint i=0; i < parts->size(); i++){
+            btTransform trans;
+            btVector3 origin;
 
-			parts->at(i)->m_body->getMotionState()->getWorldTransform(trans);
-			origin = trans.getOrigin();
-			com += ((1.0 / parts->at(i)->m_body->getInvMass()) / mass) * origin;
-		}
+            parts->at(i)->m_body->getMotionState()->getWorldTransform(trans);
+            origin = trans.getOrigin();
+            com += ((1.0 / parts->at(i)->m_body->getInvMass()) / mass) * origin;
+        }
 
-		m_camera->setCameraPosition(dmath::vec3(com.getX(), com.getY(), com.getZ()));
-		m_camera->orbitalCameraUpdate();
-	}
-	if((m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)) && (m_input->pressed_keys[GLFW_KEY_C] & INPUT_KEY_DOWN)){
-		if(m_vessel){
-			m_vessel->setPlayer(nullptr);
-			m_vessel = nullptr;
-		}
-		else{
-			if(m_asset_manager->m_editor_vessels.size()){
-				std::map<std::uint32_t, std::shared_ptr<Vessel>>::iterator it = m_asset_manager->m_editor_vessels.begin();
-				m_vessel = it->second.get();
-				m_vessel->setPlayer(this);
-			}
-		}
-	}
+        m_camera->setCameraPosition(dmath::vec3(com.getX(), com.getY(), com.getZ()));
+        m_camera->orbitalCameraUpdate();
+    }
+    if((m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)) && (m_input->pressed_keys[GLFW_KEY_C] & INPUT_KEY_DOWN)){
+        if(m_vessel){
+            m_vessel->setPlayer(nullptr);
+            m_vessel = nullptr;
+        }
+        else{
+            if(m_asset_manager->m_editor_vessels.size()){
+                std::map<std::uint32_t, std::shared_ptr<Vessel>>::iterator it = m_asset_manager->m_editor_vessels.begin();
+                m_vessel = it->second.get();
+                m_vessel->setPlayer(this);
+            }
+        }
+    }
 }
 
 
 void Player::onVesselDestroy(){
-	m_vessel = nullptr;
+    m_vessel = nullptr;
 }
 
