@@ -41,7 +41,8 @@ class BasePart : public Object{
         Vessel* m_vessel;
         bool m_is_root, m_has_parent_att, m_has_free_att;
         bool m_show_editor_menu, m_show_game_menu;
-        bool m_decouple_self, m_decouple_childs, m_action;
+        bool m_decouple_self, m_decouple_childs, m_action; // these will be deleted from here and moved to their respective classes
+        bool m_engine_status;
         std::mutex m_action_mtx;
         long long int m_properties;
 
@@ -90,7 +91,6 @@ class BasePart : public Object{
         virtual void renderOther();
         virtual void onEditorRightMouseButton();
         virtual void onSimulationRightMouseButton();
-
         virtual void update();
 
         btQuaternion m_user_rotation;

@@ -18,6 +18,7 @@ BasePart::BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_sh
     m_decouple_self = false;
     m_decouple_childs = false;
     m_action = false;
+    m_engine_status = false;
 }
 
 
@@ -35,6 +36,7 @@ BasePart::BasePart(){
     m_decouple_self = false;
     m_decouple_childs = false;
     m_action = false;
+    m_engine_status = false;
 }
 
 
@@ -60,6 +62,9 @@ BasePart::BasePart(const BasePart& part) : Object(part) {
     m_asset_manager = part.m_asset_manager;
     m_properties = part.m_properties;
     m_show_game_menu = false;
+    m_decouple_self = false;
+    m_decouple_childs = false;
+    m_engine_status = false;
 }
 
 
@@ -323,6 +328,11 @@ void BasePart::renderOther(){
                 m_action_mtx.unlock();
             }
         }
+        if(m_properties & PART_HAS_ENGINE){
+            if(ImGui::Button("Start engine")){
+                m_engine_status = !m_engine_status;
+            }
+        }
 
         ImGui::End();
     }
@@ -371,6 +381,15 @@ void BasePart::setProperties(long long int flags){
 
 
 void BasePart::update(){
+    if(m_engine_status){
+        btVector3 force(0.0, 500.0, 0.0);
+        btMatrix3x3& basis = m_body->getWorldTransform().getBasis();
+
+        force = force * basis.inverse();
+        struct apply_force_msg msg{this, force, btVector3(0.0, 0.0, 0.0)};
+        m_asset_manager->applyForce(msg);
+    }
+
     if(m_action){ // GUI action
         if(m_decouple_childs){
             decoupleAll();
