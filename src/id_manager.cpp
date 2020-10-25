@@ -9,6 +9,7 @@
 struct idmanager{
     std::unordered_set<std::uint32_t> vessels_id_set;
     std::unordered_set<std::uint32_t> parts_id_set;
+    std::unordered_set<std::uint32_t> resources_id_set;
 };
 
 static idmanager manager;
@@ -23,6 +24,10 @@ char pick_set(short set, std::unordered_set<std::uint32_t>*& ptr){
     }
     else if(set == PART_SET){
         ptr = &manager.parts_id_set;
+        return 0;
+    }
+    else if(set == RESOURCE_SET){
+        ptr = &manager.resources_id_set;
         return 0;
     }
     else{

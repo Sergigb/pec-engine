@@ -7,6 +7,7 @@
 
 #define VESSEL_SET 1
 #define PART_SET 2
+#define RESOURCE_SET 3
 
 #define REQUEST_SUCCESS 0
 #define REQUEST_INVALID_SET 1
