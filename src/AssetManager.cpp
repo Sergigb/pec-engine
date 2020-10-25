@@ -1,9 +1,12 @@
+#include <functional>
+
 #include "AssetManager.hpp"
 #include "RenderContext.hpp"
 #include "Frustum.hpp"
 #include "BtWrapper.hpp"
 #include "Vessel.hpp"
 #include "Camera.hpp"
+#include "Resource.hpp"
 
 
 AssetManager::AssetManager(RenderContext* render_context, const Frustum* frustum, BtWrapper* bt_wrapper, render_buffers* buff_manager, Camera* camera){
@@ -15,6 +18,7 @@ AssetManager::AssetManager(RenderContext* render_context, const Frustum* frustum
 
     m_asset_manager_interface = AssetManagerInterface(this);
 
+    initResources();
     modelsInit(); // temporal
     objectsInit();
     loadParts();
@@ -80,8 +84,8 @@ void AssetManager::loadParts(){
     res = m_master_parts.insert({555, std::move(separator)});
 
     if(!res.second){
-        log("Failed to inset part with id ", 555, " (collided with ", res.first->first, ")");
-        std::cerr << "Failed to inset part with id " << 555 << " (collided with " << res.first->first << ")" << std::endl;
+        log("Failed to insert part with id ", 555, " (collided with ", res.first->first, ")");
+        std::cerr << "Failed to insert part with id " << 555 << " (collided with " << res.first->first << ")" << std::endl;
     }
 
     std::unique_ptr<BasePart> com_module(new BasePart(m_com_module.get(), m_bt_wrapper, cone.get(), btScalar(10.0), 444, &m_asset_manager_interface));
@@ -97,8 +101,8 @@ void AssetManager::loadParts(){
     res = m_master_parts.insert({444, std::move(com_module)});
 
     if(!res.second){
-        log("Failed to inset part with id ", 444, " (collided with ", res.first->first, ")");
-        std::cerr << "Failed to inset part with id " << 444 << " (collided with " << res.first->first << ")" << std::endl;
+        log("Failed to insert part with id ", 444, " (collided with ", res.first->first, ")");
+        std::cerr << "Failed to insert part with id " << 444 << " (collided with " << res.first->first << ")" << std::endl;
     }
 
     std::unique_ptr<BasePart> tank(new BasePart(m_tank.get(), m_bt_wrapper, cylinder_shape_tank.get(), btScalar(10.0), 222, &m_asset_manager_interface));
@@ -113,8 +117,8 @@ void AssetManager::loadParts(){
     res = m_master_parts.insert({222, std::move(tank)});
 
     if(!res.second){
-        log("Failed to inset part with id ", 222, " (collided with ", res.first->first, ")");
-        std::cerr << "Failed to inset part with id " << 222 << " (collided with " << res.first->first << ")" << std::endl;
+        log("Failed to insert part with id ", 222, " (collided with ", res.first->first, ")");
+        std::cerr << "Failed to insert part with id " << 222 << " (collided with " << res.first->first << ")" << std::endl;
     }
 
     std::unique_ptr<BasePart> tank2(new BasePart(m_tank2.get(), m_bt_wrapper, cylinder_shape_tank2.get(), btScalar(10.0), 111, &m_asset_manager_interface));
@@ -129,8 +133,8 @@ void AssetManager::loadParts(){
     res = m_master_parts.insert({111, std::move(tank2)});
 
     if(!res.second){
-        log("Failed to inset part with id ", 111, " (collided with ", res.first->first, ")");
-        std::cerr << "Failed to inset part with id " << 111 << " (collided with " << res.first->first << ")" << std::endl;
+        log("Failed to insert part with id ", 111, " (collided with ", res.first->first, ")");
+        std::cerr << "Failed to insert part with id " << 111 << " (collided with " << res.first->first << ")" << std::endl;
     }
 
     std::unique_ptr<BasePart> engine(new BasePart(m_engine.get(), m_bt_wrapper, cylinder_shape.get(), btScalar(10.0), 333, &m_asset_manager_interface));
@@ -146,8 +150,8 @@ void AssetManager::loadParts(){
     res = m_master_parts.insert({333, std::move(engine)});
 
     if(!res.second){
-        log("Failed to inset part with id ", 333, " (collided with ", res.first->first, ")");
-        std::cerr << "Failed to inset part with id " << 333 << " (collided with " << res.first->first << ")" << std::endl;
+        log("Failed to insert part with id ", 333, " (collided with ", res.first->first, ")");
+        std::cerr << "Failed to insert part with id " << 333 << " (collided with " << res.first->first << ")" << std::endl;
     }
 
     m_collision_shapes.push_back(std::move(sphere_shape));
@@ -157,6 +161,33 @@ void AssetManager::loadParts(){
     m_collision_shapes.push_back(std::move(cylinder_shape_tank2));
     m_collision_shapes.push_back(std::move(cone));
     m_collision_shapes.push_back(std::move(cylinder_shape_separator));
+}
+
+
+void AssetManager::initResources(){
+    typedef std::map<std::uint32_t, std::unique_ptr<Resource>>::iterator map_iterator;
+    std::pair<map_iterator, bool> res;
+    std::string resource_name;
+    std::unique_ptr<Resource> resource;
+    std::hash<std::string> str_hash; // size_t = 64bit?? change???
+
+    resource_name = "liquid_oxygen";
+    resource.reset(new Resource(resource_name, std::wstring(L"Liquid Oxygen (LOx/O₂)"), RESOURCE_TYPE_OXIDIZER, RESOURCE_STATE_LIQUID, 1141.0, 60.0));
+    res = m_resources.insert({str_hash(resource_name), std::move(resource)});
+
+    if(!res.second){
+        log("Failed to insert resource with id ", str_hash(resource_name), " (collided with ", res.first->first, ")");
+        std::cerr << "Failed to insert resource with id " << str_hash(resource_name) << " (collided with " << res.first->first << ")" << std::endl;
+    }
+
+    resource_name = "liquid_hydrogen";
+    resource.reset(new Resource(resource_name, std::wstring(L"Liquid Hydrogen (LH₂)"), RESOURCE_TYPE_FUEL_LIQUID, RESOURCE_STATE_LIQUID, 70.99, 30.0));
+    res = m_resources.insert({str_hash(resource_name), std::move(resource)});
+
+    if(!res.second){
+        log("Failed to insert resource with id ", str_hash(resource_name), " (collided with ", res.first->first, ")");
+        std::cerr << "Failed to insert resource with id " << str_hash(resource_name) << " (collided with " << res.first->first << ")" << std::endl;
+    }
 }
 
 

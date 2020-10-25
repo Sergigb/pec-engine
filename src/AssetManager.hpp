@@ -22,12 +22,14 @@ class RenderContext;
 class Frustum;
 class BtWrapper;
 class Camera;
+class Resource;
 
 class AssetManager{
     private:
         void loadParts();
         void objectsInit();
         void modelsInit();
+        void initResources();
 
         // this will be a vector
         std::unique_ptr<Model> m_engine;
@@ -52,6 +54,7 @@ class AssetManager{
         std::vector<std::shared_ptr<Object>> m_objects;
         std::vector<std::unique_ptr<btCollisionShape>> m_collision_shapes;
         std::map<std::uint32_t, std::unique_ptr<BasePart>> m_master_parts;
+        std::map<std::uint32_t, std::unique_ptr<Resource>> m_resources;
 
         // command buffers
         std::vector<struct set_motion_state_msg> m_set_motion_state_buffer;
