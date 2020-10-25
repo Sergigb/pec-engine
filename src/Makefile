@@ -3,12 +3,11 @@ CC = gcc
 INC = -I../include/ -I../include/bullet/ -I/usr/include/freetype2 -I../include/imgui/
 CXXFLAGS = $(INC) -Wall -Wextra -Werror -pedantic
 LDFLAGS = -L../lib/
-LDLIBS =  -lGL -lGLEW -lglfw -lz -fopenmp -lfreetype -lassimp -lIrrXML -lBulletDynamics -lBulletCollision -lLinearMath
+LDLIBS =  -lGL -lGLEW -lglfw -lz -fopenmp -lfreetype -lassimp -lIrrXML -lBulletDynamics -lBulletCollision -lLinearMath -lpng
 OBJPATH = ../bin
 EXECPATH = ../bin
-PARTSPAHT = parts
 
-BASESRCS = log.cpp utils.cpp gl_utils.cpp maths_funcs.cpp Camera.cpp Input.cpp WindowHandler.cpp Text2D.cpp FontAtlas.cpp Frustum.cpp DebugOverlay.cpp Model.cpp BtWrapper.cpp Object.cpp RenderContext.cpp BaseApp.cpp BasePart.cpp EditorGUI.cpp PartsPanelGUI.cpp id_manager.cpp Vessel.cpp AssetManager.cpp AssetManagerInterface.cpp Player.cpp
+BASESRCS = log.cpp utils.cpp gl_utils.cpp maths_funcs.cpp Camera.cpp Input.cpp WindowHandler.cpp Text2D.cpp FontAtlas.cpp Frustum.cpp DebugOverlay.cpp Model.cpp BtWrapper.cpp Object.cpp RenderContext.cpp BaseApp.cpp BasePart.cpp EditorGUI.cpp PartsPanelGUI.cpp id_manager.cpp Vessel.cpp AssetManager.cpp AssetManagerInterface.cpp Player.cpp Resource.cpp
 BASEOBJS = $(foreach source, $(BASESRCS), $(OBJPATH)/$(source:.cpp=.o))
 
 MAIN_APP_SCRS = main.cpp App.cpp
@@ -40,12 +39,12 @@ $(OBJPATH)/%.o: ../thirdparty/imgui/%.cpp
 	$(CXX) $(INC) -O3 -Wall -Wformat -DIMGUI_IMPL_OPENGL_LOADER_GLEW -c $< -o $@
 
 clean: 
-	rm $(OBJPATH)/$(BASEOBJS) $(OBJPATH)/$(MAIN_APP_OBJS) $(PLANETARIUM_APP_OBJS) $(EXECPATH)/main $(EXECPATH)/planetarium
+	rm -f $(OBJPATH)/$(BASEOBJS) $(OBJPATH)/$(MAIN_APP_OBJS) $(OBJPATH)/$(PLANETARIUM_APP_OBJS) $(EXECPATH)/main $(EXECPATH)/planetarium
 clean-main:
-	rm $(OBJPATH)/$(MAIN_APP_OBJS) $(EXECPATH)/main
+	rm -f $(OBJPATH)/$(MAIN_APP_OBJS) $(EXECPATH)/main
 clean-planetarium:
-	rm $(OBJPATH)/$(PLANETARIUM_APP_OBJS) $(EXECPATH)/planetarium
+	rm -f $(OBJPATH)/$(PLANETARIUM_APP_OBJS) $(EXECPATH)/planetarium
 clean-imgui:
-	rm $(OBJPATH)/$(IMGUIOBJS)
+	rm -f $(OBJPATH)/$(IMGUIOBJS)
 clean-all:
-	rm $(OBJPATH)/*.o $(EXECPATH)/main
+	rm -f $(OBJPATH)/*.o $(EXECPATH)/main
