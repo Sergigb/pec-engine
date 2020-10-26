@@ -2,10 +2,9 @@
 
 #include <iostream>
 
-Resource::Resource(const std::string& name, const std::wstring& fancy_name, char rtype, char rstate, double density, double temperature){
+Resource::Resource(const std::string& name, const std::string& fancy_name, char rtype, char rstate, double density, double temperature){
     m_resource_name = name;
     m_resource_fancy_name = fancy_name;
-    std::wcout << fancy_name << std::endl;
     m_resource_type = rtype;
     m_resource_state = rstate;
     m_density = density;
@@ -48,7 +47,7 @@ void Resource::getName(std::string& name) const{
 }
 
 
-void Resource::getFancyName(std::wstring& fancy_name) const{
+void Resource::getFancyName(std::string& fancy_name) const{
     fancy_name = m_resource_fancy_name;
 }
 

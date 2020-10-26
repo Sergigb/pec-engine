@@ -21,14 +21,14 @@
 class Resource{
     private:
         std::string m_resource_name;
-        std::wstring m_resource_fancy_name;
+        std::string m_resource_fancy_name;
         char m_resource_type;
         char m_resource_state;
         double m_density; // kg/M3
         double m_temperature; // temperature at which it has to be stored in this state
         std::uint32_t m_resource_id;
     public:
-        Resource(const std::string& name, const std::wstring& fancy_name, char rtype, char rstate, double density, double temperature);
+        Resource(const std::string& name, const std::string& fancy_name, char rtype, char rstate, double density, double temperature);
         ~Resource();
         void setId(std::uint32_t id);
 
@@ -37,7 +37,7 @@ class Resource{
         double getDensity() const;
         double getTemperature() const;
         void getName(std::string& name) const;
-        void getFancyName(std::wstring& fancy_name) const;
+        void getFancyName(std::string& fancy_name) const;
 };
 
 

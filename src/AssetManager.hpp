@@ -11,6 +11,7 @@
 
 #include "AssetManagerInterface.hpp"
 #include "buffers.hpp"
+#include "assets_utils.hpp"
 
 
 class Model;
@@ -23,21 +24,12 @@ class Frustum;
 class BtWrapper;
 class Camera;
 class Resource;
+class AssetManager;
 
 class AssetManager{
     private:
-        void loadParts();
         void objectsInit();
-        void modelsInit();
         void initResources();
-
-        // this will be a vector
-        std::unique_ptr<Model> m_engine;
-        std::unique_ptr<Model> m_tank;
-        std::unique_ptr<Model> m_tank2;
-        std::unique_ptr<Model> m_terrain_model;
-        std::unique_ptr<Model> m_com_module;
-        std::unique_ptr<Model> m_separator;
 
         RenderContext* m_render_context;
         const Frustum* m_frustum;
@@ -47,6 +39,8 @@ class AssetManager{
         friend class AssetManagerInterface;
         AssetManagerInterface m_asset_manager_interface;
 
+        friend void load_parts(AssetManager& asset_manager);
+
         // render buffers
         struct render_buffers* m_buffers;
         void updateBuffer(std::vector<object_transform>* buffer_);
@@ -55,6 +49,7 @@ class AssetManager{
         std::vector<std::unique_ptr<btCollisionShape>> m_collision_shapes;
         std::map<std::uint32_t, std::unique_ptr<BasePart>> m_master_parts;
         std::map<std::uint32_t, std::unique_ptr<Resource>> m_resources;
+        std::vector<std::unique_ptr<Model>> m_models;
 
         // command buffers
         std::vector<struct set_motion_state_msg> m_set_motion_state_buffer;
