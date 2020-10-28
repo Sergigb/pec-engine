@@ -55,6 +55,7 @@ void AssetManager::initResources(){
 
     resource_name = "liquid_oxygen";
     resource.reset(new Resource(resource_name, std::string(u8"Liquid Oxygen (LOx/O₂)"), RESOURCE_TYPE_OXIDIZER, RESOURCE_STATE_LIQUID, 1141.0, 60.0));
+    resource->setId(str_hash(resource_name));
     res = m_resources.insert({str_hash(resource_name), std::move(resource)});
 
     if(!res.second){
@@ -64,6 +65,17 @@ void AssetManager::initResources(){
 
     resource_name = "liquid_hydrogen";
     resource.reset(new Resource(resource_name, std::string(u8"Liquid Hydrogen (LH₂)"), RESOURCE_TYPE_FUEL_LIQUID, RESOURCE_STATE_LIQUID, 70.99, 30.0));
+    resource->setId(str_hash(resource_name));
+    res = m_resources.insert({str_hash(resource_name), std::move(resource)});
+
+    if(!res.second){
+        log("Failed to insert resource with id ", str_hash(resource_name), " (collided with ", res.first->first, ")");
+        std::cerr << "Failed to insert resource with id " << str_hash(resource_name) << " (collided with " << res.first->first << ")" << std::endl;
+    }
+
+    resource_name = "rp1";
+    resource.reset(new Resource(resource_name, std::string(u8"Rocket Propellant-1 (RP-1)"), RESOURCE_TYPE_FUEL_LIQUID, RESOURCE_STATE_LIQUID, 70.99, 30.0));
+    resource->setId(str_hash(resource_name));
     res = m_resources.insert({str_hash(resource_name), std::move(resource)});
 
     if(!res.second){
