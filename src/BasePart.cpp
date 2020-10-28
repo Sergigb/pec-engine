@@ -1,6 +1,7 @@
 #include "BasePart.hpp"
 #include "Vessel.hpp"
 #include "AssetManagerInterface.hpp"
+#include "Resource.hpp"
 
 
 BasePart::BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager) : 
@@ -65,6 +66,7 @@ BasePart::BasePart(const BasePart& part) : Object(part) {
     m_decouple_self = false;
     m_decouple_childs = false;
     m_engine_status = false;
+    m_resources = part.m_resources;
 }
 
 
@@ -300,6 +302,12 @@ void BasePart::renderOther(){
 
         ImGui::ColorEdit3("Mesh color", m_mesh_color.v);
 
+        for(uint i=0; i < m_resources.size(); i++){
+            std::string rname;
+            m_resources.at(i).resource->getFancyName(rname);
+            ImGui::SliderFloat(rname.c_str(), &m_resources.at(i).mass, 0.0f, m_resources.at(i).max_mass);
+        }
+
         ImGui::End();
     }
     else if(m_show_game_menu){
@@ -382,7 +390,7 @@ void BasePart::setProperties(long long int flags){
 
 void BasePart::update(){
     if(m_engine_status){
-        btVector3 force(0.0, 500.0, 0.0);
+        btVector3 force(0.0, 2500.0, 0.0);
         btMatrix3x3& basis = m_body->getWorldTransform().getBasis();
 
         force = force * basis.inverse();
@@ -404,5 +412,10 @@ void BasePart::update(){
         m_action = false;
         m_action_mtx.unlock();
     }
+}
+
+
+void BasePart::addResource(const resource_container& resource){
+    m_resources.emplace_back(resource);
 }
 

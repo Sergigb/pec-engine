@@ -1,5 +1,6 @@
+#include <functional>
+
 #include "assets_utils.hpp"
-//#include "BasePart.hpp"
 #include "RenderContext.hpp"
 
 
@@ -8,6 +9,7 @@ void load_parts(AssetManager& asset_manager){
     quat.setEuler(0, 0, 0);
     typedef std::map<std::uint32_t, std::unique_ptr<BasePart>>::iterator map_iterator;
     std::pair<map_iterator, bool> res;
+    std::hash<std::string> str_hash;
 
     std::unique_ptr<btCollisionShape> cube_shape(new btBoxShape(btVector3(1,1,1)));
     std::unique_ptr<btCollisionShape> cylinder_shape(new btCylinderShape(btVector3(1,1,1)));
@@ -65,6 +67,8 @@ void load_parts(AssetManager& asset_manager){
     tank->setFancyName("Tank");
     tank->setCollisionGroup(CG_DEFAULT | CG_PART);
     tank->setCollisionFilters(~CG_RAY_EDITOR_RADIAL);
+    tank->addResource({asset_manager.m_resources.at(str_hash("liquid_hydrogen")).get(), 10000.0f, 10000.0f});
+    tank->addResource({asset_manager.m_resources.at(str_hash("liquid_oxygen")).get(), 4000.0f, 4000.0f});
 
     res = asset_manager.m_master_parts.insert({222, std::move(tank)});
 
@@ -81,6 +85,8 @@ void load_parts(AssetManager& asset_manager){
     tank2->setFancyName("Tank 2");
     tank2->setCollisionGroup(CG_DEFAULT | CG_PART);
     tank2->setCollisionFilters(~CG_RAY_EDITOR_RADIAL);
+    tank2->addResource({asset_manager.m_resources.at(str_hash("liquid_hydrogen")).get(), 5000.0f, 5000.0f});
+    tank2->addResource({asset_manager.m_resources.at(str_hash("liquid_oxygen")).get(), 2000.0f, 2000.0f});
 
     res = asset_manager.m_master_parts.insert({111, std::move(tank2)});
 

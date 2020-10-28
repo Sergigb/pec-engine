@@ -16,12 +16,21 @@
 
 class Vessel;
 class AssetManagerInterface;
+class Resource;
 
 
 struct attachment_point{
     math::vec3 point; // attachment point translation wrt the center of the object
     math::vec3 orientation; // orientation of the attachment point
 };
+
+
+struct resource_container{
+    Resource* resource;
+    float mass; // volume can be derived from density
+    float max_mass;
+};
+
 
 
 // basic properties
@@ -45,6 +54,8 @@ class BasePart : public Object{
         bool m_engine_status;
         std::mutex m_action_mtx;
         long long int m_properties;
+
+        std::vector<struct resource_container> m_resources;
 
         AssetManagerInterface* m_asset_manager;
 
@@ -73,6 +84,7 @@ class BasePart : public Object{
         bool hasParentAttPoint() const;
         bool hasFreeAttPoint() const;
         void setProperties(long long int flags);
+        void addResource(const resource_container& resource);
 
         const std::vector<struct attachment_point>* getAttachmentPoints() const;
         const btTypedConstraint* getParentConstraint() const;
