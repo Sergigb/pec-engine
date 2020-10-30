@@ -92,8 +92,6 @@ class BasePart : public Object{
         const struct attachment_point* getFreeAttachmentPoint() const;
         const Vessel* getVessel() const;
         bool isRoot() const;
-        int render();
-        int render(math::mat4 body_transform);
 
         const BasePart* getParent() const;
         BasePart* getParent();
@@ -104,6 +102,8 @@ class BasePart : public Object{
         virtual void onEditorRightMouseButton();
         virtual void onSimulationRightMouseButton();
         virtual void update();
+        virtual int render();
+        virtual int render(math::mat4 body_transform);
 
         btQuaternion m_user_rotation;
 };
