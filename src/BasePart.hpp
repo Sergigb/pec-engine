@@ -41,7 +41,7 @@ struct resource_container{
 
 
 class BasePart : public Object{
-    private:
+    protected:
         struct attachment_point m_parent_att_point, m_free_att_point;
         std::vector<struct attachment_point> m_attachment_points;  // the attachment points of the part
         std::unique_ptr<btTypedConstraint> m_parent_constraint; // the constraint between this part and the parent
@@ -51,7 +51,6 @@ class BasePart : public Object{
         bool m_is_root, m_has_parent_att, m_has_free_att;
         bool m_show_editor_menu, m_show_game_menu;
         bool m_decouple_self, m_decouple_childs, m_action; // these will be deleted from here and moved to their respective classes
-        bool m_engine_status;
         std::mutex m_action_mtx;
         long long int m_properties;
 
@@ -104,6 +103,20 @@ class BasePart : public Object{
         virtual void update();
         virtual int render();
         virtual int render(math::mat4 body_transform);
+
+        /*  
+            This method allows the caller to obtain a copy of the current object without needing to know if the object is derived
+            from this class or not (preventing slicing). ALL derived classes HAVE to implement this method, otherwise the copied object 
+            won't have access to the members of the derived class (since the compiler doesn't know the real type of the object). 
+            Derived classes can override this method by returning a BasePart* pointing to the new object or a pointer of the derived
+            class type. Here's an example of how the overriden method should look like:
+
+            DerivedPart* DerivedPart::clone() const{
+                return new DerivedPart(*this);
+            }
+
+        */
+        virtual BasePart* clone() const;
 
         btQuaternion m_user_rotation;
 };

@@ -429,8 +429,7 @@ void App::logic(){
     // GUI processing
     if(m_gui_action == EDITOR_ACTION_OBJECT_PICK && m_physics_pause){
         const std::unique_ptr<BasePart>* editor_picked_object = m_editor_gui->getPickedObject();
-        const BasePart* part_ptr = editor_picked_object->get(); // trickery
-        std::shared_ptr<BasePart> part = std::make_shared<BasePart>(*part_ptr);
+        std::shared_ptr<BasePart> part(editor_picked_object->get()->clone());
 
         if(m_picked_obj){ // if the user has an scene object picked just leave it "there"
             m_picked_obj->activate(true);
