@@ -34,10 +34,9 @@ struct resource_container{
 
 
 // basic properties
-#define PART_DECOUPLES 1
-#define PART_DECOUPLES_CHILDS 2
-#define PART_IS_CM 4
-#define PART_HAS_ENGINE 8
+#define PART_SEPARATES 1
+#define PART_IS_CM 2
+#define PART_HAS_ENGINE 4
 
 
 class BasePart : public Object{

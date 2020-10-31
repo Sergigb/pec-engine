@@ -34,7 +34,7 @@ void load_parts(AssetManager& asset_manager){
     separator->setFancyName("Separator");
     separator->setCollisionGroup(CG_DEFAULT | CG_PART);
     separator->setCollisionFilters(~CG_RAY_EDITOR_RADIAL);
-    separator->setProperties(PART_DECOUPLES_CHILDS | PART_DECOUPLES);
+    separator->setProperties(PART_SEPARATES);
 
     res = asset_manager.m_master_parts.insert({555, std::move(separator)});
 
