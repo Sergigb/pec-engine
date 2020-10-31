@@ -2,5 +2,6 @@
 #define PARTS_HPP
 
 #include "GenericEngine.hpp"
+#include "Separator.hpp"
 
 #endif
