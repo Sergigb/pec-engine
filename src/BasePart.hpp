@@ -49,15 +49,13 @@ class BasePart : public Object{
         Vessel* m_vessel;
         bool m_is_root, m_has_parent_att, m_has_free_att;
         bool m_show_editor_menu, m_show_game_menu;
-        bool m_decouple_self, m_decouple_childs, m_action; // these will be deleted from here and moved to their respective classes
-        std::mutex m_action_mtx;
         long long int m_properties;
 
         std::vector<struct resource_container> m_resources;
 
         AssetManagerInterface* m_asset_manager;
 
-        void decoupleAll();
+        void decoupleChilds();
         void decoupleSelf();
     public:
         BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager);

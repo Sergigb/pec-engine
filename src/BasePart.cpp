@@ -16,9 +16,6 @@ BasePart::BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_sh
     m_asset_manager = asset_manager;
     m_properties = 0;
     m_show_game_menu = false;
-    m_decouple_self = false;
-    m_decouple_childs = false;
-    m_action = false;
 }
 
 
@@ -33,9 +30,6 @@ BasePart::BasePart(){
     m_asset_manager = nullptr;
     m_properties = 0;
     m_show_game_menu = false;
-    m_decouple_self = false;
-    m_decouple_childs = false;
-    m_action = false;
 }
 
 
@@ -60,9 +54,6 @@ BasePart::BasePart(const BasePart& part) : Object(part) {
     m_show_editor_menu = false;
     m_asset_manager = part.m_asset_manager;
     m_properties = part.m_properties;
-    m_show_game_menu = false;
-    m_decouple_self = false;
-    m_decouple_childs = false;
     m_resources = part.m_resources;
 }
 
@@ -315,25 +306,6 @@ void BasePart::renderOther(){
         ImGui::SetNextWindowPos(mousepos, ImGuiCond_Appearing);
         ImGui::SetNextWindowSize(ImVec2(300.f, 300.f), ImGuiCond_Appearing);
         ImGui::Begin((m_fancy_name + ss.str()).c_str(), &m_show_game_menu);
-
-        // this shouldn't be treated in the render thread, this will have to be dealt with in the update method
-        if(m_properties & PART_DECOUPLES_CHILDS){
-            if(ImGui::Button("Decouple childs")){
-                m_action_mtx.lock();
-                m_action = true;
-                m_decouple_childs = true;
-                m_action_mtx.unlock();
-            }
-        }
-        if(m_properties & PART_DECOUPLES){
-            if(ImGui::Button("Decouple self")){
-                m_action_mtx.lock();
-                m_action = true;
-                m_decouple_self = true;
-                m_action_mtx.unlock();
-            }
-        }
-
         ImGui::End();
     }
 }
@@ -349,13 +321,14 @@ void BasePart::onSimulationRightMouseButton(){
 }
 
 
-void BasePart::decoupleAll(){
+void BasePart::decoupleChilds(){
     for(uint i=0; i < m_childs.size(); i++){
         std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(m_childs.at(i));
         m_asset_manager->removePartConstraint(m_childs.at(i).get());
         m_asset_manager->addVessel(vessel);
     }
     m_childs.clear();
+    m_vessel->onTreeUpdate();
 }
 
 
@@ -381,20 +354,7 @@ void BasePart::setProperties(long long int flags){
 
 
 void BasePart::update(){
-    if(m_action){ // GUI action
-        if(m_decouple_childs){
-            decoupleAll();
-        }
-        if(m_decouple_self){
-            decoupleSelf();
-        }
-
-        m_action_mtx.lock();
-        m_decouple_childs = false;
-        m_decouple_self = false;
-        m_action = false;
-        m_action_mtx.unlock();
-    }
+    // todo: here we should update the part weight, in case the resource ammount changes
 }
 
 
