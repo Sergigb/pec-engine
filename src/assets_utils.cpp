@@ -2,6 +2,7 @@
 
 #include "assets_utils.hpp"
 #include "RenderContext.hpp"
+#include "parts/parts.hpp"
 
 
 void load_parts(AssetManager& asset_manager){
@@ -95,7 +96,7 @@ void load_parts(AssetManager& asset_manager){
         std::cerr << "Failed to insert part with id " << 111 << " (collided with " << res.first->first << ")" << std::endl;
     }
 
-    std::unique_ptr<BasePart> engine(new BasePart(engine_model.get(), asset_manager.m_bt_wrapper, cylinder_shape.get(), btScalar(10.0), 333, &asset_manager.m_asset_manager_interface));
+    std::unique_ptr<BasePart> engine(new GenericEngine(engine_model.get(), asset_manager.m_bt_wrapper, cylinder_shape.get(), btScalar(10.0), 333, &asset_manager.m_asset_manager_interface));
     engine->setColor(math::vec3(0.75, 0.75, 0.75));
     engine->setParentAttachmentPoint(math::vec3(0.0, 0.43459, 0.0), math::vec3(0.0, 0.0, 0.0));
     engine->addAttachmentPoint(math::vec3(0.0, -0.848, 0.0), math::vec3(0.0, 0.0, 0.0));

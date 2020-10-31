@@ -10,6 +10,9 @@ EXECPATH = ../bin
 BASESRCS = log.cpp utils.cpp gl_utils.cpp maths_funcs.cpp Camera.cpp Input.cpp WindowHandler.cpp Text2D.cpp FontAtlas.cpp Frustum.cpp DebugOverlay.cpp Model.cpp BtWrapper.cpp Object.cpp RenderContext.cpp BaseApp.cpp BasePart.cpp EditorGUI.cpp PartsPanelGUI.cpp id_manager.cpp Vessel.cpp AssetManager.cpp AssetManagerInterface.cpp Player.cpp Resource.cpp assets_utils.cpp
 BASEOBJS = $(foreach source, $(BASESRCS), $(OBJPATH)/$(source:.cpp=.o))
 
+PARTSSRCS = $(wildcard parts/*.cpp)
+PARTSOBJS = $(foreach source, $(PARTSSRCS:parts/%=%), $(OBJPATH)/$(source:.cpp=.o))
+
 MAIN_APP_SCRS = main.cpp App.cpp
 MAIN_APP_OBJS = $(foreach source, $(MAIN_APP_SCRS), $(OBJPATH)/$(source:.cpp=.o))
 
@@ -19,7 +22,7 @@ PLANETARIUM_APP_OBJS = $(foreach source, $(PLANETARIUM_APP_SRCS), $(OBJPATH)/$(s
 IMGUISRCS = $(wildcard ../thirdparty/imgui/*.cpp)
 IMGUIOBJS = $(foreach source, $(IMGUISRCS:../thirdparty/imgui/%=%), $(OBJPATH)/$(source:.cpp=.o))
 
-MAINOBJS = $(MAIN_APP_OBJS) $(BASEOBJS) $(IMGUIOBJS)
+MAINOBJS = $(MAIN_APP_OBJS) $(BASEOBJS) $(IMGUIOBJS) $(PARTSOBJS)
 PLANETARIUMOBJS = $(PLANETARIUM_APP_OBJS) $(BASEOBJS) $(IMGUIOBJS)
 
 
@@ -30,6 +33,10 @@ main: $(MAINOBJS)
 
 planetarium: $(PLANETARIUMOBJS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(PLANETARIUMOBJS) -o $(EXECPATH)/planetarium $(LDLIBS)
+
+# temporal, need to find a better system
+$(OBJPATH)/%.o: parts/%.cpp
+	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(OBJPATH)/%.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
