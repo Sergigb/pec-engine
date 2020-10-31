@@ -7,16 +7,19 @@ GenericEngine::GenericEngine(Model* model, BtWrapper* bt_wrapper, btCollisionSha
     BasePart(model, bt_wrapper, col_shape, mass, baseID, asset_manager){
 
     m_engine_status = false;
+    m_thrust = 1.0f;
 }
 
 
 GenericEngine::GenericEngine() : BasePart() {
     m_engine_status = false;
+    m_thrust = 1.0f;
 }
 
 
 GenericEngine::GenericEngine(const GenericEngine& engine) : BasePart(engine) {
     m_engine_status = false;
+    m_thrust = 1.0f;
 }
 
 
@@ -43,6 +46,8 @@ void GenericEngine::renderOther(){
             ImGui::SliderFloat(rname.c_str(), &m_resources.at(i).mass, 0.0f, m_resources.at(i).max_mass);
         }
 
+        ImGui::SliderFloat("Initial thrust", &m_thrust, 0.0f, 1.0f);
+
         ImGui::End();
     }
     else if(m_show_game_menu){
@@ -50,13 +55,17 @@ void GenericEngine::renderOther(){
         ImVec2 mousepos = ImGui::GetMousePos();
         ss << m_unique_id;
 
+        std::string engine_status_button = m_engine_status ? "Stop engine" : "Start engine";
+
         ImGui::SetNextWindowPos(mousepos, ImGuiCond_Appearing);
         ImGui::SetNextWindowSize(ImVec2(300.f, 300.f), ImGuiCond_Appearing);
         ImGui::Begin((m_fancy_name + ss.str()).c_str(), &m_show_game_menu);
 
-        if(ImGui::Button("Start engine")){
+        if(ImGui::Button(engine_status_button.c_str())){
             m_engine_status = !m_engine_status;
         }
+
+        ImGui::SliderFloat("Thrust", &m_thrust, 0.0f, 1.0f);
 
         ImGui::End();
     }
@@ -65,7 +74,7 @@ void GenericEngine::renderOther(){
 
 void GenericEngine::update(){
     if(m_engine_status){
-        btVector3 force(0.0, 2500.0, 0.0);
+        btVector3 force(0.0, m_thrust * 2500.0, 0.0);
         btMatrix3x3& basis = m_body->getWorldTransform().getBasis();
 
         force = force * basis.inverse();
