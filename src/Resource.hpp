@@ -38,6 +38,7 @@ class Resource{
         double getTemperature() const;
         void getName(std::string& name) const;
         void getFancyName(std::string& fancy_name) const;
+        std::uint32_t getId() const;
 };
 
 

@@ -52,3 +52,7 @@ void Resource::getFancyName(std::string& fancy_name) const{
 }
 
 
+std::uint32_t Resource::getId() const{
+    return m_resource_id;
+}
+

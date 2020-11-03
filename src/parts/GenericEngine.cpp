@@ -85,18 +85,20 @@ void GenericEngine::renderOther(){
 void GenericEngine::update(){
     if(m_engine_status){
         if(m_parent){
-            float liq_hyd = 10.0f, liq_oxy = 4.0f;
+            float liq_hyd = 50.0f, liq_oxy = 10.0f;
             float flow = 1.0f; // the quantities are made up
+            btMatrix3x3 basis;
+            btVector3 force;
 
             m_parent->requestResource(this, m_liquid_hydrogen_id, liq_hyd);
             m_parent->requestResource(this, m_liquid_oxygen_id, liq_oxy);
 
             flow = liq_hyd / 10.0f > liq_oxy / 4.0 ? liq_oxy / 4.0 : liq_hyd / 10.0f; // not sure about this
 
-            btVector3 force(0.0, flow * m_thrust * 2500.0, 0.0);
-            btMatrix3x3& basis = m_body->getWorldTransform().getBasis();
+            force = btVector3(0.0, flow * m_thrust * 2500.0, 0.0);
+            basis = m_body->getWorldTransform().getBasis();
 
-            force = force * basis.inverse();
+            force = force * basis;
             struct apply_force_msg msg{this, force, btVector3(0.0, 0.0, 0.0)};
             m_asset_manager->applyForce(msg);
         }
