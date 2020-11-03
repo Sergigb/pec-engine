@@ -101,6 +101,8 @@ class BasePart : public Object{
         virtual int render();
         virtual int render(math::mat4 body_transform);
 
+        void requestResource(const BasePart* requester, std::uint32_t resource_id, float& mass);
+
         /*  
             This method allows the caller to obtain a copy of the current object without needing to know if the object is derived
             from this class or not (preventing slicing). ALL derived classes HAVE to implement this method, otherwise the copied object 

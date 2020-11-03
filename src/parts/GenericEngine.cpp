@@ -1,3 +1,5 @@
+#include <functional>
+
 #include "GenericEngine.hpp"
 #include "../Resource.hpp"
 #include "../AssetManagerInterface.hpp"
@@ -5,21 +7,30 @@
 
 GenericEngine::GenericEngine(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager) : 
     BasePart(model, bt_wrapper, col_shape, mass, baseID, asset_manager){
+    std::hash<std::string> str_hash;
 
     m_engine_status = false;
     m_thrust = 1.0f;
+    m_liquid_hydrogen_id = str_hash("liquid_hydrogen");
+    m_liquid_oxygen_id = str_hash("liquid_oxygen");
 }
 
 
 GenericEngine::GenericEngine() : BasePart() {
+    std::hash<std::string> str_hash;
+
     m_engine_status = false;
     m_thrust = 1.0f;
+    m_liquid_hydrogen_id = str_hash("liquid_hydrogen");
+    m_liquid_oxygen_id = str_hash("liquid_oxygen");
 }
 
 
 GenericEngine::GenericEngine(const GenericEngine& engine) : BasePart(engine) {
     m_engine_status = false;
     m_thrust = 1.0f;
+    m_liquid_hydrogen_id = engine.m_liquid_hydrogen_id;
+    m_liquid_oxygen_id = engine.m_liquid_oxygen_id;
 }
 
 
@@ -54,7 +65,6 @@ void GenericEngine::renderOther(){
         std::stringstream ss;
         ImVec2 mousepos = ImGui::GetMousePos();
         ss << m_unique_id;
-
         std::string engine_status_button = m_engine_status ? "Stop engine" : "Start engine";
 
         ImGui::SetNextWindowPos(mousepos, ImGuiCond_Appearing);
@@ -74,12 +84,22 @@ void GenericEngine::renderOther(){
 
 void GenericEngine::update(){
     if(m_engine_status){
-        btVector3 force(0.0, m_thrust * 2500.0, 0.0);
-        btMatrix3x3& basis = m_body->getWorldTransform().getBasis();
+        if(m_parent){
+            float liq_hyd = 10.0f, liq_oxy = 4.0f;
+            float flow = 1.0f; // the quantities are made up
 
-        force = force * basis.inverse();
-        struct apply_force_msg msg{this, force, btVector3(0.0, 0.0, 0.0)};
-        m_asset_manager->applyForce(msg);
+            m_parent->requestResource(this, m_liquid_hydrogen_id, liq_hyd);
+            m_parent->requestResource(this, m_liquid_oxygen_id, liq_oxy);
+
+            flow = liq_hyd / 10.0f > liq_oxy / 4.0 ? liq_oxy / 4.0 : liq_hyd / 10.0f; // not sure about this
+
+            btVector3 force(0.0, flow * m_thrust * 2500.0, 0.0);
+            btMatrix3x3& basis = m_body->getWorldTransform().getBasis();
+
+            force = force * basis.inverse();
+            struct apply_force_msg msg{this, force, btVector3(0.0, 0.0, 0.0)};
+            m_asset_manager->applyForce(msg);
+        }
     }
 }
 

@@ -52,6 +52,7 @@ BasePart::BasePart(const BasePart& part) : Object(part) {
     m_has_parent_att = part.m_has_parent_att;
     m_has_free_att = part.m_has_free_att;
     m_show_editor_menu = false;
+    m_show_game_menu = false;
     m_asset_manager = part.m_asset_manager;
     m_properties = part.m_properties;
     m_resources = part.m_resources;
@@ -365,5 +366,31 @@ void BasePart::addResource(const resource_container& resource){
 
 BasePart* BasePart::clone() const{
     return new BasePart(*this);
+}
+
+
+void BasePart::requestResource(const BasePart* requester, std::uint32_t resource_id, float& mass){
+    if(requester->getVessel() != m_vessel){
+        std::cerr << "BasePart::requestResource - part with id " << requester->getUniqueId()
+                  << " requested resource to a part from a different vessel" << std::endl;
+        log("BasePart::requestResource - part with id ", requester->getUniqueId(), 
+            " requested resource to a part from a different vessel");
+    }
+
+    for(uint i=0; i < m_resources.size(); i++){
+        if(m_resources.at(i).resource->getId() == resource_id){
+            if(m_resources.at(i).mass > mass){
+                m_resources.at(i).mass -= mass;
+                return;
+            }
+            else{
+                mass = m_resources.at(i).mass;
+                m_resources.at(i).mass = 0.0f;
+                return;
+            }
+            return;
+        }
+    }
+    mass = 0.0f;
 }
 
