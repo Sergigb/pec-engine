@@ -9,6 +9,7 @@ class AssetManager;
 class BasePart;
 
 struct apply_force_msg;
+struct set_mass_props_msg;
 
 
 class AssetManagerInterface{
@@ -22,6 +23,7 @@ class AssetManagerInterface{
         void addVessel(std::shared_ptr<Vessel>& vessel);
         void removePartConstraint(BasePart* part);
         void applyForce(apply_force_msg& msg);
+        void setMassProps(set_mass_props_msg& msg);
 };
 
 

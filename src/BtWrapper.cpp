@@ -172,3 +172,8 @@ const btDiscreteDynamicsWorld* BtWrapper::getDynamicsWorld() const{
     return m_dynamics_world.get();
 }
 
+
+btDiscreteDynamicsWorld* BtWrapper::getDynamicsWorld(){
+    return m_dynamics_world.get();
+}
+

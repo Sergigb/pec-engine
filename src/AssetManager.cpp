@@ -92,6 +92,7 @@ void AssetManager::processCommandBuffers(bool physics_pause){
         msg.part->m_body->applyForce(msg.force, msg.rel_pos);
     }
     m_apply_force_buffer.clear();
+
     for(uint i=0; i < m_set_motion_state_buffer.size(); i++){
         struct set_motion_state_msg& msg = m_set_motion_state_buffer.at(i);
         msg.object->setMotionState(msg.origin, msg.initial_rotation);
@@ -112,6 +113,20 @@ void AssetManager::processCommandBuffers(bool physics_pause){
         msg.part->addBody(msg.origin, msg.inertia, msg.rotation);
     }
     m_add_body_buffer.clear();
+
+    for(uint i=0; i < m_set_mass_buffer.size(); i++){
+        // this should be enough, also the constraints don't get removed
+        btDiscreteDynamicsWorld* dynamics_world = m_bt_wrapper->getDynamicsWorld();
+        btVector3 inertia;
+        btRigidBody* body = m_set_mass_buffer.at(i).part->m_body.get();
+
+        dynamics_world->removeRigidBody(body);
+
+        body->getCollisionShape()->calculateLocalInertia(m_set_mass_buffer.at(i).mass, inertia);
+        body->setMassProps(m_set_mass_buffer.at(i).mass, inertia);
+
+        dynamics_world->addRigidBody(body);
+    }
 
     for(uint i=0; i < m_remove_part_constraint_buffer.size(); i++){
         m_remove_part_constraint_buffer.at(i)->removeParentConstraint();

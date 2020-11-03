@@ -60,6 +60,7 @@ class BtWrapper{
         void updateCollisionWorldSingleAABB(btRigidBody* body);
         double getAverageLoadTime() const;
         const btDiscreteDynamicsWorld* getDynamicsWorld() const;
+        btDiscreteDynamicsWorld* getDynamicsWorld();
 
         void startSimulation(btScalar time_step, int max_sub_steps);
         void stopSimulation();

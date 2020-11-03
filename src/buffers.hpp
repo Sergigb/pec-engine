@@ -65,4 +65,10 @@ struct apply_force_msg{
 };
 
 
+struct set_mass_props_msg{
+    BasePart* part;
+    double mass;
+};
+
+
 #endif
