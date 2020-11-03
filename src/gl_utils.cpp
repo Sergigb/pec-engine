@@ -1,4 +1,14 @@
+#include <iostream>
+#include <limits>
+
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 #include "gl_utils.hpp"
+#include "log.hpp"
+#include "common.hpp"
+#include "utils.hpp"
 
 
 void log_shader_info(GLuint shader_index){

@@ -1,3 +1,9 @@
+#include <iostream>
+#include <cstring> 
+#include <cpuid.h>  // GCC only
+#include <unistd.h>
+#include <climits>
+
 #include "utils.hpp"
 
 

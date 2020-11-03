@@ -3,16 +3,14 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <stb/stb_image.h>
 #include <memory>
 
-#include "gl_utils.hpp"
-#include "maths_funcs.hpp"
-#include "log.hpp"
 #include "Frustum.hpp"
+#include "gl_utils.hpp"
 
 
 class RenderContext;
+
 
 class Model{
     private:

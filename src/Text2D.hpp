@@ -2,22 +2,14 @@
 #define TEXT2D_HPP
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <string>
-#include <algorithm>
-#include <iostream>
-#include <list>
+
 #include <vector>
-#include <cstring>
-#include <memory>
-#include <cmath>
 
 #include "common.hpp"
-#include "gl_utils.hpp"
-#include "maths_funcs.hpp"
-#include "FontAtlas.hpp"
-#include "utils.hpp"
 
 class RenderContext;
+class FontAtlas;
+
 
 #define STRING_MAX_LEN 256
 

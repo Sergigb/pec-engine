@@ -1,4 +1,7 @@
+#include <cstring>
+
 #include "Input.hpp"
+#include "common.hpp"
 
 
 Input::Input(){

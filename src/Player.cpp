@@ -11,6 +11,8 @@
 #include "WindowHandler.hpp"
 #include "Vessel.hpp"
 #include "maths_funcs.hpp"
+#include "Camera.hpp"
+#include "BasePart.hpp"
 
 
 Player::Player(Camera* camera, AssetManager* asset_manager, Input* input){

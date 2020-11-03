@@ -1,6 +1,7 @@
+#include <iostream>
+
 #include "AssetManagerInterface.hpp"
 #include "AssetManager.hpp"
-#include <iostream>
 
 
 AssetManagerInterface::AssetManagerInterface(){

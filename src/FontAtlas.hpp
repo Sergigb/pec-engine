@@ -3,21 +3,14 @@
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
-
-#include <stb/stb_image_write.h>
-
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <cstring>
+
 #include <vector>
-#include <algorithm>
 #include <map>
 #include <memory>
 
 #include "common.hpp"
-#include "log.hpp"
-#include "utils.hpp"
-#include "maths_funcs.hpp"
 
 
 class FontAtlas{ //rename to font atlas?

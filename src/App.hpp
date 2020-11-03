@@ -2,22 +2,18 @@
 #define APP_HPP
 
 #include <memory>
-#include <vector>
-#include <mutex>
-#include <string>
 #include <cstdint>
 
-#include "maths_funcs.hpp"
-#include "Model.hpp"
-#include "Object.hpp"
 #include "BaseApp.hpp"
-#include "EditorGUI.hpp"
-#include "buffers.hpp"
-#include "Vessel.hpp"
 
 
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/btBulletDynamicsCommon.h>
+
+
+class Object;
+class EditorGUI;
+class FontAtlas;
 
 
 class App : public BaseApp{
@@ -25,9 +21,7 @@ class App : public BaseApp{
         // game state
         bool m_physics_pause, m_clear_scene, m_delete_current;
         Object* m_picked_obj;
-
         std::uint32_t m_vessel_id;
-        std::unique_ptr<Vessel> m_editor_vessel;
 
         // time
         std::chrono::duration<double, std::micro> m_elapsed_time;

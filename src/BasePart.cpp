@@ -2,6 +2,10 @@
 #include "Vessel.hpp"
 #include "AssetManagerInterface.hpp"
 #include "Resource.hpp"
+#include "buffers.hpp"
+#include "BtWrapper.hpp"
+#include "Model.hpp"
+#include "log.hpp"
 
 
 BasePart::BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager) : 

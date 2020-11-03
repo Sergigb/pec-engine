@@ -1,19 +1,13 @@
 #ifndef DEBUGOVERLAY_HPP
 #define DEBUGOVERLAY_HPP
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
 #include <memory>
-#include <iomanip>
-
-#include "Text2D.hpp"
-#include "Camera.hpp"
-#include "WindowHandler.hpp"
-#include "gl_utils.hpp"
-#include "FontAtlas.hpp"
 
 
 class RenderContext;
+class Text2D;
+class FontAtlas;
+
 
 class DebugOverlay{
     private:

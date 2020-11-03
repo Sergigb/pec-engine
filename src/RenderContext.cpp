@@ -1,4 +1,22 @@
+#include <chrono>
+#include <mutex>
+#include <iostream>
+
+#include <imgui.h>
+#include <imgui_impl_opengl3.h>
+#include <imgui_impl_glfw.h>
+
 #include "RenderContext.hpp"
+#include "gl_utils.hpp"
+#include "Camera.hpp"
+#include "WindowHandler.hpp"
+#include "DebugOverlay.hpp"
+#include "Model.hpp"
+#include "BaseGUI.hpp"
+#include "BasePart.hpp"
+#include "buffers.hpp"
+#include "log.hpp"
+
 
 RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_handler, render_buffers* buff_manager){
     int fb_width, fb_height;

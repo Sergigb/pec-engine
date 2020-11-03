@@ -1,22 +1,22 @@
 #ifndef EDITORGUI_HPP
 #define EDITORGUI_HPP
 
-#include <map>
-
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <stb/stb_image.h>
-#include <cstdint>
+#include <map>
+#include <memory>
 
-#include "WindowHandler.hpp"
 #include "BaseGUI.hpp"
-#include "common.hpp"
-#include "FontAtlas.hpp"
-#include "RenderContext.hpp"
-#include "Input.hpp"
-#include "log.hpp"
-#include "PartsPanelGUI.hpp"
-#include "Text2D.hpp"
+#include "maths_funcs.hpp"
+
+
+class BasePart;
+class FontAtlas;
+class RenderContext;
+class Input;
+class PartsPanelGUI;
+class Text2D;
+
 
 // not sure if it's a good idea to hardcode this
 #define EDITOR_GUI_VERTEX_NUM 23
@@ -53,8 +53,6 @@
 #define EDITOR_ACTION_BUTTON 3 // well see about this
 #define EDITOR_ACTION_DELETE 4
 
-
-class BasePart;
 
 class EditorGUI : public BaseGUI{
     private:

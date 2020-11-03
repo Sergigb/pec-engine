@@ -1,17 +1,11 @@
 #ifndef CAMERA_HPP
 #define CAMERA_HPP
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-#include <iostream>
-#include <cmath>
 
 #include "maths_funcs.hpp"
-#include "common.hpp"
-#include "Input.hpp"
-#include "log.hpp"
 
 
 class WindowHandler;
+class Input;
 
 
 class Camera{

@@ -1,3 +1,4 @@
+#include <iostream>
 #include <functional>
 
 #include "AssetManager.hpp"
@@ -7,6 +8,10 @@
 #include "Vessel.hpp"
 #include "Camera.hpp"
 #include "Resource.hpp"
+#include "Model.hpp"
+#include "Object.hpp"
+#include "BasePart.hpp"
+#include "log.hpp"
 
 
 AssetManager::AssetManager(RenderContext* render_context, const Frustum* frustum, BtWrapper* bt_wrapper, render_buffers* buff_manager, Camera* camera){

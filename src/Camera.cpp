@@ -1,7 +1,14 @@
 #include <cmath>
+#include <iostream>
 
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
+#include "common.hpp"
 #include "Camera.hpp"
 #include "WindowHandler.hpp"
+#include "log.hpp"
+#include "Input.hpp"
 
 
 Camera::Camera(){

@@ -1,12 +1,7 @@
 #ifndef UTILS_HPP
 #define UTILS_HPP
 
-#include <unistd.h>
-#include <climits>
 #include <string>
-#include <iostream>
-#include <cstring> 
-#include <cpuid.h>  // GCC only
 
 #include "log.hpp"
 

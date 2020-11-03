@@ -5,14 +5,12 @@
 #include <cstdint>
 #include <map>
 #include <vector>
-
-#include "BasePart.hpp"
-#include "id_manager.hpp"
-#include "log.hpp"
-#include "BtWrapper.hpp" // collision flags
+#include <memory>
 
 
 class Player;
+class BasePart;
+
 
 class Vessel{
     private:

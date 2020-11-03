@@ -3,7 +3,6 @@
 
 #include <vector>
 #include <memory>
-#include <mutex>
 
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/btBulletDynamicsCommon.h>
@@ -11,12 +10,13 @@
 
 #include "Object.hpp"
 #include "maths_funcs.hpp"
-#include "buffers.hpp"
 
 
 class Vessel;
 class AssetManagerInterface;
 class Resource;
+class BtWrapper;
+class Model;
 
 
 struct attachment_point{

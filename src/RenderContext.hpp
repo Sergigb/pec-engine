@@ -2,27 +2,20 @@
 #define RENDER_CONTEXT_HPP
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <vector>
 #include <memory>
-#include <mutex>
 #include <thread>
-#include <chrono>
 
-#include "gl_utils.hpp"
-#include "Camera.hpp"
-#include "WindowHandler.hpp"
-#include "DebugOverlay.hpp"
-#include "Object.hpp"
-#include "common.hpp"
-#include "BasePart.hpp"
-#include "Model.hpp"
-#include "BaseGUI.hpp"
+#include "maths_funcs.hpp"
 
-#define BT_USE_DOUBLE_PRECISION
-#include <bullet/btBulletDynamicsCommon.h>
-#include <imgui.h>
-#include <imgui_impl_opengl3.h>
-#include <imgui_impl_glfw.h>
+
+class Camera;
+class WindowHandler;
+class DebugOverlay;
+class Model;
+class BaseGUI;
+class BasePart;
+
+struct object_transform;
 
 
 #define SHADER_PHONG_BLINN 1

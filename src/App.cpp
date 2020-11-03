@@ -1,4 +1,18 @@
+#include <iostream>
+
 #include "App.hpp"
+#include "EditorGUI.hpp"
+#include "Vessel.hpp"
+#include "FontAtlas.hpp"
+#include "RenderContext.hpp"
+#include "AssetManager.hpp"
+#include "BtWrapper.hpp"
+#include "WindowHandler.hpp"
+#include "Input.hpp"
+#include "Frustum.hpp"
+#include "Camera.hpp"
+#include "Player.hpp"
+#include "BasePart.hpp"
 
 
 App::App() : BaseApp(){

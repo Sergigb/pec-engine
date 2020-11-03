@@ -1,5 +1,12 @@
+#include <stb/stb_image.h>
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+
 #include "Model.hpp"
 #include "RenderContext.hpp"
+#include "maths_funcs.hpp"
+#include "log.hpp"
 
 
 Model::Model(){
@@ -184,6 +191,7 @@ int Model::render(const math::mat4& transform) const{
     else{
         return 0;
     }
+    return 0;
 }
 
 

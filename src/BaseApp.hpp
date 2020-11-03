@@ -2,28 +2,24 @@
 #define BASEAPP_HPP
 
 #include <memory>
-#include <vector>
-#include <mutex>
-
-#include "Camera.hpp"
-#include "Input.hpp"
-#include "WindowHandler.hpp"
-#include "Frustum.hpp"
-#include "BtWrapper.hpp"
-#include "Object.hpp"
-#include "RenderContext.hpp"
-#include "buffers.hpp"
-#include "BasePart.hpp"
-#include "Model.hpp"
-#include "maths_funcs.hpp"
-#include "multithreading.hpp"
-#include "AssetManager.hpp"
-#include "Player.hpp"
 
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/btBulletDynamicsCommon.h>
 
+#include "multithreading.hpp"
+#include "buffers.hpp"
+
 // base app for future shenanigans
+
+class Camera;
+class Input;
+class WindowHandler;
+class Frustum;
+class BtWrapper;
+class RenderContext;
+class AssetManager;
+class Player;
+
 
 class BaseApp{
     private:

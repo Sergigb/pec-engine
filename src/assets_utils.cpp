@@ -3,6 +3,9 @@
 #include "assets_utils.hpp"
 #include "RenderContext.hpp"
 #include "parts/parts.hpp"
+#include "Model.hpp"
+#include "BtWrapper.hpp"
+#include "log.hpp"
 
 
 void load_parts(AssetManager& asset_manager){

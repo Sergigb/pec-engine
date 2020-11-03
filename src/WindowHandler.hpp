@@ -2,15 +2,11 @@
 #define WINDOW_HANDLER_HPP
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <iostream>
-
-#include "common.hpp"
-#include "Input.hpp"
-#include "Camera.hpp"
-#include "log.hpp"
 
 
 class RenderContext;
+class Input;
+class Camera;
 
 
 class WindowHandler{

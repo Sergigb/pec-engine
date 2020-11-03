@@ -3,17 +3,12 @@
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <iostream>
-#include <limits>
+#include <string>
 
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-
-#include "log.hpp"
-#include "common.hpp"
-#include "utils.hpp"
 #include "maths_funcs.hpp"
+
+
+struct GLFWwindow;
 
 
 void log_shader_info(GLuint shader_index);

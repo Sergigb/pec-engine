@@ -1,5 +1,14 @@
-#include "EditorGUI.hpp"
+#include <cstring>
 
+#include <stb/stb_image.h>
+
+#include "EditorGUI.hpp"
+#include "FontAtlas.hpp"
+#include "RenderContext.hpp"
+#include "Input.hpp"
+#include "log.hpp"
+#include "PartsPanelGUI.hpp"
+#include "Text2D.hpp"
 
 
 EditorGUI::EditorGUI(){

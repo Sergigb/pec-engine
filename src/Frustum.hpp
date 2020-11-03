@@ -1,10 +1,8 @@
 #ifndef FRUSTUM_HPP
 #define FRUSTUM_HPP
 
-#include <cmath> 
-
 #include "maths_funcs.hpp"
-#include "gl_utils.hpp"
+
 
 class Frustum{
     private:

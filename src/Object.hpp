@@ -1,7 +1,6 @@
 #ifndef OBJECT_HPP
 #define OBJECT_HPP
 
-#include <algorithm>
 #include <memory>
 #include <string>
 #include <cstdint>
@@ -9,12 +8,13 @@
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/btBulletDynamicsCommon.h>
 
-#include "Model.hpp"
 #include "maths_funcs.hpp"
-#include "BtWrapper.hpp"
-#include "id_manager.hpp"
 
 /* Simple class for rigid objects, contains a rigid body object and its model*/
+
+class BtWrapper;
+class Model;
+
 
 class Object : public std::enable_shared_from_this<Object>{
     protected:

@@ -2,11 +2,8 @@
 #define INPUT_HPP
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
-#include <iostream>
-#include <cstring>
 #include <vector>
 
-#include "common.hpp"
 
 #define INPUT_MBUTTON_UP        0x00
 #define INPUT_MBUTTON_PRESS     0x01

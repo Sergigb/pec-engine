@@ -2,19 +2,20 @@
 #define PARTSPANELGUI_HPP
 
 #include <map>
-#include <cstdlib>
 #include <memory>
 #include <cstdint>
 
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
-#include "BasePart.hpp"
-#include "FontAtlas.hpp"
-#include "Text2D.hpp"
 #include "maths_funcs.hpp"
-#include "RenderContext.hpp"
-#include "Input.hpp"
+
+
+class BasePart;
+class FontAtlas;
+class Text2D;
+class RenderContext;
+class Input;
 
 
 #define ITEM_SEPARATION 20

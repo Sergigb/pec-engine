@@ -1,5 +1,15 @@
 #include "BaseApp.hpp"
 
+#include "Camera.hpp"
+#include "Input.hpp"
+#include "WindowHandler.hpp"
+#include "Frustum.hpp"
+#include "BtWrapper.hpp"
+#include "RenderContext.hpp"
+#include "AssetManager.hpp"
+#include "Player.hpp"
+#include "Model.hpp"
+
 
 BaseApp::BaseApp(){
     init(640, 480);

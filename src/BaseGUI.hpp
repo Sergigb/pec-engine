@@ -1,8 +1,6 @@
 #ifndef BASEGUI_HPP
 #define BASEGUI_HPP
 
-#include "WindowHandler.hpp"
-
 
 /*Abstract class for GUI objects*/
 

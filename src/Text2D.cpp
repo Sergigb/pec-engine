@@ -1,5 +1,14 @@
+#include <string>
+#include <algorithm>
+#include <iostream>
+#include <cstring>
+#include <cmath>
+
 #include "Text2D.hpp"
 #include "RenderContext.hpp"
+#include "maths_funcs.hpp"
+#include "FontAtlas.hpp"
+#include "utils.hpp"
 
 
 Text2D::Text2D(){

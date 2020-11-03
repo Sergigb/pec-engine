@@ -1,19 +1,13 @@
 #ifndef BT_WRAPPER_HPP
 #define BT_WRAPPER_HPP
 
-#include <iostream>
 #include <memory>
 #include <thread>
-#include <iomanip>
-#include <vector>
-#include <mutex>
 
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/btBulletDynamicsCommon.h>
 
-#include "log.hpp"
 #include "maths_funcs.hpp"
-#include "multithreading.hpp"
 
 
 // bullet collision groups
@@ -27,6 +21,9 @@
 
 
 class Object;
+
+struct thread_monitor;
+
 
 class BtWrapper{
     private:

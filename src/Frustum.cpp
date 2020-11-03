@@ -1,4 +1,7 @@
+#include <cmath> 
+
 #include "Frustum.hpp"
+#include "gl_utils.hpp"
 
 
 Frustum::Frustum(){
@@ -67,11 +70,11 @@ bool Frustum::checkPoint(const math::vec3& p) const{
 bool Frustum::checkSphere(const math::vec3& p, float radius) const{
     // doesn't seem to be working right
     for(int i=0; i < 6; i++){
-        float d = math::dot(m_planes[i], p);
+        float d = math::distance_plane_point(m_planes[i], p);
         if(d < -radius)
             return false;
-        //else if(fabs(d) < radius)
-        //    return true;
+        else if(fabs(d) < radius)
+            return true;
     }
     return true;
 }

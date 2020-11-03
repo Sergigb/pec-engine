@@ -1,4 +1,12 @@
+#include <algorithm>
+#include <cstring>
+
+#include <stb/stb_image_write.h>
+
 #include "FontAtlas.hpp"
+#include "log.hpp"
+#include "utils.hpp"
+#include "maths_funcs.hpp"
 
 
 FontAtlas::FontAtlas(){

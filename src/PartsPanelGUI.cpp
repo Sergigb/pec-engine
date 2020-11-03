@@ -1,4 +1,12 @@
+#include <cstdlib>
+#include <cstring>
+
 #include "PartsPanelGUI.hpp"
+#include "BasePart.hpp"
+#include "FontAtlas.hpp"
+#include "Text2D.hpp"
+#include "RenderContext.hpp"
+#include "Input.hpp"
 
 
 PartsPanelGUI::PartsPanelGUI(float fb_width, float fb_height, const FontAtlas* atlas, const RenderContext* render_context, const Input* input){

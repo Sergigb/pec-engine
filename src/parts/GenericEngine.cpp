@@ -1,8 +1,10 @@
+#include <sstream>
 #include <functional>
 
 #include "GenericEngine.hpp"
 #include "../Resource.hpp"
 #include "../AssetManagerInterface.hpp"
+#include "../buffers.hpp"
 
 
 GenericEngine::GenericEngine(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager) : 

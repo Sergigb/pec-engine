@@ -1,4 +1,9 @@
+#include <algorithm>
+
 #include "Object.hpp"
+#include "BtWrapper.hpp"
+#include "Model.hpp"
+#include "id_manager.hpp"
 
 
 Object::Object(){

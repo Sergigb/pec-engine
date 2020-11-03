@@ -1,5 +1,10 @@
+#include <iostream>
+
 #include "WindowHandler.hpp"
 #include "RenderContext.hpp"
+#include "log.hpp"
+#include "Input.hpp"
+#include "Camera.hpp"
 
 
 WindowHandler::WindowHandler(){

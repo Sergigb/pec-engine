@@ -1,5 +1,14 @@
+#include <iomanip>
+
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
+
 #include "DebugOverlay.hpp"
 #include "RenderContext.hpp"
+#include "FontAtlas.hpp"
+#include "Text2D.hpp"
+#include "utils.hpp"
+#include "gl_utils.hpp"
 
 
 DebugOverlay::DebugOverlay(int fb_width, int fb_height, const RenderContext* render_context){
