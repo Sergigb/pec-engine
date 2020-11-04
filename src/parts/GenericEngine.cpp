@@ -89,7 +89,7 @@ void GenericEngine::update(){
         if(m_parent){
             float liq_hyd = 50.0f, liq_oxy = 10.0f;
             float flow = 1.0f; // the quantities are made up
-            btMatrix3x3 basis;
+            btMatrix3x3& basis = m_body->getWorldTransform().getBasis();
             btVector3 force;
 
             m_parent->requestResource(this, m_liquid_hydrogen_id, liq_hyd);
@@ -98,9 +98,8 @@ void GenericEngine::update(){
             flow = liq_hyd / 10.0f > liq_oxy / 4.0 ? liq_oxy / 4.0 : liq_hyd / 10.0f; // not sure about this
 
             force = btVector3(0.0, flow * m_thrust * 2500.0, 0.0);
-            basis = m_body->getWorldTransform().getBasis();
 
-            force = force * basis;
+            force = basis * force;
             struct apply_force_msg msg{this, force, btVector3(0.0, 0.0, 0.0)};
             m_asset_manager->applyForce(msg);
         }

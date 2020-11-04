@@ -14,7 +14,7 @@
 #include "Camera.hpp"
 #include "BasePart.hpp"
 
-
+#include <iostream>
 Player::Player(Camera* camera, AssetManager* asset_manager, Input* input){
     m_camera = camera;
     m_vessel = nullptr;
@@ -35,7 +35,7 @@ void Player::update(){
     else{
         double mass = 0.0; // we're doing this here for now, I think this should be done in the update method of the vessels
         std::vector<BasePart*>* parts =  m_vessel->getParts();
-        btVector3 com;
+        btVector3 com(0.0, 0.0, 0.0);
 
         // very ugly, but ok for now... we probably don't need two loops
         for(uint i=0; i < parts->size(); i++){
