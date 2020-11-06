@@ -299,7 +299,8 @@ void BasePart::renderOther(){
         for(uint i=0; i < m_resources.size(); i++){
             std::string rname;
             m_resources.at(i).resource->getFancyName(rname);
-            ImGui::SliderFloat(rname.c_str(), &m_resources.at(i).mass, 0.0f, m_resources.at(i).max_mass);
+            ImGui::Text(rname.c_str());
+            ImGui::SliderFloat("kg", &m_resources.at(i).mass, 0.0f, m_resources.at(i).max_mass);
         }
 
         ImGui::End();
@@ -312,6 +313,14 @@ void BasePart::renderOther(){
         ImGui::SetNextWindowPos(mousepos, ImGuiCond_Appearing);
         ImGui::SetNextWindowSize(ImVec2(300.f, 300.f), ImGuiCond_Appearing);
         ImGui::Begin((m_fancy_name + ss.str()).c_str(), &m_show_game_menu);
+
+        for(uint i=0; i < m_resources.size(); i++){
+            std::string rname;
+            m_resources.at(i).resource->getFancyName(rname);
+            ImGui::Text(rname.c_str());
+            ImGui::ProgressBar(m_resources.at(i).mass / m_resources.at(i).max_mass);
+        }
+
         ImGui::End();
     }
 }
