@@ -454,7 +454,7 @@ void App::logic(){
             m_asset_manager->m_add_body_buffer.emplace_back(add_body_msg{part.get(), btVector3(0.0, 60.0, 0.0),
                                                             btVector3(0.0, 0.0, 0.0), btQuaternion::getIdentity()});
 
-            std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(part);
+            std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(part, m_input.get());
             m_vessel_id = vessel->getId();
             m_asset_manager->m_editor_vessels.insert({m_vessel_id, vessel});
             part->setCollisionFilters(part->getCollisionFilters() | CG_RAY_EDITOR_RADIAL);

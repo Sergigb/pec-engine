@@ -10,6 +10,7 @@
 
 class Player;
 class BasePart;
+class Input;
 
 
 class Vessel{
@@ -21,11 +22,12 @@ class Vessel{
         std::uint32_t m_vessel_id;
 
         Player* m_player; // player controlling the vessel
+        const Input* m_input;
 
         void updateNodes(); // updates node list and map
     public:
         Vessel();
-        Vessel(std::shared_ptr<BasePart>& vessel_root);
+        Vessel(std::shared_ptr<BasePart>& vessel_root, const Input* input);
         ~Vessel();
 
         void setVesselName(const std::string& name);
@@ -51,6 +53,7 @@ class Vessel{
         const std::vector<BasePart*>* getParts() const;
         std::uint32_t getId() const;
         void printVessel() const;
+        const Input* getInput() const;
 
         void update();
 };

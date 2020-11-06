@@ -6,6 +6,7 @@
 #include "BtWrapper.hpp"
 #include "Model.hpp"
 #include "log.hpp"
+#include "Input.hpp"
 
 
 BasePart::BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager) : 
@@ -328,7 +329,7 @@ void BasePart::onSimulationRightMouseButton(){
 
 void BasePart::decoupleChilds(){
     for(uint i=0; i < m_childs.size(); i++){
-        std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(m_childs.at(i));
+        std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(m_childs.at(i), m_vessel->getInput());
         m_asset_manager->removePartConstraint(m_childs.at(i).get());
         m_asset_manager->addVessel(vessel);
     }
@@ -338,6 +339,7 @@ void BasePart::decoupleChilds(){
 
 
 void BasePart::decoupleSelf(){
+    const Input* input = m_vessel->getInput();
     std::shared_ptr<BasePart> ourselves = m_vessel->removeChild(this);
 
     if(ourselves.get() == nullptr){
@@ -347,7 +349,7 @@ void BasePart::decoupleSelf(){
         return;
     }
 
-    std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(ourselves);
+    std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(ourselves, input);
     m_asset_manager->removePartConstraint(this);
     m_asset_manager->addVessel(vessel);
 }

@@ -4,22 +4,25 @@
 #include "BasePart.hpp"
 #include "id_manager.hpp"
 #include "log.hpp"
+#include "Input.hpp"
 
 
 Vessel::Vessel(){
     m_vessel_root = nullptr;
     create_id(m_vessel_id, VESSEL_SET);
     m_player = nullptr;
+    m_input = nullptr;
 }
 
 
-Vessel::Vessel(std::shared_ptr<BasePart>& vessel_root){
+Vessel::Vessel(std::shared_ptr<BasePart>& vessel_root, const Input* input){
     m_vessel_root = vessel_root;
     m_vessel_root->setRoot(true);
     m_vessel_root->updateSubTreeVessel(this);
     create_id(m_vessel_id, VESSEL_SET);
     updateNodes();
     m_player = nullptr;
+    m_input = input;
 }
 
 
@@ -285,5 +288,10 @@ void Vessel::update(){
     for(uint i=0; i < m_node_list.size(); i++){
         m_node_list.at(i)->update();
     }
+}
+
+
+const Input* Vessel::getInput() const{
+    return m_input;
 }
 
