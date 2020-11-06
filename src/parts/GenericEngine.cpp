@@ -5,6 +5,8 @@
 #include "../Resource.hpp"
 #include "../AssetManagerInterface.hpp"
 #include "../buffers.hpp"
+#include "../Vessel.hpp"
+#include "../maths_funcs.hpp"
 
 
 GenericEngine::GenericEngine(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager) : 
@@ -85,24 +87,26 @@ void GenericEngine::renderOther(){
 
 
 void GenericEngine::update(){
-    if(m_engine_status){
-        if(m_parent){
-            float liq_hyd = 50.0f, liq_oxy = 10.0f;
-            float flow = 1.0f; // the quantities are made up
-            btMatrix3x3& basis = m_body->getWorldTransform().getBasis();
-            btVector3 force;
+    if(m_engine_status && m_parent){
+        float liq_hyd = 5.0f * m_thrust, liq_oxy = 2.0f * m_thrust;
+        float flow_hyd = liq_hyd, flow_oxy = liq_oxy;
+        float flow = 1.0f; // the quantities are made up
+        float max_gimbal_angle = 10.5f * ONE_DEG_IN_RAD; // all this stuff won't be hardcoded in the future
+        btMatrix3x3& basis = m_body->getWorldTransform().getBasis();
+        btMatrix3x3 gimbal;
+        btVector3 force;
 
-            m_parent->requestResource(this, m_liquid_hydrogen_id, liq_hyd);
-            m_parent->requestResource(this, m_liquid_oxygen_id, liq_oxy);
+        m_parent->requestResource(this, m_liquid_hydrogen_id, flow_hyd);
+        m_parent->requestResource(this, m_liquid_oxygen_id, flow_oxy);
 
-            flow = liq_hyd / 10.0f > liq_oxy / 4.0 ? liq_oxy / 4.0 : liq_hyd / 10.0f; // not sure about this
+        flow = flow_hyd / liq_hyd > flow_oxy / liq_oxy ? flow_oxy / liq_oxy : flow_hyd / liq_hyd; // this will be re-thinked
+        force = btVector3(0.0, flow * 2500.0, 0.0);
 
-            force = btVector3(0.0, flow * m_thrust * 2500.0, 0.0);
-
-            force = basis * force;
-            struct apply_force_msg msg{this, force, btVector3(0.0, 0.0, 0.0)};
-            m_asset_manager->applyForce(msg);
-        }
+        // I'm using Y as the roll, this is wrong. In the future I'll make sure Z is the forward vector, which will make it the roll vector
+        gimbal.setEulerZYX(m_vessel->getYaw() * max_gimbal_angle, 0.0, m_vessel->getPitch() * max_gimbal_angle);
+        force = basis * gimbal * force;
+        struct apply_force_msg msg{this, force, btVector3(0.0, 0.0, 0.0)};
+        m_asset_manager->applyForce(msg);
     }
 }
 

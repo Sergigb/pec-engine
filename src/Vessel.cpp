@@ -12,6 +12,8 @@ Vessel::Vessel(){
     create_id(m_vessel_id, VESSEL_SET);
     m_player = nullptr;
     m_input = nullptr;
+    m_yaw = 0.0f;
+    m_pitch = 0.0f;
 }
 
 
@@ -23,6 +25,8 @@ Vessel::Vessel(std::shared_ptr<BasePart>& vessel_root, const Input* input){
     updateNodes();
     m_player = nullptr;
     m_input = input;
+    m_yaw = 0.0f;
+    m_pitch = 0.0f;
 }
 
 
@@ -285,6 +289,25 @@ void Vessel::setPlayer(Player* player){
 
 
 void Vessel::update(){
+    if(m_input->pressed_keys[GLFW_KEY_W] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){
+        m_yaw = 1.0f;
+    }
+    else if(m_input->pressed_keys[GLFW_KEY_S] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){
+        m_yaw = -1.0f;
+    }
+    else{
+        m_yaw = 0.0f;
+    }
+    if(m_input->pressed_keys[GLFW_KEY_A] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){
+        m_pitch = 1.0f;
+    }
+    else if(m_input->pressed_keys[GLFW_KEY_D] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){
+        m_pitch = -1.0f;
+    }
+    else{
+        m_pitch = 0.0f;
+    }
+
     for(uint i=0; i < m_node_list.size(); i++){
         m_node_list.at(i)->update();
     }
@@ -293,5 +316,15 @@ void Vessel::update(){
 
 const Input* Vessel::getInput() const{
     return m_input;
+}
+
+
+float Vessel::getYaw() const{
+    return m_yaw;
+}
+
+
+float Vessel::getPitch() const{
+    return m_pitch;
 }
 

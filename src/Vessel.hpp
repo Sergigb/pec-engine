@@ -20,6 +20,7 @@ class Vessel{
         std::vector<BasePart*> m_node_list;
         std::map<std::uint32_t, BasePart*> m_node_map_by_id;
         std::uint32_t m_vessel_id;
+        float m_yaw, m_pitch;
 
         Player* m_player; // player controlling the vessel
         const Input* m_input;
@@ -54,6 +55,8 @@ class Vessel{
         std::uint32_t getId() const;
         void printVessel() const;
         const Input* getInput() const;
+        float getYaw() const;
+        float getPitch() const;
 
         void update();
 };
