@@ -87,7 +87,7 @@ void GenericEngine::renderOther(){
 
 
 void GenericEngine::update(){
-    if(m_engine_status && m_parent){
+    if(m_engine_status && m_parent && m_thrust){
         float liq_hyd = 5.0f * m_thrust, liq_oxy = 2.0f * m_thrust;
         float flow_hyd = liq_hyd, flow_oxy = liq_oxy;
         float flow = 1.0f; // the quantities are made up
@@ -100,7 +100,7 @@ void GenericEngine::update(){
         m_parent->requestResource(this, m_liquid_oxygen_id, flow_oxy);
 
         flow = flow_hyd / liq_hyd > flow_oxy / liq_oxy ? flow_oxy / liq_oxy : flow_hyd / liq_hyd; // this will be re-thinked
-        force = btVector3(0.0, flow * 2500.0, 0.0);
+        force = btVector3(0.0, flow * 2500.0 * m_thrust, 0.0);
 
         // I'm using Y as the roll, this is wrong. In the future I'll make sure Z is the forward vector, which will make it the roll vector
         gimbal.setEulerZYX(m_vessel->getYaw() * max_gimbal_angle, 0.0, m_vessel->getPitch() * max_gimbal_angle);

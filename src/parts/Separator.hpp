@@ -8,11 +8,14 @@
 #define BEHAVIOUR_SEPARATES_SELF 2
 #define BEHAVIOUR_SEPARATES_ALL 3
 
+#define SEPARATOR_MAX_FORCE 2000.0f
+
 
 class Separator : public BasePart{
     private:
         char m_behaviour;
         bool m_separate;
+        float m_force;
     public:
         Separator(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager);
         Separator(const Separator& engine);

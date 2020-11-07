@@ -1,24 +1,29 @@
 #include <sstream>
 
 #include "Separator.hpp"
+#include "../AssetManagerInterface.hpp"
+#include "../buffers.hpp"
 
 
 Separator::Separator(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager) : 
     BasePart(model, bt_wrapper, col_shape, mass, baseID, asset_manager){
     m_behaviour = BEHAVIOUR_SEPARATES_SELF;
     m_separate = false;
+    m_force = SEPARATOR_MAX_FORCE;
 }
 
 
 Separator::Separator() : BasePart(){
     m_behaviour = BEHAVIOUR_SEPARATES_SELF;
     m_separate = false;
+    m_force = SEPARATOR_MAX_FORCE;
 }
 
 
 Separator::Separator(const Separator& engine) : BasePart(engine){
     m_behaviour = BEHAVIOUR_SEPARATES_SELF;
     m_separate = false;
+    m_force = engine.m_force;
 }
 
 
@@ -52,6 +57,11 @@ void Separator::renderOther(){
             m_behaviour = BEHAVIOUR_SEPARATES_ALL;
         }
 
+        ImGui::Separator();
+
+        ImGui::Text("Separator force");
+        ImGui::SliderFloat("N", &m_force, 0.0f, SEPARATOR_MAX_FORCE);
+
         ImGui::End();
     }
     else if(m_show_game_menu){
@@ -74,15 +84,29 @@ void Separator::renderOther(){
 
 void Separator::update(){
     if(m_separate){
+        btVector3 force(0.0, m_force, 0.0);
         m_separate = false;
-        if(m_behaviour == BEHAVIOUR_SEPARATES_CHILDS){
-            decoupleChilds();
-        }
-        else if(m_behaviour == BEHAVIOUR_SEPARATES_SELF){
+
+        if(m_behaviour == BEHAVIOUR_SEPARATES_SELF || m_behaviour == BEHAVIOUR_SEPARATES_ALL){
+            if(m_parent){
+                struct apply_force_msg msg{m_parent, force, btVector3(0.0, 0.0, 0.0)};
+                m_asset_manager->applyForce(msg);
+
+                msg = {this, -1 * force, btVector3(0.0, 0.0, 0.0)};
+                m_asset_manager->applyForce(msg);
+            }
+
             decoupleSelf();
         }
-        else if(m_behaviour == BEHAVIOUR_SEPARATES_ALL){
-            decoupleSelf();
+        if(m_behaviour == BEHAVIOUR_SEPARATES_CHILDS || m_behaviour == BEHAVIOUR_SEPARATES_ALL){
+            for(uint i=0; i < m_childs.size(); i++){
+                struct apply_force_msg msg{m_childs.at(i).get(), -1.0 * force, btVector3(0.0, 0.0, 0.0)};
+                m_asset_manager->applyForce(msg);
+
+                msg = {this, force, btVector3(0.0, 0.0, 0.0)};
+                m_asset_manager->applyForce(msg);
+            }
+
             decoupleChilds();
         }
     }
