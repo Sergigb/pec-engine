@@ -15,13 +15,13 @@ Model::Model(){
 }
 
 
-Model::Model(const char* path_to_mesh, const char* path_to_texture, GLuint shader_programme, const Frustum* frustum, const RenderContext* render_context, const math::vec3& mesh_color){
+Model::Model(const char* path_to_mesh, const char* path_to_texture, int shader, const Frustum* frustum, const RenderContext* render_context, const math::vec3& mesh_color){
     m_frustum = frustum;
-    m_shader_programme = shader_programme;
+    m_shader = shader;
     m_render_context = render_context;
 
-    m_model_mat_location = glGetUniformLocation(m_shader_programme, "model");
-    m_color_location = glGetUniformLocation(m_shader_programme, "object_color");
+    m_model_mat_location = render_context->getUniformLocation(m_shader, "model");
+    m_color_location = render_context->getUniformLocation(m_shader, "object_color");
 
     m_mesh_color = math::vec4(mesh_color, 1.0);
 
@@ -174,7 +174,7 @@ int Model::loadScene(const std::string& pFile){
 int Model::render(const math::mat4& transform) const{
     if(m_frustum->checkBox(m_aabb.vert, transform)){
     ///if(m_frustum->checkSphere(math::vec3(transform.m[12], transform.m[13], transform.m[14]), m_cs_radius)){
-        m_render_context->useProgram(m_shader_programme);
+        m_render_context->useProgram(m_shader);
         m_render_context->bindVao(m_vao);
 
         if(m_has_texture){
@@ -196,7 +196,7 @@ int Model::render(const math::mat4& transform) const{
 
 
 void Model::render_terrain(const math::mat4& transform) const{
-    m_render_context->useProgram(m_shader_programme);
+    m_render_context->useProgram(m_shader);
     m_render_context->bindVao(m_vao);
 
     if(m_has_texture){

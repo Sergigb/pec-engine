@@ -23,7 +23,6 @@ EditorGUI::EditorGUI(const FontAtlas* atlas, const RenderContext* render_context
     m_fb_update = true;
     m_init = true;
     m_font_atlas = atlas;
-    m_gui_shader = m_render_context->getShader(SHADER_GUI);
     m_input = input;
     m_button_mouseover = -1;
     m_last_button_color = -1;
@@ -37,7 +36,7 @@ EditorGUI::EditorGUI(const FontAtlas* atlas, const RenderContext* render_context
     m_parts_panel.reset(new PartsPanelGUI(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2 - EDITOR_GUI_PP_LOW_MARGIN,
                         m_font_atlas, m_render_context, m_input));
 
-    m_disp_location = glGetUniformLocation(m_gui_shader, "disp");
+    m_disp_location = m_render_context->getUniformLocation(SHADER_GUI, "disp");
 
     // gl init
     glGenVertexArrays(1, &m_vao);
@@ -406,7 +405,7 @@ void EditorGUI::render(){
     }
     updateButtons();
 
-    m_render_context->useProgram(m_gui_shader);
+    m_render_context->useProgram(SHADER_GUI);
     glUniform2f(m_disp_location, 0.0, 0.0);
 
     m_render_context->bindVao(m_vao);
@@ -415,7 +414,7 @@ void EditorGUI::render(){
     glDrawElements(GL_TRIANGLES, EDITOR_GUI_INDEX_NUM, GL_UNSIGNED_SHORT, NULL);
 
     m_parts_panel->render();
-    m_render_context->useProgram(m_gui_shader);
+    m_render_context->useProgram(SHADER_GUI);
     m_parts_panel->bindTexture();
     m_render_context->bindVao(m_parts_panel_vao);
     glDrawArrays(GL_TRIANGLES, 0, 6);

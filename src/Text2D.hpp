@@ -36,7 +36,7 @@ class Text2D{
     // to be drawn. Something like in https://www.reddit.com/r/opengl/comments/6d4eai/how_do_you_manage_your_quads_when_doing_text/
     private:
         GLuint m_vao, m_vbo_vert, m_vbo_tex, m_vbo_ind;
-        GLuint m_shader_programme, m_color_location, m_disp_location;
+        GLuint m_color_location, m_disp_location;
         GLuint m_num_vertices, m_num_indices;
         struct color m_text_color;
         std::vector<struct string> m_strings;

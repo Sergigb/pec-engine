@@ -37,7 +37,7 @@ AssetManager::~AssetManager(){
 void AssetManager::objectsInit(){
     btQuaternion quat;
     std::unique_ptr<btCollisionShape> cube_shape_ground(new btBoxShape(btVector3(btScalar(25.), btScalar(25.), btScalar(25.))));
-    std::unique_ptr<Model> cube_model(new Model("../data/bigcube.dae", nullptr, m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), m_frustum, m_render_context, math::vec3(0.75, 0.75, 0.75)));
+    std::unique_ptr<Model> cube_model(new Model("../data/bigcube.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, m_frustum, m_render_context, math::vec3(0.75, 0.75, 0.75)));
     
     quat.setEuler(0, 0, 0);
     std::shared_ptr<Object> ground = std::make_shared<Object>(cube_model.get(), m_bt_wrapper, cube_shape_ground.get(), btScalar(0.0), 1);

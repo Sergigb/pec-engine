@@ -23,11 +23,11 @@ void load_parts(AssetManager& asset_manager){
     std::unique_ptr<btCollisionShape> sphere_shape(new btSphereShape(1.0));
     std::unique_ptr<btCollisionShape> cone(new btConeShape(0.5, 1.70));
 
-    std::unique_ptr<Model> engine_model(new Model("../data/engine.dae", nullptr, asset_manager.m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), asset_manager.m_frustum, asset_manager.m_render_context, math::vec3(0.25, 0.25, 0.25)));
-    std::unique_ptr<Model> tank_model(new Model("../data/tank.dae", nullptr, asset_manager.m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), asset_manager.m_frustum, asset_manager.m_render_context, math::vec3(0.25, 0.25, 0.25)));
-    std::unique_ptr<Model> tank2_model(new Model("../data/tank2.dae", nullptr, asset_manager.m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), asset_manager.m_frustum, asset_manager.m_render_context, math::vec3(0.25, 0.25, 0.25)));
-    std::unique_ptr<Model> com_module_model(new Model("../data/capsule.dae", nullptr, asset_manager.m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), asset_manager.m_frustum, asset_manager.m_render_context, math::vec3(0.75, 0.75, 0.75)));
-    std::unique_ptr<Model> separator_model(new Model("../data/separator.dae", nullptr, asset_manager.m_render_context->getShader(SHADER_PHONG_BLINN_NO_TEXTURE), asset_manager.m_frustum, asset_manager.m_render_context, math::vec3(0.75, 0.75, 0.75)));
+    std::unique_ptr<Model> engine_model(new Model("../data/engine.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, asset_manager.m_frustum, asset_manager.m_render_context, math::vec3(0.25, 0.25, 0.25)));
+    std::unique_ptr<Model> tank_model(new Model("../data/tank.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, asset_manager.m_frustum, asset_manager.m_render_context, math::vec3(0.25, 0.25, 0.25)));
+    std::unique_ptr<Model> tank2_model(new Model("../data/tank2.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, asset_manager.m_frustum, asset_manager.m_render_context, math::vec3(0.25, 0.25, 0.25)));
+    std::unique_ptr<Model> com_module_model(new Model("../data/capsule.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, asset_manager.m_frustum, asset_manager.m_render_context, math::vec3(0.75, 0.75, 0.75)));
+    std::unique_ptr<Model> separator_model(new Model("../data/separator.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, asset_manager.m_frustum, asset_manager.m_render_context, math::vec3(0.75, 0.75, 0.75)));
 
     std::unique_ptr<BasePart> separator(new Separator(separator_model.get(), asset_manager.m_bt_wrapper, cylinder_shape_separator.get(), btScalar(10.0), 555, &asset_manager.m_asset_manager_interface));
     separator->setColor(math::vec3(0.75, 0.75, 0.75));

@@ -32,7 +32,6 @@ class Input;
 class PartsPanelGUI{
     private:
         GLuint m_fb, m_tex;
-        GLuint m_gui_shader, m_text_shader;
         float m_fb_width, m_fb_height; // this is the size of the PANEL fb
         GLuint m_vao, m_vbo_vert, m_vbo_tex, m_vbo_clr;
         GLuint m_num_vert;

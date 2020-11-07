@@ -96,19 +96,20 @@ class RenderContext{
         void setLightPosition(const math::vec3& pos) const;
         void setDebugOverlayTimes(double physics_load_time, double logic_load_time, double logic_sleep_time);
         void setAttPointModel(std::unique_ptr<Model>* att_point_model);
-        void useProgram(GLuint program) const;
+        void useProgram(int program) const;
         void bindVao(GLuint vao) const;
         void onFramebufferSizeUpdate(int width, int height);
         void toggleDebugOverlay();
         void setEditorGUI(BaseGUI* editor_ptr);
         void setEditorMode(short mode);
 
-        GLuint getShader(int shader) const;
+        //GLuint getShader(int shader) const;
         GLuint getBoundShader() const;
         GLuint getBoundVao() const;
         void getDefaultFbSize(float& width, float& height) const;
         bool imGuiWantCaptureMouse() const;
         bool imGuiWantCaptureKeyboard() const;
+        GLuint getUniformLocation(int shader, const char* location) const;
 
         void contextUpdatePlanetarium();
 };

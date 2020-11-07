@@ -22,12 +22,10 @@ PartsPanelGUI::PartsPanelGUI(float fb_width, float fb_height, const FontAtlas* a
     m_panel_scroll = math::vec2(0.0, 0.0);
     m_picked_part = nullptr;
 
-    m_gui_shader = m_render_context->getShader(SHADER_GUI);
-    m_projection_location = glGetUniformLocation(m_gui_shader, "projection");
-    m_disp_location = glGetUniformLocation(m_gui_shader, "disp");
+    m_projection_location = m_render_context->getUniformLocation(SHADER_GUI, "projection");
+    m_disp_location = m_render_context->getUniformLocation(SHADER_GUI, "disp");
 
-    m_text_shader = m_render_context->getShader(SHADER_TEXT);
-    m_text_projection_location = glGetUniformLocation(m_text_shader, "projection");
+    m_text_projection_location = m_render_context->getUniformLocation(SHADER_TEXT, "projection");
 
     m_projection = math::orthographic(fb_width, 0, fb_height, 0, 1.0f , -1.0f);
 
@@ -115,7 +113,7 @@ void PartsPanelGUI::render(){
     glClearColor(0.2, 0.2, 0.2, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    m_render_context->useProgram(m_gui_shader);
+    m_render_context->useProgram(SHADER_GUI);
     glUniformMatrix4fv(m_projection_location, 1, GL_FALSE, m_projection.m);
     glUniform2fv(m_disp_location, 1, m_panel_scroll.v);
     m_render_context->bindVao(m_vao);
@@ -128,7 +126,7 @@ void PartsPanelGUI::render(){
     glUniformMatrix4fv(m_projection_location, 1, GL_FALSE, projection.m);
     glUniform2f(m_disp_location, 0.0f, 0.0f);
 
-    m_render_context->useProgram(m_text_shader);
+    m_render_context->useProgram(SHADER_TEXT);
     glUniformMatrix4fv(m_text_projection_location, 1, GL_FALSE, m_projection.m);
     m_text->render();
     glUniformMatrix4fv(m_text_projection_location, 1, GL_FALSE, projection.m);

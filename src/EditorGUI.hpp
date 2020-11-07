@@ -69,7 +69,6 @@ class EditorGUI : public BaseGUI{
 
         GLuint m_vao, m_vbo_vert, m_vbo_tex, m_vbo_ind, m_vbo_clr;
         GLuint m_texture_atlas;
-        GLuint m_gui_shader;
         GLuint m_disp_location;
 
         // parts panel, this is related to the drawing on the panel, not the contents

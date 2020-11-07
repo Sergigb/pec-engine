@@ -39,7 +39,7 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
     m_att_point_scale.m[10] = 0.25;
 
     m_bound_vao = 0;
-    m_bound_programme = 0;
+    m_bound_programme = 0; // not used
 
     m_pause = false;
     m_stop = false;
@@ -322,7 +322,7 @@ void RenderContext::setLightPosition(const math::vec3& pos) const{
 }
 
 
-GLuint RenderContext::getShader(int shader) const{
+/*GLuint RenderContext::getShader(int shader) const{
     switch(shader){
         case SHADER_PHONG_BLINN:
             return m_pb_shader;
@@ -337,7 +337,7 @@ GLuint RenderContext::getShader(int shader) const{
         default:
             return 0;
     }
-}
+}*/
 
 
 void RenderContext::setDebugOverlayTimes(double physics_load_time, double logic_load_time, double logic_sleep_time){
@@ -360,10 +360,48 @@ GLuint RenderContext::getBoundVao() const{
 }
 
 
-void RenderContext::useProgram(GLuint program) const{
-    if(program != m_bound_programme){
-        glUseProgram(program);
+void RenderContext::useProgram(int shader) const{
+    switch(shader){
+        case SHADER_PHONG_BLINN:
+            glUseProgram(m_pb_shader);
+            break;
+        case SHADER_PHONG_BLINN_NO_TEXTURE:
+            glUseProgram(m_pb_notex_shader);
+            break;
+        case SHADER_TEXT:
+            glUseProgram(m_text_shader);
+            break;
+        case SHADER_GUI:
+            glUseProgram(m_gui_shader);
+            break;
+        case SHADER_PLANET:
+            glUseProgram(m_planet_shader);
+            break;
+        default:
+            std::cerr << "RenderContext::useProgram - wrong shader value " << shader << std::endl;
+            log("RenderContext::useProgram - wrong shader value ", shader);
+            return;
     }
+}
+
+
+GLuint RenderContext::getUniformLocation(int shader, const char* location) const{
+    switch(shader){
+        case SHADER_PHONG_BLINN:
+            return glGetUniformLocation(m_pb_shader, location);
+        case SHADER_PHONG_BLINN_NO_TEXTURE:
+            return glGetUniformLocation(m_pb_notex_shader, location);
+        case SHADER_TEXT:
+            return glGetUniformLocation(m_text_shader, location);
+        case SHADER_GUI:
+            return glGetUniformLocation(m_gui_shader, location);
+        case SHADER_PLANET:
+            return glGetUniformLocation(m_planet_shader, location);
+        default:
+            std::cerr << "RenderContext::getUniformLocation - wrong shader value " << shader << std::endl;
+            log("RenderContext::getUniformLocation - wrong shader value ", shader);
+    }
+    return -1;
 }
 
 
