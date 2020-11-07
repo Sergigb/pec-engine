@@ -503,6 +503,11 @@ void App::logic(){
     if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2] & INPUT_MBUTTON_RELEASE && !m_render_context->imGuiWantCaptureMouse() && !m_gui_action){
         onLeftMouseButton();
     }
+
+    if(m_input->pressed_keys[GLFW_KEY_R] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
+        m_render_context->reloadShaders();
+        m_render_context->setLightPosition(math::vec3(150.0, 100.0, 0.0));
+    }
 }
 
 

@@ -28,6 +28,8 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
     m_window_handler = window_handler;
     m_buffers = buff_manager;
     m_draw_overlay = false;
+    m_update_shaders = false;
+    m_light_position = math::vec3(0.0f, 0.0f, 0.0f);
 
     initGl();
     log_gl_params();
@@ -52,6 +54,31 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
 
     m_glfw_time = 0.0;
 
+    loadShaders();
+
+    // debug overlay
+    m_debug_overlay.reset(new DebugOverlay(fb_width, fb_height, this));
+
+    // other gl stuff
+    m_color_clear = math::vec4(0.428, 0.706f, 0.751f, 1.0f);
+
+    glClearColor(m_color_clear.v[0], m_color_clear.v[1], m_color_clear.v[2], m_color_clear.v[3]);
+
+    m_rscene_acc_load_time = 0.0;
+    m_rgui_acc_load_time = 0.0;
+}
+
+
+RenderContext::~RenderContext(){
+    glDeleteShader(m_pb_notex_shader);
+    glDeleteShader(m_pb_shader);
+    glDeleteShader(m_text_shader);
+    glDeleteShader(m_gui_shader);
+    glDeleteShader(m_planet_shader);
+}
+
+
+void RenderContext::loadShaders(){
     // shader setup (I don't like how this is organised)
 
     m_planet_shader = create_programme_from_files("../shaders/planet_vs.glsl",
@@ -95,7 +122,7 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
                                                 "../shaders/text_fs.glsl");
     m_text_proj_mat = glGetUniformLocation(m_text_shader, "projection");
 
-    math::mat4 orto_proj = math::orthographic(fb_width, 0, fb_height , 0, 1.0f , -1.0f);
+    math::mat4 orto_proj = math::orthographic(m_fb_width, 0, m_fb_height , 0, 1.0f , -1.0f);
     glUseProgram(m_text_shader);
     glUniformMatrix4fv(m_text_proj_mat, 1, GL_FALSE, orto_proj.m);
 
@@ -105,26 +132,6 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
 
     glUseProgram(m_gui_shader);
     glUniformMatrix4fv(m_gui_proj_mat, 1, GL_FALSE, orto_proj.m);
-
-    // debug overlay
-    m_debug_overlay.reset(new DebugOverlay(fb_width, fb_height, this));
-
-    // other gl stuff
-    m_color_clear = math::vec4(0.428, 0.706f, 0.751f, 1.0f);
-
-    glClearColor(m_color_clear.v[0], m_color_clear.v[1], m_color_clear.v[2], m_color_clear.v[3]);
-
-    m_rscene_acc_load_time = 0.0;
-    m_rgui_acc_load_time = 0.0;
-}
-
-
-RenderContext::~RenderContext(){
-    glDeleteShader(m_pb_notex_shader);
-    glDeleteShader(m_pb_shader);
-    glDeleteShader(m_text_shader);
-    glDeleteShader(m_gui_shader);
-    glDeleteShader(m_planet_shader);
 }
 
 
@@ -213,6 +220,12 @@ void RenderContext::render(){
 
     //clean up this shit
 
+    if(m_update_shaders){
+        m_update_shaders = false;
+        loadShaders();
+        log("RenderContext::render - shaders reloaded");
+        std::cout << "shaders reloaded" << std::endl;
+    }
 
     if(m_update_projection){
         math::mat4 projection = math::orthographic(m_fb_width, 0, m_fb_height, 0, 1.0f , -1.0f);
@@ -237,6 +250,8 @@ void RenderContext::render(){
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     start_scene = std::chrono::steady_clock::now();
+
+    setLightPositionRender();
 
     if(m_buffers->last_updated != none){
         if(m_buffers->last_updated == buffer_1){
@@ -312,32 +327,19 @@ void RenderContext::render(){
 }
 
 
-void RenderContext::setLightPosition(const math::vec3& pos) const{
-    glUseProgram(m_pb_notex_shader);
-    glUniform3fv(m_pb_notex_light_pos, 1, pos.v);
-    glUseProgram(m_pb_shader);
-    glUniform3fv(m_pb_light_pos, 1, pos.v);
-    glUseProgram(m_planet_shader);
-    glUniform3fv(m_planet_light_pos, 1, pos.v);
+void RenderContext::setLightPosition(const math::vec3& pos){
+    m_light_position = pos;
 }
 
 
-/*GLuint RenderContext::getShader(int shader) const{
-    switch(shader){
-        case SHADER_PHONG_BLINN:
-            return m_pb_shader;
-        case SHADER_PHONG_BLINN_NO_TEXTURE:
-            return m_pb_notex_shader;
-        case SHADER_TEXT:
-            return m_text_shader;
-        case SHADER_GUI:
-            return m_gui_shader;
-        case SHADER_PLANET:
-            return m_planet_shader;
-        default:
-            return 0;
-    }
-}*/
+void RenderContext::setLightPositionRender(){
+    glUseProgram(m_pb_notex_shader);
+    glUniform3fv(m_pb_notex_light_pos, 1, m_light_position.v);
+    glUseProgram(m_pb_shader);
+    glUniform3fv(m_pb_light_pos, 1, m_light_position.v);
+    glUseProgram(m_planet_shader);
+    glUniform3fv(m_planet_light_pos, 1, m_light_position.v);
+}
 
 
 void RenderContext::setDebugOverlayTimes(double physics_load_time, double logic_load_time, double logic_sleep_time){
@@ -585,5 +587,10 @@ void RenderContext::contextUpdatePlanetarium(){
         m_debug_overlay->render();
         glEnable(GL_DEPTH_TEST);
     }
+}
+
+
+void RenderContext::reloadShaders(){
+    m_update_shaders = true;
 }
 

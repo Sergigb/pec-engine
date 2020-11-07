@@ -59,6 +59,7 @@ class RenderContext{
         
         std::unique_ptr<Model> m_att_point_model;
         math::mat4 m_att_point_scale;
+        math::vec3 m_light_position;
 
         std::thread m_render_thread;
         bool m_pause, m_stop;
@@ -66,7 +67,7 @@ class RenderContext{
         int m_fb_width, m_fb_height;
         bool m_update_fb, m_update_projection;
 
-        bool m_draw_overlay;
+        bool m_draw_overlay, m_update_shaders;
         double m_rscene_acc_load_time, m_rgui_acc_load_time, m_rimgui_acc_load_time;
 
         // synchronization
@@ -85,6 +86,8 @@ class RenderContext{
         void render();
         void renderAttPoints(const BasePart* part, int& num_rendered, const math::mat4& body_transform);
         void renderImGui();
+        void loadShaders();
+        void setLightPositionRender();
     public:
         RenderContext(const Camera* camera, const WindowHandler* window_handler, render_buffers* buff_manager);
         ~RenderContext();
@@ -93,7 +96,7 @@ class RenderContext{
         void stop();
         void pause(bool pause);
 
-        void setLightPosition(const math::vec3& pos) const;
+        void setLightPosition(const math::vec3& pos);
         void setDebugOverlayTimes(double physics_load_time, double logic_load_time, double logic_sleep_time);
         void setAttPointModel(std::unique_ptr<Model>* att_point_model);
         void useProgram(int program) const;
@@ -102,8 +105,8 @@ class RenderContext{
         void toggleDebugOverlay();
         void setEditorGUI(BaseGUI* editor_ptr);
         void setEditorMode(short mode);
+        void reloadShaders();
 
-        //GLuint getShader(int shader) const;
         GLuint getBoundShader() const;
         GLuint getBoundVao() const;
         void getDefaultFbSize(float& width, float& height) const;
