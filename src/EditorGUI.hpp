@@ -19,8 +19,8 @@ class Text2D;
 
 
 // not sure if it's a good idea to hardcode this
-#define EDITOR_GUI_VERTEX_NUM 23
-#define EDITOR_GUI_INDEX_NUM 36
+#define EDITOR_GUI_VERTEX_NUM 31
+#define EDITOR_GUI_INDEX_NUM 48
 
 #define EDITOR_GUI_LP_W 300.0f
 #define EDITOR_GUI_TP_H 40.0f
@@ -46,6 +46,16 @@ class Text2D;
 #define DELETE_AREA_COLOR 0.0f, 0.0f, 0.0f, 0.0f
 #define DELETE_AREA_MOUSEOVER -0.2f, -0.2f, -0.2f, 0.0f
 
+#define TAB_OPTION_NONE 0
+#define TAB_OPTION_PARTS 1
+#define TAB_OPTION_STAGING 2
+#define TAB_NUMBER 2
+#define TAB_WIDTH 75.0f
+#define TAB_HEIGTH 20.0f
+#define TAB_COLOR_SELECTED 0.25f, 0.25f, 0.25f, 1.0
+#define TAB_COLOR_UNSELECTED 0.2f, 0.2f, 0.2f, 1.0
+#define TAB_COLOR_MOUSEOVER 0.22f, 0.22f, 0.22f, 1.0
+
 // actions related to the gui
 #define EDITOR_ACTION_NONE 0
 #define EDITOR_ACTION_FOCUS 1
@@ -61,6 +71,7 @@ class EditorGUI : public BaseGUI{
         int m_button_mouseover, m_button_select;
         bool m_button_status[EDITOR_GUI_N_BUTTONS];
         bool m_delete_area_mouseover;
+        char m_tab_option, m_tab_mouseover;
 
         // used by the render thread
         int m_last_button_color; // last button that changed color
@@ -72,7 +83,7 @@ class EditorGUI : public BaseGUI{
         GLuint m_disp_location;
 
         // parts panel, this is related to the drawing on the panel, not the contents
-        GLuint m_parts_panel_vao, m_parts_panel_vbo_vert, m_parts_panel_vbo_tex, m_parts_panel_vbo_clr;
+        GLuint m_left_panel_vao, m_left_panel_vbo_vert, m_left_panel_vbo_tex, m_left_panel_vbo_clr;
         std::unique_ptr<PartsPanelGUI> m_parts_panel;
 
         math::mat4 m_projection;
