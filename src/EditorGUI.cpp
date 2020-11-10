@@ -9,6 +9,7 @@
 #include "log.hpp"
 #include "PartsPanelGUI.hpp"
 #include "Text2D.hpp"
+#include "StagingPanelGUI.hpp"
 
 
 EditorGUI::EditorGUI(){
@@ -37,6 +38,8 @@ EditorGUI::EditorGUI(const FontAtlas* atlas, const RenderContext* render_context
 
     m_parts_panel.reset(new PartsPanelGUI(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2 - EDITOR_GUI_PP_LOW_MARGIN,
                         m_font_atlas, m_render_context, m_input));
+    m_staging_panel.reset(new StagingPanelGUI(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2 - EDITOR_GUI_PP_LOW_MARGIN,
+                          m_font_atlas, m_render_context, m_input));
 
     m_disp_location = m_render_context->getUniformLocation(SHADER_GUI, "disp");
 
@@ -409,7 +412,6 @@ void EditorGUI::updateButtons(){ // used to update button colors
         }
     }
 
-
     if(m_delete_area_mouseover_status != delete_area_mouseover){
         m_delete_area_mouseover_status = delete_area_mouseover;
 
@@ -495,6 +497,7 @@ void EditorGUI::render(){
         m_render_context->getDefaultFbSize(m_fb_width, m_fb_height);
         m_text_debug->onFramebufferSizeUpdate(m_fb_width, m_fb_height);
         m_parts_panel->onFramebufferSizeUpdate(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2 - EDITOR_GUI_PP_LOW_MARGIN);
+        m_staging_panel->onFramebufferSizeUpdate(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2 - EDITOR_GUI_PP_LOW_MARGIN);
 
         updateBuffers();
         m_fb_update = false;
@@ -514,8 +517,8 @@ void EditorGUI::render(){
         m_parts_panel->bindTexture();
     }
     else if(m_tab_option == TAB_OPTION_STAGING){
-        // no class for now, so I bind the texture atlas
-        glBindTexture(GL_TEXTURE_2D, m_texture_atlas);
+        m_staging_panel->render();
+        m_staging_panel->bindTexture();
     }
     m_render_context->useProgram(SHADER_GUI);
     m_render_context->bindVao(m_left_panel_vao);
@@ -534,7 +537,12 @@ int EditorGUI::update(){
     posx = (double)posx;
     posy = m_fb_height - (double)posy;
 
-    lp_action = m_parts_panel->update(posx - EDITOR_GUI_PP_MARGIN, posy - EDITOR_GUI_PP_MARGIN - EDITOR_GUI_PP_LOW_MARGIN); // transform coord origin
+    if(m_tab_option == TAB_OPTION_PARTS){
+        lp_action = m_parts_panel->update(posx - EDITOR_GUI_PP_MARGIN, posy - EDITOR_GUI_PP_MARGIN - EDITOR_GUI_PP_LOW_MARGIN); // transform coord origin
+    }
+    else{
+        lp_action = PANEL_ACTION_NONE;
+    }
 
     if(m_render_context->imGuiWantCaptureMouse()){
         m_button_mouseover = -1;

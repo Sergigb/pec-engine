@@ -94,7 +94,7 @@ void PartsPanelGUI::setMasterPartList(const std::map<std::uint32_t, std::unique_
 
         it->second->getFancyName(name);
         std::mbstowcs(wname, name.c_str(), STRING_MAX_LEN);
-        m_text->addString(wname, 5., 15. + (float)i*20., 1, STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
+        m_text->addString(wname, 10., 20. + (float)i*20., 1, STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
 
         i++;
     }
@@ -110,7 +110,7 @@ void PartsPanelGUI::render(){
 
     glBindFramebuffer(GL_FRAMEBUFFER, m_fb);
     glViewport(0, 0, m_fb_width, m_fb_height);
-    glClearColor(0.2, 0.2, 0.2, 1.0);
+    glClearColor(0.25, 0.25, 0.25, 1.0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     m_render_context->useProgram(SHADER_GUI);
@@ -184,18 +184,18 @@ void PartsPanelGUI::updateBuffers(){
             color = ITEM_COLOR_2;
         }
 
-        vertex_buffer[i * 12] = 0.0f;
-        vertex_buffer[i * 12 + 1] = m_fb_height - ITEM_SEPARATION * i;
-        vertex_buffer[i * 12 + 2] = m_fb_width;
-        vertex_buffer[i * 12 + 3] = m_fb_height - ITEM_SEPARATION * (i + 1);
-        vertex_buffer[i * 12 + 4] = m_fb_width;
-        vertex_buffer[i * 12 + 5] = m_fb_height - ITEM_SEPARATION * i;
-        vertex_buffer[i * 12 + 6] = 0.0f;
-        vertex_buffer[i * 12 + 7] = m_fb_height - ITEM_SEPARATION * i;
-        vertex_buffer[i * 12 + 8] = 0.0f;
-        vertex_buffer[i * 12 + 9] = m_fb_height - ITEM_SEPARATION * (i + 1);
-        vertex_buffer[i * 12 + 10] = m_fb_width;
-        vertex_buffer[i * 12 + 11] = m_fb_height - ITEM_SEPARATION * (i + 1);
+        vertex_buffer[i * 12] = 0.0f + LIST_MARGIN;
+        vertex_buffer[i * 12 + 1] = m_fb_height - LIST_MARGIN - ITEM_SEPARATION * i;
+        vertex_buffer[i * 12 + 2] = m_fb_width - LIST_MARGIN;
+        vertex_buffer[i * 12 + 3] = m_fb_height - LIST_MARGIN - ITEM_SEPARATION * (i + 1);
+        vertex_buffer[i * 12 + 4] = m_fb_width - LIST_MARGIN;
+        vertex_buffer[i * 12 + 5] = m_fb_height - LIST_MARGIN - ITEM_SEPARATION * i;
+        vertex_buffer[i * 12 + 6] = 0.0f + LIST_MARGIN;
+        vertex_buffer[i * 12 + 7] = m_fb_height - LIST_MARGIN - ITEM_SEPARATION * i;
+        vertex_buffer[i * 12 + 8] = 0.0f + LIST_MARGIN;
+        vertex_buffer[i * 12 + 9] = m_fb_height - LIST_MARGIN - ITEM_SEPARATION * (i + 1);
+        vertex_buffer[i * 12 + 10] = m_fb_width - LIST_MARGIN;
+        vertex_buffer[i * 12 + 11] = m_fb_height - LIST_MARGIN - ITEM_SEPARATION * (i + 1);
 
         color_buffer[i * 24] = color;
         color_buffer[i * 24 + 1] = color;
@@ -256,7 +256,7 @@ int PartsPanelGUI::update(float mouse_x, float mouse_y){
             m_text->setDisplacement(m_panel_scroll);
         }
 
-        int i = (mouse_y + m_panel_scroll.v[1]) / ITEM_SEPARATION;
+        int i = (mouse_y + m_panel_scroll.v[1] - LIST_MARGIN) / ITEM_SEPARATION;
         if((uint)i < m_master_parts_list->size()){
             m_item_mouseover = i;
 
@@ -328,10 +328,10 @@ void PartsPanelGUI::buttonMouseoverColor(){
         GLfloat color_buffer_subdata[24];
 
         if(m_item_mouseover & 1){
-            color = ITEM_COLOR_1 + 0.05;
+            color = ITEM_COLOR_1 + 0.02;
         }
         else{
-            color = ITEM_COLOR_2 + 0.05;
+            color = ITEM_COLOR_2 + 0.02;
         }
 
         color_buffer_subdata[0] = color;

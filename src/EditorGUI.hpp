@@ -16,6 +16,7 @@ class RenderContext;
 class Input;
 class PartsPanelGUI;
 class Text2D;
+class StagingPanelGUI;
 
 
 // not sure if it's a good idea to hardcode this
@@ -51,10 +52,10 @@ class Text2D;
 #define TAB_OPTION_STAGING 2
 #define TAB_NUMBER 2
 #define TAB_WIDTH 75.0f
-#define TAB_HEIGTH 20.0f
+#define TAB_HEIGTH 25.0f
 #define TAB_COLOR_SELECTED 0.25f, 0.25f, 0.25f, 1.0
-#define TAB_COLOR_UNSELECTED 0.2f, 0.2f, 0.2f, 1.0
-#define TAB_COLOR_MOUSEOVER 0.22f, 0.22f, 0.22f, 1.0
+#define TAB_COLOR_UNSELECTED  0.18f, 0.18f, 0.18f, 1.0
+#define TAB_COLOR_MOUSEOVER 0.21f, 0.21f, 0.21f, 1.0
 
 // actions related to the gui
 #define EDITOR_ACTION_NONE 0
@@ -85,6 +86,7 @@ class EditorGUI : public BaseGUI{
         // parts panel, this is related to the drawing on the panel, not the contents
         GLuint m_left_panel_vao, m_left_panel_vbo_vert, m_left_panel_vbo_tex, m_left_panel_vbo_clr;
         std::unique_ptr<PartsPanelGUI> m_parts_panel;
+        std::unique_ptr<StagingPanelGUI> m_staging_panel;
 
         math::mat4 m_projection;
 

@@ -19,9 +19,10 @@ class Input;
 
 
 #define ITEM_SEPARATION 20
-#define ITEM_COLOR_1 0.2f
-#define ITEM_COLOR_2 0.3f
+#define ITEM_COLOR_1 0.285f
+#define ITEM_COLOR_2 0.22f
 #define ITEM_MOUSEOVER_NONE -999999999 // :)
+#define LIST_MARGIN 5.0f
 
 #define PANEL_SCROLL_STEP 30
 #define PANEL_SCROLL_MARGIN 25
