@@ -32,6 +32,16 @@ list of stuff i have to do/fix
 - fix ErrorCheckEndFrameSanityChecks, most likely requires buffers... :(((
 - m_remove_part_constraint_buffer is unnecessary (I think)
 - avoid using m_dynamics_world to get the object in the world, just use the arrays in the asset manager 
+- CoM needs to be calculated (and probably updated, paused or not) and used as the center of the camera
+- check asset manager, why do we need to do the following :"    btVector3 btv_cam_origin(cam_origin.v[0], cam_origin.v[1], cam_origin.v[2]);"?????????????????''
+- player files are tabulated...
+- clearing scene/deleting object sometimes segfaults
+- in the GUI picking thing, why do we return the pointer to the shared pointer?? why not just he value of the pointer=????
+- update part weight in update method
+- maybe we need a method in Vessel to remove all the childs of a part (to avoid having to call onTreeUpdate from BasePart)
+- Z should be the roll vector in everything, the vessels will have to be rotated. In the editor the vessels will have to be rotated 90, which will probably mess up the radial attaching, this will have to be solved.
+- we should precomput the ortho projection matrix in the render context to avoid having to re-bind it in the shaders, and have a method that restores its value back to the uniforms
+- In app, I'm changing alot from math:: to bullet math, I think I should make the attachments use bullet vectors to avoid this, and implement math::arb_perpendicular for bullet vectors.
 
 
 Interesting links:
