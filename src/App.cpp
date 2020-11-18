@@ -292,24 +292,39 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
         part->m_user_rotation = part->m_user_rotation * user_rotation;
 
         if(obj && !part->isRoot() && part->hasFreeAttPoint()){ // free attaching
-            btVector3 btv3_child_att;
+            /*
+
+            I'm changing alot from math:: to bullet math, I think I should make the attachments use bullet vectors to avoid this,
+            and implement math::arb_perpendicular for bullet vectors. This is the todo list.
+
+            */
+            btVector3 btv3_child_att, hit_normal_world;
             btQuaternion align_rotation;
             math::versor align_rot_q;
             math::mat3 align_rot;
 
+            btTransform p_transform;
+            obj->m_body->getMotionState()->getWorldTransform(p_transform);
+            btTransform object_iR(p_transform.getRotation().inverse(), btVector3(0.0, 0.0, 0.0)), object_R(rotation, btVector3(0.0, 0.0, 0.0));
+
             math::vec3 child_att = part->getFreeAttachmentPoint()->point;
             math::vec3 child_att_orientation(0.0, 0.0, 0.0);
-            child_att_orientation = child_att_orientation - part->getFreeAttachmentPoint()->orientation; //??DS?D?SADsjfk
-            math::vec3 surface_normal = math::vec3(ray_callback.m_hitNormalWorld.getX(),
-                                                   ray_callback.m_hitNormalWorld.getY(),
-                                                   ray_callback.m_hitNormalWorld.getZ());
+            child_att_orientation = child_att_orientation - part->getFreeAttachmentPoint()->orientation;
+
+            // Invert the normal's rotation according to the parent's rotation, this way arb_perpendicular doesn't act funny when it's rotated
+            hit_normal_world = object_iR * ray_callback.m_hitNormalWorld;
+
+            math::vec3 surface_normal = math::vec3(hit_normal_world.getX(),
+                                                   hit_normal_world.getY(),
+                                                   hit_normal_world.getZ());
 
             if(dot(surface_normal, child_att_orientation) == -1){
-                math::mat4 aux;
+                // this is still wrong
                 align_rot = rotation_align(math::arb_perpendicular(child_att_orientation), child_att_orientation);
                 child_att = align_rot * child_att;
                 align_rot = rotation_align(surface_normal, math::arb_perpendicular(child_att_orientation));
                 child_att = align_rot * child_att;
+                std::cout << "not implemented" << std::endl;
             }
             else{
                 align_rot = rotation_align(surface_normal, child_att_orientation);
@@ -317,10 +332,10 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
 
             align_rot_q = math::from_mat3(align_rot);
             align_rotation = btQuaternion(align_rot_q.q[0], align_rot_q.q[1], align_rot_q.q[2], align_rot_q.q[3]);
+            align_rotation = p_transform.getRotation() * align_rotation; // reverse previous inverse rotation
             btv3_child_att = btVector3(child_att.v[0], child_att.v[1], child_att.v[2]);
 
             btTransform transform_final = btTransform(btQuaternion::getIdentity(), -btv3_child_att);
-            btTransform object_R = btTransform(rotation, btVector3(0.0, 0.0, 0.0));
             btTransform object_T = btTransform(btQuaternion::getIdentity(), ray_callback.m_hitPointWorld);
 
             transform_final = object_T * object_R * transform_final;
