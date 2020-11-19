@@ -81,6 +81,8 @@ class BasePart : public Object{
         bool hasFreeAttPoint() const;
         void setProperties(long long int flags);
         void addResource(const resource_container& resource);
+        // removes m_body and the constraint from the dynamics world for all the subtree, should only be called from AssetManager when bullet is not stepping
+        int removeBodiesSubtree();
 
         const std::vector<struct attachment_point>* getAttachmentPoints() const;
         const btTypedConstraint* getParentConstraint() const;

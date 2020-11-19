@@ -60,6 +60,7 @@ class AssetManager{
         std::vector<std::shared_ptr<Vessel>> m_add_vessel_buffer;
         std::vector<struct apply_force_msg> m_apply_force_buffer;
         std::vector<struct set_mass_props_msg> m_set_mass_buffer;
+        std::vector<std::shared_ptr<BasePart>> m_delete_subtree_buffer;
 
         std::map<std::uint32_t, std::shared_ptr<BasePart>> m_editor_subtrees;
         std::map<std::uint32_t, std::shared_ptr<Vessel>> m_editor_vessels;

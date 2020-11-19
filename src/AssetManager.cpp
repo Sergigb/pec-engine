@@ -142,6 +142,11 @@ void AssetManager::processCommandBuffers(bool physics_pause){
         m_editor_vessels.insert({m_add_vessel_buffer.at(i)->getId(), m_add_vessel_buffer.at(i)});
     }
     m_add_vessel_buffer.clear();
+
+    for(uint i=0; i < m_delete_subtree_buffer.size(); i++){
+        m_delete_subtree_buffer.at(i)->removeBodiesSubtree();
+    }
+    m_delete_subtree_buffer.clear();
 }
 
 
@@ -151,17 +156,20 @@ void AssetManager::clearSceneEditor(){
 
     for(it=m_editor_subtrees.begin(); it != m_editor_subtrees.end(); it++){
         it->second->setRenderIgnoreSubTree();
+        m_delete_subtree_buffer.emplace_back(std::static_pointer_cast<BasePart>(it->second->getSharedPtr()));
     }
     m_editor_subtrees.clear();
 
     for(it2=m_editor_vessels.begin(); it2 != m_editor_vessels.end(); it2++){
         it2->second->getRoot()->setRenderIgnoreSubTree();
+        m_delete_subtree_buffer.emplace_back(std::static_pointer_cast<BasePart>(it2->second->getRoot()->getSharedPtr()));
     }
     m_editor_vessels.clear();
 }
 
 
 void AssetManager::deleteObjectEditor(BasePart* part, std::uint32_t& vessel_id){
+    m_delete_subtree_buffer.emplace_back(std::static_pointer_cast<BasePart>(part->getSharedPtr()));
     if(part->getVessel()){
         std::uint32_t vid = part->getVessel()->getId();
 

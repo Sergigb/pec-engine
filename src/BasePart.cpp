@@ -409,3 +409,17 @@ void BasePart::requestResource(const BasePart* requester, std::uint32_t resource
     mass = 0.0f;
 }
 
+
+int BasePart::removeBodiesSubtree(){
+    int count = 1;
+    removeParentConstraint();
+    if(m_body){
+        m_bt_wrapper->removeBody(m_body.get());
+    }
+
+    for(uint i=0; i < m_childs.size(); i++){
+        count += m_childs.at(i)->removeBodiesSubtree();
+    }
+    return count;
+}
+
