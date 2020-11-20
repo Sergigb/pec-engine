@@ -19,6 +19,9 @@
 #define ELEVATION_LOCATION 1
 
 
+class FontAtlas;
+
+
 struct surface_node{
     dmath::vec3 patch_translation;
     math::vec2 tex_shift;

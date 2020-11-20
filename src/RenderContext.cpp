@@ -582,6 +582,8 @@ void RenderContext::contextUpdatePlanetarium(){
     glUniformMatrix4fv(m_planet_view_mat, 1, GL_FALSE, m_camera->getCenteredViewMatrix().m);
     glUniformMatrix4fv(m_planet_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
 
+    setLightPositionRender();
+
     if(m_draw_overlay){
         glDisable(GL_DEPTH_TEST);
         m_debug_overlay->render();

@@ -23,7 +23,7 @@ IMGUISRCS = $(wildcard ../thirdparty/imgui/*.cpp)
 IMGUIOBJS = $(foreach source, $(IMGUISRCS:../thirdparty/imgui/%=%), $(OBJPATH)/$(source:.cpp=.o))
 
 MAINOBJS = $(MAIN_APP_OBJS) $(BASEOBJS) $(IMGUIOBJS) $(PARTSOBJS)
-PLANETARIUMOBJS = $(PLANETARIUM_APP_OBJS) $(BASEOBJS) $(IMGUIOBJS)
+PLANETARIUMOBJS = $(PLANETARIUM_APP_OBJS) $(BASEOBJS) $(IMGUIOBJS) $(PARTSOBJS)
 
 
 all: main planetarium
