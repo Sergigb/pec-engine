@@ -433,15 +433,20 @@ void BasePart::cloneSubTree(std::shared_ptr<BasePart>& current, bool is_subtree_
     m_asset_manager->addBody(add_body_msg{current.get(), transform.getOrigin(),
                              btVector3(0.0, 0.0, 0.0), transform.getRotation()});
 
-    if(is_subtree_root){
-        m_asset_manager->buildConstraintSubtree(current.get());
-    }
-
     for(uint i=0; i < m_childs.size(); i++){
         std::shared_ptr<BasePart> cloned_child;
+
         m_childs.at(i)->cloneSubTree(cloned_child, false);
+        cloned_child->setParent(current.get());
+
         current->addChild(cloned_child);
     }
+
+    if(is_subtree_root){
+        current->updateSubTreeVessel(nullptr);
+        current->m_col_filters = current->m_col_filters & ~CG_RAY_EDITOR_RADIAL;
+        m_asset_manager->buildConstraintSubtree(current.get());
+    }    
 }
 
 
