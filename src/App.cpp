@@ -413,17 +413,29 @@ void App::pickObject(){
     if(obj){
         BasePart* part = static_cast<BasePart*>(obj);
 
-        m_picked_obj = obj;
-        if(part->getVessel() == nullptr){
+        if(part->getVessel() == nullptr){ // not a vessel
             while(part->getParent() != nullptr){
                part = part->getParent();
             }
             m_picked_obj = part;
         }
-        else{ // we are certainly detaching a part from the vessel
-            if(!part->isRoot()){ // ignore root
-                m_asset_manager->m_remove_part_constraint_buffer.emplace_back(part);
-                m_asset_manager->m_editor_subtrees.insert({part->getUniqueId(), m_asset_manager->m_editor_vessels.at(part->getVessel()->getId())->removeChild(part)});
+        else{
+
+            if(m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){ // clone
+                if(!part->isRoot()){
+                    std::shared_ptr<BasePart> clone;
+                    part->cloneSubTree(clone, true);
+                    m_asset_manager->m_editor_subtrees.insert({clone->getUniqueId(), clone});
+                    m_picked_obj = clone.get();
+                }
+            }
+            else{
+                m_picked_obj = obj;
+
+                if(!part->isRoot()){ // we are certainly detaching a part from the vessel
+                    m_asset_manager->m_remove_part_constraint_buffer.emplace_back(part);
+                    m_asset_manager->m_editor_subtrees.insert({part->getUniqueId(), m_asset_manager->m_editor_vessels.at(part->getVessel()->getId())->removeChild(part)});
+                }
             }
         }
     }

@@ -83,6 +83,8 @@ class BasePart : public Object{
         void addResource(const resource_container& resource);
         // removes m_body and the constraint from the dynamics world for all the subtree, should only be called from AssetManager when bullet is not stepping
         int removeBodiesSubtree();
+        void cloneSubTree(std::shared_ptr<BasePart>& current, bool is_subtree_root) const;
+        void buildSubTreeConstraints(const BasePart* parent);
 
         const std::vector<struct attachment_point>* getAttachmentPoints() const;
         const btTypedConstraint* getParentConstraint() const;

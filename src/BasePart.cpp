@@ -423,3 +423,71 @@ int BasePart::removeBodiesSubtree(){
     return count;
 }
 
+
+void BasePart::cloneSubTree(std::shared_ptr<BasePart>& current, bool is_subtree_root) const{
+    btTransform transform;
+
+    m_body->getMotionState()->getWorldTransform(transform);
+
+    current.reset(this->clone());
+    m_asset_manager->addBody(add_body_msg{current.get(), transform.getOrigin(),
+                             btVector3(0.0, 0.0, 0.0), transform.getRotation()});
+
+    if(is_subtree_root){
+        m_asset_manager->buildConstraintSubtree(current.get());
+    }
+
+    for(uint i=0; i < m_childs.size(); i++){
+        std::shared_ptr<BasePart> cloned_child;
+        m_childs.at(i)->cloneSubTree(cloned_child, false);
+        current->addChild(cloned_child);
+    }
+}
+
+
+void BasePart::buildSubTreeConstraints(const BasePart* parent){
+    btTransform transform;
+
+    m_body->getMotionState()->getWorldTransform(transform);
+
+    if(parent){
+        btTransform parent_transform, frame_child;
+        add_contraint_msg msg;
+
+        parent->m_body->getMotionState()->getWorldTransform(parent_transform);
+        frame_child = btTransform(transform.inverse() * parent_transform);
+
+        btGeneric6DofConstraint* constraint = new btGeneric6DofConstraint(*parent->m_body, *m_body, 
+                                                                          btTransform::getIdentity(), frame_child, false);
+
+        constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 0);
+        constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 1);
+        constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 2);
+        constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 3);
+        constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 4);
+        constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 5);
+
+        constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 0);
+        constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 1);
+        constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 2);
+        constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 3);
+        constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 4);
+        constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 5);
+
+        constraint->setOverrideNumSolverIterations(100);
+
+        btVector3 limits = btVector3(0, 0, 0);
+        constraint->setLinearLowerLimit(limits);
+        constraint->setLinearUpperLimit(limits);
+        constraint->setAngularLowerLimit(limits);
+        constraint->setAngularUpperLimit(limits);
+
+        msg = {this, std::unique_ptr<btTypedConstraint>(constraint)};
+        m_asset_manager->addConstraint(msg);
+    }
+
+    for(uint i=0; i < m_childs.size(); i++){
+        m_childs.at(i)->buildSubTreeConstraints(this);
+    }
+}
+
