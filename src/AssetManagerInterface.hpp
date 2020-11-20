@@ -10,6 +10,8 @@ class BasePart;
 
 struct apply_force_msg;
 struct set_mass_props_msg;
+struct add_body_msg;
+struct add_contraint_msg;
 
 
 class AssetManagerInterface{
@@ -24,6 +26,9 @@ class AssetManagerInterface{
         void removePartConstraint(BasePart* part);
         void applyForce(apply_force_msg& msg);
         void setMassProps(set_mass_props_msg& msg);
+        void addBody(const add_body_msg& msg);
+        void addConstraint(add_contraint_msg& msg);
+        void buildConstraintSubtree(BasePart* part);
 };
 
 

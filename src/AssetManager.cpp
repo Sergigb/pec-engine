@@ -92,6 +92,12 @@ void AssetManager::initResources(){
 
 void AssetManager::processCommandBuffers(bool physics_pause){
     // process buffers
+    for(uint i=0; i < m_add_body_buffer.size(); i++){
+        struct add_body_msg& msg = m_add_body_buffer.at(i);
+        msg.part->addBody(msg.origin, msg.inertia, msg.rotation);
+    }
+    m_add_body_buffer.clear();
+
     for(uint i=0; i < m_apply_force_buffer.size(); i++){
         struct apply_force_msg& msg = m_apply_force_buffer.at(i);
         msg.part->m_body->applyForce(msg.force, msg.rel_pos);
@@ -107,17 +113,16 @@ void AssetManager::processCommandBuffers(bool physics_pause){
     }
     m_set_motion_state_buffer.clear();
 
+    for(uint i=0; i < m_build_constraint_subtree_buffer.size(); i++){
+        m_build_constraint_subtree_buffer.at(i)->buildSubTreeConstraints(nullptr);
+    }
+    m_build_constraint_subtree_buffer.clear();
+
     for(uint i=0; i < m_add_constraint_buffer.size(); i++){
         struct add_contraint_msg& msg = m_add_constraint_buffer.at(i);
         msg.part->setParentConstraint(msg.constraint_uptr);
     }
     m_add_constraint_buffer.clear();
-
-    for(uint i=0; i < m_add_body_buffer.size(); i++){
-        struct add_body_msg& msg = m_add_body_buffer.at(i);
-        msg.part->addBody(msg.origin, msg.inertia, msg.rotation);
-    }
-    m_add_body_buffer.clear();
 
     for(uint i=0; i < m_set_mass_buffer.size(); i++){
         // this should be enough, also the constraints don't get removed
