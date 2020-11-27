@@ -33,6 +33,7 @@ class App : public BaseApp{
         // application default font atlas
         std::unique_ptr<FontAtlas> m_def_font_atlas;
 
+        void createConstraint(BasePart* part, BasePart* parent, btTransform frame);
         void onLeftMouseButton();
         void getUserRotation(btQuaternion& rotation, const btQuaternion& current_rotation);
         void logic();

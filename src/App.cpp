@@ -205,6 +205,47 @@ void App::getUserRotation(btQuaternion& rotation, const btQuaternion& current_ro
 }
 
 
+void App::createConstraint(BasePart* part, BasePart* parent, btTransform frame){
+    if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
+        btTransform parent_transform;
+        parent->m_body->getMotionState()->getWorldTransform(parent_transform);
+
+        btGeneric6DofConstraint* constraint = new btGeneric6DofConstraint(*parent->m_body, *part->m_body, 
+                                                                          btTransform::getIdentity(), frame, false);
+
+        constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 0);
+        constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 1);
+        constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 2);
+        constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 3);
+        constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 4);
+        constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 5);
+
+        constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 0);
+        constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 1);
+        constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 2);
+        constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 3);
+        constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 4);
+        constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 5);
+
+        constraint->setOverrideNumSolverIterations(100); // improved stiffness??
+        // also add 2 constraints??
+
+        btVector3 limits = btVector3(0, 0, 0);
+        constraint->setLinearLowerLimit(limits);
+        constraint->setLinearUpperLimit(limits);
+        constraint->setAngularLowerLimit(limits);
+        constraint->setAngularUpperLimit(limits);
+
+        m_asset_manager->m_add_constraint_buffer.emplace_back(add_contraint_msg{part, std::unique_ptr<btTypedConstraint>(constraint)});
+
+        std::shared_ptr<BasePart> part_sptr = std::dynamic_pointer_cast<BasePart>(part->getSharedPtr());
+        m_asset_manager->m_editor_vessels.at(parent->getVessel()->getId())->addChildById(part_sptr, parent->getUniqueId());
+
+        m_asset_manager->m_editor_subtrees.erase(part->getUniqueId());
+    }
+}
+
+
 void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, BasePart* closest, BasePart* part){
     btTransform transform_original;
     btQuaternion rotation;
@@ -231,49 +272,10 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
         part->updateSubTreeMotionState(m_asset_manager->m_set_motion_state_buffer, disp, transform_original.getOrigin(), 
                                        part->m_user_rotation * rotation.inverse());
 
-        if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
-            btTransform parent_transform, frame_child;
+        btTransform parent_transform;
+        closest->m_body->getMotionState()->getWorldTransform(parent_transform);
 
-            closest->m_body->getMotionState()->getWorldTransform(parent_transform);
-            frame_child = btTransform(transform_final.inverse() * parent_transform);
-
-            btGeneric6DofConstraint* constraint = new btGeneric6DofConstraint(*closest->m_body, *m_picked_obj->m_body, 
-                                                                              btTransform::getIdentity(), frame_child, false);
-
-            constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 0);
-            constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 1);
-            constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 2);
-            constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 3);
-            constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 4);
-            constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 5);
-
-            constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 0);
-            constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 1);
-            constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 2);
-            constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 3);
-            constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 4);
-            constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 5);
-
-            constraint->setOverrideNumSolverIterations(100); // improved stiffness??
-            // also add 2 constraints??
-
-            btVector3 limits = btVector3(0, 0, 0);
-            constraint->setLinearLowerLimit(limits);
-            constraint->setLinearUpperLimit(limits);
-            constraint->setAngularLowerLimit(limits);
-            constraint->setAngularUpperLimit(limits);
-
-            m_asset_manager->m_add_constraint_buffer.emplace_back(add_contraint_msg{part, std::unique_ptr<btTypedConstraint>(constraint)});
-            BasePart* parent = part->getParent(); // temove this??
-            if(parent){ // sanity check
-                parent->removeChild(part);
-            }
-
-            std::shared_ptr<BasePart> part_sptr = std::dynamic_pointer_cast<BasePart>(part->getSharedPtr());
-            m_asset_manager->m_editor_vessels.at(closest->getVessel()->getId())->addChildById(part_sptr, closest->getUniqueId());
-
-            m_asset_manager->m_editor_subtrees.erase(part->getUniqueId());
-        }
+        createConstraint(part, closest, transform_final.inverse() * parent_transform);
     }
     else{
         dmath::vec3 ray_start_world, ray_end_world;
@@ -344,45 +346,10 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
             part->updateSubTreeMotionState(m_asset_manager->m_set_motion_state_buffer, disp, transform_original.getOrigin(),
                                            align_rotation * part->m_user_rotation * rotation.inverse());
 
-            if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
-                btTransform parent_transform;
-                BasePart* parent = static_cast<BasePart*>(obj);
+            btTransform parent_transform;
+            obj->m_body->getMotionState()->getWorldTransform(parent_transform);
 
-                parent->m_body->getMotionState()->getWorldTransform(parent_transform);
-
-                btGeneric6DofConstraint* constraint = new btGeneric6DofConstraint(*parent->m_body, *part->m_body, btTransform::getIdentity(),
-                                                                                  transform_final.inverse() * parent_transform, false);
-
-                constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 0);
-                constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 1);
-                constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 2);
-                constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 3);
-                constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 4);
-                constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 5);
-
-                constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 0);
-                constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 1);
-                constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 2);
-                constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 3);
-                constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 4);
-                constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 5);
-
-                constraint->setOverrideNumSolverIterations(100);
-
-                btVector3 limits = btVector3(0, 0, 0);
-                constraint->setLinearLowerLimit(limits);
-                constraint->setLinearUpperLimit(limits);
-                constraint->setAngularLowerLimit(limits);
-                constraint->setAngularUpperLimit(limits);
-
-                m_asset_manager->m_add_constraint_buffer.emplace_back(add_contraint_msg{part, std::unique_ptr<btTypedConstraint>(constraint)});
-
-                std::shared_ptr<BasePart> part_sptr = std::dynamic_pointer_cast<BasePart>(part->getSharedPtr());
-                m_asset_manager->m_editor_vessels.at(parent->getVessel()->getId())->addChildById(part_sptr, parent->getUniqueId());
-
-                m_asset_manager->m_editor_subtrees.erase(part->getUniqueId());
-
-            }
+            createConstraint(part, static_cast<BasePart*>(obj), transform_final.inverse() * parent_transform);
         }
         else{
             m_camera->castRayMousePos(10.f, ray_start_world, ray_end_world);
@@ -420,7 +387,6 @@ void App::pickObject(){
             m_picked_obj = part;
         }
         else{
-
             if(m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){ // clone
                 if(!part->isRoot()){
                     std::shared_ptr<BasePart> clone;
