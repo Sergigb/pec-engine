@@ -34,6 +34,7 @@ void App::init(){
     m_buffers.last_updated = none;
     m_vessel_id = 0;
     m_delete_current = false;
+    m_symmetry_sides = 1;
 
     m_def_font_atlas.reset(new FontAtlas(256));
     m_def_font_atlas->loadFont("../data/fonts/Liberastika-Regular.ttf", 15);
@@ -85,6 +86,7 @@ void App::run(){
         m_gui_action = m_editor_gui->update();
 
         if(!m_physics_pause){ /* Update vessels and parts */
+            clearSymmetrySubtrees();
             m_asset_manager->updateVessels();
         }
 
@@ -206,42 +208,63 @@ void App::getUserRotation(btQuaternion& rotation, const btQuaternion& current_ro
 
 
 void App::createConstraint(BasePart* part, BasePart* parent, btTransform frame){
-    if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
-        btTransform parent_transform;
-        parent->m_body->getMotionState()->getWorldTransform(parent_transform);
+    btTransform parent_transform;
+    parent->m_body->getMotionState()->getWorldTransform(parent_transform);
 
-        btGeneric6DofConstraint* constraint = new btGeneric6DofConstraint(*parent->m_body, *part->m_body, 
-                                                                          btTransform::getIdentity(), frame, false);
+    btGeneric6DofConstraint* constraint = new btGeneric6DofConstraint(*parent->m_body, *part->m_body, 
+                                                                      btTransform::getIdentity(), frame, false);
 
-        constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 0);
-        constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 1);
-        constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 2);
-        constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 3);
-        constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 4);
-        constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 5);
+    constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 0);
+    constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 1);
+    constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 2);
+    constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 3);
+    constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 4);
+    constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 5);
 
-        constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 0);
-        constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 1);
-        constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 2);
-        constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 3);
-        constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 4);
-        constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 5);
+    constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 0);
+    constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 1);
+    constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 2);
+    constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 3);
+    constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 4);
+    constraint->setParam(BT_CONSTRAINT_STOP_ERP, 0.8f, 5);
 
-        constraint->setOverrideNumSolverIterations(100); // improved stiffness??
-        // also add 2 constraints??
+    constraint->setOverrideNumSolverIterations(100); // improved stiffness??
+    // also add 2 constraints??
 
-        btVector3 limits = btVector3(0, 0, 0);
-        constraint->setLinearLowerLimit(limits);
-        constraint->setLinearUpperLimit(limits);
-        constraint->setAngularLowerLimit(limits);
-        constraint->setAngularUpperLimit(limits);
+    btVector3 limits = btVector3(0, 0, 0);
+    constraint->setLinearLowerLimit(limits);
+    constraint->setLinearUpperLimit(limits);
+    constraint->setAngularLowerLimit(limits);
+    constraint->setAngularUpperLimit(limits);
 
-        m_asset_manager->m_add_constraint_buffer.emplace_back(add_contraint_msg{part, std::unique_ptr<btTypedConstraint>(constraint)});
+    m_asset_manager->m_add_constraint_buffer.emplace_back(add_contraint_msg{part, std::unique_ptr<btTypedConstraint>(constraint)});
+}
 
-        std::shared_ptr<BasePart> part_sptr = std::dynamic_pointer_cast<BasePart>(part->getSharedPtr());
-        m_asset_manager->m_editor_vessels.at(parent->getVessel()->getId())->addChildById(part_sptr, parent->getUniqueId());
 
-        m_asset_manager->m_editor_subtrees.erase(part->getUniqueId());
+void App::clearSymmetrySubtrees(){
+    if(m_asset_manager->m_symmetry_subtrees.size()){
+        for(uint i=0; i < m_asset_manager->m_symmetry_subtrees.size(); i++){
+            m_asset_manager->m_symmetry_subtrees.at(i)->setRenderIgnoreSubTree();
+            m_asset_manager->m_delete_subtree_buffer.emplace_back(m_asset_manager->m_symmetry_subtrees.at(i));
+        }
+        m_asset_manager->m_symmetry_subtrees.clear();
+    }
+}
+
+
+void App::createSymmetrySubtrees(){
+    if(m_asset_manager->m_symmetry_subtrees.size() != m_symmetry_sides - 1 && m_symmetry_sides > 1){
+        BasePart* part = static_cast<BasePart*>(m_picked_obj);
+        clearSymmetrySubtrees();
+
+        for(uint i=0; i < m_symmetry_sides - 1; i++){
+            std::shared_ptr<BasePart> clone;
+            part->cloneSubTree(clone, true);
+            m_asset_manager->m_symmetry_subtrees.emplace_back(clone);
+        }
+    }
+    else if(m_symmetry_sides == 1){
+        clearSymmetrySubtrees();
     }
 }
 
@@ -253,6 +276,8 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
     rotation = transform_original.getRotation();
 
     if(closest_dist < 0.05 && !part->isRoot() && part->hasParentAttPoint()){ // magnet
+        clearSymmetrySubtrees();
+
         btTransform transform_final;
         btVector3 btv3_child_att(part->getParentAttachmentPoint()->point.v[0],
                                  part->getParentAttachmentPoint()->point.v[1],
@@ -275,7 +300,14 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
         btTransform parent_transform;
         closest->m_body->getMotionState()->getWorldTransform(parent_transform);
 
-        createConstraint(part, closest, transform_final.inverse() * parent_transform);
+        if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
+            createConstraint(part, closest, transform_final.inverse() * parent_transform);
+
+            std::shared_ptr<BasePart> part_sptr = std::dynamic_pointer_cast<BasePart>(part->getSharedPtr());
+            m_asset_manager->m_editor_vessels.at(closest->getVessel()->getId())->addChildById(part_sptr, closest->getUniqueId());
+            m_asset_manager->m_editor_subtrees.erase(part->getUniqueId());
+        }
+
     }
     else{
         dmath::vec3 ray_start_world, ray_end_world;
@@ -304,6 +336,8 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
             btQuaternion align_rotation;
             math::versor align_rot_q;
             math::mat3 align_rot;
+
+            createSymmetrySubtrees();
 
             btTransform p_transform;
             obj->m_body->getMotionState()->getWorldTransform(p_transform);
@@ -349,9 +383,62 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
             btTransform parent_transform;
             obj->m_body->getMotionState()->getWorldTransform(parent_transform);
 
-            createConstraint(part, static_cast<BasePart*>(obj), transform_final.inverse() * parent_transform);
+            if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
+                BasePart* parent = static_cast<BasePart*>(obj);
+                createConstraint(part, parent, transform_final.inverse() * parent_transform);
+
+                std::shared_ptr<BasePart> part_sptr = std::dynamic_pointer_cast<BasePart>(part->getSharedPtr());
+                m_asset_manager->m_editor_vessels.at(parent->getVessel()->getId())->addChildById(part_sptr, parent->getUniqueId());
+                m_asset_manager->m_editor_subtrees.erase(part->getUniqueId());
+            }
+
+            for(uint i=0; i < m_asset_manager->m_symmetry_subtrees.size(); i++){
+                BasePart* current = m_asset_manager->m_symmetry_subtrees.at(i).get();
+                if(current->m_body.get()){ // check if m_body is initialized, it is not during the first tick
+                    btQuaternion symmetric_rotation, rotation_current;
+                    btTransform symmetric_rotation_transform;
+
+                    current->m_body->getMotionState()->getWorldTransform(transform_original);
+                    rotation_current = transform_original.getRotation();
+                    getUserRotation(user_rotation, rotation_current);
+
+                    symmetric_rotation.setEulerZYX(0.0, (2 * M_PI / m_symmetry_sides) * (i + 1), 0.0);
+                    symmetric_rotation_transform = btTransform(symmetric_rotation);
+
+                    // rotate m_hitPointWorld around the Y axis, but we have to move it first to the origin wrt the parent's origin
+                    transform_final = btTransform(btQuaternion::getIdentity(), -btv3_child_att);
+                    btVector3 hit_point_world = object_iR * ray_callback.m_hitPointWorld;
+                    hit_point_world = hit_point_world - (object_iR * p_transform.getOrigin());
+                    hit_point_world = symmetric_rotation_transform * hit_point_world;
+                    hit_point_world = btTransform(p_transform.getRotation()) * (hit_point_world + (object_iR * p_transform.getOrigin()));
+
+                    object_T = btTransform(btQuaternion::getIdentity(), hit_point_world);
+                    object_R = btTransform(rotation_current);
+
+                    transform_final = object_T * object_R * transform_final;
+                    disp = transform_final.getOrigin() - transform_original.getOrigin();
+
+                    current->updateSubTreeMotionState(m_asset_manager->m_set_motion_state_buffer,
+                                                      disp, transform_original.getOrigin(),
+                                                      align_rotation * symmetric_rotation * 
+                                                      part->m_user_rotation * rotation_current.inverse());
+
+                    if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
+                        BasePart* parent = static_cast<BasePart*>(obj);
+                        createConstraint(current, parent, transform_final.inverse() * parent_transform);
+
+                        std::shared_ptr<BasePart> part_sptr = std::dynamic_pointer_cast<BasePart>(current->getSharedPtr());
+                        m_asset_manager->m_editor_vessels.at(parent->getVessel()->getId())->addChildById(part_sptr, parent->getUniqueId());
+                    }
+                }
+            }
+            if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
+                m_asset_manager->m_symmetry_subtrees.clear();
+            }
         }
         else{
+            clearSymmetrySubtrees();
+
             m_camera->castRayMousePos(10.f, ray_start_world, ray_end_world);
             btVector3 origin(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]);
             btVector3 disp = origin - transform_original.getOrigin();
@@ -422,6 +509,8 @@ void App::logic(){
         placeSubTree(closest_dist, closest_att_point_world, closest, part);
 
         if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
+            clearSymmetrySubtrees();
+
             m_picked_obj->activate(true);
             m_picked_obj = nullptr;
         }
@@ -501,10 +590,21 @@ void App::logic(){
         m_render_context->reloadShaders();
         m_render_context->setLightPosition(math::vec3(150.0, 100.0, 0.0));
     }
+
+    if(m_input->pressed_keys[GLFW_KEY_X] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
+        if(m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] != INPUT_KEY_UP && m_symmetry_sides > 1){
+            m_symmetry_sides--;
+        }
+        if(m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] == INPUT_KEY_UP && m_symmetry_sides < MAX_SYMMETRY_SIDES){
+            m_symmetry_sides++;
+        }
+        std::cout << "Sym. sides: " << m_symmetry_sides << std::endl;
+    }
 }
 
 
 void App::clearScene(){
+    clearSymmetrySubtrees();
     m_asset_manager->clearSceneEditor();
     m_vessel_id = 0;
     m_clear_scene = false;
@@ -544,6 +644,8 @@ void App::onLeftMouseButton(){
 void App::deleteCurrent(){
     /*In the future a command buffer should be used to delete multiple subtrees/vessels*/
     m_delete_current = false;
+
+    clearSymmetrySubtrees();
 
     if(!m_picked_obj){
         return;

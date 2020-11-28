@@ -16,12 +16,16 @@ class EditorGUI;
 class FontAtlas;
 
 
+#define MAX_SYMMETRY_SIDES 8
+
+
 class App : public BaseApp{
     private:
         // game state
         bool m_physics_pause, m_clear_scene, m_delete_current;
         Object* m_picked_obj;
         std::uint32_t m_vessel_id;
+        uint m_symmetry_sides;
 
         // time
         std::chrono::duration<double, std::micro> m_elapsed_time;
@@ -33,6 +37,8 @@ class App : public BaseApp{
         // application default font atlas
         std::unique_ptr<FontAtlas> m_def_font_atlas;
 
+        void clearSymmetrySubtrees();
+        void createSymmetrySubtrees();
         void createConstraint(BasePart* part, BasePart* parent, btTransform frame);
         void onLeftMouseButton();
         void getUserRotation(btQuaternion& rotation, const btQuaternion& current_rotation);
