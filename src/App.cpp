@@ -35,6 +35,7 @@ void App::init(){
     m_vessel_id = 0;
     m_delete_current = false;
     m_symmetry_sides = 1;
+    m_radial_align = true;
 
     m_def_font_atlas.reset(new FontAtlas(256));
     m_def_font_atlas->loadFont("../data/fonts/Liberastika-Regular.ttf", 15);
@@ -269,6 +270,26 @@ void App::createSymmetrySubtrees(){
 }
 
 
+void App::hitPointAlign(btVector3& hit_point_world, btVector3& hit_normal_world, btTransform& parent_transform){
+    btQuaternion rotation;
+    btTransform trans;
+    btVector3 hit_point_local = parent_transform.inverse() * hit_point_world;
+    btVector3 hit_normal_local = btTransform(parent_transform.getRotation().inverse()) * hit_normal_world;
+    
+    double phi = std::atan(hit_point_local.getZ() / hit_point_local.getX());
+    double angle = phi - (std::round(phi / SIDE_ANGLE_STEP) * SIDE_ANGLE_STEP);
+
+    rotation.setEuler(angle, 0.0, 0.0);
+    trans = btTransform(rotation);
+
+    hit_point_local = trans * hit_point_local;
+    hit_normal_local = trans * hit_normal_local;
+
+    hit_point_world = parent_transform * hit_point_local;
+    hit_normal_world = btTransform(parent_transform.getRotation()) * hit_normal_local;
+}
+
+
 void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, BasePart* closest, BasePart* part){
     btTransform transform_original;
     btQuaternion rotation;
@@ -332,23 +353,29 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
             and implement math::arb_perpendicular for bullet vectors. This is the todo list.
 
             */
-            btVector3 btv3_child_att, hit_normal_world;
+            btVector3 btv3_child_att;
+            btVector3 hit_normal_world = ray_callback.m_hitNormalWorld;
+            btVector3 hit_point_world = ray_callback.m_hitPointWorld;
             btQuaternion align_rotation;
             math::versor align_rot_q;
             math::mat3 align_rot;
 
-            createSymmetrySubtrees();
-
             btTransform p_transform;
             obj->m_body->getMotionState()->getWorldTransform(p_transform);
             btTransform object_iR(p_transform.getRotation().inverse(), btVector3(0.0, 0.0, 0.0)), object_R(rotation, btVector3(0.0, 0.0, 0.0));
+
+            if(m_radial_align){
+                hitPointAlign(hit_point_world, hit_normal_world, p_transform);
+            }
+
+            createSymmetrySubtrees();
 
             math::vec3 child_att = part->getFreeAttachmentPoint()->point;
             math::vec3 child_att_orientation(0.0, 0.0, 0.0);
             child_att_orientation = child_att_orientation - part->getFreeAttachmentPoint()->orientation;
 
             // Invert the normal's rotation according to the parent's rotation, this way arb_perpendicular doesn't act funny when it's rotated
-            hit_normal_world = object_iR * ray_callback.m_hitNormalWorld;
+            hit_normal_world = object_iR * hit_normal_world;
 
             math::vec3 surface_normal = math::vec3(hit_normal_world.getX(),
                                                    hit_normal_world.getY(),
@@ -372,7 +399,7 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
             btv3_child_att = btVector3(child_att.v[0], child_att.v[1], child_att.v[2]);
 
             btTransform transform_final = btTransform(btQuaternion::getIdentity(), -btv3_child_att);
-            btTransform object_T = btTransform(btQuaternion::getIdentity(), ray_callback.m_hitPointWorld);
+            btTransform object_T = btTransform(btQuaternion::getIdentity(), hit_point_world);
 
             transform_final = object_T * object_R * transform_final;
 
@@ -380,12 +407,11 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
             part->updateSubTreeMotionState(m_asset_manager->m_set_motion_state_buffer, disp, transform_original.getOrigin(),
                                            align_rotation * part->m_user_rotation * rotation.inverse());
 
-            btTransform parent_transform;
-            obj->m_body->getMotionState()->getWorldTransform(parent_transform);
+            obj->m_body->getMotionState()->getWorldTransform(p_transform);
 
             if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
                 BasePart* parent = static_cast<BasePart*>(obj);
-                createConstraint(part, parent, transform_final.inverse() * parent_transform);
+                createConstraint(part, parent, transform_final.inverse() * p_transform);
 
                 std::shared_ptr<BasePart> part_sptr = std::dynamic_pointer_cast<BasePart>(part->getSharedPtr());
                 m_asset_manager->m_editor_vessels.at(parent->getVessel()->getId())->addChildById(part_sptr, parent->getUniqueId());
@@ -407,12 +433,12 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
 
                     // rotate m_hitPointWorld around the Y axis, but we have to move it first to the origin wrt the parent's origin
                     transform_final = btTransform(btQuaternion::getIdentity(), -btv3_child_att);
-                    btVector3 hit_point_world = object_iR * ray_callback.m_hitPointWorld;
-                    hit_point_world = hit_point_world - (object_iR * p_transform.getOrigin());
-                    hit_point_world = symmetric_rotation_transform * hit_point_world;
-                    hit_point_world = btTransform(p_transform.getRotation()) * (hit_point_world + (object_iR * p_transform.getOrigin()));
+                    btVector3 hit_point_world_rotated = object_iR * hit_point_world;
+                    hit_point_world_rotated -= object_iR * p_transform.getOrigin();
+                    hit_point_world_rotated = symmetric_rotation_transform * hit_point_world_rotated;
+                    hit_point_world_rotated = btTransform(p_transform.getRotation()) * (hit_point_world_rotated + (object_iR * p_transform.getOrigin()));
 
-                    object_T = btTransform(btQuaternion::getIdentity(), hit_point_world);
+                    object_T = btTransform(btQuaternion::getIdentity(), hit_point_world_rotated);
                     object_R = btTransform(rotation_current);
 
                     transform_final = object_T * object_R * transform_final;
@@ -425,7 +451,7 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
 
                     if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
                         BasePart* parent = static_cast<BasePart*>(obj);
-                        createConstraint(current, parent, transform_final.inverse() * parent_transform);
+                        createConstraint(current, parent, transform_final.inverse() * p_transform);
 
                         std::shared_ptr<BasePart> part_sptr = std::dynamic_pointer_cast<BasePart>(current->getSharedPtr());
                         m_asset_manager->m_editor_vessels.at(parent->getVessel()->getId())->addChildById(part_sptr, parent->getUniqueId());
@@ -586,7 +612,7 @@ void App::logic(){
         onLeftMouseButton();
     }
 
-    if(m_input->pressed_keys[GLFW_KEY_R] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
+    if(m_input->pressed_keys[GLFW_KEY_F11] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
         m_render_context->reloadShaders();
         m_render_context->setLightPosition(math::vec3(150.0, 100.0, 0.0));
     }
@@ -599,6 +625,11 @@ void App::logic(){
             m_symmetry_sides++;
         }
         std::cout << "Sym. sides: " << m_symmetry_sides << std::endl;
+    }
+
+    if(m_input->pressed_keys[GLFW_KEY_V] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
+        m_radial_align = !m_radial_align;
+        std::cout << "Radial align: " << m_radial_align << std::endl;
     }
 }
 

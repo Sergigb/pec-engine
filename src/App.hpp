@@ -17,6 +17,7 @@ class FontAtlas;
 
 
 #define MAX_SYMMETRY_SIDES 8
+#define SIDE_ANGLE_STEP double(M_PI / MAX_SYMMETRY_SIDES)
 
 
 class App : public BaseApp{
@@ -26,6 +27,7 @@ class App : public BaseApp{
         Object* m_picked_obj;
         std::uint32_t m_vessel_id;
         uint m_symmetry_sides;
+        bool m_radial_align;
 
         // time
         std::chrono::duration<double, std::micro> m_elapsed_time;
@@ -37,6 +39,7 @@ class App : public BaseApp{
         // application default font atlas
         std::unique_ptr<FontAtlas> m_def_font_atlas;
 
+        void hitPointAlign(btVector3& hit_point_world, btVector3& hit_normal_world, btTransform& parent_transform);
         void clearSymmetrySubtrees();
         void createSymmetrySubtrees();
         void createConstraint(BasePart* part, BasePart* parent, btTransform frame);
