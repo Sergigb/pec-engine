@@ -243,9 +243,9 @@ void App::createConstraint(BasePart* part, BasePart* parent, btTransform frame){
 
 
 void App::clearSymmetrySubtrees(){
-    static_cast<BasePart*>(m_picked_obj)->clearClonesSubtree();
     if(m_asset_manager->m_symmetry_subtrees.size()){
         for(uint i=0; i < m_asset_manager->m_symmetry_subtrees.size(); i++){
+            m_asset_manager->m_symmetry_subtrees.at(i)->clearSubTreeCloneData();
             m_asset_manager->m_symmetry_subtrees.at(i)->setRenderIgnoreSubTree();
             m_asset_manager->m_delete_subtree_buffer.emplace_back(m_asset_manager->m_symmetry_subtrees.at(i));
         }
@@ -482,14 +482,17 @@ void App::pickAttachedObject(BasePart* part){
     }
 
     if(part->getClones().size()){
-        for(uint i=0; i < part->getClones().size(); i++){
-            BasePart* clone = part->getClones().at(i);
+        // temp vector copy because clearSubTreeCloneData will delete the pointers from the part's clone vector while we iterate over it
+        std::vector<BasePart*> temp = part->getClones();
 
+        for(uint i=0; i < temp.size(); i++){
+            BasePart* clone = temp.at(i);
+
+            clone->clearSubTreeCloneData();
             m_asset_manager->m_remove_part_constraint_buffer.emplace_back(clone);
             m_asset_manager->m_delete_subtree_buffer.emplace_back(m_asset_manager->m_editor_vessels.at(clone->getVessel()->getId())->removeChild(clone));            
         }
     }
-    part->clearClonesSubtree();
 
     m_picked_obj = part;
 
@@ -649,11 +652,18 @@ void App::logic(){
         m_radial_align = !m_radial_align;
         std::cout << "Radial align: " << m_radial_align << std::endl;
     }
+
+
+    if(m_input->pressed_keys[GLFW_KEY_F1] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
+        m_asset_manager->m_editor_vessels.at(m_vessel_id)->printVessel();
+    }
 }
 
 
 void App::clearScene(){
-    clearSymmetrySubtrees();
+    if(m_picked_obj){
+        clearSymmetrySubtrees();
+    }    
     m_asset_manager->clearSceneEditor();
     m_vessel_id = 0;
     m_clear_scene = false;

@@ -103,7 +103,7 @@ class BasePart : public Object{
         const std::vector<std::shared_ptr<BasePart>>* getChilds() const;
         std::vector<BasePart*> getClones();
         BasePart* getClonedFrom();
-        void clearClonesSubtree();
+        void clearSubTreeCloneData();
 
         virtual void renderOther();
         virtual void onEditorRightMouseButton();

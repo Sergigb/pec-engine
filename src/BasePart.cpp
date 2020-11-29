@@ -437,8 +437,14 @@ void BasePart::cloneSubTree(std::shared_ptr<BasePart>& current, bool is_subtree_
                              btVector3(0.0, 0.0, 0.0), transform.getRotation()});
 
     if(m_radial_clone){
-        current->m_cloned_from = this;
-        m_clones.emplace_back(current.get());
+        if(m_cloned_from){
+            current->m_cloned_from = m_cloned_from;
+            m_cloned_from->m_clones.emplace_back(current.get());
+        }
+        else{
+            current->m_cloned_from = this;
+            m_clones.emplace_back(current.get());
+        }        
     }
 
     for(uint i=0; i < m_childs.size(); i++){
@@ -515,11 +521,25 @@ BasePart* BasePart::getClonedFrom(){
 }
 
 
-void BasePart::clearClonesSubtree(){
-    m_clones.clear();
-    for(uint i=0; i < m_childs.size(); i++){
-        m_childs.at(i)->clearClonesSubtree();
+void BasePart::clearSubTreeCloneData(){
+    // notify cloned parts
+    for(uint i=0; i < m_clones.size(); i++){
+        m_clones.at(i)->m_cloned_from = nullptr;
     }
 
+    // find the pointer to self at the part that we cloned from and erase it
+    if(m_cloned_from){
+        std::vector<BasePart*>& v = m_cloned_from->m_clones;
+        for(uint i=0; v.size(); i++){
+            if(v.at(i) == this){
+                v.erase(v.begin() + i);
+                break;
+            }
+        }
+    }
+
+    for(uint i=0; i < m_childs.size(); i++){
+        m_childs.at(i)->clearSubTreeCloneData();
+    }
 }
 
