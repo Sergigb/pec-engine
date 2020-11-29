@@ -155,11 +155,35 @@ void print_tree_member(BasePart *node, std::string tail, bool last_child){
 
     std::string next_tail;
     if(!last_child){
-        std::cout << tail << up_and_right  << horizontal << " " << part_name << " - " << node->getUniqueId() << std::endl;
+        std::cout << tail << up_and_right  << horizontal << " " << part_name << " - " << node->getUniqueId();
+
+        if(node->getClones().size()){
+            std::cout << " - Clones: ";
+            for(uint i=0; i < node->getClones().size(); i++){
+                std::cout << node->getClones().at(i)->getUniqueId() << ", ";
+            }
+        }
+        if(node->getClonedFrom()){
+            std::cout << " - Node cloned from: " << node->getClonedFrom()->getUniqueId();
+        }
+        std::cout << std::endl;
+
         next_tail = tail + " " + separator;
     }
     else{
-        std::cout << tail << vertical_and_right  << horizontal << " " << part_name << " - " << node->getUniqueId() << std::endl;
+        std::cout << tail << vertical_and_right  << horizontal << " " << part_name << " - " << node->getUniqueId();
+
+        if(node->getClones().size()){
+            std::cout << " - Clones: ";
+            for(uint i=0; i < node->getClones().size(); i++){
+                std::cout << node->getClones().at(i)->getUniqueId() << ", ";
+            }
+        }
+        if(node->getClonedFrom()){
+            std::cout << " - Node cloned from: " << node->getClonedFrom()->getUniqueId();
+        }
+        std::cout << std::endl;
+
         next_tail = tail + vertical + separator;
     }
 
@@ -289,23 +313,25 @@ void Vessel::setPlayer(Player* player){
 
 
 void Vessel::update(){
-    if(m_input->pressed_keys[GLFW_KEY_W] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){
-        m_yaw = 1.0f;
-    }
-    else if(m_input->pressed_keys[GLFW_KEY_S] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){
-        m_yaw = -1.0f;
-    }
-    else{
-        m_yaw = 0.0f;
-    }
-    if(m_input->pressed_keys[GLFW_KEY_A] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){
-        m_pitch = 1.0f;
-    }
-    else if(m_input->pressed_keys[GLFW_KEY_D] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){
-        m_pitch = -1.0f;
-    }
-    else{
-        m_pitch = 0.0f;
+    if(m_player){
+        if(m_input->pressed_keys[GLFW_KEY_W] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){
+            m_yaw = 1.0f;
+        }
+        else if(m_input->pressed_keys[GLFW_KEY_S] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){
+            m_yaw = -1.0f;
+        }
+        else{
+            m_yaw = 0.0f;
+        }
+        if(m_input->pressed_keys[GLFW_KEY_A] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){
+            m_pitch = 1.0f;
+        }
+        else if(m_input->pressed_keys[GLFW_KEY_D] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){
+            m_pitch = -1.0f;
+        }
+        else{
+            m_pitch = 0.0f;
+        }
     }
 
     for(uint i=0; i < m_node_list.size(); i++){
