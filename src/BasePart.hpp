@@ -51,6 +51,10 @@ class BasePart : public Object{
         bool m_show_editor_menu, m_show_game_menu;
         long long int m_properties;
 
+        // editor cloning stuff
+        std::vector<BasePart*> m_clones;
+        BasePart* m_cloned_from;
+
         std::vector<struct resource_container> m_resources;
 
         AssetManagerInterface* m_asset_manager;
@@ -83,7 +87,7 @@ class BasePart : public Object{
         void addResource(const resource_container& resource);
         // removes m_body and the constraint from the dynamics world for all the subtree, should only be called from AssetManager when bullet is not stepping
         int removeBodiesSubtree();
-        void cloneSubTree(std::shared_ptr<BasePart>& current, bool is_subtree_root) const;
+        void cloneSubTree(std::shared_ptr<BasePart>& current, bool is_subtree_root, bool m_radial_clone);
         void buildSubTreeConstraints(const BasePart* parent);
 
         const std::vector<struct attachment_point>* getAttachmentPoints() const;
@@ -97,6 +101,9 @@ class BasePart : public Object{
         BasePart* getParent();
         std::vector<std::shared_ptr<BasePart>>* getChilds();
         const std::vector<std::shared_ptr<BasePart>>* getChilds() const;
+        std::vector<BasePart*> getClones();
+        BasePart* getClonedFrom();
+        void clearClonesSubtree();
 
         virtual void renderOther();
         virtual void onEditorRightMouseButton();

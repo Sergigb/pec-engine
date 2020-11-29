@@ -65,6 +65,7 @@ class AssetManager{
 
         std::map<std::uint32_t, std::shared_ptr<BasePart>> m_editor_subtrees;
         std::map<std::uint32_t, std::shared_ptr<Vessel>> m_editor_vessels;
+        std::vector<std::shared_ptr<BasePart>> m_symmetry_subtrees;
 
         AssetManager(RenderContext* render_context, const Frustum* frustum, BtWrapper* bt_wrapper, render_buffers* buff_manager, Camera* camera);
         ~AssetManager();

@@ -21,6 +21,7 @@ BasePart::BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_sh
     m_asset_manager = asset_manager;
     m_properties = 0;
     m_show_game_menu = false;
+    m_cloned_from = nullptr;
 }
 
 
@@ -35,6 +36,7 @@ BasePart::BasePart(){
     m_asset_manager = nullptr;
     m_properties = 0;
     m_show_game_menu = false;
+    m_cloned_from = nullptr;
 }
 
 
@@ -61,6 +63,7 @@ BasePart::BasePart(const BasePart& part) : Object(part) {
     m_asset_manager = part.m_asset_manager;
     m_properties = part.m_properties;
     m_resources = part.m_resources;
+    m_cloned_from = nullptr;
 }
 
 
@@ -424,7 +427,7 @@ int BasePart::removeBodiesSubtree(){
 }
 
 
-void BasePart::cloneSubTree(std::shared_ptr<BasePart>& current, bool is_subtree_root) const{
+void BasePart::cloneSubTree(std::shared_ptr<BasePart>& current, bool is_subtree_root, bool m_radial_clone){
     btTransform transform;
 
     m_body->getMotionState()->getWorldTransform(transform);
@@ -433,10 +436,15 @@ void BasePart::cloneSubTree(std::shared_ptr<BasePart>& current, bool is_subtree_
     m_asset_manager->addBody(add_body_msg{current.get(), transform.getOrigin(),
                              btVector3(0.0, 0.0, 0.0), transform.getRotation()});
 
+    if(m_radial_clone){
+        current->m_cloned_from = this;
+        m_clones.emplace_back(current.get());
+    }
+
     for(uint i=0; i < m_childs.size(); i++){
         std::shared_ptr<BasePart> cloned_child;
 
-        m_childs.at(i)->cloneSubTree(cloned_child, false);
+        m_childs.at(i)->cloneSubTree(cloned_child, false, m_radial_clone);
         cloned_child->setParent(current.get());
 
         current->addChild(cloned_child);
@@ -494,5 +502,24 @@ void BasePart::buildSubTreeConstraints(const BasePart* parent){
     for(uint i=0; i < m_childs.size(); i++){
         m_childs.at(i)->buildSubTreeConstraints(this);
     }
+}
+
+
+std::vector<BasePart*> BasePart::getClones(){
+    return m_clones;
+}
+
+
+BasePart* BasePart::getClonedFrom(){
+    return m_cloned_from;
+}
+
+
+void BasePart::clearClonesSubtree(){
+    m_clones.clear();
+    for(uint i=0; i < m_childs.size(); i++){
+        m_childs.at(i)->clearClonesSubtree();
+    }
+
 }
 

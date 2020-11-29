@@ -39,6 +39,7 @@ class App : public BaseApp{
         // application default font atlas
         std::unique_ptr<FontAtlas> m_def_font_atlas;
 
+        void pickAttachedObject(BasePart* part);
         void hitPointAlign(btVector3& hit_point_world, btVector3& hit_normal_world, btTransform& parent_transform);
         void clearSymmetrySubtrees();
         void createSymmetrySubtrees();

@@ -243,6 +243,7 @@ void App::createConstraint(BasePart* part, BasePart* parent, btTransform frame){
 
 
 void App::clearSymmetrySubtrees(){
+    static_cast<BasePart*>(m_picked_obj)->clearClonesSubtree();
     if(m_asset_manager->m_symmetry_subtrees.size()){
         for(uint i=0; i < m_asset_manager->m_symmetry_subtrees.size(); i++){
             m_asset_manager->m_symmetry_subtrees.at(i)->setRenderIgnoreSubTree();
@@ -260,7 +261,7 @@ void App::createSymmetrySubtrees(){
 
         for(uint i=0; i < m_symmetry_sides - 1; i++){
             std::shared_ptr<BasePart> clone;
-            part->cloneSubTree(clone, true);
+            part->cloneSubTree(clone, true, true);
             m_asset_manager->m_symmetry_subtrees.emplace_back(clone);
         }
     }
@@ -475,6 +476,30 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
 }
 
 
+void App::pickAttachedObject(BasePart* part){
+    if(part->getClonedFrom()){
+        part = part->getClonedFrom();
+    }
+
+    if(part->getClones().size()){
+        for(uint i=0; i < part->getClones().size(); i++){
+            BasePart* clone = part->getClones().at(i);
+
+            m_asset_manager->m_remove_part_constraint_buffer.emplace_back(clone);
+            m_asset_manager->m_delete_subtree_buffer.emplace_back(m_asset_manager->m_editor_vessels.at(clone->getVessel()->getId())->removeChild(clone));            
+        }
+    }
+    part->clearClonesSubtree();
+
+    m_picked_obj = part;
+
+    if(!part->isRoot()){
+        m_asset_manager->m_remove_part_constraint_buffer.emplace_back(part);
+        m_asset_manager->m_editor_subtrees.insert({part->getUniqueId(), m_asset_manager->m_editor_vessels.at(part->getVessel()->getId())->removeChild(part)});
+    }
+}
+
+
 void App::pickObject(){
     double mousey, mousex;
     dmath::vec3 ray_start_world, ray_end_world;
@@ -503,18 +528,13 @@ void App::pickObject(){
             if(m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){ // clone
                 if(!part->isRoot()){
                     std::shared_ptr<BasePart> clone;
-                    part->cloneSubTree(clone, true);
+                    part->cloneSubTree(clone, true, false);
                     m_asset_manager->m_editor_subtrees.insert({clone->getUniqueId(), clone});
                     m_picked_obj = clone.get();
                 }
             }
             else{
-                m_picked_obj = obj;
-
-                if(!part->isRoot()){ // we are certainly detaching a part from the vessel
-                    m_asset_manager->m_remove_part_constraint_buffer.emplace_back(part);
-                    m_asset_manager->m_editor_subtrees.insert({part->getUniqueId(), m_asset_manager->m_editor_vessels.at(part->getVessel()->getId())->removeChild(part)});
-                }
+                pickAttachedObject(part);
             }
         }
     }
@@ -535,8 +555,6 @@ void App::logic(){
         placeSubTree(closest_dist, closest_att_point_world, closest, part);
 
         if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
-            clearSymmetrySubtrees();
-
             m_picked_obj->activate(true);
             m_picked_obj = nullptr;
         }
