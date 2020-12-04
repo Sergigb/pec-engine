@@ -26,7 +26,7 @@ class StagingPanelGUI;
 #define EDITOR_GUI_LP_W 300.0f
 #define EDITOR_GUI_TP_H 40.0f
 #define EDITOR_GUI_N_BUTTONS 3 // changing this won't add buttons cuz the array sizes are fixed
-#define EDITOR_GUI_PP_MARGIN 30.0f
+#define EDITOR_GUI_PP_MARGIN 15.0f
 #define EDITOR_GUI_PP_LOW_MARGIN 100.0f
 
 // colors are defined per vertex
@@ -42,8 +42,8 @@ class StagingPanelGUI;
 #define BUTTON_COLOR_SELECTED 0.0, 0.0, 0.9, 1.0
 #define BUTTON_COLOR_SELECTED_MOUSEOVER 0.0, 0.0, 0.7, 1.0
 
-#define DELETE_AREA_ORIGIN 30.0f
-#define DELETE_AREA_MARGIN 30.0f
+#define DELETE_AREA_ORIGIN 15.0f
+#define DELETE_AREA_MARGIN 15.0f
 #define DELETE_AREA_COLOR 0.0f, 0.0f, 0.0f, 0.0f
 #define DELETE_AREA_MOUSEOVER -0.2f, -0.2f, -0.2f, 0.0f
 
@@ -54,8 +54,8 @@ class StagingPanelGUI;
 #define TAB_WIDTH 75.0f
 #define TAB_HEIGTH 25.0f
 #define TAB_COLOR_SELECTED 0.25f, 0.25f, 0.25f, 1.0
-#define TAB_COLOR_UNSELECTED  0.18f, 0.18f, 0.18f, 1.0
-#define TAB_COLOR_MOUSEOVER 0.21f, 0.21f, 0.21f, 1.0
+#define TAB_COLOR_UNSELECTED  0.2, 0.2, 0.2, 1.0
+#define TAB_COLOR_MOUSEOVER 0.225f, 0.225f, 0.225f, 1.0
 
 // actions related to the gui
 #define EDITOR_ACTION_NONE 0

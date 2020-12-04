@@ -36,10 +36,12 @@ EditorGUI::EditorGUI(const FontAtlas* atlas, const RenderContext* render_context
     color c{0.85, 0.85, 0.85};
     m_text_debug.reset(new Text2D(m_fb_width, m_fb_height, c, m_font_atlas, render_context));
 
-    m_parts_panel.reset(new PartsPanelGUI(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2 - EDITOR_GUI_PP_LOW_MARGIN,
-                        m_font_atlas, m_render_context, m_input));
-    m_staging_panel.reset(new StagingPanelGUI(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2 - EDITOR_GUI_PP_LOW_MARGIN,
-                          m_font_atlas, m_render_context, m_input));
+    m_parts_panel.reset(new PartsPanelGUI(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2,
+                                          m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2 - EDITOR_GUI_PP_LOW_MARGIN - TAB_HEIGTH,
+                                          m_font_atlas, m_render_context, m_input));
+    m_staging_panel.reset(new StagingPanelGUI(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2,
+                                              m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2 - EDITOR_GUI_PP_LOW_MARGIN - TAB_HEIGTH,
+                                              m_font_atlas, m_render_context, m_input));
 
     m_disp_location = m_render_context->getUniformLocation(SHADER_GUI, "disp");
 
@@ -220,10 +222,10 @@ EditorGUI::EditorGUI(const FontAtlas* atlas, const RenderContext* render_context
     glEnableVertexAttribArray(0);
     GLfloat parts_panel_vert[12] = {EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN + EDITOR_GUI_PP_LOW_MARGIN,
                                     EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN + EDITOR_GUI_PP_LOW_MARGIN,
-                                    EDITOR_GUI_PP_MARGIN, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN,
+                                    EDITOR_GUI_PP_MARGIN, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN - TAB_HEIGTH,
                                     EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN + EDITOR_GUI_PP_LOW_MARGIN,
-                                    EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN,
-                                    EDITOR_GUI_PP_MARGIN, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN};
+                                    EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN - TAB_HEIGTH,
+                                    EDITOR_GUI_PP_MARGIN, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN - TAB_HEIGTH};
     glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), parts_panel_vert, GL_STATIC_DRAW);
 
     glGenBuffers(1, &m_left_panel_vbo_clr);
@@ -328,7 +330,7 @@ void EditorGUI::updateBuffers(){
     disp += 8;
 
     // tabs
-    y_start = m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN;
+    y_start = m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN - TAB_HEIGTH;
 
     vertex_buffer[disp + 1] = EDITOR_GUI_PP_MARGIN;
     vertex_buffer[disp + 2] = y_start + TAB_HEIGTH;
@@ -362,10 +364,10 @@ void EditorGUI::updateBuffers(){
     // parts panel
     GLfloat parts_panel_vert[12] = {EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN + EDITOR_GUI_PP_LOW_MARGIN,
                                     EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN + EDITOR_GUI_PP_LOW_MARGIN,
-                                    EDITOR_GUI_PP_MARGIN, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN,
+                                    EDITOR_GUI_PP_MARGIN, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN - TAB_HEIGTH,
                                     EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, EDITOR_GUI_PP_MARGIN + EDITOR_GUI_PP_LOW_MARGIN,
-                                    EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN,
-                                    EDITOR_GUI_PP_MARGIN, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN};
+                                    EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN - TAB_HEIGTH,
+                                    EDITOR_GUI_PP_MARGIN, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN - TAB_HEIGTH};
     glBindBuffer(GL_ARRAY_BUFFER, m_left_panel_vbo_vert);
     glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), parts_panel_vert, GL_STATIC_DRAW);
 }
@@ -496,8 +498,10 @@ void EditorGUI::render(){
     if(m_fb_update){
         m_render_context->getDefaultFbSize(m_fb_width, m_fb_height);
         m_text_debug->onFramebufferSizeUpdate(m_fb_width, m_fb_height);
-        m_parts_panel->onFramebufferSizeUpdate(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2 - EDITOR_GUI_PP_LOW_MARGIN);
-        m_staging_panel->onFramebufferSizeUpdate(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2, m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2 - EDITOR_GUI_PP_LOW_MARGIN);
+        m_parts_panel->onFramebufferSizeUpdate(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2,
+                                               m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2 - EDITOR_GUI_PP_LOW_MARGIN - TAB_HEIGTH);
+        m_staging_panel->onFramebufferSizeUpdate(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2, 
+                                               m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2 - EDITOR_GUI_PP_LOW_MARGIN - TAB_HEIGTH);
 
         updateBuffers();
         m_fb_update = false;
@@ -578,8 +582,8 @@ int EditorGUI::update(){
 
     m_tab_mouseover = TAB_OPTION_NONE;
     if(posx > EDITOR_GUI_PP_MARGIN && posx < EDITOR_GUI_PP_MARGIN + TAB_WIDTH * 2.0f &&
-       posy > m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN &&
-       posy < m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN + TAB_HEIGTH){
+       posy > m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN - TAB_HEIGTH &&
+       posy < m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN){
         if(posx < EDITOR_GUI_PP_MARGIN + TAB_WIDTH){
             if(lmbpress){
                 m_tab_option = TAB_OPTION_PARTS;
