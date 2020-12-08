@@ -749,8 +749,10 @@ void App::logic(){
         m_clear_scene = true;
     }
 
-    if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2] & INPUT_MBUTTON_RELEASE && !m_render_context->imGuiWantCaptureMouse() && !m_gui_action){
-        onLeftMouseButton();
+    if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2] & INPUT_MBUTTON_RELEASE &&
+       !m_render_context->imGuiWantCaptureMouse() && !m_gui_action &&
+       m_camera->getPrevInputMode() != GLFW_CURSOR_DISABLED){
+        onRightMouseButton();
     }
 
     if(m_input->pressed_keys[GLFW_KEY_F11] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
@@ -792,7 +794,7 @@ void App::clearScene(){
 }
 
 
-void App::onLeftMouseButton(){
+void App::onRightMouseButton(){
     dmath::vec3 ray_start_world, ray_end_world;
     Object* obj;
     BasePart* part;

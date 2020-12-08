@@ -18,7 +18,7 @@ class Camera{
         float m_cam_speed, m_cam_heading_speed, m_near, m_far, m_fovy, m_ar;
         double m_previous_frame_time, m_elapsed_time;
         bool m_proj_change, m_fb_callback;
-        int m_cam_input_mode;
+        int m_cam_input_mode, m_prev_cam_input_mode;
 
         // oribital camera params
         double m_polar_angle, m_azimuthal_angle, m_radial_distance;
@@ -57,6 +57,7 @@ class Camera{
         math::mat4 getCenteredViewMatrix() const;
         dmath::vec3 getCamPosition() const;
         void castRayMousePos(float dist, dmath::vec3& ray_start_world, dmath::vec3& ray_end_world_ext) const;
+        int getPrevInputMode() const;
 
         void update();
         void freeCameraUpdate();

@@ -46,7 +46,7 @@ class App : public BaseApp{
         void clearSymmetrySubtrees();
         void createSymmetrySubtrees();
         void createConstraint(BasePart* part, BasePart* parent, btTransform frame);
-        void onLeftMouseButton();
+        void onRightMouseButton();
         void getUserRotation(btQuaternion& rotation, const btQuaternion& current_rotation);
         void logic();
         void clearScene();

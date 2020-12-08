@@ -30,6 +30,7 @@ Camera::Camera(){
     m_proj_change = false;
     m_fb_callback = false;
     m_cam_input_mode = GLFW_CURSOR_NORMAL;
+    m_prev_cam_input_mode = GLFW_CURSOR_NORMAL;
     updateViewMatrix();
     m_elapsed_time = 0.0;
     m_polar_angle = M_PI / 2;
@@ -57,6 +58,7 @@ Camera::Camera(const dmath::vec3& pos, float fovy, float ar, float near, float f
     m_proj_change = false;
     m_fb_callback = false;
     m_cam_input_mode = GLFW_CURSOR_NORMAL;
+    m_prev_cam_input_mode = GLFW_CURSOR_NORMAL;
     updateViewMatrix();
     m_elapsed_time = 0.0;
     m_polar_angle = M_PI / 2;
@@ -274,7 +276,7 @@ void Camera::setCameraPosition(const dmath::vec3& translation){
 
 
 void Camera::freeCameraUpdate(){
-    float cam_yaw = 0.0f, cam_pitch = 0.0f, cam_roll = 0.0f, speed_mult = 1.0f;
+    float cam_yaw = 0.0f, cam_pitch = 0.0f, speed_mult = 1.0f; // cam_roll = 0.0f
 
     update();
 
@@ -282,6 +284,7 @@ void Camera::freeCameraUpdate(){
         return;
     }
 
+    m_prev_cam_input_mode = m_cam_input_mode;
     if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2] && m_cam_input_mode == GLFW_CURSOR_NORMAL){
         glfwSetInputMode(m_window_handler->getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         m_cam_input_mode = GLFW_CURSOR_DISABLED;
@@ -342,14 +345,6 @@ void Camera::freeCameraUpdate(){
         cam_pitch -= m_cam_heading_speed * m_elapsed_time;
         rotateCameraPitch(cam_pitch);
     }
-    if(m_input->pressed_keys[GLFW_KEY_Q] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){
-        cam_roll -= m_cam_heading_speed * m_elapsed_time;
-        rotateCameraRoll(cam_roll);
-    }
-    if(m_input->pressed_keys[GLFW_KEY_E] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)){
-        cam_roll += m_cam_heading_speed * m_elapsed_time;
-        rotateCameraRoll(cam_roll);
-    }
     updateViewMatrix();
 }
 
@@ -361,6 +356,7 @@ void Camera::orbitalCameraUpdate(){
 
     update();
 
+    m_prev_cam_input_mode = m_cam_input_mode;
     if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2] && m_cam_input_mode == GLFW_CURSOR_NORMAL){
         glfwSetInputMode(m_window_handler->getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
         m_cam_input_mode = GLFW_CURSOR_DISABLED;
@@ -426,5 +422,10 @@ void Camera::incrementOrbitalCamDistance(double increment){
     if(m_radial_distance + increment > 1.0){
         m_radial_distance += increment;
     }
+}
+
+
+int Camera::getPrevInputMode() const{
+    return m_prev_cam_input_mode;
 }
 
