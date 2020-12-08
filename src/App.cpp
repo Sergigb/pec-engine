@@ -492,24 +492,22 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
                 m_asset_manager->m_editor_subtrees.erase(part->getUniqueId());
             }
 
-            createSymmetrySubtrees();
-/*
-            if((closest->getClonedFrom() || closest->getClones().size()) && m_symmetry_sides > 1){
-                BasePart* cloned_from;  // part that "closest" was cloned from
+            if((parent->getClonedFrom() || parent->getClones().size()) && m_symmetry_sides > 1){
+                BasePart* cloned_from;  // part that "parent" was cloned from
                 std::vector<BasePart*> clone_to;
-                if(closest->getClonedFrom()){
-                    cloned_from = closest->getClonedFrom();
+                if(parent->getClonedFrom()){
+                    cloned_from = parent->getClonedFrom();
 
                     for(uint i=0; i < cloned_from->getClones().size(); i++){
-                        if(cloned_from->getClones().at(i) != closest){
+                        if(cloned_from->getClones().at(i) != parent){
                             clone_to.emplace_back(cloned_from->getClones().at(i));
                         }
                     }
                     clone_to.emplace_back(cloned_from);
                 }
                 else{
-                    cloned_from = closest;
-                    clone_to = closest->getClones();
+                    cloned_from = parent;
+                    clone_to = parent->getClones();
                 }
 
                 if(m_symmetry_sides != cloned_from->getClones().size() + 1){
@@ -517,68 +515,52 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
                     std::cout << "Sym. sides: " << m_symmetry_sides << std::endl;
                 }
                 createSymmetrySubtrees();
-                placeClonedSubtrees(part, closest, transform_final, clone_to);
+                placeClonedSubtreesOnClones(parent, transform_final, clone_to);
             }
             else{
-                clearSymmetrySubtrees();
-            }*/
+                createSymmetrySubtrees();
 
+                for(uint i=0; i < m_asset_manager->m_symmetry_subtrees.size(); i++){
+                    BasePart* current = m_asset_manager->m_symmetry_subtrees.at(i).get();
+                    if(current->m_body.get()){ // check if m_body is initialized, it is not during the first tick
+                        btQuaternion symmetric_rotation, rotation_current;
+                        btTransform symmetric_rotation_transform;
 
+                        current->m_body->getMotionState()->getWorldTransform(transform_original);
+                        rotation_current = transform_original.getRotation();
+                        getUserRotation(user_rotation, rotation_current);
 
+                        symmetric_rotation.setEulerZYX(0.0, (2 * M_PI / m_symmetry_sides) * (i + 1), 0.0);
+                        symmetric_rotation_transform = btTransform(symmetric_rotation);
 
+                        // rotate m_hitPointWorld around the Y axis, but we have to move it first to the origin wrt the parent's origin
+                        transform_final = btTransform(btQuaternion::getIdentity(), -btv3_child_att);
+                        btVector3 hit_point_world_rotated = object_iR * hit_point_world;
+                        hit_point_world_rotated -= object_iR * p_transform.getOrigin();
+                        hit_point_world_rotated = symmetric_rotation_transform * hit_point_world_rotated;
+                        hit_point_world_rotated = btTransform(p_transform.getRotation()) * (hit_point_world_rotated + (object_iR * p_transform.getOrigin()));
 
+                        object_T = btTransform(btQuaternion::getIdentity(), hit_point_world_rotated);
+                        btTransform object_R = btTransform(rotation_current);
 
+                        transform_final = object_T * object_R * transform_final;
+                        disp = transform_final.getOrigin() - transform_original.getOrigin();
 
+                        current->updateSubTreeMotionState(m_asset_manager->m_set_motion_state_buffer,
+                                                          disp, transform_original.getOrigin(),
+                                                          align_rotation * symmetric_rotation * 
+                                                          part->m_user_rotation * rotation_current.inverse());
 
+                        if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
+                            createConstraint(current, parent, transform_final.inverse() * p_transform);
 
-
-
-
-
-
-
-
-
-
-            for(uint i=0; i < m_asset_manager->m_symmetry_subtrees.size(); i++){
-                BasePart* current = m_asset_manager->m_symmetry_subtrees.at(i).get();
-                if(current->m_body.get()){ // check if m_body is initialized, it is not during the first tick
-                    btQuaternion symmetric_rotation, rotation_current;
-                    btTransform symmetric_rotation_transform;
-
-                    current->m_body->getMotionState()->getWorldTransform(transform_original);
-                    rotation_current = transform_original.getRotation();
-                    getUserRotation(user_rotation, rotation_current);
-
-                    symmetric_rotation.setEulerZYX(0.0, (2 * M_PI / m_symmetry_sides) * (i + 1), 0.0);
-                    symmetric_rotation_transform = btTransform(symmetric_rotation);
-
-                    // rotate m_hitPointWorld around the Y axis, but we have to move it first to the origin wrt the parent's origin
-                    transform_final = btTransform(btQuaternion::getIdentity(), -btv3_child_att);
-                    btVector3 hit_point_world_rotated = object_iR * hit_point_world;
-                    hit_point_world_rotated -= object_iR * p_transform.getOrigin();
-                    hit_point_world_rotated = symmetric_rotation_transform * hit_point_world_rotated;
-                    hit_point_world_rotated = btTransform(p_transform.getRotation()) * (hit_point_world_rotated + (object_iR * p_transform.getOrigin()));
-
-                    object_T = btTransform(btQuaternion::getIdentity(), hit_point_world_rotated);
-                    btTransform object_R = btTransform(rotation_current);
-
-                    transform_final = object_T * object_R * transform_final;
-                    disp = transform_final.getOrigin() - transform_original.getOrigin();
-
-                    current->updateSubTreeMotionState(m_asset_manager->m_set_motion_state_buffer,
-                                                      disp, transform_original.getOrigin(),
-                                                      align_rotation * symmetric_rotation * 
-                                                      part->m_user_rotation * rotation_current.inverse());
-
-                    if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
-                        createConstraint(current, parent, transform_final.inverse() * p_transform);
-
-                        std::shared_ptr<BasePart> part_sptr = std::dynamic_pointer_cast<BasePart>(current->getSharedPtr());
-                        m_asset_manager->m_editor_vessels.at(parent->getVessel()->getId())->addChildById(part_sptr, parent->getUniqueId());
+                            std::shared_ptr<BasePart> part_sptr = std::dynamic_pointer_cast<BasePart>(current->getSharedPtr());
+                            m_asset_manager->m_editor_vessels.at(parent->getVessel()->getId())->addChildById(part_sptr, parent->getUniqueId());
+                        }
                     }
                 }
             }
+
             if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
                 m_asset_manager->m_symmetry_subtrees.clear();
             }
