@@ -341,6 +341,16 @@ void App::placeClonedSubtreesOnClones(BasePart* closest, btTransform& transform_
 }
 
 
+void rotate_y_deg(math::mat3 &m, float deg){ // the implementation form the maths file is for mat4, so I made this one here for now
+    // convert to radians
+    float rad = deg * ONE_DEG_IN_RAD;
+    m.m[0] = cos( rad );
+    m.m[6] = sin( rad );
+    m.m[2] = -sin( rad );
+    m.m[8] = cos( rad );
+}
+
+
 void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, BasePart* closest, BasePart* part){
     btTransform transform_original;
     btQuaternion rotation;
@@ -455,12 +465,8 @@ void App::placeSubTree(float closest_dist, math::vec4& closest_att_point_world, 
                                                    hit_normal_world.getZ());
 
             if(dot(surface_normal, child_att_orientation) == -1){
-                // this is still wrong
-                align_rot = rotation_align(math::arb_perpendicular(child_att_orientation), child_att_orientation);
-                child_att = align_rot * child_att;
-                align_rot = rotation_align(surface_normal, math::arb_perpendicular(child_att_orientation));
-                child_att = align_rot * child_att;
-                std::cout << "not implemented" << std::endl;
+                align_rot = math::identity_mat3();
+                rotate_y_deg(align_rot, 180.0f);
             }
             else{
                 align_rot = rotation_align(surface_normal, child_att_orientation);
