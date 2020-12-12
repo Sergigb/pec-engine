@@ -76,7 +76,7 @@ class BasePart : public Object{
         bool addChild(std::shared_ptr<BasePart>& child);
         std::shared_ptr<BasePart> removeChild(BasePart* child);
         // each child adds its new motion state to the command buffer, the function is called recursively through all the subtree
-        void updateSubTreeMotionState(std::vector<struct set_motion_state_msg>& command_buffer, btVector3 disp, btVector3 root_origin, btQuaternion rotation); // add root origin to rotate
+        void updateSubTreeMotionState(std::vector<struct set_motion_state_msg>& command_buffer, const btVector3& disp, const btVector3& root_origin, const btQuaternion& rotation); // add root origin to rotate
         void updateSubTreeVessel(Vessel* vessel);
         void setRenderIgnoreSubTree();
         void setRoot(bool root);
