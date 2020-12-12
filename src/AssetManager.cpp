@@ -192,13 +192,14 @@ void AssetManager::deleteObjectEditor(BasePart* part, std::uint32_t& vessel_id){
 }
 
 
-void AssetManager::updateBuffer(std::vector<object_transform>* buffer_){
+void AssetManager::updateBuffer(std::vector<object_transform>& buffer_){
     const btDiscreteDynamicsWorld* dynamics_world = m_bt_wrapper->getDynamicsWorld();
     const btCollisionObjectArray& col_object_array = dynamics_world->getCollisionObjectArray();
     dmath::vec3 cam_origin = m_camera->getCamPosition();
     btVector3 btv_cam_origin(cam_origin.v[0], cam_origin.v[1], cam_origin.v[2]);
 
-    buffer_->clear();
+    buffer_.clear();
+    std::vector<object_transform>::iterator it;
     for(int i=0; i<col_object_array.size(); i++){
         Object* obj = static_cast<Object *>(col_object_array.at(i)->getUserPointer());
         if(obj->renderIgnore()){ // ignore if the object should be destroyed
@@ -214,7 +215,7 @@ void AssetManager::updateBuffer(std::vector<object_transform>* buffer_){
             b_transform[14] -= btv_cam_origin.getZ();
             std::copy(b_transform, b_transform + 16, mat.m);
 
-            buffer_->emplace_back(object_transform{obj->getSharedPtr(), mat});
+            buffer_.emplace_back(std::move(obj->getSharedPtr()), mat);
         }
         catch(std::bad_weak_ptr& e) {
             std::string name;
@@ -233,14 +234,14 @@ void AssetManager::updateBuffers(){
     if(m_buffers->last_updated == buffer_2 || m_buffers->last_updated == none){
         if(m_buffers->buffer1_lock.try_lock()){
             m_buffers->view_mat1 = m_camera->getCenteredViewMatrix();
-            updateBuffer(&m_buffers->buffer1);
+            updateBuffer(m_buffers->buffer1);
             m_buffers->last_updated = buffer_1;
             m_buffers->buffer1_lock.unlock();
         }
         else{
             m_buffers->buffer2_lock.lock(); // very unlikely to not get the lock
             m_buffers->view_mat2 = m_camera->getCenteredViewMatrix();
-            updateBuffer(&m_buffers->buffer2);
+            updateBuffer(m_buffers->buffer2);
             m_buffers->last_updated = buffer_2;
             m_buffers->buffer2_lock.unlock();
         }
@@ -248,14 +249,14 @@ void AssetManager::updateBuffers(){
     else{
         if(m_buffers->buffer2_lock.try_lock()){
             m_buffers->view_mat2 = m_camera->getCenteredViewMatrix();
-            updateBuffer(&m_buffers->buffer2);
+            updateBuffer(m_buffers->buffer2);
             m_buffers->last_updated = buffer_2;
             m_buffers->buffer2_lock.unlock();
         }
         else{
             m_buffers->view_mat1 = m_camera->getCenteredViewMatrix();
             m_buffers->buffer1_lock.lock();
-            updateBuffer(&m_buffers->buffer1);
+            updateBuffer(m_buffers->buffer1);
             m_buffers->last_updated = buffer_1;
             m_buffers->buffer1_lock.unlock();
         }

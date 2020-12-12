@@ -14,6 +14,11 @@ class Object;
 struct object_transform{
     std::shared_ptr<Object> object_ptr;
     math::mat4 transform;
+
+    object_transform(const std::shared_ptr<Object>& ptr, math::mat4& t){
+        object_ptr = std::move(ptr);
+        transform = t;
+    }
 };
 
 enum buffer_manager: char{none = 0, buffer_1 = 1, buffer_2 = 2};
