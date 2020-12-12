@@ -84,10 +84,14 @@ void Separator::renderOther(){
 
 void Separator::update(){
     if(m_separate){
-        btVector3 force(0.0, m_force, 0.0);
+        btTransform transform;
+        m_body->getMotionState()->getWorldTransform(transform);
+        btMatrix3x3 part_rotation = transform.getBasis();
+        btVector3 force = part_rotation * btVector3(0.0, m_force, 0.0);
+
         m_separate = false;
 
-        if(m_behaviour == BEHAVIOUR_SEPARATES_SELF || m_behaviour == BEHAVIOUR_SEPARATES_ALL){
+        if(m_behaviour == BEHAVIOUR_SEPARATES_SELF){
             if(m_parent){
                 struct apply_force_msg msg{m_parent, force, btVector3(0.0, 0.0, 0.0)};
                 m_asset_manager->applyForce(msg);
@@ -102,9 +106,18 @@ void Separator::update(){
             for(uint i=0; i < m_childs.size(); i++){
                 struct apply_force_msg msg{m_childs.at(i).get(), -1.0 * force, btVector3(0.0, 0.0, 0.0)};
                 m_asset_manager->applyForce(msg);
+            }
 
-                msg = {this, force, btVector3(0.0, 0.0, 0.0)};
+            if(m_behaviour == BEHAVIOUR_SEPARATES_CHILDS){
+                struct apply_force_msg msg = {this, force, btVector3(0.0, 0.0, 0.0)};
                 m_asset_manager->applyForce(msg);
+            }
+            else{
+                if(m_parent){
+                    struct apply_force_msg msg = {m_parent, force, btVector3(0.0, 0.0, 0.0)};
+                    m_asset_manager->applyForce(msg);
+                }
+                decoupleSelf();
             }
 
             decoupleChilds();
