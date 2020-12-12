@@ -4,7 +4,6 @@
 #include "GenericEngine.hpp"
 #include "../Resource.hpp"
 #include "../AssetManagerInterface.hpp"
-#include "../buffers.hpp"
 #include "../Vessel.hpp"
 #include "../maths_funcs.hpp"
 
@@ -105,8 +104,7 @@ void GenericEngine::update(){
         // I'm using Y as the roll, this is wrong. In the future I'll make sure Z is the forward vector, which will make it the roll vector
         gimbal.setEulerZYX(m_vessel->getYaw() * max_gimbal_angle, 0.0, m_vessel->getPitch() * max_gimbal_angle);
         force = basis * gimbal * force;
-        struct apply_force_msg msg{this, force, btVector3(0.0, 0.0, 0.0)};
-        m_asset_manager->applyForce(msg);
+        m_asset_manager->applyForce(this, force, btVector3(0.0, 0.0, 0.0));
     }
 }
 

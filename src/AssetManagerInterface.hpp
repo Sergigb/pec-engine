@@ -7,11 +7,7 @@
 class Vessel;
 class AssetManager;
 class BasePart;
-
-struct apply_force_msg;
-struct set_mass_props_msg;
-struct add_body_msg;
-struct add_contraint_msg;
+class btTypedConstraint;
 
 
 class AssetManagerInterface{
@@ -24,10 +20,10 @@ class AssetManagerInterface{
 
         void addVessel(std::shared_ptr<Vessel>& vessel);
         void removePartConstraint(BasePart* part);
-        void applyForce(apply_force_msg& msg);
-        void setMassProps(set_mass_props_msg& msg);
-        void addBody(const add_body_msg& msg);
-        void addConstraint(add_contraint_msg& msg);
+        void applyForce(BasePart* ptr, const btVector3& f, const btVector3& r_pos);
+        void setMassProps(BasePart* ptr, double m);
+        void addBody(BasePart* ptr, const btVector3& orig, const btVector3& iner, const btQuaternion& rot);
+        void addConstraint(BasePart* ptr, std::unique_ptr<btTypedConstraint>& c_uptr);
         void buildConstraintSubtree(BasePart* part);
 };
 

@@ -239,7 +239,9 @@ void App::createConstraint(BasePart* part, BasePart* parent, btTransform frame){
     constraint->setAngularLowerLimit(limits);
     constraint->setAngularUpperLimit(limits);
 
-    m_asset_manager->m_add_constraint_buffer.emplace_back(add_contraint_msg{part, std::unique_ptr<btTypedConstraint>(constraint)});
+    std::unique_ptr<btTypedConstraint> constraint_sptr(constraint);
+
+    m_asset_manager->m_add_constraint_buffer.emplace_back(part, constraint_sptr);
 }
 
 
@@ -688,8 +690,8 @@ void App::logic(){
         }
 
         if(!m_vessel_id){ // set the vessel root
-            m_asset_manager->m_add_body_buffer.emplace_back(add_body_msg{part.get(), btVector3(0.0, 60.0, 0.0),
-                                                            btVector3(0.0, 0.0, 0.0), btQuaternion::getIdentity()});
+            m_asset_manager->m_add_body_buffer.emplace_back(part.get(), btVector3(0.0, 60.0, 0.0),
+                                                            btVector3(0.0, 0.0, 0.0), btQuaternion::getIdentity());
 
             std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(part, m_input.get());
             m_vessel_id = vessel->getId();
@@ -699,8 +701,8 @@ void App::logic(){
         else{
             dmath::vec3 ray_start_world, ray_end_world;
             m_camera->castRayMousePos(10.f, ray_start_world, ray_end_world);
-            m_asset_manager->m_add_body_buffer.emplace_back(add_body_msg{part.get(), btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]),
-                                                            btVector3(0.0, 0.0, 0.0), btQuaternion::getIdentity()});
+            m_asset_manager->m_add_body_buffer.emplace_back(part.get(), btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]),
+                                                            btVector3(0.0, 0.0, 0.0), btQuaternion::getIdentity());
 
             m_asset_manager->m_editor_subtrees.insert({part->getUniqueId(), part});
             m_picked_obj = part.get();

@@ -2,7 +2,6 @@
 
 #include "Separator.hpp"
 #include "../AssetManagerInterface.hpp"
-#include "../buffers.hpp"
 
 
 Separator::Separator(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager) : 
@@ -93,29 +92,23 @@ void Separator::update(){
 
         if(m_behaviour == BEHAVIOUR_SEPARATES_SELF){
             if(m_parent){
-                struct apply_force_msg msg{m_parent, force, btVector3(0.0, 0.0, 0.0)};
-                m_asset_manager->applyForce(msg);
-
-                msg = {this, -1 * force, btVector3(0.0, 0.0, 0.0)};
-                m_asset_manager->applyForce(msg);
+                m_asset_manager->applyForce(m_parent, force, btVector3(0.0, 0.0, 0.0));
+                m_asset_manager->applyForce(this, -1 * force, btVector3(0.0, 0.0, 0.0));
             }
 
             decoupleSelf();
         }
         if(m_behaviour == BEHAVIOUR_SEPARATES_CHILDS || m_behaviour == BEHAVIOUR_SEPARATES_ALL){
             for(uint i=0; i < m_childs.size(); i++){
-                struct apply_force_msg msg{m_childs.at(i).get(), -1.0 * force, btVector3(0.0, 0.0, 0.0)};
-                m_asset_manager->applyForce(msg);
+                m_asset_manager->applyForce(m_childs.at(i).get(), -1.0 * force, btVector3(0.0, 0.0, 0.0));
             }
 
             if(m_behaviour == BEHAVIOUR_SEPARATES_CHILDS){
-                struct apply_force_msg msg = {this, force, btVector3(0.0, 0.0, 0.0)};
-                m_asset_manager->applyForce(msg);
+                m_asset_manager->applyForce(this, force, btVector3(0.0, 0.0, 0.0));
             }
             else{
                 if(m_parent){
-                    struct apply_force_msg msg = {m_parent, force, btVector3(0.0, 0.0, 0.0)};
-                    m_asset_manager->applyForce(msg);
+                    m_asset_manager->applyForce(m_parent, force, btVector3(0.0, 0.0, 0.0));
                 }
                 decoupleSelf();
             }

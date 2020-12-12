@@ -147,7 +147,8 @@ std::shared_ptr<BasePart> BasePart::removeChild(BasePart* child){
 }
 
 
-void BasePart::updateSubTreeMotionState(std::vector<struct set_motion_state_msg>& command_buffer, btVector3 disp, btVector3 root_origin, btQuaternion rotation){
+void BasePart::updateSubTreeMotionState(std::vector<struct set_motion_state_msg>& command_buffer, 
+                                        const btVector3& disp, const btVector3& root_origin, const btQuaternion& rotation){
     btTransform transform, trans, trans_r;
     btQuaternion rrotation;
     btVector3 origin, dist_from_root;
@@ -161,7 +162,7 @@ void BasePart::updateSubTreeMotionState(std::vector<struct set_motion_state_msg>
     trans_r = btTransform(rotation, btVector3(0.0, 0.0, 0.0));
     trans = trans_r * trans;
 
-    command_buffer.emplace_back(set_motion_state_msg{this, root_origin + trans.getOrigin() + disp, trans.getRotation()});
+    command_buffer.emplace_back(this, root_origin + trans.getOrigin() + disp, trans.getRotation());
 
     for(uint i=0; i < m_childs.size(); i++){
         m_childs.at(i)->updateSubTreeMotionState(command_buffer, disp, root_origin, rotation);
@@ -433,8 +434,8 @@ void BasePart::cloneSubTree(std::shared_ptr<BasePart>& current, bool is_subtree_
     m_body->getMotionState()->getWorldTransform(transform);
 
     current.reset(this->clone());
-    m_asset_manager->addBody(add_body_msg{current.get(), transform.getOrigin(),
-                             btVector3(0.0, 0.0, 0.0), transform.getRotation()});
+    m_asset_manager->addBody(current.get(), transform.getOrigin(),
+                             btVector3(0.0, 0.0, 0.0), transform.getRotation());
 
     if(m_radial_clone){
         if(m_cloned_from){
@@ -471,7 +472,6 @@ void BasePart::buildSubTreeConstraints(const BasePart* parent){
 
     if(parent){
         btTransform parent_transform, frame_child;
-        add_contraint_msg msg;
 
         parent->m_body->getMotionState()->getWorldTransform(parent_transform);
         frame_child = btTransform(transform.inverse() * parent_transform);
@@ -501,8 +501,9 @@ void BasePart::buildSubTreeConstraints(const BasePart* parent){
         constraint->setAngularLowerLimit(limits);
         constraint->setAngularUpperLimit(limits);
 
-        msg = {this, std::unique_ptr<btTypedConstraint>(constraint)};
-        m_asset_manager->addConstraint(msg);
+        std::unique_ptr<btTypedConstraint> constraint_sptr(constraint);
+
+        m_asset_manager->addConstraint(this, constraint_sptr);
     }
 
     for(uint i=0; i < m_childs.size(); i++){

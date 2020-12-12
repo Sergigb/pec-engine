@@ -44,7 +44,7 @@ class AssetManager{
 
         // render buffers
         struct render_buffers* m_buffers;
-        void updateBuffer(std::vector<object_transform>* buffer_);
+        void updateBuffer(std::vector<object_transform>& buffer_);
     public:
         std::vector<std::shared_ptr<Object>> m_objects;
         std::vector<std::unique_ptr<btCollisionShape>> m_collision_shapes;

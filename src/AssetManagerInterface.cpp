@@ -1,5 +1,8 @@
 #include <iostream>
 
+#define BT_USE_DOUBLE_PRECISION
+#include <bullet/btBulletDynamicsCommon.h>
+
 #include "AssetManagerInterface.hpp"
 #include "AssetManager.hpp"
 
@@ -29,23 +32,23 @@ void AssetManagerInterface::removePartConstraint(BasePart* part){
 }
 
 
-void AssetManagerInterface::applyForce(apply_force_msg& msg){
-    m_asset_manager->m_apply_force_buffer.emplace_back(msg);
+void AssetManagerInterface::applyForce(BasePart* ptr, const btVector3& f, const btVector3& r_pos){
+    m_asset_manager->m_apply_force_buffer.emplace_back(ptr, f, r_pos);
 }
 
 
-void AssetManagerInterface::setMassProps(set_mass_props_msg& msg){
-    m_asset_manager->m_set_mass_buffer.emplace_back(msg);
+void AssetManagerInterface::setMassProps(BasePart* ptr, double m){
+    m_asset_manager->m_set_mass_buffer.emplace_back(ptr, m);
 }
 
 
-void AssetManagerInterface::addBody(const add_body_msg& msg){
-    m_asset_manager->m_add_body_buffer.emplace_back(msg);
+void AssetManagerInterface::addBody(BasePart* ptr, const btVector3& orig, const btVector3& iner, const btQuaternion& rot){
+    m_asset_manager->m_add_body_buffer.emplace_back(ptr, orig, iner, rot);
 }
 
 
-void AssetManagerInterface::addConstraint(add_contraint_msg& msg){
-    m_asset_manager->m_add_constraint_buffer.emplace_back(add_contraint_msg{msg.part, std::move(msg.constraint_uptr)});
+void AssetManagerInterface::addConstraint(BasePart* ptr, std::unique_ptr<btTypedConstraint>& c_uptr){
+    m_asset_manager->m_add_constraint_buffer.emplace_back(ptr, c_uptr);
 }
 
 
