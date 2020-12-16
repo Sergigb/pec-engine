@@ -76,6 +76,7 @@ void Object::addBody(const btVector3& origin, const btVector3& local_inertia, co
 
     m_bt_wrapper->addRigidBody(m_body.get(), m_col_group, m_col_filters);
     m_body->setUserPointer((void*)this);
+    m_body->setActivationState(DISABLE_DEACTIVATION);
 }
 
 
