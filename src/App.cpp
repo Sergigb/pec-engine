@@ -134,6 +134,7 @@ void App::run(){
             std::this_thread::sleep_for(delta_ms);
         }
     }
+    m_asset_manager->cleanup();
     m_bt_wrapper->stopSimulation();
     m_render_context->stop();
     m_window_handler->terminate();

@@ -50,7 +50,7 @@ Object::Object(const Object& obj) : std::enable_shared_from_this<Object>(){
 
 
 Object::~Object(){
-    if(m_body != nullptr){
+    if(m_body != nullptr){ // this should not be necessary, objects' rigid bodies should be removed before this constructor is called
         m_bt_wrapper->removeBody(m_body.get());
     }
     remove_id(m_unique_id, PART_SET);
@@ -77,6 +77,13 @@ void Object::addBody(const btVector3& origin, const btVector3& local_inertia, co
     m_bt_wrapper->addRigidBody(m_body.get(), m_col_group, m_col_filters);
     m_body->setUserPointer((void*)this);
     m_body->setActivationState(DISABLE_DEACTIVATION);
+}
+
+
+void Object::removeBody(){
+    if(m_body != nullptr){
+        m_bt_wrapper->removeBody(m_body.get());
+    }
 }
 
 

@@ -41,6 +41,7 @@ class Object : public std::enable_shared_from_this<Object>{
         virtual ~Object();
 
         void addBody(const btVector3& origin, const btVector3& local_inertia, const btQuaternion& initial_rotation);
+        void removeBody(); // this is essentially for objects/kinematics, parts should be disposed accordingly
 
         math::mat4 getRigidBodyTransformSingle() const;
         void getRigidBodyTransformSingle(math::mat4& body_transform) const;

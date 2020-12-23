@@ -14,6 +14,11 @@
 #include "log.hpp"
 
 
+typedef std::map<std::uint32_t, std::shared_ptr<BasePart>>::iterator SubTreeIterator;
+typedef std::map<std::uint32_t, std::shared_ptr<Vessel>>::iterator VesselIterator;
+typedef std::map<std::uint32_t, std::unique_ptr<Resource>>::iterator ResourceIterator;
+
+
 AssetManager::AssetManager(RenderContext* render_context, const Frustum* frustum, BtWrapper* bt_wrapper, render_buffers* buff_manager, Camera* camera){
     m_render_context = render_context;
     m_frustum = frustum;
@@ -52,8 +57,7 @@ void AssetManager::objectsInit(){
 
 
 void AssetManager::initResources(){
-    typedef std::map<std::uint32_t, std::unique_ptr<Resource>>::iterator map_iterator;
-    std::pair<map_iterator, bool> res;
+    std::pair<ResourceIterator, bool> res;
     std::string resource_name;
     std::unique_ptr<Resource> resource;
     std::hash<std::string> str_hash; // size_t = 64bit?? change???
@@ -156,8 +160,8 @@ void AssetManager::processCommandBuffers(bool physics_pause){
 
 
 void AssetManager::clearSceneEditor(){
-    std::map<std::uint32_t, std::shared_ptr<BasePart>>::iterator it;
-    std::map<std::uint32_t, std::shared_ptr<Vessel>>::iterator it2;
+    SubTreeIterator it;
+    VesselIterator it2;
 
     for(it=m_editor_subtrees.begin(); it != m_editor_subtrees.end(); it++){
         it->second->setRenderIgnoreSubTree();
@@ -268,12 +272,35 @@ void AssetManager::updateBuffers(){
 
 
 void AssetManager::updateVessels(){
-    std::map<std::uint32_t, std::shared_ptr<Vessel>>::iterator it;
+    VesselIterator it;
 
-    int i = 0;
     for(it=m_editor_vessels.begin(); it != m_editor_vessels.end(); it++){
         it->second->update();
-        i++;
+    }
+}
+
+
+void AssetManager::cleanup(){
+    VesselIterator it1;
+    SubTreeIterator it2;
+
+    // make sure all the command buffers are emptied before clearing everything
+    processCommandBuffers(false);
+
+    for(uint i=0; i < m_objects.size(); i++){
+        m_objects.at(i)->removeBody();
+    }
+
+    for(it1=m_editor_vessels.begin(); it1 != m_editor_vessels.end(); it1++){
+        it1->second->getRoot()->removeBodiesSubtree();
+    }
+
+    for(it2=m_editor_subtrees.begin(); it2 != m_editor_subtrees.end(); it2++){
+        it2->second->removeBodiesSubtree();
+    }
+
+    for(uint i=0; i < m_symmetry_subtrees.size(); i++){
+        m_symmetry_subtrees.at(i)->removeBodiesSubtree();
     }
 }
 

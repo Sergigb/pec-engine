@@ -24,6 +24,26 @@ class Object;
 
 struct thread_monitor;
 
+/*
+#include "BasePart.hpp"
+struct myFilterCallback: public btOverlapFilterCallback{
+    virtual bool needBroadphaseCollision(btBroadphaseProxy*proxy0,btBroadphaseProxy*proxy1) const{
+        BasePart* a;
+        BasePart* b;
+        a = dynamic_cast<BasePart*>(static_cast<btCollisionObject*>(proxy0->m_clientObject)->getUserPointer());
+        b = dynamic_cast<BasePart*>(static_cast<btCollisionObject*>(proxy1->m_clientObject)->getUserPointer());
+
+        if(a && b){
+            std::string name;
+            a->getName(name);
+            std::cout << name << std::endl;
+        }
+
+        bool collides = proxy0->m_collisionFilterGroup && proxy1->m_collisionFilterGroup;
+        return collides;
+    }
+};
+*/
 
 class BtWrapper{
     private:

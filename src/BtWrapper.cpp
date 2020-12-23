@@ -29,13 +29,20 @@ void BtWrapper::init(const btVector3& gravity){
     
     log("BtWrapper: starting dynamics world");
     std::cout << "BtWrapper: starting dynamics world" << std::endl;
+
+    //btOverlapFilterCallback*filtercbk=new myFilterCallback();
+    //m_dynamics_world->getPairCache()->setOverlapFilterCallback(filtercbk);
     
     m_dynamics_world->setGravity(gravity);
 }
 
 
 BtWrapper::~BtWrapper(){
-    // nothing ?
+    m_dynamics_world.reset(nullptr);
+    m_solver.reset(nullptr);
+    m_overlapping_pair_cache.reset(nullptr);
+    m_dispatcher.reset(nullptr);
+    m_collision_configuration.reset(nullptr);
 }
 
 

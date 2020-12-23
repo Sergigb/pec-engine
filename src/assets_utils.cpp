@@ -84,6 +84,8 @@ void load_parts(AssetManager& asset_manager){
     std::unique_ptr<BasePart> tank2(new BasePart(tank2_model.get(), asset_manager.m_bt_wrapper, cylinder_shape_tank2.get(), btScalar(10.0), 111, &asset_manager.m_asset_manager_interface));
     tank2->setColor(math::vec3(0.75, 0.75, 0.75));
     tank2->setParentAttachmentPoint(math::vec3(0.0, 2.5, 0.0), math::vec3(0.0, 0.0, 0.0));
+    tank2->setFreeAttachmentPoint(math::vec3(1.0, 0.0, 0.0), math::vec3(1.0, 0.0, 0.0));
+    //void setFreeAttachmentPoint(const math::vec3& point, const math::vec3& orientation);
     tank2->addAttachmentPoint(math::vec3(0.0, -2.5, 0.0), math::vec3(0.0, 0.0, 0.0));
     tank2->setName(std::string("tank_") + std::to_string(111));
     tank2->setFancyName("Tank 2");
