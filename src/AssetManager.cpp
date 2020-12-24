@@ -1,6 +1,9 @@
 #include <iostream>
 #include <functional>
 
+#define BT_USE_DOUBLE_PRECISION
+#include <bullet/BulletCollision/Gimpact/btGImpactCollisionAlgorithm.h>
+
 #include "AssetManager.hpp"
 #include "RenderContext.hpp"
 #include "Frustum.hpp"
@@ -41,20 +44,30 @@ AssetManager::~AssetManager(){
 
 
 void AssetManager::objectsInit(){
-    // testing terrain stuff
+    /* Warning: redundant object loading, this is fine now, as in the future the terrain 
+       collision will be built from heightmap data. I don't really mind loading the objects
+       twice, but in the future, if we have kinematic triangle meshes that need to be loaded
+       from the disk, this should only be done once. */
+
     btQuaternion quat;
-    std::unique_ptr<btCollisionShape> cube_shape_ground(new btBoxShape(btVector3(btScalar(25.), btScalar(25.), btScalar(25.))));
-    std::unique_ptr<Model> cube_model(new Model("../data/bigcube.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, m_frustum, m_render_context, math::vec3(0.75, 0.75, 0.75)));
-    
+    std::unique_ptr<Model> terrain_model(new Model("../data/terrain.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, m_frustum, m_render_context, math::vec3(0.75, 0.75, 0.75)));
+    std::unique_ptr<btTriangleIndexVertexArray> array;
+    std::unique_ptr<btGImpactMeshShape> shape;
+
+    load_bullet_trimesh(array, shape, std::string("../data/terrain.dae"));
+    shape->updateBound();
+
     quat.setEuler(0, 0, 0);
-    std::shared_ptr<Kinematic> ground = std::make_shared<Kinematic>(cube_model.get(), m_bt_wrapper, cube_shape_ground.get(), btScalar(0.0), 1);
+    std::shared_ptr<Kinematic> ground = std::make_shared<Kinematic>(terrain_model.get(), m_bt_wrapper, 
+                                                                    static_cast<btCollisionShape*>(shape.get()), btScalar(0.0), 1);
     ground->setCollisionGroup(CG_DEFAULT | CG_KINEMATIC);
     ground->setCollisionFilters(~CG_RAY_EDITOR_RADIAL & ~CG_RAY_EDITOR_SELECT); // by default, do not collide with radial attach. ray tests
     ground->addBody(btVector3(0.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0), quat);
+    ground->setTrimesh(array); // pass array ownership to the kinematic
+    
     m_kinematics.emplace_back(ground);
-
-    m_models.push_back(std::move(cube_model));
-    m_collision_shapes.push_back(std::move(cube_shape_ground));
+    m_models.push_back(std::move(terrain_model));
+    m_collision_shapes.push_back(std::move(shape));
 }
 
 

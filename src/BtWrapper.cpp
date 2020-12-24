@@ -1,5 +1,8 @@
 #include <mutex>
 
+#define BT_USE_DOUBLE_PRECISION
+#include <bullet/BulletCollision/Gimpact/btGImpactCollisionAlgorithm.h>
+
 #include "BtWrapper.hpp"
 #include "Object.hpp"
 #include "log.hpp"
@@ -23,6 +26,8 @@ void BtWrapper::init(const btVector3& gravity){
     m_overlapping_pair_cache.reset(new btDbvtBroadphase());
     m_solver.reset(new btSequentialImpulseConstraintSolver);
     m_dynamics_world.reset(new btDiscreteDynamicsWorld(m_dispatcher.get(), m_overlapping_pair_cache.get(), m_solver.get(), m_collision_configuration.get()));
+    btGImpactCollisionAlgorithm::registerAlgorithm(m_dispatcher.get());
+
     m_simulation_paused = true;
     m_end_simulation = false;
     m_average_load = 0.0;

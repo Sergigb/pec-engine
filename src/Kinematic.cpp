@@ -41,6 +41,14 @@ void Kinematic::renderOther(){
     ImGui::SetNextWindowSize(ImVec2(300.f, 300.f), ImGuiCond_Appearing);
     ImGui::Begin((m_fancy_name + ss.str()).c_str());
 
+    ImGui::Text("Test");
+
     ImGui::End();
 }
+
+
+void Kinematic::setTrimesh(std::unique_ptr<btTriangleIndexVertexArray>& array){
+    m_trimesh = std::move(array);
+}
+
 

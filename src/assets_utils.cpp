@@ -1,5 +1,11 @@
 #include <functional>
 
+#include <assimp/Importer.hpp>
+#include <assimp/scene.h>
+#include <assimp/postprocess.h>
+#define BT_USE_DOUBLE_PRECISION
+#include <bullet/BulletCollision/Gimpact/btGImpactCollisionAlgorithm.h>
+
 #include "assets_utils.hpp"
 #include "RenderContext.hpp"
 #include "parts/parts.hpp"
@@ -131,6 +137,62 @@ void load_parts(AssetManager& asset_manager){
     asset_manager.m_models.push_back(std::move(tank2_model));
     asset_manager.m_models.push_back(std::move(com_module_model));
     asset_manager.m_models.push_back(std::move(separator_model));
+}
+
+
+int load_bullet_trimesh(std::unique_ptr<btTriangleIndexVertexArray>& array, std::unique_ptr<btGImpactMeshShape>& shape, const std::string file){
+    int num_faces;
+    int num_vertices;
+    btScalar* points = nullptr;
+    int* indices = nullptr;
+
+    const aiMesh* mesh;
+    Assimp::Importer importer;
+    const aiScene* scene = importer.ReadFile(file, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices); // check for more flags
+
+    if(!scene){
+        log("asset_utils::load_bullet_trimesh: could not open file ", file, " (", importer.GetErrorString(), ")");
+        std::cerr << "asset_utils::load_bullet_trimesh: could not open file " << file << " (" << importer.GetErrorString() << ")" << std::endl;
+        return EXIT_FAILURE;
+    }
+
+    mesh = scene->mMeshes[0];
+    num_faces = mesh->mNumFaces;
+    num_vertices = mesh->mNumVertices;
+
+    if(mesh->HasPositions()){
+        points = new btScalar[num_vertices * 3];
+        for(int i = 0; i < num_vertices; i++){
+            const aiVector3D *vp = &(mesh->mVertices[i]);
+            points[i * 3] = (btScalar)vp->x;
+            points[i * 3 + 1] = (btScalar)vp->y;
+            points[i * 3 + 2] = (btScalar)vp->z;
+        }
+    }
+    if(mesh->HasFaces()){
+        indices = new int[num_faces * 3];
+        for(int i = 0; i < num_faces; i++){
+            indices[i * 3] = mesh->mFaces[i].mIndices[0];
+            indices[i * 3 + 1] = mesh->mFaces[i].mIndices[1];
+            indices[i * 3 + 2] = mesh->mFaces[i].mIndices[2];
+        }
+    }
+
+    array.reset(new btTriangleIndexVertexArray(num_faces,
+                                               indices,
+                                               3*sizeof(int),
+                                               num_vertices,
+                                               points,
+                                               sizeof(float)));
+
+    shape.reset(new btGImpactMeshShape(array.get()));
+
+    if(indices)
+        delete indices;
+    if(points)
+        delete points;
+
+    return EXIT_SUCCESS;
 }
 
 
