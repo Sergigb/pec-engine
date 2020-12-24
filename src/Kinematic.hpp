@@ -15,6 +15,7 @@ class Kinematic : public Object{
         ~Kinematic();
 
         void update(); // update position/velocity
+        void renderOther();
 };
 
 

@@ -12,6 +12,7 @@
 #include "Object.hpp"
 #include "BasePart.hpp"
 #include "log.hpp"
+#include "Kinematic.hpp"
 
 
 typedef std::map<std::uint32_t, std::shared_ptr<BasePart>>::iterator SubTreeIterator;
@@ -40,16 +41,17 @@ AssetManager::~AssetManager(){
 
 
 void AssetManager::objectsInit(){
+    // testing terrain stuff
     btQuaternion quat;
     std::unique_ptr<btCollisionShape> cube_shape_ground(new btBoxShape(btVector3(btScalar(25.), btScalar(25.), btScalar(25.))));
     std::unique_ptr<Model> cube_model(new Model("../data/bigcube.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, m_frustum, m_render_context, math::vec3(0.75, 0.75, 0.75)));
     
     quat.setEuler(0, 0, 0);
-    std::shared_ptr<Object> ground = std::make_shared<Object>(cube_model.get(), m_bt_wrapper, cube_shape_ground.get(), btScalar(0.0), 1);
+    std::shared_ptr<Kinematic> ground = std::make_shared<Kinematic>(cube_model.get(), m_bt_wrapper, cube_shape_ground.get(), btScalar(0.0), 1);
     ground->setCollisionGroup(CG_DEFAULT | CG_KINEMATIC);
     ground->setCollisionFilters(~CG_RAY_EDITOR_RADIAL & ~CG_RAY_EDITOR_SELECT); // by default, do not collide with radial attach. ray tests
     ground->addBody(btVector3(0.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0), quat);
-    m_objects.emplace_back(ground);
+    m_kinematics.emplace_back(ground);
 
     m_models.push_back(std::move(cube_model));
     m_collision_shapes.push_back(std::move(cube_shape_ground));

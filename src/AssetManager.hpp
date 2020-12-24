@@ -25,6 +25,7 @@ class BtWrapper;
 class Camera;
 class Resource;
 class AssetManager;
+class Kinematic;
 
 
 class AssetManager{
@@ -47,6 +48,7 @@ class AssetManager{
         void updateBuffer(std::vector<object_transform>& buffer_);
     public:
         std::vector<std::shared_ptr<Object>> m_objects;
+        std::vector<std::shared_ptr<Kinematic>> m_kinematics;
         std::vector<std::unique_ptr<btCollisionShape>> m_collision_shapes;
         std::map<std::uint32_t, std::unique_ptr<BasePart>> m_master_parts;
         std::map<std::uint32_t, std::unique_ptr<Resource>> m_resources;
