@@ -2,6 +2,7 @@
 
 #include <imgui.h>
 
+#include "BtWrapper.hpp"
 #include "Kinematic.hpp"
 #include "Object.hpp"
 #include "AssetManagerInterface.hpp"
@@ -47,7 +48,7 @@ void Kinematic::renderOther(){
 }
 
 
-void Kinematic::setTrimesh(std::unique_ptr<btTriangleIndexVertexArray>& array){
+void Kinematic::setTrimesh(std::unique_ptr<iv_array>& array){
     m_trimesh = std::move(array);
 }
 

@@ -51,11 +51,10 @@ void AssetManager::objectsInit(){
 
     btQuaternion quat;
     std::unique_ptr<Model> terrain_model(new Model("../data/terrain.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, m_frustum, m_render_context, math::vec3(0.75, 0.75, 0.75)));
-    std::unique_ptr<btTriangleIndexVertexArray> array;
+    std::unique_ptr<iv_array> array(new iv_array);
     std::unique_ptr<btGImpactMeshShape> shape;
 
     load_bullet_trimesh(array, shape, std::string("../data/terrain.dae"));
-    shape->updateBound();
 
     quat.setEuler(0, 0, 0);
     std::shared_ptr<Kinematic> ground = std::make_shared<Kinematic>(terrain_model.get(), m_bt_wrapper, 

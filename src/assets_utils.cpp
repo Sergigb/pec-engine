@@ -140,11 +140,9 @@ void load_parts(AssetManager& asset_manager){
 }
 
 
-int load_bullet_trimesh(std::unique_ptr<btTriangleIndexVertexArray>& array, std::unique_ptr<btGImpactMeshShape>& shape, const std::string file){
+int load_bullet_trimesh(std::unique_ptr<iv_array>& array, std::unique_ptr<btGImpactMeshShape>& shape, const std::string file){
     int num_faces;
     int num_vertices;
-    btScalar* points = nullptr;
-    int* indices = nullptr;
 
     const aiMesh* mesh;
     Assimp::Importer importer;
@@ -161,36 +159,33 @@ int load_bullet_trimesh(std::unique_ptr<btTriangleIndexVertexArray>& array, std:
     num_vertices = mesh->mNumVertices;
 
     if(mesh->HasPositions()){
-        points = new btScalar[num_vertices * 3];
+        array->points.reset(new btScalar[num_vertices * 3]);
         for(int i = 0; i < num_vertices; i++){
             const aiVector3D *vp = &(mesh->mVertices[i]);
-            points[i * 3] = (btScalar)vp->x;
-            points[i * 3 + 1] = (btScalar)vp->y;
-            points[i * 3 + 2] = (btScalar)vp->z;
+            array->points[i * 3] = (btScalar)vp->x;
+            array->points[i * 3 + 1] = (btScalar)vp->y;
+            array->points[i * 3 + 2] = (btScalar)vp->z;
         }
     }
     if(mesh->HasFaces()){
-        indices = new int[num_faces * 3];
+        array->indices.reset(new int[num_faces * 3]);
         for(int i = 0; i < num_faces; i++){
-            indices[i * 3] = mesh->mFaces[i].mIndices[0];
-            indices[i * 3 + 1] = mesh->mFaces[i].mIndices[1];
-            indices[i * 3 + 2] = mesh->mFaces[i].mIndices[2];
+            array->indices[i * 3] = mesh->mFaces[i].mIndices[0];
+            array->indices[i * 3 + 1] = mesh->mFaces[i].mIndices[1];
+            array->indices[i * 3 + 2] = mesh->mFaces[i].mIndices[2];
         }
     }
 
-    array.reset(new btTriangleIndexVertexArray(num_faces,
-                                               indices,
-                                               3*sizeof(int),
-                                               num_vertices,
-                                               points,
-                                               sizeof(float)));
+    array->bt_ivarray.reset(new btTriangleIndexVertexArray(num_faces,
+                                                           array->indices.get(),
+                                                           3*sizeof(int),
+                                                           num_vertices,
+                                                           array->points.get(),
+                                                           sizeof(btScalar)));
 
-    shape.reset(new btGImpactMeshShape(array.get()));
-
-    if(indices)
-        delete indices;
-    if(points)
-        delete points;
+    shape.reset(new btGImpactMeshShape(array->bt_ivarray.get()));
+    //shape->setLocalScaling(btVector3(1.f,1.f,1.f));
+    shape->updateBound();
 
     return EXIT_SUCCESS;
 }

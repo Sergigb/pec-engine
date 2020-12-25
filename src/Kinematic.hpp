@@ -6,10 +6,12 @@
 #include "Object.hpp"
 
 
+struct iv_array;
+
 
 class Kinematic : public Object{
     private:
-        std::unique_ptr<btTriangleIndexVertexArray> m_trimesh;
+        std::unique_ptr<iv_array> m_trimesh;
     protected:
 
     public:
@@ -21,7 +23,7 @@ class Kinematic : public Object{
         void update(); // update position/velocity
         void renderOther();
         // passes ownership of the triangle mesh to the current object
-        void setTrimesh(std::unique_ptr<btTriangleIndexVertexArray>& array);
+        void setTrimesh(std::unique_ptr<iv_array>& array);
 };
 
 

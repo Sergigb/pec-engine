@@ -45,6 +45,13 @@ struct myFilterCallback: public btOverlapFilterCallback{
 };
 */
 
+struct iv_array{
+    std::unique_ptr<btTriangleIndexVertexArray> bt_ivarray;
+    std::unique_ptr<btScalar[]> points;
+    std::unique_ptr<int[]> indices;
+};
+
+
 class BtWrapper{
     private:
         std::unique_ptr<btDefaultCollisionConfiguration> m_collision_configuration;
