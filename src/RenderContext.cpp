@@ -76,7 +76,7 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
 
 void RenderContext::setDebugDrawer(BtWrapper* bt_wrapper){
     m_bt_wrapper = bt_wrapper; // not needed????
-    m_debug_drawer.reset(new DebugDrawer());
+    m_debug_drawer.reset(new DebugDrawer(this));
     btDiscreteDynamicsWorld* d_world = m_bt_wrapper->getDynamicsWorld();
     d_world->setDebugDrawer(m_debug_drawer.get());
 }
@@ -88,11 +88,16 @@ RenderContext::~RenderContext(){
     glDeleteShader(m_text_shader);
     glDeleteShader(m_gui_shader);
     glDeleteShader(m_planet_shader);
+    glDeleteShader(m_debug_shader);
 }
 
 
 void RenderContext::loadShaders(){
     // shader setup (I don't like how this is organised)
+
+    m_debug_shader = create_programme_from_files("../shaders/debug_vs.glsl",
+                                                 "../shaders/debug_fs.glsl");
+    log_programme_info(m_planet_shader);
 
     m_planet_shader = create_programme_from_files("../shaders/planet_vs.glsl",
                                                     "../shaders/planet_fs.glsl");
@@ -397,6 +402,9 @@ void RenderContext::useProgram(int shader) const{
         case SHADER_PLANET:
             glUseProgram(m_planet_shader);
             break;
+        case SHADER_DEBUG:
+            glUseProgram(m_debug_draw);
+            break;
         default:
             std::cerr << "RenderContext::useProgram - wrong shader value " << shader << std::endl;
             log("RenderContext::useProgram - wrong shader value ", shader);
@@ -417,6 +425,8 @@ GLuint RenderContext::getUniformLocation(int shader, const char* location) const
             return glGetUniformLocation(m_gui_shader, location);
         case SHADER_PLANET:
             return glGetUniformLocation(m_planet_shader, location);
+        case SHADER_DEBUG:
+            return glGetUniformLocation(m_debug_draw, location);
         default:
             std::cerr << "RenderContext::getUniformLocation - wrong shader value " << shader << std::endl;
             log("RenderContext::getUniformLocation - wrong shader value ", shader);

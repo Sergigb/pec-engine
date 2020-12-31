@@ -25,6 +25,7 @@ struct object_transform;
 #define SHADER_TEXT 3
 #define SHADER_GUI 4
 #define SHADER_PLANET 5
+#define SHADER_DEBUG 6
 
 // gui modes, only editor for now
 #define GUI_MODE_NONE 0
@@ -48,6 +49,8 @@ class RenderContext{
 
         GLint m_planet_view_mat, m_planet_proj_mat, m_planet_light_pos, m_planet_relative_pos;
         GLuint m_planet_shader;
+
+        GLuint m_debug_shader;
         // shaders //
 
         GLuint m_bound_vao;
