@@ -98,6 +98,8 @@ void RenderContext::loadShaders(){
     m_debug_shader = create_programme_from_files("../shaders/debug_vs.glsl",
                                                  "../shaders/debug_fs.glsl");
     log_programme_info(m_planet_shader);
+    m_debug_view_mat = glGetUniformLocation(m_debug_shader, "view");
+    m_debug_proj_mat = glGetUniformLocation(m_debug_shader, "proj");
 
     m_planet_shader = create_programme_from_files("../shaders/planet_vs.glsl",
                                                     "../shaders/planet_fs.glsl");
@@ -310,6 +312,13 @@ void RenderContext::render(){
 
     // only for testing, might cause segmentation fault so be careful
     if(m_debug_draw){
+        glUseProgram(m_debug_shader);
+        glUniformMatrix4fv(m_debug_view_mat, 1, GL_FALSE, view_mat->m);
+        glUniformMatrix4fv(m_debug_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
+
+        dmath::vec3 cam_position = m_camera->getCamPosition();
+        m_debug_drawer->getReady();
+        m_debug_drawer->setCameraCenter(btVector3(cam_position.v[0], cam_position.v[1], cam_position.v[2]));
         m_bt_wrapper->getDynamicsWorld()->debugDrawWorld();
     }
 
@@ -520,6 +529,12 @@ void RenderContext::toggleDebugOverlay(){
 
 void RenderContext::toggleDebugDraw(){
     m_debug_draw = !m_debug_draw;
+    if(m_debug_draw){
+        std::cout << "Debug drawing activated" << std::endl;
+    }
+    else{
+        std::cout << "Debug drawing deactivated" << std::endl;
+    }
 }
 
 
