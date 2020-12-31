@@ -14,6 +14,8 @@ class DebugOverlay;
 class Model;
 class BaseGUI;
 class BasePart;
+class BtWrapper;
+class DebugDrawer;
 
 struct object_transform;
 
@@ -52,10 +54,12 @@ class RenderContext{
         GLuint m_bound_programme;
 
         std::unique_ptr<DebugOverlay> m_debug_overlay;
+        std::unique_ptr<DebugDrawer> m_debug_drawer;
 
         math::vec4 m_color_clear;
         const Camera* m_camera;
         const WindowHandler* m_window_handler;
+        BtWrapper* m_bt_wrapper;
         
         std::unique_ptr<Model> m_att_point_model;
         math::mat4 m_att_point_scale;
@@ -67,7 +71,7 @@ class RenderContext{
         int m_fb_width, m_fb_height;
         bool m_update_fb, m_update_projection;
 
-        bool m_draw_overlay, m_update_shaders;
+        bool m_debug_draw, m_draw_overlay, m_update_shaders;
         double m_rscene_acc_load_time, m_rgui_acc_load_time, m_rimgui_acc_load_time;
 
         // synchronization
@@ -103,9 +107,11 @@ class RenderContext{
         void bindVao(GLuint vao) const;
         void onFramebufferSizeUpdate(int width, int height);
         void toggleDebugOverlay();
+        void toggleDebugDraw();
         void setEditorGUI(BaseGUI* editor_ptr);
         void setEditorMode(short mode);
         void reloadShaders();
+        void setDebugDrawer(BtWrapper* bt_wrapper);
 
         GLuint getBoundShader() const;
         GLuint getBoundVao() const;

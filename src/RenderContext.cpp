@@ -5,6 +5,8 @@
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
 #include <imgui_impl_glfw.h>
+#define BT_USE_DOUBLE_PRECISION
+#include <bullet/BulletCollision/Gimpact/btGImpactCollisionAlgorithm.h>
 
 #include "RenderContext.hpp"
 #include "gl_utils.hpp"
@@ -16,6 +18,8 @@
 #include "BasePart.hpp"
 #include "buffers.hpp"
 #include "log.hpp"
+#include "DebugDrawer.hpp"
+#include "BtWrapper.hpp"
 
 
 RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_handler, render_buffers* buff_manager){
@@ -28,6 +32,7 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
     m_window_handler = window_handler;
     m_buffers = buff_manager;
     m_draw_overlay = false;
+    m_debug_draw = false;
     m_update_shaders = false;
     m_light_position = math::vec3(0.0f, 0.0f, 0.0f);
 
@@ -66,6 +71,14 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
 
     m_rscene_acc_load_time = 0.0;
     m_rgui_acc_load_time = 0.0;
+}
+
+
+void RenderContext::setDebugDrawer(BtWrapper* bt_wrapper){
+    m_bt_wrapper = bt_wrapper; // not needed????
+    m_debug_drawer.reset(new DebugDrawer());
+    btDiscreteDynamicsWorld* d_world = m_bt_wrapper->getDynamicsWorld();
+    d_world->setDebugDrawer(m_debug_drawer.get());
 }
 
 
@@ -290,6 +303,11 @@ void RenderContext::render(){
         lock->unlock();
     }
 
+    // only for testing, might cause segmentation fault so be careful
+    if(m_debug_draw){
+        m_bt_wrapper->getDynamicsWorld()->debugDrawWorld();
+    }
+
     end_scene_start_gui = std::chrono::steady_clock::now();
 
     glDisable(GL_DEPTH_TEST);
@@ -490,6 +508,11 @@ void RenderContext::toggleDebugOverlay(){
 }
 
 
+void RenderContext::toggleDebugDraw(){
+    m_debug_draw = !m_debug_draw;
+}
+
+
 void RenderContext::getDefaultFbSize(float& width, float& height) const{
     width = m_fb_width;
     height = m_fb_height;
@@ -583,6 +606,11 @@ void RenderContext::contextUpdatePlanetarium(){
     glUniformMatrix4fv(m_planet_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
 
     setLightPositionRender();
+
+    if(m_update_shaders){
+        m_update_shaders = false;
+        loadShaders();
+    }
 
     if(m_draw_overlay){
         glDisable(GL_DEPTH_TEST);

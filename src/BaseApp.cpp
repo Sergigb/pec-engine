@@ -35,6 +35,7 @@ void BaseApp::init(int gl_width, int gl_height){
     m_render_context.reset(new RenderContext(m_camera.get(), m_window_handler.get(), &m_buffers));
     m_window_handler->setRenderContext(m_render_context.get());
     m_bt_wrapper.reset(new BtWrapper(btVector3(0, -9.81, 0), &m_thread_monitor));
+    m_render_context->setDebugDrawer(m_bt_wrapper.get());
     m_asset_manager.reset(new AssetManager(m_render_context.get(), m_frustum.get(), m_bt_wrapper.get(), &m_buffers, m_camera.get()));
     m_player.reset(new Player(m_camera.get(), m_asset_manager.get(), m_input.get()));
 

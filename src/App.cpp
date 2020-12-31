@@ -736,6 +736,10 @@ void App::logic(){
         m_render_context->toggleDebugOverlay();
     }
 
+    if(m_input->pressed_keys[GLFW_KEY_F11] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
+        m_render_context->toggleDebugDraw();
+    }
+
     if(m_input->pressed_keys[GLFW_KEY_F] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
         m_clear_scene = true;
     }
@@ -746,7 +750,7 @@ void App::logic(){
         onRightMouseButton();
     }
 
-    if(m_input->pressed_keys[GLFW_KEY_F11] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
+    if(m_input->pressed_keys[GLFW_KEY_F10] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
         m_render_context->reloadShaders();
         m_render_context->setLightPosition(math::vec3(150.0, 100.0, 0.0));
     }
