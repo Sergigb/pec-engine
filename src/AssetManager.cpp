@@ -60,10 +60,12 @@ void AssetManager::objectsInit(){
     std::shared_ptr<Kinematic> ground = std::make_shared<Kinematic>(terrain_model.get(), m_bt_wrapper, 
                                                                     static_cast<btCollisionShape*>(shape.get()), btScalar(0.0), 1);
     ground->setCollisionGroup(CG_DEFAULT | CG_KINEMATIC);
-    ground->setCollisionFilters(~CG_RAY_EDITOR_RADIAL & ~CG_RAY_EDITOR_SELECT); // by default, do not collide with radial attach. ray tests
+    ground->setCollisionFilters(~CG_RAY_EDITOR_RADIAL & ~CG_RAY_EDITOR_SELECT);
     ground->addBody(btVector3(0.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0), quat);
     ground->setTrimesh(array); // pass array ownership to the kinematic
-    
+    ground->m_body->setCcdMotionThreshold(0.2);
+    ground->m_body->setCcdSweptSphereRadius(50.0);
+
     m_kinematics.emplace_back(ground);
     m_models.push_back(std::move(terrain_model));
     m_collision_shapes.push_back(std::move(shape));
@@ -315,6 +317,13 @@ void AssetManager::cleanup(){
 
     for(uint i=0; i < m_symmetry_subtrees.size(); i++){
         m_symmetry_subtrees.at(i)->removeBodiesSubtree();
+    }
+}
+
+
+void AssetManager::updateKinematics(){
+    for(uint i=0; i < m_kinematics.size(); i++){
+        m_kinematics.at(i)->update();
     }
 }
 

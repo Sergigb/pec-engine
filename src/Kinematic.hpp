@@ -13,6 +13,7 @@ class Kinematic : public Object{
     private:
         std::unique_ptr<iv_array> m_trimesh;
     protected:
+        btVector3 m_velocity;
 
     public:
         Kinematic(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID);

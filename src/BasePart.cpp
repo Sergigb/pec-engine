@@ -1,3 +1,6 @@
+#include <sstream>
+#include <iomanip>
+
 #include "BasePart.hpp"
 #include "Vessel.hpp"
 #include "AssetManagerInterface.hpp"
@@ -325,6 +328,14 @@ void BasePart::renderOther(){
             ImGui::ProgressBar(m_resources.at(i).mass / m_resources.at(i).max_mass);
         }
 
+        if(m_properties & PART_IS_CM){
+            std::ostringstream strs;
+            strs << "Speed: " << std::fixed << std::setprecision(1) << m_velocity.norm() << "m/s, "
+                 << (m_velocity.norm() * 3600) / 1000 << "km/h";
+            std::string str = strs.str();
+            ImGui::Text(str.c_str());
+        }
+
         ImGui::End();
     }
 }
@@ -375,6 +386,9 @@ void BasePart::setProperties(long long int flags){
 
 void BasePart::update(){
     // todo: here we should update the part weight, in case the resource ammount changes
+    if(m_properties & PART_IS_CM){ // move this later into a derived class
+        m_velocity = m_body->getLinearVelocity();
+    }
 }
 
 

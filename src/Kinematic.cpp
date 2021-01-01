@@ -10,12 +10,12 @@
 
 Kinematic::Kinematic(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID) : 
     Object(model, bt_wrapper, col_shape, mass, baseID){
-
+    m_velocity = btVector3(0.0, 0.0, 0.0);
 }
 
 
 Kinematic::Kinematic(const Kinematic& object) : Object(object){
-
+    m_velocity = btVector3(0.0, 0.0, 0.0);
 }
 
 
@@ -30,7 +30,12 @@ Kinematic::~Kinematic(){
 
 
 void Kinematic::update(){
-    
+    btTransform transform;
+    m_body->clearForces();
+    m_body->getMotionState()->getWorldTransform(transform);
+    transform.getOrigin() += m_velocity;
+    m_body->getMotionState()->setWorldTransform(transform);
+    m_body->saveKinematicState(1.0/60.0);
 }
 
 
@@ -38,11 +43,17 @@ void Kinematic::renderOther(){
     std::stringstream ss;
     ss << m_unique_id;
 
-    //ImGui::SetNextWindowPos(mousepos, ImGuiCond_Appearing);
     ImGui::SetNextWindowSize(ImVec2(300.f, 300.f), ImGuiCond_Appearing);
     ImGui::Begin((m_fancy_name + ss.str()).c_str());
 
-    ImGui::Text("Test");
+    float v[3];
+    v[0] = m_velocity.getX();
+    v[1] = m_velocity.getY();
+    v[2] = m_velocity.getZ();
+
+    ImGui::SliderFloat3("Velocity", v, -10.0f, 10.0f);
+
+    m_velocity = btVector3(v[0], v[1], v[2]);
 
     ImGui::End();
 }

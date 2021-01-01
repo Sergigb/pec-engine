@@ -15,6 +15,6 @@ struct iv_array;
 
 void load_parts(AssetManager& asset_manager);
 
-int load_bullet_trimesh(std::unique_ptr<iv_array>& array, std::unique_ptr<btGImpactMeshShape>& shape, const std::string file);
+int load_bullet_trimesh(std::unique_ptr<iv_array>& array, std::unique_ptr<btGImpactMeshShape>& shape, const std::string& file);
 
 #endif

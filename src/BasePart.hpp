@@ -59,6 +59,8 @@ class BasePart : public Object{
 
         AssetManagerInterface* m_asset_manager;
 
+        btVector3 m_velocity;  // remove me later
+
         void decoupleChilds();
         void decoupleSelf();
     public:
