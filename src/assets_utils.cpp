@@ -146,7 +146,7 @@ int load_bullet_trimesh(std::unique_ptr<iv_array>& array, std::unique_ptr<btGImp
 
     const aiMesh* mesh;
     Assimp::Importer importer;
-    const aiScene* scene = importer.ReadFile(file, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices); // check for more flags
+    const aiScene* scene = importer.ReadFile(file, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices);
 
     if(!scene){
         log("asset_utils::load_bullet_trimesh: could not open file ", file, " (", importer.GetErrorString(), ")");
@@ -181,7 +181,7 @@ int load_bullet_trimesh(std::unique_ptr<iv_array>& array, std::unique_ptr<btGImp
                                                            3*sizeof(int),
                                                            num_vertices,
                                                            array->points.get(),
-                                                           sizeof(btScalar)));
+                                                           3*sizeof(btScalar)));
 
     shape.reset(new btGImpactMeshShape(array->bt_ivarray.get()));
     //shape->setLocalScaling(btVector3(1.f,1.f,1.f));
@@ -189,9 +189,4 @@ int load_bullet_trimesh(std::unique_ptr<iv_array>& array, std::unique_ptr<btGImp
 
     return EXIT_SUCCESS;
 }
-
-
-
-
-
 
