@@ -65,7 +65,7 @@ void Object::addBody(const btVector3& origin, const btVector3& local_inertia, co
     start_transform.setOrigin(origin);
     start_transform.setRotation(initial_rotation);
 
-    bool is_dynamic = (m_mass != 0.f);
+    bool is_dynamic = (m_mass != 0.);
 
     if(is_dynamic)
         m_col_shape->calculateLocalInertia(m_mass, local_inertia_);
@@ -73,6 +73,12 @@ void Object::addBody(const btVector3& origin, const btVector3& local_inertia, co
     m_motion_state.reset(new btDefaultMotionState(start_transform));
     btRigidBody::btRigidBodyConstructionInfo rb_info(m_mass, m_motion_state.get(), m_col_shape, local_inertia_);
     m_body.reset(new btRigidBody(rb_info));
+
+    if(!is_dynamic)
+        m_body->setCollisionFlags(btCollisionObject::CF_KINEMATIC_OBJECT);
+
+    //m_body->setCcdMotionThreshold(0.2);
+    //m_body->setCcdSweptSphereRadius(100.0);
 
     m_bt_wrapper->addRigidBody(m_body.get(), m_col_group, m_col_filters);
     m_body->setUserPointer((void*)this);

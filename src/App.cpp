@@ -79,10 +79,6 @@ void App::run(){
         m_window_handler->update();
         m_frustum->extractPlanes(m_camera->getCenteredViewMatrix(), m_camera->getProjMatrix(), false);
 
-        if(!m_physics_pause){
-            m_asset_manager->updateKinematics();
-        }
-
         {  //wake up physics thread
             std::unique_lock<std::mutex> lck2(m_thread_monitor.mtx_start);
             m_thread_monitor.worker_start = true;
@@ -121,6 +117,10 @@ void App::run(){
                 m_thread_monitor.cv_end.wait(lck);
             }
             m_thread_monitor.worker_ended = false;
+        }
+
+        if(!m_physics_pause){
+            m_asset_manager->updateKinematics();
         }
 
         m_player->update();

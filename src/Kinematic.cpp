@@ -35,7 +35,6 @@ void Kinematic::update(){
     m_body->getMotionState()->getWorldTransform(transform);
     transform.getOrigin() += m_velocity;
     m_body->getMotionState()->setWorldTransform(transform);
-    m_body->saveKinematicState(1.0/60.0);
 }
 
 
