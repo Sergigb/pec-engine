@@ -55,7 +55,7 @@ class RenderContext{
         // shaders //
 
         GLuint m_bound_vao;
-        GLuint m_bound_programme;
+        int m_bound_programme;
 
         std::unique_ptr<DebugOverlay> m_debug_overlay;
         std::unique_ptr<DebugDrawer> m_debug_drawer;
@@ -117,7 +117,7 @@ class RenderContext{
         void reloadShaders();
         void setDebugDrawer(BtWrapper* bt_wrapper);
 
-        GLuint getBoundShader() const;
+        int getBoundShader() const;
         GLuint getBoundVao() const;
         void getDefaultFbSize(float& width, float& height) const;
         bool imGuiWantCaptureMouse() const;

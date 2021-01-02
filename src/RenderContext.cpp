@@ -46,7 +46,7 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
     m_att_point_scale.m[10] = 0.25;
 
     m_bound_vao = 0;
-    m_bound_programme = 0; // not used
+    m_bound_programme = 0;
 
     m_pause = false;
     m_stop = false;
@@ -384,7 +384,7 @@ void RenderContext::setAttPointModel(std::unique_ptr<Model>* att_point_model){
 }
 
 
-GLuint RenderContext::getBoundShader() const{
+int RenderContext::getBoundShader() const{
     return m_bound_programme;
 }
 
@@ -395,6 +395,9 @@ GLuint RenderContext::getBoundVao() const{
 
 
 void RenderContext::useProgram(int shader) const{
+    if(shader == m_bound_programme){
+        return;
+    }
     switch(shader){
         case SHADER_PHONG_BLINN:
             glUseProgram(m_pb_shader);
