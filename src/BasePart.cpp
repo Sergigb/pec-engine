@@ -330,9 +330,18 @@ void BasePart::renderOther(){
 
         if(m_properties & PART_IS_CM){
             std::ostringstream strs;
+            std::string str;
             strs << "Speed: " << std::fixed << std::setprecision(1) << m_velocity.norm() << "m/s, "
                  << (m_velocity.norm() * 3600) / 1000 << "km/h";
-            std::string str = strs.str();
+            str = strs.str();
+            
+            ImGui::Text(str.c_str());
+
+            btScalar acceleration = ((m_velocity - m_prev_velocity).norm() * 60.) / 9.81;
+            strs.str("");
+            strs.clear();
+            strs << "Acceleration: " << std::fixed << std::setprecision(1) << acceleration << "G";
+            str = strs.str();
             ImGui::Text(str.c_str());
         }
 
@@ -387,6 +396,7 @@ void BasePart::setProperties(long long int flags){
 void BasePart::update(){
     // todo: here we should update the part weight, in case the resource ammount changes
     if(m_properties & PART_IS_CM){ // move this later into a derived class
+        m_prev_velocity = m_velocity;
         m_velocity = m_body->getLinearVelocity();
     }
 }
