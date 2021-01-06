@@ -42,6 +42,7 @@ class WindowHandler{
 
         void update();
         void terminate();
+        void setWindowShouldClose();
 };
 
 

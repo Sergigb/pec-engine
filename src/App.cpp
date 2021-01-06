@@ -774,9 +774,12 @@ void App::logic(){
         std::cout << "Radial align: " << m_radial_align << std::endl;
     }
 
-
     if(m_input->pressed_keys[GLFW_KEY_F1] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
         m_asset_manager->m_editor_vessels.at(m_vessel_id)->printVessel();
+    }
+
+    if(m_input->pressed_keys[GLFW_KEY_ESCAPE] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
+        m_window_handler->setWindowShouldClose();
     }
 }
 
