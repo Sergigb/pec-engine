@@ -19,12 +19,16 @@ class BtWrapper;
 class RenderContext;
 class AssetManager;
 class Player;
+class GameEditor;
 
 
 class BaseApp{
     private:
         void init(int gl_width, int gl_height);
     protected:
+        // in the future there should be a base class that we make a friend of this one, and derive the others from that one
+        friend class GameEditor;
+
         std::unique_ptr<Input> m_input;
         std::unique_ptr<Camera> m_camera;
         std::unique_ptr<WindowHandler> m_window_handler;

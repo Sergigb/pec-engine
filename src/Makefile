@@ -7,7 +7,7 @@ LDLIBS =  -lGL -lGLEW -lglfw -lz -fopenmp -lfreetype -lassimp -lIrrXML -lBulletD
 OBJPATH = ../bin
 EXECPATH = ../bin
 
-BASESRCS = log.cpp utils.cpp gl_utils.cpp maths_funcs.cpp Camera.cpp Input.cpp WindowHandler.cpp Text2D.cpp FontAtlas.cpp Frustum.cpp DebugOverlay.cpp Model.cpp BtWrapper.cpp Object.cpp RenderContext.cpp BaseApp.cpp BasePart.cpp EditorGUI.cpp PartsPanelGUI.cpp id_manager.cpp Vessel.cpp AssetManager.cpp AssetManagerInterface.cpp Player.cpp Resource.cpp assets_utils.cpp StagingPanelGUI.cpp Kinematic.cpp DebugDrawer.cpp
+BASESRCS = log.cpp utils.cpp gl_utils.cpp maths_funcs.cpp Camera.cpp Input.cpp WindowHandler.cpp Text2D.cpp FontAtlas.cpp Frustum.cpp DebugOverlay.cpp Model.cpp BtWrapper.cpp Object.cpp RenderContext.cpp BaseApp.cpp BasePart.cpp EditorGUI.cpp PartsPanelGUI.cpp id_manager.cpp Vessel.cpp AssetManager.cpp AssetManagerInterface.cpp Player.cpp Resource.cpp assets_utils.cpp StagingPanelGUI.cpp Kinematic.cpp DebugDrawer.cpp GameEditor.cpp
 BASEOBJS = $(foreach source, $(BASESRCS), $(OBJPATH)/$(source:.cpp=.o))
 
 PARTSSRCS = $(wildcard parts/*.cpp)
@@ -46,7 +46,7 @@ $(OBJPATH)/%.o: ../thirdparty/imgui/%.cpp
 	$(CXX) $(INC) -O3 -Wall -Wformat -DIMGUI_IMPL_OPENGL_LOADER_GLEW -c $< -o $@
 
 clean: 
-	rm -f $(OBJPATH)/$(BASEOBJS) $(OBJPATH)/$(MAIN_APP_OBJS) $(OBJPATH)/$(PLANETARIUM_APP_OBJS) $(EXECPATH)/main $(EXECPATH)/planetarium
+	rm -f $(OBJPATH)/$(BASEOBJS) $(OBJPATH)/$(MAIN_APP_OBJS) $(OBJPATH)/$(PLANETARIUM_APP_OBJS) $(EXECPATH)/main $(EXECPATH)/planetarium $(OBJPATH)/$(PARTSOBJS)
 clean-main:
 	rm -f $(OBJPATH)/$(MAIN_APP_OBJS) $(EXECPATH)/main
 clean-planetarium:
