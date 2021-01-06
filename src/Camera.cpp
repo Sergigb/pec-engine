@@ -356,16 +356,18 @@ void Camera::orbitalCameraUpdate(){
 
     update();
 
-    m_prev_cam_input_mode = m_cam_input_mode;
-    if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2] && m_cam_input_mode == GLFW_CURSOR_NORMAL){
-        glfwSetInputMode(m_window_handler->getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-        m_cam_input_mode = GLFW_CURSOR_DISABLED;
+    if(m_input->keyboardPressed() || m_input->mouseMoved()){
+        m_prev_cam_input_mode = m_cam_input_mode;
+        if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2] && m_cam_input_mode == GLFW_CURSOR_NORMAL){
+            glfwSetInputMode(m_window_handler->getWindow(), GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            m_cam_input_mode = GLFW_CURSOR_DISABLED;
+        }
+        else if(!m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2] && m_cam_input_mode == GLFW_CURSOR_DISABLED){
+            glfwSetInputMode(m_window_handler->getWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+            m_cam_input_mode = GLFW_CURSOR_NORMAL;
+        }
     }
-    else if(!m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2] && m_cam_input_mode == GLFW_CURSOR_DISABLED){
-        glfwSetInputMode(m_window_handler->getWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
-        m_cam_input_mode = GLFW_CURSOR_NORMAL;
-    }
-
+    
     if(m_input->mouseMoved() && m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2]){
         double dif_x, dif_y, posx, posy, mouse_posx_last, mouse_posy_last;
         m_input->getMousePos(posx, posy);
