@@ -372,10 +372,10 @@ void Planetarium::render_side(struct surface_node& node, math::mat4& planet_tran
         else{
             if(!node.uppermost_textured_parent->loading && !node.uppermost_textured_parent->data_ready){
                 node.uppermost_textured_parent->loading = true;
-                std::thread thread(async_texture_load, node.uppermost_textured_parent);
-                thread.detach();
-                //async_texture_load(node.uppermost_textured_parent);
-                //bind_loaded_texture(*node.uppermost_textured_parent);
+                //std::thread thread(async_texture_load, node.uppermost_textured_parent);
+                //thread.detach();
+                async_texture_load(node.uppermost_textured_parent);
+                bind_loaded_texture(*node.uppermost_textured_parent);
             }
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, node.uppermost_textured_parent->tex_id_lod);
@@ -397,10 +397,10 @@ void Planetarium::render_side(struct surface_node& node, math::mat4& planet_tran
         else{
             if(!node.loading && !node.data_ready){
                 node.loading = true;
-                std::thread thread(async_texture_load, &node);
-                thread.detach();
-                //async_texture_load(&node);
-                //bind_loaded_texture(node);
+                //std::thread thread(async_texture_load, &node);
+                //thread.detach();
+                async_texture_load(&node);
+                bind_loaded_texture(node);
             }
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, node.tex_id_lod);
@@ -476,7 +476,7 @@ void clean_side(struct surface_node& node, int num_levels){ // num_levels should
         stbi_image_free(node.data);
         stbi_image_free(node.data_elevation);
     }
-    if(node.level < 4){
+    if(node.level < 4){ // should check if num_levels is less than 4 too
         for(uint i=0; i < 4; i++){
             clean_side(*node.childs[i], num_levels);
         }
@@ -535,7 +535,7 @@ void Planetarium::run(){
 
         ////////////////////
 
-        bind_loaded_textures();
+        //bind_loaded_textures();
 
         math::mat4 planet_transform_world;
         dmath::mat4 dplanet_transform_world = planet_transform;

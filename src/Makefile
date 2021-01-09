@@ -1,13 +1,13 @@
 CXX = g++
 CC = gcc
 INC = -I../include/ -I../include/bullet/ -I/usr/include/freetype2 -I../include/imgui/
-CXXFLAGS = $(INC) -Wall -Wextra -Werror -pedantic -ubsan -g
+CXXFLAGS = $(INC) 
 LDFLAGS = -L../lib/
 LDLIBS =  -lGL -lGLEW -lglfw -lz -fopenmp -lfreetype -lassimp -lIrrXML -lBulletDynamics -lBulletCollision -lLinearMath -lpng
 OBJPATH = ../bin
 EXECPATH = ../bin
 
-BASESRCS = log.cpp utils.cpp gl_utils.cpp maths_funcs.cpp Camera.cpp Input.cpp WindowHandler.cpp Text2D.cpp FontAtlas.cpp Frustum.cpp DebugOverlay.cpp Model.cpp BtWrapper.cpp Object.cpp RenderContext.cpp BaseApp.cpp BasePart.cpp EditorGUI.cpp PartsPanelGUI.cpp id_manager.cpp Vessel.cpp AssetManager.cpp AssetManagerInterface.cpp Player.cpp Resource.cpp assets_utils.cpp StagingPanelGUI.cpp Kinematic.cpp DebugDrawer.cpp GameEditor.cpp
+BASESRCS = log.cpp utils.cpp gl_utils.cpp maths_funcs.cpp Camera.cpp Input.cpp WindowHandler.cpp Text2D.cpp FontAtlas.cpp Frustum.cpp DebugOverlay.cpp Model.cpp BtWrapper.cpp Object.cpp RenderContext.cpp BaseApp.cpp BasePart.cpp EditorGUI.cpp PartsPanelGUI.cpp id_manager.cpp Vessel.cpp AssetManager.cpp AssetManagerInterface.cpp Player.cpp Resource.cpp assets_utils.cpp StagingPanelGUI.cpp Kinematic.cpp DebugDrawer.cpp GameEditor.cpp Planet.cpp planet_utils.cpp
 BASEOBJS = $(foreach source, $(BASESRCS), $(OBJPATH)/$(source:.cpp=.o))
 
 PARTSSRCS = $(wildcard parts/*.cpp)

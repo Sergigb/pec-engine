@@ -12,6 +12,7 @@
 #include "AssetManagerInterface.hpp"
 #include "assets_utils.hpp"
 #include "buffers.hpp"
+#include "Planet.hpp"
 
 
 class Model;
@@ -32,6 +33,7 @@ class AssetManager{
     private:
         void objectsInit();
         void initResources();
+        void initPlanets();
 
         RenderContext* m_render_context;
         const Frustum* m_frustum;
@@ -53,6 +55,7 @@ class AssetManager{
         std::map<std::uint32_t, std::unique_ptr<BasePart>> m_master_parts;
         std::map<std::uint32_t, std::unique_ptr<Resource>> m_resources;
         std::vector<std::unique_ptr<Model>> m_models;
+        std::vector<std::unique_ptr<Planet>> m_planets;
 
         // command buffers
         std::vector<struct set_motion_state_msg> m_set_motion_state_buffer;

@@ -35,6 +35,7 @@ AssetManager::AssetManager(RenderContext* render_context, const Frustum* frustum
     initResources();
     objectsInit();
     load_parts(*this);
+    initPlanets();
 }
 
 
@@ -63,8 +64,6 @@ void AssetManager::objectsInit(){
     ground->setCollisionFilters(~CG_RAY_EDITOR_RADIAL & ~CG_RAY_EDITOR_SELECT);
     ground->addBody(btVector3(0.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0), quat);
     ground->setTrimesh(array); // pass array ownership to the kinematic
-    ground->m_body->setCcdMotionThreshold(0.2);
-    ground->m_body->setCcdSweptSphereRadius(50.0);
 
     m_kinematics.emplace_back(ground);
     m_models.push_back(std::move(terrain_model));
@@ -325,5 +324,13 @@ void AssetManager::updateKinematics(){
     for(uint i=0; i < m_kinematics.size(); i++){
         m_kinematics.at(i)->update();
     }
+}
+
+
+void AssetManager::initPlanets(){
+    Planet::loadBases(m_frustum, m_render_context);
+
+    std::unique_ptr<Planet> earth = std::make_unique<Planet>(m_render_context);
+    m_planets.emplace_back(std::move(earth));
 }
 
