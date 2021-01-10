@@ -31,6 +31,11 @@ struct object_transform;
 #define GUI_MODE_NONE 0
 #define GUI_MODE_EDITOR 1
 
+// renders states, ie what to render
+#define RENDER_NOTHING 0
+#define RENDER_EDITOR 1
+#define RENDER_UNIVERSE 2
+
 
 class RenderContext{
     private:
@@ -88,6 +93,8 @@ class RenderContext{
 
         double m_glfw_time;
 
+        short m_render_state;
+
         void initGl();
         void initImgui();
         void run();
@@ -96,6 +103,10 @@ class RenderContext{
         void renderImGui();
         void loadShaders();
         void setLightPositionRender();
+
+        int renderSceneEditor();
+        int renderObjects();
+        void renderBulletDebug(const math::mat4* view_mat);
     public:
         RenderContext(const Camera* camera, const WindowHandler* window_handler, render_buffers* buff_manager);
         ~RenderContext();
@@ -113,9 +124,10 @@ class RenderContext{
         void toggleDebugOverlay();
         void toggleDebugDraw();
         void setEditorGUI(BaseGUI* editor_ptr);
-        void setEditorMode(short mode);
+        void setGUIMode(short mode);
         void reloadShaders();
         void setDebugDrawer(BtWrapper* bt_wrapper);
+        void setRenderState(char state);
 
         int getBoundShader() const;
         GLuint getBoundVao() const;

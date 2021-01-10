@@ -73,6 +73,7 @@ void GameEditor::start(){
     int ticks_since_last_update = 0;
 
     m_render_context->setGUIMode(GUI_MODE_EDITOR);
+    m_render_context->setRenderState(RENDER_EDITOR);
 
     while(!m_exit_editor){
         loop_start_load = std::chrono::steady_clock::now();

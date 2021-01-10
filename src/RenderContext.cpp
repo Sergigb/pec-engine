@@ -61,6 +61,8 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
 
     loadShaders();
 
+    m_render_state = RENDER_NOTHING;
+
     // debug overlay
     m_debug_overlay.reset(new DebugOverlay(fb_width, fb_height, this));
 
@@ -230,11 +232,78 @@ void RenderContext::renderAttPoints(const BasePart* part, int& num_rendered, con
 }
 
 
-void RenderContext::render(){
-    int num_rendered = 0;
+int RenderContext::renderSceneEditor(){
+    int num_rendered;
+
+    num_rendered = renderObjects();
+    return num_rendered;
+}
+
+
+int RenderContext::renderObjects(){
     const std::vector<object_transform>* buff;
     const math::mat4* view_mat;
     std::mutex* lock;
+    int num_rendered;
+
+    if(m_buffers->last_updated != none){
+        if(m_buffers->last_updated == buffer_1){
+            m_buffers->buffer1_lock.lock(); // extremely unlikely to not get the lock
+            buff = &m_buffers->buffer1;
+            view_mat = &m_buffers->view_mat1;
+            lock = &m_buffers->buffer1_lock;
+        }
+        else{
+            m_buffers->buffer2_lock.lock();
+            buff = &m_buffers->buffer2;
+            view_mat = &m_buffers->view_mat2;
+            lock = &m_buffers->buffer2_lock;
+        }
+
+        // buffer update
+        glUseProgram(m_pb_notex_shader);
+        glUniformMatrix4fv(m_pb_notex_view_mat, 1, GL_FALSE, view_mat->m);
+        glUniformMatrix4fv(m_pb_notex_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
+
+        glUseProgram(m_pb_shader);
+        glUniformMatrix4fv(m_pb_view_mat, 1, GL_FALSE, view_mat->m);
+        glUniformMatrix4fv(m_pb_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
+
+        glUseProgram(m_planet_shader);
+        glUniformMatrix4fv(m_planet_view_mat, 1, GL_FALSE, view_mat->m);
+        glUniformMatrix4fv(m_planet_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
+
+        for(uint i=0; i<buff->size(); i++){
+            BasePart* part = dynamic_cast<BasePart*>(buff->at(i).object_ptr.get());
+            if(part){
+                renderAttPoints(part, num_rendered, buff->at(i).transform);
+            }
+            num_rendered += buff->at(i).object_ptr->render(buff->at(i).transform);
+        }
+        lock->unlock();
+
+        if(m_debug_draw){
+            renderBulletDebug(view_mat);
+        }
+    }
+    return num_rendered;
+}
+
+
+void RenderContext::renderBulletDebug(const math::mat4* view_mat){
+    glUseProgram(m_debug_shader);
+    glUniformMatrix4fv(m_debug_view_mat, 1, GL_FALSE, view_mat->m);
+    glUniformMatrix4fv(m_debug_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
+
+    dmath::vec3 cam_position = m_camera->getCamPosition();
+    m_debug_drawer->getReady();
+    m_debug_drawer->setCameraCenter(btVector3(cam_position.v[0], cam_position.v[1], cam_position.v[2]));
+    m_bt_wrapper->getDynamicsWorld()->debugDrawWorld();
+}
+
+
+void RenderContext::render(){
+    int num_rendered = 0;
 
     std::chrono::steady_clock::time_point start_scene, end_scene_start_gui, end_gui_start_imgui, end_imgui;
 
@@ -273,54 +342,20 @@ void RenderContext::render(){
 
     setLightPositionRender();
 
-    if(m_buffers->last_updated != none){
-        if(m_buffers->last_updated == buffer_1){
-            m_buffers->buffer1_lock.lock(); // extremely unlikely to not get the lock
-            buff = &m_buffers->buffer1;
-            view_mat = &m_buffers->view_mat1;
-            lock = &m_buffers->buffer1_lock;
-        }
-        else{
-            m_buffers->buffer2_lock.lock();
-            buff = &m_buffers->buffer2;
-            view_mat = &m_buffers->view_mat2;
-            lock = &m_buffers->buffer2_lock;
-        }
-
-        // buffer update
-        glUseProgram(m_pb_notex_shader);
-        glUniformMatrix4fv(m_pb_notex_view_mat, 1, GL_FALSE, view_mat->m);
-        glUniformMatrix4fv(m_pb_notex_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
-
-        glUseProgram(m_pb_shader);
-        glUniformMatrix4fv(m_pb_view_mat, 1, GL_FALSE, view_mat->m);
-        glUniformMatrix4fv(m_pb_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
-
-        glUseProgram(m_planet_shader);
-        glUniformMatrix4fv(m_planet_view_mat, 1, GL_FALSE, view_mat->m);
-        glUniformMatrix4fv(m_planet_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
-
-        for(uint i=0; i<buff->size(); i++){
-            BasePart* part = dynamic_cast<BasePart*>(buff->at(i).object_ptr.get());
-            if(part){
-                renderAttPoints(part, num_rendered, buff->at(i).transform);
-            }
-            num_rendered += buff->at(i).object_ptr->render(buff->at(i).transform);
-        }
-        lock->unlock();
+    switch(m_render_state){
+        case RENDER_NOTHING:
+            break;
+        case RENDER_EDITOR:
+            renderSceneEditor();
+            break;
+        case RENDER_UNIVERSE:
+            // ...
+            break;
+        default:
+            std::cerr << "RenderContext::render: Warning, invalid render state value (" << (int)m_render_state << ")" << std::endl;
+            log("RenderContext::render: Warning, invalid render state value (", (int)m_render_state, ")");
     }
-
-    // only for testing, might cause segmentation fault so be careful
-    if(m_debug_draw){
-        glUseProgram(m_debug_shader);
-        glUniformMatrix4fv(m_debug_view_mat, 1, GL_FALSE, view_mat->m);
-        glUniformMatrix4fv(m_debug_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
-
-        dmath::vec3 cam_position = m_camera->getCamPosition();
-        m_debug_drawer->getReady();
-        m_debug_drawer->setCameraCenter(btVector3(cam_position.v[0], cam_position.v[1], cam_position.v[2]));
-        m_bt_wrapper->getDynamicsWorld()->debugDrawWorld();
-    }
+    
 
     end_scene_start_gui = std::chrono::steady_clock::now();
 
@@ -552,7 +587,7 @@ void RenderContext::setEditorGUI(BaseGUI* editor_ptr){
 }
 
 
-void RenderContext::setEditorMode(short mode){
+void RenderContext::setGUIMode(short mode){
     m_gui_mode = mode;
 }
 
@@ -651,4 +686,10 @@ void RenderContext::contextUpdatePlanetarium(){
 void RenderContext::reloadShaders(){
     m_update_shaders = true;
 }
+
+
+void RenderContext::setRenderState(char state){
+    m_render_state = state;
+}
+
 
