@@ -10,8 +10,6 @@ list of stuff i have to do/fix
 - future optimization: getRigidBodyTransformSingle seems to be quite expensive, try to do something about it
 - IMPORTANT: fix glBindVertexArray calls in Text2D, maybe other places???
 - check model destructor, doesnt check if the buffers are initialised
-- move the render buffers to the btwrapper class?
-- useProgram should be used in RenderContext too
 - I'm still thinking about this, but the rendering of the objects should be moved to renderScene or something like that, where the scene is rendered to whatever fb is bound. This would make rendering multiple views simpler (different fbs). Also, we should make a method to change the projection matrix to whatever shader we need.
 - implement a callback system for when the frame buffer is updated, I don't like having to call manually the camera and the render context (what if we have more than one of those?)
 - create a render scene function that can be called from anyone from the render thread. This is to be used when other framebuffers are bound (other cameras).
@@ -19,14 +17,11 @@ list of stuff i have to do/fix
 - disable depth test should be called in the gui render function, not in the render context - no it should not, the same shit goes for the text - it causes depth error in the gui -> fix
 - investigate  glGetError invalid operation (not caused by the render thread - App?)
 - save ortho projection in the render context and have a method to get it. That's useful for when we have other framebuffers and we want to restore the default projection uniform value
-- decide what to do with useProgram and bindVao...
 - I dont like dynamic casts in the render function, why not let the object decide wether to draw the att points or not? the render context should have a boolean to keep track of wether the game is paused or not
-- shader hot reloading should be possible
 - better cout/cerr/log messages
 - remove childs in Vessel shoudl check if the parent is nullptr (or just root?)
 - needBroadphaseCollision could be used to filter collison between vessel parts
 - new camera management is needed
-- move all hpp/h includes to the cpp's, forward declare stuff
 - remove input from camera class, create player class
 - thing for the far far future, disable msaa when rendering the gui
 - fix ErrorCheckEndFrameSanityChecks, most likely requires buffers... :(((
@@ -34,14 +29,25 @@ list of stuff i have to do/fix
 - avoid using m_dynamics_world to get the object in the world, just use the arrays in the asset manager 
 - CoM needs to be calculated (and probably updated, paused or not) and used as the center of the camera
 - check asset manager, why do we need to do the following :"    btVector3 btv_cam_origin(cam_origin.v[0], cam_origin.v[1], cam_origin.v[2]);"?????????????????''
-- player files are tabulated...
-- clearing scene/deleting object sometimes segfaults
 - in the GUI picking thing, why do we return the pointer to the shared pointer?? why not just he value of the pointer=????
 - update part weight in update method
 - maybe we need a method in Vessel to remove all the childs of a part (to avoid having to call onTreeUpdate from BasePart)
 - Z should be the roll vector in everything, the vessels will have to be rotated. In the editor the vessels will have to be rotated 90, which will probably mess up the radial attaching, this will have to be solved.
 - we should precomput the ortho projection matrix in the render context to avoid having to re-bind it in the shaders, and have a method that restores its value back to the uniforms
 - In app, I'm changing alot from math:: to bullet math, I think I should make the attachments use bullet vectors to avoid this, and implement math::arb_perpendicular for bullet vectors.
+- it should not be necessary to load all the stuff in the planetarium, make a macro or something to avoid including all the stuff in the load asset manager blablabl
+- use make_shared for shared pointers or make_unique for unique, instead of new (the clone method should probable take a shared pointer for that particular case?)
+- investigate why CG_RAY_EDITOR_RADIAL doesn't seem to be working, but it still seems to be working? When we clone a subtree we don't need to ~CG_RAY_EDITOR_RADIAL to the mask, for some reason??
+- also look into move semantics, we should use them in shared pointers when we append to stuff
+- getPickedObject, from the editor GUI, should not return a pointer to a shared pointer. Why not just a pointer? Look into it
+- in the input class I don't think we need to prev mouse cursor input mode, just the current one
+- need a utils file that converts math/dmath:: to bulletMath and viceversa
+- add internal var in render context that retains the bound shader, that way we can avoid calling opengl's bindProgram if we can
+- should the guis be handled by their corresponding subcomponents (editor, game...)?
+- possible uninitialization in render context, view mat when bullet debug drawing
+- check for leaks in planet
+- create a scene class to render different scenes (editor, space, planetarium etc)
+- classes should have the frame time (1/60)
 
 
 Interesting links:
