@@ -1,7 +1,7 @@
 CXX = g++
 CC = gcc
 INC = -I../include/ -I../include/bullet/ -I/usr/include/freetype2 -I../include/imgui/
-CXXFLAGS = $(INC) 
+CXXFLAGS = $(INC) -Wall -Wextra -Werror -pedantic -ubsan -g
 LDFLAGS = -L../lib/
 LDLIBS =  -lGL -lGLEW -lglfw -lz -fopenmp -lfreetype -lassimp -lIrrXML -lBulletDynamics -lBulletCollision -lLinearMath -lpng
 OBJPATH = ../bin
