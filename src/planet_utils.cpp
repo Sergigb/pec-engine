@@ -12,12 +12,17 @@ namespace plutils{
         node.patch_translation = parent.patch_translation;
         node.patch_translation.v[1] += (node.scale / 2) * sign_side_1;
         node.patch_translation.v[2] += (node.scale / 2) * sign_side_2;
+
+        short scale = pow(2.0, node.level);
+        node.tex_shift_lod.v[0] = parent.tex_shift_lod.v[0] + (1.0f / scale) * sign_side_1;
+        node.tex_shift_lod.v[1] = parent.tex_shift_lod.v[1] + (1.0f / scale) * sign_side_2;
+
         if(node.level <= 4){
             node.tex_shift.v[0] = 0.0f;
             node.tex_shift.v[1] = 0.0f;
         }
         else{
-            short scale = pow(2.0, short(node.level - node.uppermost_textured_parent->level) + 1);
+            scale = pow(2.0, short(node.level - node.uppermost_textured_parent->level) + 1);
 
             node.tex_shift.v[0] = parent.tex_shift.v[0] + (1.0 / scale) * sign_side_1;
             node.tex_shift.v[1] = parent.tex_shift.v[1] + (1.0 / scale) * sign_side_2;
@@ -29,26 +34,14 @@ namespace plutils{
         int tex_x, tex_y, n_channels;
         std::ostringstream fname;
 
-        if(node.level <= 1){
-            glGenTextures(1, &node.tex_id);
-            glBindTexture(GL_TEXTURE_2D, node.tex_id);
-            fname << "../data/earth_textures/"
-                  << node.level << "_" 
-                  << (short)node.side << "_" 
-                  << node.x << "_"
-                  << node.y << ".png";
-            node.texture_loaded = true;
-        }
-        else{
-            glGenTextures(1, &node.tex_id_lod);
-            glBindTexture(GL_TEXTURE_2D, node.tex_id_lod);
-            fname << "../data/earth_textures/thumb_"
-                  << node.level << "_" 
-                  << (short)node.side << "_" 
-                  << node.x << "_"
-                  << node.y << ".png";
-            node.texture_loaded = false;
-        }
+        glGenTextures(1, &node.tex_id);
+        glBindTexture(GL_TEXTURE_2D, node.tex_id);
+        fname << "../data/earth_textures/"
+              << node.level << "_" 
+              << (short)node.side << "_" 
+              << node.x << "_"
+              << node.y << ".png";
+        node.texture_loaded = true;
 
         unsigned char* data = stbi_load(fname.str().c_str(), &tex_x, &tex_y, &n_channels, 0);
 
@@ -66,24 +59,13 @@ namespace plutils{
         int tex_x, tex_y, n_channels;
         std::ostringstream fname;
 
-        if(node.level <= 1){
-            glGenTextures(1, &node.e_tex_id);
-            glBindTexture(GL_TEXTURE_2D, node.e_tex_id);
-            fname << "../data/earth_textures/elevation/e_"
-                  << node.level << "_" 
-                  << (short)node.side << "_" 
-                  << node.x << "_"
-                  << node.y << ".png";
-        }
-        else{
-            glGenTextures(1, &node.e_tex_id_lod);
-            glBindTexture(GL_TEXTURE_2D, node.e_tex_id_lod);
-            fname << "../data/earth_textures/elevation/thumb_e_"
-                  << node.level << "_" 
-                  << (short)node.side << "_" 
-                  << node.x << "_"
-                  << node.y << ".png";
-        }
+        glGenTextures(1, &node.e_tex_id);
+        glBindTexture(GL_TEXTURE_2D, node.e_tex_id);
+        fname << "../data/earth_textures/elevation/e_"
+              << node.level << "_" 
+              << (short)node.side << "_" 
+              << node.x << "_"
+              << node.y << ".png";
 
         unsigned char* data = stbi_load(fname.str().c_str(), &tex_x, &tex_y, &n_channels, 0);
 
@@ -127,17 +109,16 @@ namespace plutils{
             node.childs[i]->ticks_since_last_use = 0;
             node.childs[i]->data_ready = false;
             node.childs[i]->has_elevation = true;
+            node.childs[i]->tex_id_fl = node.tex_id_fl;
+            node.childs[i]->texture_scale_lod = node.texture_scale_lod / 2.0;
             if(node.level + 1 < 5){
                 node.childs[i]->texture_scale = 1.0;
-                bind_texture(*node.childs[i]);
-                bind_elevation_texture(*node.childs[i]);
                 node.childs[i]->uppermost_textured_parent = node.childs[i].get();
             }
             else {
                 node.childs[i]->texture_scale = node.texture_scale / 2.0;
                 node.childs[i]->uppermost_textured_parent = node.uppermost_textured_parent;
             }
-
         }
 
         set_transform(*node.childs[0].get(), node, 1, 1);
@@ -174,6 +155,7 @@ void plutils::build_surface(struct planet_surface& surface){
     for(uint i=0; i < 6; i++){
         surface.surface_tree[i].patch_translation = dmath::vec3(0.5, 0.0, 0.0);
         surface.surface_tree[i].tex_shift = math::vec2(0.0, 0.0);
+        surface.surface_tree[i].tex_shift_lod = math::vec2(0.0, 0.0);
         surface.surface_tree[i].scale = 1.0;
         surface.surface_tree[i].level = 1;
         surface.surface_tree[i].has_texture = true;
@@ -183,10 +165,13 @@ void plutils::build_surface(struct planet_surface& surface){
         surface.surface_tree[i].ticks_since_last_use = 0;
         surface.surface_tree[i].data_ready = false;
         surface.surface_tree[i].has_elevation = true;
-        surface.surface_tree[i].texture_scale = 1.0;
+        surface.surface_tree[i].texture_scale = 1.0f;
+        surface.surface_tree[i].texture_scale_lod = 1.0f;
         surface.surface_tree[i].uppermost_textured_parent = &surface.surface_tree[i];
         bind_texture(surface.surface_tree[i]);
+        surface.surface_tree[i].tex_id_fl = surface.surface_tree[i].tex_id;
         bind_elevation_texture(surface.surface_tree[i]);
+        surface.surface_tree[i].e_tex_id_fl = surface.surface_tree[i].e_tex_id;
         build_childs(surface.surface_tree[i], num_levels);
     }
 }
@@ -196,10 +181,6 @@ void plutils::clean_side(struct surface_node& node, int num_levels){ // num_leve
     /*
     Warning: we are not checking if there's any thread loading textures in the background, this should be done in the future!
     */
-    if(node.level != 1){ // first level doesn't have lod
-        glDeleteTextures(1, &node.tex_id_lod);
-        glDeleteTextures(1, &node.e_tex_id_lod);
-    }
     if(node.texture_loaded){
         glDeleteTextures(1, &node.tex_id);
         glDeleteTextures(1, &node.e_tex_id);

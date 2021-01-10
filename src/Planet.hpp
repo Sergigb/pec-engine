@@ -31,7 +31,7 @@ class RenderContext;
 
 struct surface_node{
     dmath::vec3 patch_translation;
-    math::vec2 tex_shift;
+    math::vec2 tex_shift, tex_shift_lod;
     double scale; // scale = 1/depth
     dmath::versor base_rotation;
     std::unique_ptr<struct surface_node> childs[4];
@@ -39,11 +39,11 @@ struct surface_node{
     bool has_elevation;
     short level, x, y;
     char side, ticks_since_last_use;
-    GLuint tex_id, tex_id_lod;
-    GLuint e_tex_id, e_tex_id_lod;
+    GLuint tex_id, tex_id_fl; // tex_id_fl, texture id first level, used for lod
+    GLuint e_tex_id, e_tex_id_fl;
     unsigned char* data, * data_elevation;
     int tex_x, tex_y, e_tex_x, e_tex_y;
-    float texture_scale;
+    float texture_scale, texture_scale_lod;
     struct surface_node* uppermost_textured_parent;
 
     ~surface_node(){
@@ -70,8 +70,6 @@ class Planet{
         static std::unique_ptr<Model> m_base32;
         static std::unique_ptr<Model> m_base64;
         static std::unique_ptr<Model> m_base128;
-
-        dmath::mat4 m_planet_transform;
 
         std::vector<struct surface_node*> bound_nodes;
         std::vector<struct surface_node*> data_ready_nodes;

@@ -13,8 +13,6 @@ std::unique_ptr<Model> Planet::m_base128;
 
 
 Planet::Planet(RenderContext* render_context){
-    m_planet_transform = dmath::identity_mat4();
-
     m_surface.max_levels = 6;
     m_surface.planet_sea_level = 6371000.f;
     plutils::build_surface(m_surface);
