@@ -51,7 +51,7 @@ void AssetManager::objectsInit(){
        from the disk, this should only be done once. */
 
     btQuaternion quat;
-    std::unique_ptr<Model> terrain_model(new Model("../data/terrain.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, m_frustum, m_render_context, math::vec3(0.75, 0.75, 0.75)));
+   /* std::unique_ptr<Model> terrain_model(new Model("../data/terrain.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, m_frustum, m_render_context, math::vec3(0.75, 0.75, 0.75)));
     std::unique_ptr<iv_array> array(new iv_array);
     std::unique_ptr<btGImpactMeshShape> shape;
 
@@ -67,7 +67,22 @@ void AssetManager::objectsInit(){
 
     m_kinematics.emplace_back(ground);
     m_models.push_back(std::move(terrain_model));
-    m_collision_shapes.push_back(std::move(shape));
+    m_collision_shapes.push_back(std::move(shape));*/
+
+    std::unique_ptr<Model> terrain_model(new Model("../data/sphere.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, m_frustum, m_render_context, math::vec3(0.75, 0.75, 0.75)));
+    std::unique_ptr<btCollisionShape> sphere_shape(new btSphereShape(50.0));
+
+    quat.setEuler(0, 0, 0);
+    std::shared_ptr<Kinematic> ground = std::make_shared<Kinematic>(terrain_model.get(), m_bt_wrapper, 
+                                                                    sphere_shape.get(), btScalar(0.0), 1);
+    ground->setCollisionGroup(CG_DEFAULT | CG_KINEMATIC);
+    ground->setCollisionFilters(~CG_RAY_EDITOR_RADIAL & ~CG_RAY_EDITOR_SELECT);
+    ground->addBody(btVector3(0.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0), quat);
+    ground->setMeshScale(50.f);
+
+    m_kinematics.emplace_back(ground);
+    m_models.push_back(std::move(terrain_model));
+    m_collision_shapes.push_back(std::move(sphere_shape));
 }
 
 
@@ -328,9 +343,9 @@ void AssetManager::updateKinematics(){
 
 
 void AssetManager::initPlanets(){
-    Planet::loadBases(m_frustum, m_render_context);
+    /*Planet::loadBases(m_frustum, m_render_context);
 
     std::unique_ptr<Planet> earth = std::make_unique<Planet>(m_render_context);
-    m_planets.emplace_back(std::move(earth));
+    m_planets.emplace_back(std::move(earth));*/
 }
 

@@ -158,6 +158,7 @@ void BtWrapper::runSimulation(btScalar time_step, int max_sub_steps){
         loop_start_load = std::chrono::steady_clock::now();
 
         if(!m_simulation_paused){
+            applyGravity();
             m_dynamics_world->stepSimulation(time_step , max_sub_steps);
         }
 
@@ -191,5 +192,24 @@ const btDiscreteDynamicsWorld* BtWrapper::getDynamicsWorld() const{
 
 btDiscreteDynamicsWorld* BtWrapper::getDynamicsWorld(){
     return m_dynamics_world.get();
+}
+
+
+#define GRAVITY_CENTER btVector3(0.0, 0.0, 0.0)
+#define GRAVITY_ACCELERATION 9.81
+void BtWrapper::applyGravity(){
+    /* Just trying central radial gravity as a test */
+
+    btCollisionObjectArray& col_object_array = m_dynamics_world->getCollisionObjectArray();
+
+    // in the future this class should be able to acces the memory structures where the objects are saved, in order to avoid casts
+    for(int i=0; i < col_object_array.size(); i++){
+        btRigidBody* obj = static_cast<btRigidBody*>(col_object_array.at(i));
+        if(!(obj->getCollisionFlags() & (btCollisionObject::CF_KINEMATIC_OBJECT | btCollisionObject::CF_STATIC_OBJECT))){
+            // we should keep the mass in the object
+            btVector3 f = ((1 / obj->getInvMass()) * (GRAVITY_CENTER - obj->getWorldTransform().getOrigin()).normalize() * GRAVITY_ACCELERATION);
+            obj->applyCentralForce(f);            
+        }
+    }
 }
 

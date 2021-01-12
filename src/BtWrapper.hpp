@@ -66,6 +66,8 @@ class BtWrapper{
         void noticeLogic();
         void waitLogic();
 
+        void applyGravity();
+
         std::thread m_thread_simulation;
         bool m_simulation_paused, m_end_simulation;
         double m_average_load;
