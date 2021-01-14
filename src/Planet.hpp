@@ -61,6 +61,10 @@ struct planet_surface{
     struct surface_node surface_tree[6];
     short max_levels;
     double planet_sea_level;
+
+    std::vector<struct surface_node*> bound_nodes;
+    std::vector<struct surface_node*> data_ready_nodes;
+    std::mutex data_ready_mtx;
 };
 
 
@@ -79,11 +83,17 @@ class Planet{
 
         RenderContext* m_render_context;
 
+        dmath::mat4 m_planet_transform; // this will change
+
         GLuint m_relative_planet_location, m_texture_scale_location, m_tex_shift_location, m_planet_radius_location;
         GLuint m_planet_texture, m_elevation_texture;
+
+        void render_side(struct surface_node& node, math::mat4& planet_transform_world, int max_level, const dmath::vec3& cam_origin, double sea_level);
     public:
         Planet(RenderContext* render_context);
         ~Planet();
+
+        void render(const dmath::vec3 cam_translation);
 
         static void loadBases(const Frustum* frustum, const RenderContext* render_context);
 };
