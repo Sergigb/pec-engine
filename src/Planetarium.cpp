@@ -47,6 +47,9 @@ Planetarium::~Planetarium(){
 
 void Planetarium::run(){
     bool polygon_mode_lines = false;
+    Planet planet(m_render_context.get());
+
+    Planet::loadBases(m_frustum.get(), m_render_context.get());
 
     m_camera->setCameraPosition(dmath::vec3(9300000.0, 0.0, 0.0));
     m_camera->setSpeed(630000.0f);
@@ -65,9 +68,8 @@ void Planetarium::run(){
 
         m_render_context->contextUpdatePlanetarium();
 
-        //dmath::vec3 cam_translation = m_camera->getCamPosition();
-
-        /* Render here... */
+        dmath::vec3 cam_translation = m_camera->getCamPosition();
+        planet.render(cam_translation);
 
         if(m_input->pressed_keys[GLFW_KEY_R] & INPUT_KEY_RELEASE){
             m_render_context->reloadShaders();
