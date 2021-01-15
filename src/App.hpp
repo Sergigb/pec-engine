@@ -16,10 +16,6 @@ class FontAtlas;
 class GameEditor;
 
 
-#define MAX_SYMMETRY_SIDES 8
-#define SIDE_ANGLE_STEP double(M_PI / MAX_SYMMETRY_SIDES)
-
-
 class App : public BaseApp{
     private:
         std::unique_ptr<GameEditor> m_editor;
@@ -27,7 +23,14 @@ class App : public BaseApp{
         // application default font atlas
         std::unique_ptr<FontAtlas> m_def_font_atlas;
 
+        // game simulation state (temporary here)
+        bool m_quit;
+        std::chrono::duration<double, std::micro> m_elapsed_time;
+
         void init();
+        void logic();
+        void processInput();
+        void onRightMouseButton();
     public:
         App();
         App(int gl_width, int gl_height);

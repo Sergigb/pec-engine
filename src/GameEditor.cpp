@@ -149,6 +149,7 @@ void GameEditor::start(){
             std::this_thread::sleep_for(delta_ms);
         }
     }
+    clearSymmetrySubtrees();
 }
 
 
@@ -756,8 +757,8 @@ void GameEditor::logic(){
     }
 
     if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2] & INPUT_MBUTTON_RELEASE &&
-       !m_render_context->imGuiWantCaptureMouse() && !m_gui_action &&
-       m_camera->getPrevInputMode() != GLFW_CURSOR_DISABLED){
+        !m_render_context->imGuiWantCaptureMouse() && !m_gui_action &&
+        m_camera->getPrevInputMode() != GLFW_CURSOR_DISABLED){
         onRightMouseButton();
     }
 
