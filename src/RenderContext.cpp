@@ -20,6 +20,7 @@
 #include "log.hpp"
 #include "DebugDrawer.hpp"
 #include "BtWrapper.hpp"
+#include "Planet.hpp"
 
 
 RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_handler, render_buffers* buff_manager){
@@ -233,18 +234,10 @@ void RenderContext::renderAttPoints(const BasePart* part, int& num_rendered, con
 
 
 int RenderContext::renderSceneEditor(){
-    int num_rendered;
-
-    num_rendered = renderObjects();
-    return num_rendered;
-}
-
-
-int RenderContext::renderObjects(){
+    int num_rendered = 0;
     const std::vector<object_transform>* buff;
     const math::mat4* view_mat;
     std::mutex* lock;
-    int num_rendered;
 
     if(m_buffers->last_updated != none){
         if(m_buffers->last_updated == buffer_1){
@@ -259,33 +252,79 @@ int RenderContext::renderObjects(){
             view_mat = &m_buffers->view_mat2;
             lock = &m_buffers->buffer2_lock;
         }
-
-        // buffer update
-        glUseProgram(m_pb_notex_shader);
-        glUniformMatrix4fv(m_pb_notex_view_mat, 1, GL_FALSE, view_mat->m);
-        glUniformMatrix4fv(m_pb_notex_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
-
-        glUseProgram(m_pb_shader);
-        glUniformMatrix4fv(m_pb_view_mat, 1, GL_FALSE, view_mat->m);
-        glUniformMatrix4fv(m_pb_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
-
-        glUseProgram(m_planet_shader);
-        glUniformMatrix4fv(m_planet_view_mat, 1, GL_FALSE, view_mat->m);
-        glUniformMatrix4fv(m_planet_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
-
-        for(uint i=0; i<buff->size(); i++){
-            BasePart* part = dynamic_cast<BasePart*>(buff->at(i).object_ptr.get());
-            if(part){
-                renderAttPoints(part, num_rendered, buff->at(i).transform);
-            }
-            num_rendered += buff->at(i).object_ptr->render(buff->at(i).transform);
-        }
+        num_rendered = renderObjects(true, buff, view_mat);
         lock->unlock();
-
-        if(m_debug_draw){
-            renderBulletDebug(view_mat);
-        }
     }
+    return num_rendered;
+}
+
+
+int RenderContext::renderSceneUniverse(){
+    int num_rendered = 0;
+    const std::vector<object_transform>* buff;
+    const math::mat4* view_mat;
+    const dmath::vec3* cam_origin;
+    std::vector<planet_transform>* buff_plt;
+    std::mutex* lock;
+
+    if(m_buffers->last_updated != none){
+        if(m_buffers->last_updated == buffer_1){
+            m_buffers->buffer1_lock.lock();
+            buff = &m_buffers->buffer1;
+            view_mat = &m_buffers->view_mat1;
+            lock = &m_buffers->buffer1_lock;
+            buff_plt = &m_buffers->planet_buffer1;
+            cam_origin = &m_buffers->cam_origin1;
+        }
+        else{
+            m_buffers->buffer2_lock.lock();
+            buff = &m_buffers->buffer2;
+            view_mat = &m_buffers->view_mat2;
+            lock = &m_buffers->buffer2_lock;
+            buff_plt = &m_buffers->planet_buffer2;
+            cam_origin = &m_buffers->cam_origin2;
+        }
+        num_rendered = renderObjects(false, buff, view_mat);
+
+        // really simple but it's ok for now
+        for(uint i=0; i < buff_plt->size(); i++){
+            planet_transform& tr = buff_plt->at(i);
+            tr.planet_ptr->render(*cam_origin, tr.transform);
+        }
+
+        lock->unlock();
+    }
+    return num_rendered; 
+}
+
+
+int RenderContext::renderObjects(bool render_att_points, const std::vector<object_transform>* buff, const math::mat4* view_mat){
+    int num_rendered;
+
+    glUseProgram(m_pb_notex_shader);
+    glUniformMatrix4fv(m_pb_notex_view_mat, 1, GL_FALSE, view_mat->m);
+    glUniformMatrix4fv(m_pb_notex_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
+
+    glUseProgram(m_pb_shader);
+    glUniformMatrix4fv(m_pb_view_mat, 1, GL_FALSE, view_mat->m);
+    glUniformMatrix4fv(m_pb_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
+
+    glUseProgram(m_planet_shader);
+    glUniformMatrix4fv(m_planet_view_mat, 1, GL_FALSE, view_mat->m);
+    glUniformMatrix4fv(m_planet_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
+
+    for(uint i=0; i<buff->size(); i++){
+        BasePart* part = dynamic_cast<BasePart*>(buff->at(i).object_ptr.get());
+        if(part && render_att_points){
+            renderAttPoints(part, num_rendered, buff->at(i).transform);
+        }
+        num_rendered += buff->at(i).object_ptr->render(buff->at(i).transform);
+    }
+
+    if(m_debug_draw){
+        renderBulletDebug(view_mat);
+    }
+
     return num_rendered;
 }
 
@@ -349,7 +388,7 @@ void RenderContext::render(){
             renderSceneEditor();
             break;
         case RENDER_UNIVERSE:
-            // ...
+            renderSceneUniverse();
             break;
         default:
             std::cerr << "RenderContext::render: Warning, invalid render state value (" << (int)m_render_state << ")" << std::endl;

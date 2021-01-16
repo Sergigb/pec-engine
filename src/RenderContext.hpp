@@ -4,6 +4,7 @@
 #include <GLFW/glfw3.h>
 #include <memory>
 #include <thread>
+#include <vector>
 
 #include "maths_funcs.hpp"
 
@@ -105,7 +106,8 @@ class RenderContext{
         void setLightPositionRender();
 
         int renderSceneEditor();
-        int renderObjects();
+        int renderSceneUniverse();
+        int renderObjects(bool render_att_points, const std::vector<object_transform>* buff, const math::mat4* view_mat);
         void renderBulletDebug(const math::mat4* view_mat);
     public:
         RenderContext(const Camera* camera, const WindowHandler* window_handler, render_buffers* buff_manager);

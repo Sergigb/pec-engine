@@ -47,7 +47,7 @@ class AssetManager{
 
         // render buffers
         struct render_buffers* m_buffers;
-        void updateObjectBuffer(std::vector<object_transform>& buffer_);
+        void updateObjectBuffer(std::vector<object_transform>& buffer_, const dmath::vec3& cam_origin);
         void updatePlanetBuffer(std::vector<planet_transform>& buffer_);
     public:
         std::vector<std::unique_ptr<btCollisionShape>> m_collision_shapes;
@@ -88,6 +88,7 @@ class AssetManager{
         void deleteObjectEditor(BasePart* part, std::uint32_t& vessel_id);
 
         /* Simulation vessels update, this may not need to be here since m_editor_vessels is public */
+        void updateVesselsEditor(); // update when the editor is unpaused
         void updateVessels();
         void updateKinematics(); // testing
 

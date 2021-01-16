@@ -100,7 +100,7 @@ void GameEditor::start(){
 
         if(!m_physics_pause){ /* Update vessels and parts */
             clearSymmetrySubtrees();
-            m_asset_manager->updateVessels();
+            m_asset_manager->updateVesselsEditor();
         }
 
         logic();

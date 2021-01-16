@@ -43,6 +43,8 @@ struct render_buffers{
     std::vector<planet_transform> planet_buffer2;
     math::mat4 view_mat1;
     math::mat4 view_mat2;
+    dmath::vec3 cam_origin1;
+    dmath::vec3 cam_origin2;
     std::mutex buffer1_lock;
     std::mutex buffer2_lock;
     buffer_manager last_updated;

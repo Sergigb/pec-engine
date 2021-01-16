@@ -226,10 +226,10 @@ void AssetManager::deleteObjectEditor(BasePart* part, std::uint32_t& vessel_id){
 }
 
 
-void AssetManager::updateObjectBuffer(std::vector<object_transform>& buffer_){
+void AssetManager::updateObjectBuffer(std::vector<object_transform>& buffer_, const dmath::vec3& cam_origin){
     const btDiscreteDynamicsWorld* dynamics_world = m_bt_wrapper->getDynamicsWorld();
     const btCollisionObjectArray& col_object_array = dynamics_world->getCollisionObjectArray();
-    dmath::vec3 cam_origin = m_camera->getCamPosition();
+    //dmath::vec3 cam_origin = m_camera->getCamPosition();
     btVector3 btv_cam_origin(cam_origin.v[0], cam_origin.v[1], cam_origin.v[2]);
 
     buffer_.clear();
@@ -251,7 +251,7 @@ void AssetManager::updateObjectBuffer(std::vector<object_transform>& buffer_){
 
             buffer_.emplace_back(std::move(obj->getSharedPtr()), mat);
         }
-        catch(std::bad_weak_ptr& e) {
+        catch(std::bad_weak_ptr& e){
             std::string name;
             obj->getFancyName(name);
             std::cout << "AssetManager::updateObjectBuffer - Warning, weak ptr for object " << name << " with id " << obj->getBaseId() << '\n';
@@ -262,6 +262,7 @@ void AssetManager::updateObjectBuffer(std::vector<object_transform>& buffer_){
 
 void AssetManager::updatePlanetBuffer(std::vector<planet_transform>& buffer_){
     buffer_.clear();
+
     for(uint i=0; i < m_planets.size(); i++){
         buffer_.emplace_back(m_planets.at(i).get(), m_planets.at(i)->getTransform());
     }
@@ -272,39 +273,44 @@ void AssetManager::updateBuffers(){
     /*std::chrono::duration<double, std::micro> time;
     std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
     std::chrono::steady_clock::time_point end;*/
+    const dmath::vec3& cam_origin = m_camera->getCamPosition();
 
     if(m_buffers->last_updated == buffer_2 || m_buffers->last_updated == none){
         if(m_buffers->buffer1_lock.try_lock()){
             m_buffers->view_mat1 = m_camera->getCenteredViewMatrix();
-            updateObjectBuffer(m_buffers->buffer1);
+            updateObjectBuffer(m_buffers->buffer1, cam_origin);
             updatePlanetBuffer(m_buffers->planet_buffer1);
             m_buffers->last_updated = buffer_1;
             m_buffers->buffer1_lock.unlock();
+            m_buffers->cam_origin1 = cam_origin;
         }
         else{
             m_buffers->buffer2_lock.lock(); // very unlikely to not get the lock
             m_buffers->view_mat2 = m_camera->getCenteredViewMatrix();
-            updateObjectBuffer(m_buffers->buffer2);
+            updateObjectBuffer(m_buffers->buffer2, cam_origin);
             updatePlanetBuffer(m_buffers->planet_buffer2);
             m_buffers->last_updated = buffer_2;
             m_buffers->buffer2_lock.unlock();
+            m_buffers->cam_origin2 = cam_origin;
         }
     }
     else{
         if(m_buffers->buffer2_lock.try_lock()){
             m_buffers->view_mat2 = m_camera->getCenteredViewMatrix();
-            updateObjectBuffer(m_buffers->buffer2);
+            updateObjectBuffer(m_buffers->buffer2, cam_origin);
             updatePlanetBuffer(m_buffers->planet_buffer2);
             m_buffers->last_updated = buffer_2;
             m_buffers->buffer2_lock.unlock();
+            m_buffers->cam_origin2 = cam_origin;
         }
         else{
             m_buffers->view_mat1 = m_camera->getCenteredViewMatrix();
             m_buffers->buffer1_lock.lock();
-            updateObjectBuffer(m_buffers->buffer1);
+            updateObjectBuffer(m_buffers->buffer1, cam_origin);
             updatePlanetBuffer(m_buffers->planet_buffer1);
             m_buffers->last_updated = buffer_1;
             m_buffers->buffer1_lock.unlock();
+            m_buffers->cam_origin1 = cam_origin;
         }
     }
     /*end = std::chrono::steady_clock::now();
@@ -313,12 +319,21 @@ void AssetManager::updateBuffers(){
 }
 
 
-void AssetManager::updateVessels(){
+void AssetManager::updateVesselsEditor(){
     VesselIterator it;
 
     for(it=m_editor_vessels.begin(); it != m_editor_vessels.end(); it++){
         it->second->update();
     }
+}
+
+
+void AssetManager::updateVessels(){
+    VesselIterator it;
+
+    for(it=m_active_vessels.begin(); it != m_active_vessels.end(); it++){
+        it->second->update();
+    }   
 }
 
 

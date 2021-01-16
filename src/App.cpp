@@ -17,6 +17,7 @@
 #include "Player.hpp"
 #include "log.hpp"
 #include "BasePart.hpp"
+#include "Vessel.hpp"
 
 
 App::App() : BaseApp(){
@@ -68,7 +69,7 @@ void App::run(){
 
     m_bt_wrapper->pauseSimulation(false);
     m_render_context->setGUIMode(GUI_MODE_NONE);
-    m_render_context->setRenderState(RENDER_EDITOR); // for now
+    m_render_context->setRenderState(RENDER_UNIVERSE);
 
     while(!m_quit){
         loop_start_load = std::chrono::steady_clock::now();
@@ -198,12 +199,36 @@ void App::onRightMouseButton(){
 
 
 #define ed_subtrees m_asset_manager->m_editor_subtrees // whatever
+#define ed_vessels m_asset_manager->m_editor_vessels // whatever
 void App::editorToSimulation(){
     std::map<std::uint32_t, std::shared_ptr<BasePart>>::iterator it;
+    std::map<std::uint32_t, std::shared_ptr<Vessel>>::iterator it2;
 
     for(it=ed_subtrees.begin(); it != ed_subtrees.end(); it++){
         it->second->setRenderIgnoreSubTree();
         it->second->removeBodiesSubtree();
     }
     ed_subtrees.clear();
+
+    // should be only one vessel in the editor, change it!!
+    for(it2=ed_vessels.begin(); it2 != ed_vessels.end(); it2++){
+        std::shared_ptr<Vessel> vsl = std::move(it2->second);
+
+        BasePart* root = vsl->getRoot();
+        btVector3 to(6571000.0, 0.0, 0.0);
+        btVector3 disp;
+        btTransform transform;
+
+        root->m_body->getMotionState()->getWorldTransform(transform);
+        const btVector3& from = transform.getOrigin();
+
+        disp = to - from;
+
+        // move the object to the surface, 200 km avobe sea level
+        vsl->getRoot()->updateSubTreeMotionState(m_asset_manager->m_set_motion_state_buffer,
+                                                 disp, from, btQuaternion::getIdentity());
+
+        m_asset_manager->m_active_vessels.insert({vsl->getId(), vsl});
+    }
+    ed_vessels.clear();
 }
