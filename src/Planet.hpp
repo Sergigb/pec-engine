@@ -93,7 +93,11 @@ class Planet{
         Planet(RenderContext* render_context);
         ~Planet();
 
-        void render(const dmath::vec3 cam_translation);
+        void render(const dmath::vec3& cam_translation);
+        void render(const dmath::vec3& cam_translation, const dmath::mat4 transform);
+
+        dmath::mat4& getTransform();
+        dmath::mat4 getTransform() const;
 
         static void loadBases(const Frustum* frustum, const RenderContext* render_context);
 };

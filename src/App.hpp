@@ -31,6 +31,9 @@ class App : public BaseApp{
         void logic();
         void processInput();
         void onRightMouseButton();
+        
+        // state transition
+        void editorToSimulation();
     public:
         App();
         App(int gl_width, int gl_height);

@@ -47,15 +47,13 @@ class AssetManager{
 
         // render buffers
         struct render_buffers* m_buffers;
-        void updateBuffer(std::vector<object_transform>& buffer_);
+        void updateObjectBuffer(std::vector<object_transform>& buffer_);
+        void updatePlanetBuffer(std::vector<planet_transform>& buffer_);
     public:
-        std::vector<std::shared_ptr<Object>> m_objects;
-        std::vector<std::shared_ptr<Kinematic>> m_kinematics;
         std::vector<std::unique_ptr<btCollisionShape>> m_collision_shapes;
+        std::vector<std::unique_ptr<Model>> m_models;
         std::map<std::uint32_t, std::unique_ptr<BasePart>> m_master_parts;
         std::map<std::uint32_t, std::unique_ptr<Resource>> m_resources;
-        std::vector<std::unique_ptr<Model>> m_models;
-        std::vector<std::unique_ptr<Planet>> m_planets;
 
         // command buffers
         std::vector<struct set_motion_state_msg> m_set_motion_state_buffer;
@@ -68,9 +66,16 @@ class AssetManager{
         std::vector<std::shared_ptr<BasePart>> m_delete_subtree_buffer;
         std::vector<BasePart*> m_build_constraint_subtree_buffer;
 
+        // editor objects
         std::map<std::uint32_t, std::shared_ptr<BasePart>> m_editor_subtrees;
         std::map<std::uint32_t, std::shared_ptr<Vessel>> m_editor_vessels;
         std::vector<std::shared_ptr<BasePart>> m_symmetry_subtrees;
+
+        // universe
+        std::vector<std::shared_ptr<Object>> m_objects;
+        std::vector<std::shared_ptr<Kinematic>> m_kinematics;
+        std::vector<std::unique_ptr<Planet>> m_planets; // too simple, it will be more complex in the future when I have a proper planetary system
+        std::map<std::uint32_t, std::shared_ptr<Vessel>> m_active_vessels;
 
         AssetManager(RenderContext* render_context, const Frustum* frustum, BtWrapper* bt_wrapper, render_buffers* buff_manager, Camera* camera);
         ~AssetManager();

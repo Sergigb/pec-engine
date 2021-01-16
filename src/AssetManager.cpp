@@ -226,7 +226,7 @@ void AssetManager::deleteObjectEditor(BasePart* part, std::uint32_t& vessel_id){
 }
 
 
-void AssetManager::updateBuffer(std::vector<object_transform>& buffer_){
+void AssetManager::updateObjectBuffer(std::vector<object_transform>& buffer_){
     const btDiscreteDynamicsWorld* dynamics_world = m_bt_wrapper->getDynamicsWorld();
     const btCollisionObjectArray& col_object_array = dynamics_world->getCollisionObjectArray();
     dmath::vec3 cam_origin = m_camera->getCamPosition();
@@ -254,8 +254,16 @@ void AssetManager::updateBuffer(std::vector<object_transform>& buffer_){
         catch(std::bad_weak_ptr& e) {
             std::string name;
             obj->getFancyName(name);
-            std::cout << "AssetManager::updateBuffer - Warning, weak ptr for object " << name << " with id " << obj->getBaseId() << '\n';
+            std::cout << "AssetManager::updateObjectBuffer - Warning, weak ptr for object " << name << " with id " << obj->getBaseId() << '\n';
         }
+    }
+}
+
+
+void AssetManager::updatePlanetBuffer(std::vector<planet_transform>& buffer_){
+    buffer_.clear();
+    for(uint i=0; i < m_planets.size(); i++){
+        buffer_.emplace_back(m_planets.at(i).get(), m_planets.at(i)->getTransform());
     }
 }
 
@@ -268,14 +276,16 @@ void AssetManager::updateBuffers(){
     if(m_buffers->last_updated == buffer_2 || m_buffers->last_updated == none){
         if(m_buffers->buffer1_lock.try_lock()){
             m_buffers->view_mat1 = m_camera->getCenteredViewMatrix();
-            updateBuffer(m_buffers->buffer1);
+            updateObjectBuffer(m_buffers->buffer1);
+            updatePlanetBuffer(m_buffers->planet_buffer1);
             m_buffers->last_updated = buffer_1;
             m_buffers->buffer1_lock.unlock();
         }
         else{
             m_buffers->buffer2_lock.lock(); // very unlikely to not get the lock
             m_buffers->view_mat2 = m_camera->getCenteredViewMatrix();
-            updateBuffer(m_buffers->buffer2);
+            updateObjectBuffer(m_buffers->buffer2);
+            updatePlanetBuffer(m_buffers->planet_buffer2);
             m_buffers->last_updated = buffer_2;
             m_buffers->buffer2_lock.unlock();
         }
@@ -283,14 +293,16 @@ void AssetManager::updateBuffers(){
     else{
         if(m_buffers->buffer2_lock.try_lock()){
             m_buffers->view_mat2 = m_camera->getCenteredViewMatrix();
-            updateBuffer(m_buffers->buffer2);
+            updateObjectBuffer(m_buffers->buffer2);
+            updatePlanetBuffer(m_buffers->planet_buffer2);
             m_buffers->last_updated = buffer_2;
             m_buffers->buffer2_lock.unlock();
         }
         else{
             m_buffers->view_mat1 = m_camera->getCenteredViewMatrix();
             m_buffers->buffer1_lock.lock();
-            updateBuffer(m_buffers->buffer1);
+            updateObjectBuffer(m_buffers->buffer1);
+            updatePlanetBuffer(m_buffers->planet_buffer1);
             m_buffers->last_updated = buffer_1;
             m_buffers->buffer1_lock.unlock();
         }
@@ -343,9 +355,9 @@ void AssetManager::updateKinematics(){
 
 
 void AssetManager::initPlanets(){
-    /*Planet::loadBases(m_frustum, m_render_context);
+    Planet::loadBases(m_frustum, m_render_context);
 
     std::unique_ptr<Planet> earth = std::make_unique<Planet>(m_render_context);
-    m_planets.emplace_back(std::move(earth));*/
+    m_planets.emplace_back(std::move(earth));
 }
 

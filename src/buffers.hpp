@@ -8,6 +8,7 @@
 #include "maths_funcs.hpp"
 
 class Object;
+class Planet;
 
 // buffers for synchronizing physics and rendering
 
@@ -21,11 +22,25 @@ struct object_transform{
     }
 };
 
+
+struct planet_transform{
+    Planet* planet_ptr;
+    dmath::mat4 transform;
+
+    planet_transform(Planet* ptr, dmath::mat4& t){
+        planet_ptr = ptr;
+        transform = t;
+    }
+};
+
+
 enum buffer_manager: char{none = 0, buffer_1 = 1, buffer_2 = 2};
 
 struct render_buffers{
     std::vector<object_transform> buffer1;
     std::vector<object_transform> buffer2;
+    std::vector<planet_transform> planet_buffer1;
+    std::vector<planet_transform> planet_buffer2;
     math::mat4 view_mat1;
     math::mat4 view_mat2;
     std::mutex buffer1_lock;

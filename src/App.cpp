@@ -9,6 +9,8 @@
 #include "WindowHandler.hpp"
 
 // delete later most likely when the simulation is moved somewhere else
+#include <map>
+
 #include "Input.hpp"
 #include "Camera.hpp"
 #include "Frustum.hpp"
@@ -54,7 +56,7 @@ void App::run(){
 
     log("App::run: game state changed from editor to simulation");
 
-    // CLEAN EVERYTHING BUT EDITOR VESSELS
+    editorToSimulation();
 
     /* Simple version of the simulator */
 
@@ -192,4 +194,16 @@ void App::onRightMouseButton(){
         part = static_cast<BasePart*>(obj);
         part->onSimulationRightMouseButton();
     }
+}
+
+
+#define ed_subtrees m_asset_manager->m_editor_subtrees // whatever
+void App::editorToSimulation(){
+    std::map<std::uint32_t, std::shared_ptr<BasePart>>::iterator it;
+
+    for(it=ed_subtrees.begin(); it != ed_subtrees.end(); it++){
+        it->second->setRenderIgnoreSubTree();
+        it->second->removeBodiesSubtree();
+    }
+    ed_subtrees.clear();
 }

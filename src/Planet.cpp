@@ -157,11 +157,16 @@ void Planet::render_side(struct surface_node& node, math::mat4& planet_transform
 }
 
 
-void Planet::render(const dmath::vec3 cam_translation){
+void Planet::render(const dmath::vec3& cam_translation){
+    render(cam_translation, m_planet_transform);
+}
+
+
+void Planet::render(const dmath::vec3& cam_translation, const dmath::mat4 transform){
     bind_loaded_textures(m_surface);
 
     math::mat4 planet_transform_world;
-    dmath::mat4 dplanet_transform_world = m_planet_transform;
+    dmath::mat4 dplanet_transform_world = transform;
     dplanet_transform_world.m[12] -= cam_translation.v[0];
     dplanet_transform_world.m[13] -= cam_translation.v[1];
     dplanet_transform_world.m[14] -= cam_translation.v[2];
@@ -176,4 +181,13 @@ void Planet::render(const dmath::vec3 cam_translation){
     }
 }
 
+
+dmath::mat4& Planet::getTransform(){
+    return m_planet_transform;
+}
+
+
+dmath::mat4 Planet::getTransform() const{
+    return m_planet_transform;
+}
 
