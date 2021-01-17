@@ -179,6 +179,8 @@ void Planet::render(const dmath::vec3& cam_translation, const dmath::mat4 transf
         //dmath::vec3 t(6300000.0, 0.0, 0.0);
         render_side(m_surface.surface_tree[i], planet_transform_world, m_surface.max_levels, cam_translation, m_surface.planet_sea_level);
     }
+
+    texture_free(m_surface);
 }
 
 
