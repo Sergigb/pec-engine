@@ -31,8 +31,6 @@ App::App(int gl_width, int gl_height) : BaseApp(gl_width, gl_height){
 
 
 void App::init(){
-    m_render_context->setLightPosition(math::vec3(150.0, 100.0, 0.0));
-
     m_quit = false;
 
     m_def_font_atlas.reset(new FontAtlas(256));
@@ -70,6 +68,9 @@ void App::run(){
     m_bt_wrapper->pauseSimulation(false);
     m_render_context->setGUIMode(GUI_MODE_NONE);
     m_render_context->setRenderState(RENDER_UNIVERSE);
+    m_camera->setCameraPosition(dmath::vec3(9300000.0, 0.0, 0.0));
+    m_camera->setSpeed(630000.0f);
+    m_render_context->setLightPosition(math::vec3(63000000000.0, 0.0, 0.0));
 
     while(!m_quit){
         loop_start_load = std::chrono::steady_clock::now();
@@ -167,7 +168,7 @@ void App::processInput(){
 
     if(m_input->pressed_keys[GLFW_KEY_F10] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
         m_render_context->reloadShaders();
-        m_render_context->setLightPosition(math::vec3(150.0, 100.0, 0.0));
+        m_render_context->setLightPosition(math::vec3(63000000000.0, 0.0, 0.0));
     }
 
     if(m_input->pressed_keys[GLFW_KEY_ESCAPE] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
@@ -228,7 +229,7 @@ void App::editorToSimulation(){
         vsl->getRoot()->updateSubTreeMotionState(m_asset_manager->m_set_motion_state_buffer,
                                                  disp, from, btQuaternion::getIdentity());
 
-        vsl->setVesselVelocity(btVector3(0.0, 0.0, -7788.54));
+        vsl->setVesselVelocity(btVector3(0.0, 7788.54, 0.0));
 
         m_asset_manager->m_active_vessels.insert({vsl->getId(), vsl});
     }

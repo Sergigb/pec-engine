@@ -10,6 +10,8 @@
 
 #define VERTEX_BUF_LEN 6
 #define VERTEX_BUF_SIZE VERTEX_BUF_LEN * sizeof(GLfloat)
+
+
 struct vertexbufferdata{
     GLfloat bufferdata[VERTEX_BUF_LEN];
     void set(const btVector3& p1, const btVector3& p2){
@@ -21,7 +23,7 @@ struct vertexbufferdata{
         bufferdata[5] = p2.getZ();
     }
     vertexbufferdata(){
-        std::memset(bufferdata, 0, VERTEX_BUF_LEN * sizeof(GLfloat));
+        std::memset(bufferdata, 0, VERTEX_BUF_SIZE);
     }
 };
 
@@ -67,7 +69,7 @@ void DebugDrawer::getReady() const{
     m_render_context->bindVao(m_line_vao);
 }
 
-#include <iostream>
+
 void DebugDrawer::drawLine(const btVector3& from, const btVector3& to, const btVector3& color){
     /* 
     Things we assume before we call bullet's debug drawing method (call getReady beforehand):
@@ -102,7 +104,7 @@ void DebugDrawer::setDebugMode(int debugMode){
 
 
 int DebugDrawer::getDebugMode () const{
-    return DBG_MAX_DEBUG_DRAW_MODE; // just for now
+    return DBG_DrawWireframe; // just for now
 }
 
 

@@ -204,7 +204,7 @@ void RenderContext::initImgui(){
 }
 
 
-void RenderContext::renderAttPoints(const BasePart* part, int& num_rendered, const math::mat4& body_transform){
+void RenderContext::renderAttPoints(const BasePart* part, const math::mat4& body_transform){
     const std::vector<struct attachment_point>* att_points = part->getAttachmentPoints();
 
     math::mat4 att_transform;
@@ -214,21 +214,21 @@ void RenderContext::renderAttPoints(const BasePart* part, int& num_rendered, con
         point = part->getParentAttachmentPoint()->point;
         att_transform = body_transform * math::translate(math::identity_mat4(), point);
         m_att_point_model->setMeshColor(math::vec4(0.0, 1.0, 0.0, 1.0));
-        num_rendered += m_att_point_model->render(att_transform * m_att_point_scale);
+        m_att_point_model->render(att_transform * m_att_point_scale);
     }
 
-    if(part->hasFreeAttPoint()){
+    /*if(part->hasFreeAttPoint()){
         point = part->getFreeAttachmentPoint()->point;
         att_transform = body_transform * math::translate(math::identity_mat4(), point);
         m_att_point_model->setMeshColor(math::vec4(0.0, 1.0, 1.0, 1.0));
         num_rendered += m_att_point_model->render(att_transform * m_att_point_scale);
-    }
+    }*/
 
     for(uint j=0; j<att_points->size(); j++){
         point = att_points->at(j).point;
         att_transform = body_transform * math::translate(math::identity_mat4(), point);
         m_att_point_model->setMeshColor(math::vec4(1.0, 0.0, 0.0, 1.0));
-        num_rendered += m_att_point_model->render(att_transform * m_att_point_scale);
+        m_att_point_model->render(att_transform * m_att_point_scale);
     }
 }
 
@@ -299,7 +299,7 @@ int RenderContext::renderSceneUniverse(){
 
 
 int RenderContext::renderObjects(bool render_att_points, const std::vector<object_transform>* buff, const math::mat4* view_mat){
-    int num_rendered;
+    int num_rendered = 0;
 
     glUseProgram(m_pb_notex_shader);
     glUniformMatrix4fv(m_pb_notex_view_mat, 1, GL_FALSE, view_mat->m);
@@ -316,7 +316,7 @@ int RenderContext::renderObjects(bool render_att_points, const std::vector<objec
     for(uint i=0; i<buff->size(); i++){
         BasePart* part = dynamic_cast<BasePart*>(buff->at(i).object_ptr.get());
         if(part && render_att_points){
-            renderAttPoints(part, num_rendered, buff->at(i).transform);
+            renderAttPoints(part, buff->at(i).transform);
         }
         num_rendered += buff->at(i).object_ptr->render(buff->at(i).transform);
     }
@@ -385,10 +385,10 @@ void RenderContext::render(){
         case RENDER_NOTHING:
             break;
         case RENDER_EDITOR:
-            renderSceneEditor();
+            num_rendered = renderSceneEditor();
             break;
         case RENDER_UNIVERSE:
-            renderSceneUniverse();
+            num_rendered = renderSceneUniverse();
             break;
         default:
             std::cerr << "RenderContext::render: Warning, invalid render state value (" << (int)m_render_state << ")" << std::endl;

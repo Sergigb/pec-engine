@@ -32,10 +32,6 @@ Planet::Planet(RenderContext* render_context){
     m_planet_texture = m_render_context->getUniformLocation(SHADER_PLANET, "tex");
     m_elevation_texture = m_render_context->getUniformLocation(SHADER_PLANET, "elevation");
 
-    m_render_context->useProgram(SHADER_PLANET);
-    glUniform1i(m_planet_texture, TEXTURE_LOCATION);
-    glUniform1i(m_elevation_texture, ELEVATION_LOCATION);
-
     m_planet_transform = dmath::identity_mat4();
 }
 
@@ -178,6 +174,8 @@ void Planet::render(const dmath::vec3& cam_translation, const dmath::mat4 transf
 
     m_render_context->useProgram(SHADER_PLANET);
     glUniform1f(m_planet_radius_location, m_surface.planet_sea_level);
+    glUniform1i(m_planet_texture, TEXTURE_LOCATION);
+    glUniform1i(m_elevation_texture, ELEVATION_LOCATION);
 
     for(uint i=0; i < 6; i++){
         //dmath::vec3 t(6300000.0, 0.0, 0.0);

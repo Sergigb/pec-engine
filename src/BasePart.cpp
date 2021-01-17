@@ -351,7 +351,7 @@ void BasePart::renderOther(){
                 strs << "Total vessel mass: " << m_vessel->getTotalMass() << "kg";
             }
             str = strs.str();
-            ImGui::Text(str.c_str());            
+            ImGui::Text(str.c_str());
         }
 
         ImGui::End();
@@ -412,7 +412,11 @@ void BasePart::update(){
     for(uint i=0; i < m_resources.size(); i++){
         temp_mass += m_resources.at(i).mass;
     }
-    m_mass = temp_mass;
+
+    if(temp_mass != m_mass){
+        m_mass = temp_mass;
+        m_asset_manager->setMassProps(this, m_mass);
+    }    
 }
 
 

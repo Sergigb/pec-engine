@@ -376,8 +376,8 @@ void Camera::orbitalCameraUpdate(){
         dif_x = mouse_posx_last - posx;
         dif_y = mouse_posy_last - posy;
         
-        m_polar_angle -= dif_y * 0.1 * m_elapsed_time;
-        m_azimuthal_angle -= dif_x * 0.1 * m_elapsed_time;
+        m_polar_angle -= dif_y * 0.1 * frame_time;
+        m_azimuthal_angle -= dif_x * 0.1 * frame_time;
 
         if(m_polar_angle < 0){
             m_polar_angle = 0.01;

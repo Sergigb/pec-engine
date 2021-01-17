@@ -100,7 +100,7 @@ class RenderContext{
         void initImgui();
         void run();
         void render();
-        void renderAttPoints(const BasePart* part, int& num_rendered, const math::mat4& body_transform);
+        void renderAttPoints(const BasePart* part, const math::mat4& body_transform);
         void renderImGui();
         void loadShaders();
         void setLightPositionRender();
