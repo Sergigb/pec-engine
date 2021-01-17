@@ -91,6 +91,7 @@ class BasePart : public Object{
         int removeBodiesSubtree();
         void cloneSubTree(std::shared_ptr<BasePart>& current, bool is_subtree_root, bool m_radial_clone);
         void buildSubTreeConstraints(const BasePart* parent);
+        void setSubTreeVelocity(const btVector3& velocity); // bullet must not be stepping
 
         const std::vector<struct attachment_point>* getAttachmentPoints() const;
         const btTypedConstraint* getParentConstraint() const;

@@ -583,3 +583,12 @@ void BasePart::clearSubTreeCloneData(){
     }
 }
 
+
+void BasePart::setSubTreeVelocity(const btVector3& velocity){
+    m_body->setLinearVelocity(velocity);
+
+    for(uint i=0; i < m_childs.size(); i++){
+        m_childs.at(i)->setSubTreeVelocity(velocity);
+    }
+}
+

@@ -198,8 +198,8 @@ void App::onRightMouseButton(){
 }
 
 
-#define ed_subtrees m_asset_manager->m_editor_subtrees // whatever
-#define ed_vessels m_asset_manager->m_editor_vessels // whatever
+#define ed_subtrees m_asset_manager->m_editor_subtrees
+#define ed_vessels m_asset_manager->m_editor_vessels
 void App::editorToSimulation(){
     std::map<std::uint32_t, std::shared_ptr<BasePart>>::iterator it;
     std::map<std::uint32_t, std::shared_ptr<Vessel>>::iterator it2;
@@ -215,7 +215,7 @@ void App::editorToSimulation(){
         std::shared_ptr<Vessel> vsl = std::move(it2->second);
 
         BasePart* root = vsl->getRoot();
-        btVector3 to(6571000.0, 0.0, 0.0);
+        btVector3 to(6371000.0 + 200000, 0.0, 0.0);
         btVector3 disp;
         btTransform transform;
 
@@ -227,6 +227,8 @@ void App::editorToSimulation(){
         // move the object to the surface, 200 km avobe sea level
         vsl->getRoot()->updateSubTreeMotionState(m_asset_manager->m_set_motion_state_buffer,
                                                  disp, from, btQuaternion::getIdentity());
+
+        vsl->setVesselVelocity(btVector3(0.0, 0.0, -7788.54));
 
         m_asset_manager->m_active_vessels.insert({vsl->getId(), vsl});
     }

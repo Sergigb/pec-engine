@@ -195,19 +195,25 @@ btDiscreteDynamicsWorld* BtWrapper::getDynamicsWorld(){
 }
 
 
-#define GRAVITY_CENTER btVector3(0.0, 0.0, 0.0)
-#define GRAVITY_ACCELERATION 9.81
-void BtWrapper::applyGravity(){
-    /* Just trying central radial gravity as a test */
+// assuming that we only have 1 planet, and that's earth, this calculates the force applied by its gravity field
 
+#define EARTH_MASS 5973600000000000000000000.0
+#define GRAVITATIONAL_CONSTANT 6.67430e-11
+void BtWrapper::applyGravity(){
+    double acceleration;
     btCollisionObjectArray& col_object_array = m_dynamics_world->getCollisionObjectArray();
 
     // in the future this class should be able to acces the memory structures where the objects are saved, in order to avoid casts
     for(int i=0; i < col_object_array.size(); i++){
         btRigidBody* obj = static_cast<btRigidBody*>(col_object_array.at(i));
+        const btVector3& object_origin = obj->getWorldTransform().getOrigin();
+        double Rh = object_origin.norm(); // assuming earth's center of gravity is at the origin
+
+        acceleration = GRAVITATIONAL_CONSTANT * (EARTH_MASS / (Rh*Rh));
+
         if(!(obj->getCollisionFlags() & (btCollisionObject::CF_KINEMATIC_OBJECT | btCollisionObject::CF_STATIC_OBJECT))){
             // we should keep the mass in the object
-            btVector3 f = ((1 / obj->getInvMass()) * (GRAVITY_CENTER - obj->getWorldTransform().getOrigin()).normalize() * GRAVITY_ACCELERATION);
+            btVector3 f = ((1 / obj->getInvMass()) * (-object_origin).normalize() * acceleration);
             obj->applyCentralForce(f);            
         }
     }

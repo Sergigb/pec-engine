@@ -373,3 +373,8 @@ double Vessel::getTotalMass() const{
     return m_total_mass;
 }
 
+
+void Vessel::setVesselVelocity(const btVector3& velocity){
+    m_vessel_root->setSubTreeVelocity(velocity);
+}
+

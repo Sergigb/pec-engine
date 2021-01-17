@@ -11,6 +11,7 @@
 class Player;
 class BasePart;
 class Input;
+class btVector3;
 
 
 class Vessel{
@@ -37,6 +38,7 @@ class Vessel{
         void setVesselDescription(const std::string& description);
         //void setRoot(BasePart* pat);
         void setPlayer(Player* player);
+        void setVesselVelocity(const btVector3& velocity);
 
         /* These functions should only be used in the editor */
         bool addChildById(std::shared_ptr<BasePart>& child, std::uint32_t parent_id);
