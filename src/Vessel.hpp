@@ -21,11 +21,13 @@ class Vessel{
         std::map<std::uint32_t, BasePart*> m_node_map_by_id;
         std::uint32_t m_vessel_id;
         float m_yaw, m_pitch;
+        double m_total_mass;
 
         Player* m_player; // player controlling the vessel
         const Input* m_input;
 
         void updateNodes(); // updates node list and map
+        void updateMass();
     public:
         Vessel();
         Vessel(std::shared_ptr<BasePart>& vessel_root, const Input* input);
@@ -57,6 +59,7 @@ class Vessel{
         const Input* getInput() const;
         float getYaw() const;
         float getPitch() const;
+        double getTotalMass() const;
 
         void update();
 };

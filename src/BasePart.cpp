@@ -12,8 +12,8 @@
 #include "Input.hpp"
 
 
-BasePart::BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager) : 
-    Object(model, bt_wrapper, col_shape, mass, baseID){
+BasePart::BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar dry_mass, int baseID, AssetManagerInterface* asset_manager) : 
+    Object(model, bt_wrapper, col_shape, dry_mass, baseID){
     m_parent = nullptr;
     m_vessel = nullptr;
     m_is_root = false;
@@ -44,7 +44,7 @@ BasePart::BasePart(){
 
 
 BasePart::~BasePart(){
-    if(m_parent_constraint.get() != nullptr){
+    if(m_parent_constraint.get()){
         m_bt_wrapper->removeConstraint(m_parent_constraint.get());
     }
 }
@@ -343,6 +343,15 @@ void BasePart::renderOther(){
             strs << "Acceleration: " << std::fixed << std::setprecision(1) << acceleration << "G";
             str = strs.str();
             ImGui::Text(str.c_str());
+
+            ImGui::Separator();
+            strs.str("");
+            strs.clear();
+            if(m_vessel){
+                strs << "Total vessel mass: " << m_vessel->getTotalMass() << "kg";
+            }
+            str = strs.str();
+            ImGui::Text(str.c_str());            
         }
 
         ImGui::End();
@@ -394,15 +403,21 @@ void BasePart::setProperties(long long int flags){
 
 
 void BasePart::update(){
-    // todo: here we should update the part weight, in case the resource ammount changes
     if(m_properties & PART_IS_CM){ // move this later into a derived class
         m_prev_velocity = m_velocity;
         m_velocity = m_body->getLinearVelocity();
     }
+
+    double temp_mass = m_dry_mass;
+    for(uint i=0; i < m_resources.size(); i++){
+        temp_mass += m_resources.at(i).mass;
+    }
+    m_mass = temp_mass;
 }
 
 
 void BasePart::addResource(const resource_container& resource){
+    m_mass += resource.mass;
     m_resources.emplace_back(resource);
 }
 

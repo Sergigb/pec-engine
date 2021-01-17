@@ -25,7 +25,7 @@ class Object : public std::enable_shared_from_this<Object>{
         math::vec3 m_mesh_color;
         math::mat4 m_mesh_transform;
         bool m_has_transform;
-        btScalar m_mass;
+        btScalar m_dry_mass, m_mass;
         btCollisionShape* m_col_shape;
         std::uint32_t m_base_id, m_unique_id;
         std::string m_object_name, m_fancy_name;
@@ -35,7 +35,7 @@ class Object : public std::enable_shared_from_this<Object>{
     public:
         std::unique_ptr<btRigidBody> m_body; // made public for convenience
 
-        Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, std::uint32_t base_id);
+        Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar dry_mass, std::uint32_t base_id);
         Object();
         Object(const Object& obj);
         virtual ~Object();
@@ -54,6 +54,8 @@ class Object : public std::enable_shared_from_this<Object>{
         bool renderIgnore() const; // tells the physics thread to not include this object in the render buffers because it should be destroyed
         short getCollisionGroup() const;
         short getCollisionFilters() const;
+        double getMass() const;
+        double getDryMass() const;
 
         void applyCentralForce(const btVector3& force);
         void applyTorque(const btVector3& torque);

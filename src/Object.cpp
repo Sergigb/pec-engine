@@ -10,13 +10,14 @@ Object::Object(){
 }
 
 
-Object::Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, std::uint32_t base_id){
+Object::Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar dry_mass, std::uint32_t base_id){
     m_mesh_color = math::vec4(1.0, 1.0, 1.0, 1.0);
     m_bt_wrapper = bt_wrapper;
     m_model = model;
     m_has_transform = false;
     m_col_shape = col_shape;
-    m_mass = mass;
+    m_dry_mass = dry_mass;
+    m_mass = m_dry_mass;
     m_base_id = base_id;
     m_object_name = "unnamed";
     m_fancy_name = "unnamed";
@@ -38,6 +39,7 @@ Object::Object(const Object& obj) : std::enable_shared_from_this<Object>(){
     m_object_name = obj.m_object_name;
     m_fancy_name = obj.m_fancy_name;
     m_col_shape = obj.m_col_shape;
+    m_dry_mass = obj.m_dry_mass;
     m_mass = obj.m_mass;
     m_render_ignore = false;
     create_id(m_unique_id, PART_SET);
@@ -280,6 +282,16 @@ void Object::renderOther(){
 
 void Object::onEditorRightMouseButton(){
 
+}
+
+
+double Object::getDryMass() const{
+    return m_dry_mass;
+}
+
+
+double Object::getMass() const{
+    return m_mass;
 }
 
 

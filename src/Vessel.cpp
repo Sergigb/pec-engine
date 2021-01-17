@@ -14,6 +14,7 @@ Vessel::Vessel(){
     m_input = nullptr;
     m_yaw = 0.0f;
     m_pitch = 0.0f;
+    m_total_mass = 0.0;
 }
 
 
@@ -27,6 +28,7 @@ Vessel::Vessel(std::shared_ptr<BasePart>& vessel_root, const Input* input){
     m_input = input;
     m_yaw = 0.0f;
     m_pitch = 0.0f;
+    m_total_mass = 0.0;
 }
 
 
@@ -57,6 +59,7 @@ void Vessel::setVesselDescription(const std::string& description){
 void Vessel::onTreeUpdate(){
     // nothing else for now
     updateNodes();
+    updateMass();
 }
 
 
@@ -337,6 +340,8 @@ void Vessel::update(){
     for(uint i=0; i < m_node_list.size(); i++){
         m_node_list.at(i)->update();
     }
+
+    updateMass();
 }
 
 
@@ -352,5 +357,19 @@ float Vessel::getYaw() const{
 
 float Vessel::getPitch() const{
     return m_pitch;
+}
+
+
+void Vessel::updateMass(){
+    double temp_mass = 0.0;
+    for(uint i=0; i < m_node_list.size(); i++){
+         temp_mass += m_node_list.at(i)->getMass();
+    }
+    m_total_mass = temp_mass;
+}
+
+
+double Vessel::getTotalMass() const{
+    return m_total_mass;
 }
 
