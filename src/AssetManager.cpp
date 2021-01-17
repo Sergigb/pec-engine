@@ -171,6 +171,7 @@ void AssetManager::processCommandBuffers(bool physics_pause){
 
         dynamics_world->addRigidBody(body);
     }
+    m_set_mass_buffer.clear();
 
     for(uint i=0; i < m_remove_part_constraint_buffer.size(); i++){
         m_remove_part_constraint_buffer.at(i)->removeParentConstraint();
