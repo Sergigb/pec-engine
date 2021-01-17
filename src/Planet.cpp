@@ -13,6 +13,10 @@ std::unique_ptr<Model> Planet::m_base64;
 std::unique_ptr<Model> Planet::m_base128;
 
 
+#define TEXTURE_LOCATION 0
+#define ELEVATION_LOCATION 1
+
+
 Planet::Planet(RenderContext* render_context){
     m_surface.max_levels = 6;
     m_surface.planet_sea_level = 6371000.f;
@@ -28,11 +32,11 @@ Planet::Planet(RenderContext* render_context){
     m_planet_texture = m_render_context->getUniformLocation(SHADER_PLANET, "tex");
     m_elevation_texture = m_render_context->getUniformLocation(SHADER_PLANET, "elevation");
 
-    m_planet_transform = dmath::identity_mat4();
+    m_render_context->useProgram(SHADER_PLANET);
+    glUniform1i(m_planet_texture, TEXTURE_LOCATION);
+    glUniform1i(m_elevation_texture, ELEVATION_LOCATION);
 
-    // is this needed?
-    //glUniform1i(m_planet_texture, TEXTURE_LOCATION);
-    //glUniform1i(m_elevation_texture, ELEVATION_LOCATION);
+    m_planet_transform = dmath::identity_mat4();
 }
 
 
