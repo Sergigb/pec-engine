@@ -179,7 +179,7 @@ void AssetManager::processCommandBuffers(bool physics_pause){
     m_remove_part_constraint_buffer.clear();
 
     for(uint i=0; i < m_add_vessel_buffer.size(); i++){
-        m_editor_vessels.insert({m_add_vessel_buffer.at(i)->getId(), m_add_vessel_buffer.at(i)});
+        m_active_vessels.insert({m_add_vessel_buffer.at(i)->getId(), m_add_vessel_buffer.at(i)});
     }
     m_add_vessel_buffer.clear();
 
@@ -359,6 +359,10 @@ void AssetManager::cleanup(){
 
     for(uint i=0; i < m_symmetry_subtrees.size(); i++){
         m_symmetry_subtrees.at(i)->removeBodiesSubtree();
+    }
+
+    for(it1=m_active_vessels.begin(); it1 != m_active_vessels.end(); it1++){
+        it1->second->getRoot()->removeBodiesSubtree();
     }
 }
 
