@@ -17,7 +17,7 @@ class Separator : public BasePart{
         bool m_separate;
         float m_force;
     public:
-        Separator(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager);
+        Separator(Model* model, Physics* physics, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager);
         Separator(const Separator& engine);
         Separator();
         ~Separator();

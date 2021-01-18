@@ -15,7 +15,7 @@ class Camera;
 class Input;
 class WindowHandler;
 class Frustum;
-class BtWrapper;
+class Physics;
 class RenderContext;
 class AssetManager;
 class Player;
@@ -34,7 +34,7 @@ class BaseApp{
         std::unique_ptr<WindowHandler> m_window_handler;
         std::unique_ptr<Frustum> m_frustum;
         std::unique_ptr<RenderContext> m_render_context;
-        std::unique_ptr<BtWrapper> m_bt_wrapper;
+        std::unique_ptr<Physics> m_physics;
         std::unique_ptr<AssetManager> m_asset_manager;
         std::unique_ptr<Player> m_player;
 

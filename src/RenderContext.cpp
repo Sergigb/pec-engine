@@ -19,7 +19,7 @@
 #include "buffers.hpp"
 #include "log.hpp"
 #include "DebugDrawer.hpp"
-#include "BtWrapper.hpp"
+#include "Physics.hpp"
 #include "Planet.hpp"
 
 
@@ -77,10 +77,10 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
 }
 
 
-void RenderContext::setDebugDrawer(BtWrapper* bt_wrapper){
-    m_bt_wrapper = bt_wrapper; // not needed????
+void RenderContext::setDebugDrawer(Physics* physics){
+    m_physics = physics; // not needed????
     m_debug_drawer.reset(new DebugDrawer(this));
-    btDiscreteDynamicsWorld* d_world = m_bt_wrapper->getDynamicsWorld();
+    btDiscreteDynamicsWorld* d_world = m_physics->getDynamicsWorld();
     d_world->setDebugDrawer(m_debug_drawer.get());
 }
 
@@ -337,7 +337,7 @@ void RenderContext::renderBulletDebug(const math::mat4* view_mat){
     dmath::vec3 cam_position = m_camera->getCamPosition();
     m_debug_drawer->getReady();
     m_debug_drawer->setCameraCenter(btVector3(cam_position.v[0], cam_position.v[1], cam_position.v[2]));
-    m_bt_wrapper->getDynamicsWorld()->debugDrawWorld();
+    m_physics->getDynamicsWorld()->debugDrawWorld();
 }
 
 

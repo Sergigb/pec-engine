@@ -7,7 +7,7 @@
 #include "AssetManager.hpp"
 #include "RenderContext.hpp"
 #include "Frustum.hpp"
-#include "BtWrapper.hpp"
+#include "Physics.hpp"
 #include "Vessel.hpp"
 #include "Camera.hpp"
 #include "Resource.hpp"
@@ -23,10 +23,10 @@ typedef std::map<std::uint32_t, std::shared_ptr<Vessel>>::iterator VesselIterato
 typedef std::map<std::uint32_t, std::unique_ptr<Resource>>::iterator ResourceIterator;
 
 
-AssetManager::AssetManager(RenderContext* render_context, const Frustum* frustum, BtWrapper* bt_wrapper, render_buffers* buff_manager, Camera* camera){
+AssetManager::AssetManager(RenderContext* render_context, const Frustum* frustum, Physics* physics, render_buffers* buff_manager, Camera* camera){
     m_render_context = render_context;
     m_frustum = frustum;
-    m_bt_wrapper = bt_wrapper;
+    m_physics = physics;
     m_buffers = buff_manager;
     m_camera = camera;
 
@@ -58,7 +58,7 @@ void AssetManager::objectsInit(){
     load_bullet_trimesh(array, shape, std::string("../data/terrain.dae"));
 
     quat.setEuler(0, 0, 0);
-    std::shared_ptr<Kinematic> ground = std::make_shared<Kinematic>(terrain_model.get(), m_bt_wrapper, 
+    std::shared_ptr<Kinematic> ground = std::make_shared<Kinematic>(terrain_model.get(), m_physics, 
                                                                     static_cast<btCollisionShape*>(shape.get()), btScalar(0.0), 1);
     ground->setCollisionGroup(CG_DEFAULT | CG_KINEMATIC);
     ground->setCollisionFilters(~CG_RAY_EDITOR_RADIAL & ~CG_RAY_EDITOR_SELECT);
@@ -73,7 +73,7 @@ void AssetManager::objectsInit(){
     std::unique_ptr<btCollisionShape> sphere_shape(new btSphereShape(50.0));
 
     quat.setEuler(0, 0, 0);
-    std::shared_ptr<Kinematic> ground = std::make_shared<Kinematic>(terrain_model.get(), m_bt_wrapper, 
+    std::shared_ptr<Kinematic> ground = std::make_shared<Kinematic>(terrain_model.get(), m_physics, 
                                                                     sphere_shape.get(), btScalar(0.0), 1);
     ground->setCollisionGroup(CG_DEFAULT | CG_KINEMATIC);
     ground->setCollisionFilters(~CG_RAY_EDITOR_RADIAL & ~CG_RAY_EDITOR_SELECT);
@@ -142,7 +142,7 @@ void AssetManager::processCommandBuffers(bool physics_pause){
         struct set_motion_state_msg& msg = m_set_motion_state_buffer.at(i);
         msg.object->setMotionState(msg.origin, msg.initial_rotation);
         if(physics_pause){
-            m_bt_wrapper->updateCollisionWorldSingleAABB(msg.object->m_body.get());
+            m_physics->updateCollisionWorldSingleAABB(msg.object->m_body.get());
         }
     }
     m_set_motion_state_buffer.clear();
@@ -160,7 +160,7 @@ void AssetManager::processCommandBuffers(bool physics_pause){
 
     for(uint i=0; i < m_set_mass_buffer.size(); i++){
         // this should be enough, also the constraints don't get removed
-        btDiscreteDynamicsWorld* dynamics_world = m_bt_wrapper->getDynamicsWorld();
+        btDiscreteDynamicsWorld* dynamics_world = m_physics->getDynamicsWorld();
         btVector3 inertia;
         btRigidBody* body = m_set_mass_buffer.at(i).part->m_body.get();
 
@@ -228,7 +228,7 @@ void AssetManager::deleteObjectEditor(BasePart* part, std::uint32_t& vessel_id){
 
 
 void AssetManager::updateObjectBuffer(std::vector<object_transform>& buffer_, const dmath::vec3& cam_origin){
-    const btDiscreteDynamicsWorld* dynamics_world = m_bt_wrapper->getDynamicsWorld();
+    const btDiscreteDynamicsWorld* dynamics_world = m_physics->getDynamicsWorld();
     const btCollisionObjectArray& col_object_array = dynamics_world->getCollisionObjectArray();
     //dmath::vec3 cam_origin = m_camera->getCamPosition();
     btVector3 btv_cam_origin(cam_origin.v[0], cam_origin.v[1], cam_origin.v[2]);

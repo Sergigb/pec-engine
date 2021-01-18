@@ -52,7 +52,7 @@ struct iv_array{
 };
 
 
-class BtWrapper{
+class Physics{
     private:
         std::unique_ptr<btDefaultCollisionConfiguration> m_collision_configuration;
         std::unique_ptr<btCollisionDispatcher> m_dispatcher;
@@ -73,9 +73,9 @@ class BtWrapper{
         double m_average_load;
         struct thread_monitor* m_thread_monitor;
     public:
-        BtWrapper();
-        BtWrapper(const btVector3& gravity, thread_monitor* thread_monitor);
-        ~BtWrapper();
+        Physics();
+        Physics(const btVector3& gravity, thread_monitor* thread_monitor);
+        ~Physics();
 
         void addRigidBody(btRigidBody* body, short group, short mask);
         void addConstraint(btTypedConstraint *constraint, bool disable_collision_between_bodies);

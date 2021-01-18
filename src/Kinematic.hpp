@@ -16,7 +16,7 @@ class Kinematic : public Object{
         btVector3 m_velocity;
 
     public:
-        Kinematic(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID);
+        Kinematic(Model* model, Physics* physics, btCollisionShape* col_shape, btScalar mass, int baseID);
         Kinematic(const Kinematic& object);
         Kinematic();
         ~Kinematic();

@@ -8,8 +8,8 @@
 #include "../maths_funcs.hpp"
 
 
-GenericEngine::GenericEngine(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager) : 
-    BasePart(model, bt_wrapper, col_shape, mass, baseID, asset_manager){
+GenericEngine::GenericEngine(Model* model, Physics* physics, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager) : 
+    BasePart(model, physics, col_shape, mass, baseID, asset_manager){
     std::hash<std::string> str_hash;
 
     m_engine_status = false;
@@ -107,7 +107,6 @@ void GenericEngine::update(){
         m_asset_manager->applyForce(this, force, btVector3(0.0, 0.0, 0.0));
     }
 }
-
 
 GenericEngine* GenericEngine::clone() const{
     return new GenericEngine(*this);

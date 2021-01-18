@@ -15,7 +15,7 @@ class DebugOverlay;
 class Model;
 class BaseGUI;
 class BasePart;
-class BtWrapper;
+class Physics;
 class DebugDrawer;
 
 struct object_transform;
@@ -69,7 +69,7 @@ class RenderContext{
         math::vec4 m_color_clear;
         const Camera* m_camera;
         const WindowHandler* m_window_handler;
-        BtWrapper* m_bt_wrapper;
+        Physics* m_physics;
         
         std::unique_ptr<Model> m_att_point_model;
         math::mat4 m_att_point_scale;
@@ -128,7 +128,7 @@ class RenderContext{
         void setEditorGUI(BaseGUI* editor_ptr);
         void setGUIMode(short mode);
         void reloadShaders();
-        void setDebugDrawer(BtWrapper* bt_wrapper);
+        void setDebugDrawer(Physics* physics);
         void setRenderState(char state);
 
         int getBoundShader() const;

@@ -8,7 +8,7 @@
 #include "FontAtlas.hpp"
 #include "RenderContext.hpp"
 #include "AssetManager.hpp"
-#include "BtWrapper.hpp"
+#include "Physics.hpp"
 #include "WindowHandler.hpp"
 #include "Input.hpp"
 #include "Frustum.hpp"
@@ -30,7 +30,7 @@ GameEditor::GameEditor(BaseApp* app, FontAtlas* font_atlas){
     m_window_handler = app->m_window_handler.get();
     m_frustum = app->m_frustum.get();
     m_render_context = app->m_render_context.get();
-    m_bt_wrapper = app->m_bt_wrapper.get();
+    m_physics = app->m_physics.get();
     m_asset_manager = app->m_asset_manager.get();
     m_player = app->m_player.get();
 
@@ -105,7 +105,7 @@ void GameEditor::start(){
 
         logic();
 
-        m_render_context->setDebugOverlayTimes(m_bt_wrapper->getAverageLoadTime(), average_load, average_sleep);
+        m_render_context->setDebugOverlayTimes(m_physics->getAverageLoadTime(), average_load, average_sleep);
         
         m_elapsed_time += loop_start_load - previous_loop_start_load;
         previous_loop_start_load = loop_start_load;
@@ -438,7 +438,7 @@ void GameEditor::placeSubTree(float closest_dist, math::vec4& closest_att_point_
                                                                 btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]));
         ray_callback.m_collisionFilterGroup = CG_RAY_EDITOR_RADIAL;
 
-        Object* obj = m_bt_wrapper->testRay(ray_callback, 
+        Object* obj = m_physics->testRay(ray_callback, 
                                             btVector3(ray_start_world.v[0], ray_start_world.v[1], ray_start_world.v[2]),
                                             btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]));
 
@@ -638,7 +638,7 @@ void GameEditor::pickObject(){
                                                             btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]));
     ray_callback.m_collisionFilterGroup = CG_RAY_EDITOR_SELECT;
 
-    obj = m_bt_wrapper->testRay(ray_callback, 
+    obj = m_physics->testRay(ray_callback, 
                                 btVector3(ray_start_world.v[0], ray_start_world.v[1], ray_start_world.v[2]),
                                 btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]));
     if(obj){
@@ -729,7 +729,7 @@ void GameEditor::logic(){
     // other input
     if(m_input->pressed_keys[GLFW_KEY_P] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
         m_physics_pause = !m_physics_pause;
-        m_bt_wrapper->pauseSimulation(m_physics_pause);
+        m_physics->pauseSimulation(m_physics_pause);
         if(m_picked_obj){
             m_picked_obj->activate(true);
             m_picked_obj = nullptr;
@@ -815,7 +815,7 @@ void GameEditor::onRightMouseButton(){
                                                             btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]));
     ray_callback.m_collisionFilterGroup = CG_RAY_EDITOR_SELECT;
 
-    obj = m_bt_wrapper->testRay(ray_callback, 
+    obj = m_physics->testRay(ray_callback, 
                                 btVector3(ray_start_world.v[0], ray_start_world.v[1], ray_start_world.v[2]),
                                 btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]));
 

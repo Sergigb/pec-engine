@@ -3,24 +3,24 @@
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/BulletCollision/Gimpact/btGImpactCollisionAlgorithm.h>
 
-#include "BtWrapper.hpp"
+#include "Physics.hpp"
 #include "Object.hpp"
 #include "log.hpp"
 #include "multithreading.hpp"
 
 
-BtWrapper::BtWrapper(){
+Physics::Physics(){
     init(btVector3(0.0, -9.81, 0.0));
 }
 
-BtWrapper::BtWrapper(const btVector3& gravity, thread_monitor* thread_monitor){
+Physics::Physics(const btVector3& gravity, thread_monitor* thread_monitor){
     m_thread_monitor = thread_monitor;
 
     init(gravity);
 }
 
 
-void BtWrapper::init(const btVector3& gravity){
+void Physics::init(const btVector3& gravity){
     m_collision_configuration.reset(new btDefaultCollisionConfiguration());
     m_dispatcher.reset(new btCollisionDispatcher(m_collision_configuration.get()));
     m_overlapping_pair_cache.reset(new btDbvtBroadphase());
@@ -32,8 +32,8 @@ void BtWrapper::init(const btVector3& gravity){
     m_end_simulation = false;
     m_average_load = 0.0;
     
-    log("BtWrapper: starting dynamics world");
-    std::cout << "BtWrapper: starting dynamics world" << std::endl;
+    log("Physics: starting dynamics world");
+    std::cout << "Physics: starting dynamics world" << std::endl;
 
     //btOverlapFilterCallback*filtercbk=new myFilterCallback();
     //m_dynamics_world->getPairCache()->setOverlapFilterCallback(filtercbk);
@@ -42,7 +42,7 @@ void BtWrapper::init(const btVector3& gravity){
 }
 
 
-BtWrapper::~BtWrapper(){
+Physics::~Physics(){
     m_dynamics_world.reset(nullptr);
     m_solver.reset(nullptr);
     m_overlapping_pair_cache.reset(nullptr);
@@ -51,18 +51,18 @@ BtWrapper::~BtWrapper(){
 }
 
 
-void BtWrapper::addRigidBody(btRigidBody* body, short group, short mask){
+void Physics::addRigidBody(btRigidBody* body, short group, short mask){
     m_dynamics_world->addRigidBody(body, group, mask);
 }
 
 
-void BtWrapper::removeBody(btRigidBody* body){
+void Physics::removeBody(btRigidBody* body){
     // this leaks vvvv, not sure why
     m_dynamics_world->removeRigidBody(body);  // the instance of the object still has to be deleted
 }
 
 
-Object* BtWrapper::testRay(const math::vec3& ray_start_world, const math::vec3& ray_end_world) const{
+Object* Physics::testRay(const math::vec3& ray_start_world, const math::vec3& ray_end_world) const{
     btCollisionWorld::ClosestRayResultCallback ray_callback(
             btVector3(ray_start_world.v[0], ray_start_world.v[1], ray_start_world.v[2]),
             btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]));
@@ -80,7 +80,7 @@ Object* BtWrapper::testRay(const math::vec3& ray_start_world, const math::vec3& 
 }
 
 
-Object* BtWrapper::testRay(btCollisionWorld::ClosestRayResultCallback& ray_callback, const btVector3& ray_start, const btVector3& ray_end) const{
+Object* Physics::testRay(btCollisionWorld::ClosestRayResultCallback& ray_callback, const btVector3& ray_start, const btVector3& ray_end) const{
     m_dynamics_world->rayTest(ray_start, ray_end, ray_callback);
 
     if(ray_callback.hasHit()) {
@@ -92,28 +92,28 @@ Object* BtWrapper::testRay(btCollisionWorld::ClosestRayResultCallback& ray_callb
 }
 
 
-void BtWrapper::addConstraint(btTypedConstraint *constraint, bool disable_collision_between_bodies){
+void Physics::addConstraint(btTypedConstraint *constraint, bool disable_collision_between_bodies){
     m_dynamics_world->addConstraint(constraint, disable_collision_between_bodies);
 }
 
 
-void BtWrapper::removeConstraint(btTypedConstraint *constraint){
+void Physics::removeConstraint(btTypedConstraint *constraint){
     m_dynamics_world->removeConstraint(constraint);
 }
 
 
-void BtWrapper::updateCollisionWorldSingleAABB(btRigidBody* body){
+void Physics::updateCollisionWorldSingleAABB(btRigidBody* body){
     m_dynamics_world->getCollisionWorld()->updateSingleAabb(body);
 }
 
 
-void BtWrapper::startSimulation(btScalar time_step, int max_sub_steps){
-    m_thread_simulation = std::thread(&BtWrapper::runSimulation, this, time_step, max_sub_steps);
-    log("BtWrapper: starting simulation, thread launched");
+void Physics::startSimulation(btScalar time_step, int max_sub_steps){
+    m_thread_simulation = std::thread(&Physics::runSimulation, this, time_step, max_sub_steps);
+    log("Physics: starting simulation, thread launched");
 }
 
 
-void BtWrapper::stopSimulation(){
+void Physics::stopSimulation(){
     m_end_simulation = true;
     {
         std::unique_lock<std::mutex> lck2(m_thread_monitor->mtx_start);
@@ -121,16 +121,16 @@ void BtWrapper::stopSimulation(){
         m_thread_monitor->cv_start.notify_all();
     }
     m_thread_simulation.join();
-    log("BtWrapper: simulation stopped, thread joined");
+    log("Physics: simulation stopped, thread joined");
 }
 
 
-void BtWrapper::pauseSimulation(bool stop_simulation){
+void Physics::pauseSimulation(bool stop_simulation){
     m_simulation_paused = stop_simulation;
 }
 
 
-void BtWrapper::noticeLogic(){
+void Physics::noticeLogic(){
     // logic thread notice
     std::unique_lock<std::mutex> lck2(m_thread_monitor->mtx_end);
     m_thread_monitor->worker_ended = true;
@@ -138,7 +138,7 @@ void BtWrapper::noticeLogic(){
 }
 
 
-void BtWrapper::waitLogic(){
+void Physics::waitLogic(){
     // logic thread wait
     std::unique_lock<std::mutex> lck(m_thread_monitor->mtx_start);
     while(!m_thread_monitor->worker_start){
@@ -148,7 +148,7 @@ void BtWrapper::waitLogic(){
 }
 
 
-void BtWrapper::runSimulation(btScalar time_step, int max_sub_steps){
+void Physics::runSimulation(btScalar time_step, int max_sub_steps){
     std::chrono::steady_clock::time_point loop_start_load, loop_end_load;
     double accumulated_load_time = 0.0;
     int ticks_since_last_update = 0;
@@ -180,26 +180,27 @@ void BtWrapper::runSimulation(btScalar time_step, int max_sub_steps){
 }
 
 
-double BtWrapper::getAverageLoadTime() const{
+double Physics::getAverageLoadTime() const{
     return m_average_load;
 }
 
 
-const btDiscreteDynamicsWorld* BtWrapper::getDynamicsWorld() const{
+const btDiscreteDynamicsWorld* Physics::getDynamicsWorld() const{
     return m_dynamics_world.get();
 }
 
 
-btDiscreteDynamicsWorld* BtWrapper::getDynamicsWorld(){
+btDiscreteDynamicsWorld* Physics::getDynamicsWorld(){
     return m_dynamics_world.get();
 }
 
 
 // assuming that we only have 1 planet, and that's earth, this calculates the force applied by its gravity field
-
+// this should be easy to optimize in the future, calculate gravity with the com of the vessel, and then apply f
+// to individual objects 
 #define EARTH_MASS 5973600000000000000000000.0
 #define GRAVITATIONAL_CONSTANT 6.67430e-11
-void BtWrapper::applyGravity(){
+void Physics::applyGravity(){
     double acceleration;
     btCollisionObjectArray& col_object_array = m_dynamics_world->getCollisionObjectArray();
 

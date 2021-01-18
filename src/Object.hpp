@@ -12,14 +12,14 @@
 
 /* Simple class for rigid objects, contains a rigid body object and its model*/
 
-class BtWrapper;
+class Physics;
 class Model;
 
 
 class Object : public std::enable_shared_from_this<Object>{
     protected:
         Model* m_model;
-        BtWrapper* m_bt_wrapper;
+        Physics* m_physics;
         
         std::unique_ptr<btMotionState> m_motion_state;
         math::vec3 m_mesh_color;
@@ -35,7 +35,7 @@ class Object : public std::enable_shared_from_this<Object>{
     public:
         std::unique_ptr<btRigidBody> m_body; // made public for convenience
 
-        Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar dry_mass, std::uint32_t base_id);
+        Object(Model* model, Physics* physics, btCollisionShape* col_shape, btScalar dry_mass, std::uint32_t base_id);
         Object();
         Object(const Object& obj);
         virtual ~Object();

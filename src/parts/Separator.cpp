@@ -4,8 +4,8 @@
 #include "../AssetManagerInterface.hpp"
 
 
-Separator::Separator(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager) : 
-    BasePart(model, bt_wrapper, col_shape, mass, baseID, asset_manager){
+Separator::Separator(Model* model, Physics* physics, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager) : 
+    BasePart(model, physics, col_shape, mass, baseID, asset_manager){
     m_behaviour = BEHAVIOUR_SEPARATES_SELF;
     m_separate = false;
     m_force = SEPARATOR_MAX_FORCE;

@@ -21,7 +21,7 @@ class AssetManager;
 class Input;
 class Frustum;
 class Camera;
-class BtWrapper;
+class Physics;
 class Player;
 class EditorGUI;
 
@@ -57,7 +57,7 @@ class GameEditor{
         Input* m_input;
         Frustum* m_frustum;
         Camera* m_camera;
-        BtWrapper* m_bt_wrapper;
+        Physics* m_physics;
         Player* m_player;
 
         struct thread_monitor* m_thread_monitor;

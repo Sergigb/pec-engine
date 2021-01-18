@@ -6,14 +6,14 @@
 #include "AssetManagerInterface.hpp"
 #include "Resource.hpp"
 #include "buffers.hpp"
-#include "BtWrapper.hpp"
+#include "Physics.hpp"
 #include "Model.hpp"
 #include "log.hpp"
 #include "Input.hpp"
 
 
-BasePart::BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar dry_mass, int baseID, AssetManagerInterface* asset_manager) : 
-    Object(model, bt_wrapper, col_shape, dry_mass, baseID){
+BasePart::BasePart(Model* model, Physics* physics, btCollisionShape* col_shape, btScalar dry_mass, int baseID, AssetManagerInterface* asset_manager) : 
+    Object(model, physics, col_shape, dry_mass, baseID){
     m_parent = nullptr;
     m_vessel = nullptr;
     m_is_root = false;
@@ -45,7 +45,7 @@ BasePart::BasePart(){
 
 BasePart::~BasePart(){
     if(m_parent_constraint.get()){
-        m_bt_wrapper->removeConstraint(m_parent_constraint.get());
+        m_physics->removeConstraint(m_parent_constraint.get());
     }
 }
 
@@ -89,17 +89,17 @@ const std::vector<struct attachment_point>* BasePart::getAttachmentPoints() cons
 
 void BasePart::setParentConstraint(std::unique_ptr<btTypedConstraint>& constraint_uptr){
     if(m_parent_constraint.get() != nullptr){
-        m_bt_wrapper->removeConstraint(m_parent_constraint.get());
+        m_physics->removeConstraint(m_parent_constraint.get());
     }
 
     m_parent_constraint = std::move(constraint_uptr);
-    m_bt_wrapper->addConstraint(m_parent_constraint.get(), true);
+    m_physics->addConstraint(m_parent_constraint.get(), true);
 }
 
 
 void BasePart::removeParentConstraint(){
     if(m_parent_constraint.get() != nullptr){
-        m_bt_wrapper->removeConstraint(m_parent_constraint.get());
+        m_physics->removeConstraint(m_parent_constraint.get());
         m_parent_constraint.reset(nullptr);
     }
 }
@@ -461,7 +461,7 @@ int BasePart::removeBodiesSubtree(){
     int count = 1;
     removeParentConstraint();
     if(m_body){
-        m_bt_wrapper->removeBody(m_body.get());
+        m_physics->removeBody(m_body.get());
     }
 
     for(uint i=0; i < m_childs.size(); i++){

@@ -22,7 +22,7 @@ class BasePart;
 class Vessel;
 class RenderContext;
 class Frustum;
-class BtWrapper;
+class Physics;
 class Camera;
 class Resource;
 class AssetManager;
@@ -37,7 +37,7 @@ class AssetManager{
 
         RenderContext* m_render_context;
         const Frustum* m_frustum;
-        BtWrapper* m_bt_wrapper;
+        Physics* m_physics;
         const Camera* m_camera;
 
         friend class AssetManagerInterface;
@@ -77,7 +77,7 @@ class AssetManager{
         std::vector<std::unique_ptr<Planet>> m_planets; // too simple, it will be more complex in the future when I have a proper planetary system
         std::map<std::uint32_t, std::shared_ptr<Vessel>> m_active_vessels;
 
-        AssetManager(RenderContext* render_context, const Frustum* frustum, BtWrapper* bt_wrapper, render_buffers* buff_manager, Camera* camera);
+        AssetManager(RenderContext* render_context, const Frustum* frustum, Physics* physics, render_buffers* buff_manager, Camera* camera);
         ~AssetManager();
 
         void processCommandBuffers(bool physics_pause);

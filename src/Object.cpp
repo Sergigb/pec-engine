@@ -1,7 +1,7 @@
 #include <algorithm>
 
 #include "Object.hpp"
-#include "BtWrapper.hpp"
+#include "Physics.hpp"
 #include "Model.hpp"
 #include "id_manager.hpp"
 
@@ -10,9 +10,9 @@ Object::Object(){
 }
 
 
-Object::Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar dry_mass, std::uint32_t base_id){
+Object::Object(Model* model, Physics* physics, btCollisionShape* col_shape, btScalar dry_mass, std::uint32_t base_id){
     m_mesh_color = math::vec4(1.0, 1.0, 1.0, 1.0);
-    m_bt_wrapper = bt_wrapper;
+    m_physics = physics;
     m_model = model;
     m_has_transform = false;
     m_col_shape = col_shape;
@@ -31,7 +31,7 @@ Object::Object(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape,
 
 Object::Object(const Object& obj) : std::enable_shared_from_this<Object>(){
     m_model = obj.m_model;
-    m_bt_wrapper = obj.m_bt_wrapper;
+    m_physics = obj.m_physics;
     m_mesh_color = obj.m_mesh_color;
     m_mesh_transform = obj.m_mesh_transform;
     m_has_transform = obj.m_has_transform;
@@ -53,7 +53,7 @@ Object::Object(const Object& obj) : std::enable_shared_from_this<Object>(){
 
 Object::~Object(){
     if(m_body != nullptr){ // this should not be necessary, objects' rigid bodies should be removed before this constructor is called
-        m_bt_wrapper->removeBody(m_body.get());
+        m_physics->removeBody(m_body.get());
     }
     remove_id(m_unique_id, PART_SET);
 }
@@ -82,7 +82,7 @@ void Object::addBody(const btVector3& origin, const btVector3& local_inertia, co
     //m_body->setCcdMotionThreshold(0.2);
     //m_body->setCcdSweptSphereRadius(100.0);
 
-    m_bt_wrapper->addRigidBody(m_body.get(), m_col_group, m_col_filters);
+    m_physics->addRigidBody(m_body.get(), m_col_group, m_col_filters);
     m_body->setUserPointer((void*)this);
     m_body->setActivationState(DISABLE_DEACTIVATION);
 }
@@ -90,7 +90,7 @@ void Object::addBody(const btVector3& origin, const btVector3& local_inertia, co
 
 void Object::removeBody(){
     if(m_body != nullptr){
-        m_bt_wrapper->removeBody(m_body.get());
+        m_physics->removeBody(m_body.get());
     }
 }
 

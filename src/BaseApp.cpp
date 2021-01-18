@@ -4,7 +4,7 @@
 #include "Input.hpp"
 #include "WindowHandler.hpp"
 #include "Frustum.hpp"
-#include "BtWrapper.hpp"
+#include "Physics.hpp"
 #include "RenderContext.hpp"
 #include "AssetManager.hpp"
 #include "Player.hpp"
@@ -34,9 +34,9 @@ void BaseApp::init(int gl_width, int gl_height){
     m_frustum.reset(new Frustum());
     m_render_context.reset(new RenderContext(m_camera.get(), m_window_handler.get(), &m_buffers));
     m_window_handler->setRenderContext(m_render_context.get());
-    m_bt_wrapper.reset(new BtWrapper(btVector3(0, 0, 0), &m_thread_monitor));
-    m_render_context->setDebugDrawer(m_bt_wrapper.get());
-    m_asset_manager.reset(new AssetManager(m_render_context.get(), m_frustum.get(), m_bt_wrapper.get(), &m_buffers, m_camera.get()));
+    m_physics.reset(new Physics(btVector3(0, 0, 0), &m_thread_monitor));
+    m_render_context->setDebugDrawer(m_physics.get());
+    m_asset_manager.reset(new AssetManager(m_render_context.get(), m_frustum.get(), m_physics.get(), &m_buffers, m_camera.get()));
     m_player.reset(new Player(m_camera.get(), m_asset_manager.get(), m_input.get()));
 
     std::unique_ptr<Model> att_model(new Model("../data/sphere.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, m_frustum.get(), m_render_context.get(), math::vec3(1.0, 0.0, 0.0)));

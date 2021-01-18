@@ -15,7 +15,7 @@
 class Vessel;
 class AssetManagerInterface;
 class Resource;
-class BtWrapper;
+class Physics;
 class Model;
 
 
@@ -64,7 +64,7 @@ class BasePart : public Object{
         void decoupleChilds();
         void decoupleSelf();
     public:
-        BasePart(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager);
+        BasePart(Model* model, Physics* physics, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager);
         BasePart(const BasePart& part);
         BasePart();
         ~BasePart();

@@ -5,7 +5,7 @@
 #include "RenderContext.hpp"
 #include "AssetManager.hpp"
 #include "GameEditor.hpp"
-#include "BtWrapper.hpp"
+#include "Physics.hpp"
 #include "WindowHandler.hpp"
 
 // delete later most likely when the simulation is moved somewhere else
@@ -48,7 +48,7 @@ App::~App(){
 
 
 void App::run(){
-    m_bt_wrapper->startSimulation(1. / 60., 0);
+    m_physics->startSimulation(1. / 60., 0);
     m_render_context->start();
 
     m_editor->start();
@@ -65,7 +65,7 @@ void App::run(){
     double delta_t = (1. / 60.) * 1000000., accumulated_load = 0.0, accumulated_sleep = 0.0, average_load = 0.0, average_sleep = 0.0;
     int ticks_since_last_update = 0;
 
-    m_bt_wrapper->pauseSimulation(false);
+    m_physics->pauseSimulation(false);
     m_render_context->setGUIMode(GUI_MODE_NONE);
     m_render_context->setRenderState(RENDER_UNIVERSE);
     m_camera->setCameraPosition(dmath::vec3(9300000.0, 0.0, 0.0));
@@ -90,7 +90,7 @@ void App::run(){
         m_asset_manager->updateVessels();
         logic();
 
-        m_render_context->setDebugOverlayTimes(m_bt_wrapper->getAverageLoadTime(), average_load, average_sleep);
+        m_render_context->setDebugOverlayTimes(m_physics->getAverageLoadTime(), average_load, average_sleep);
         
         m_elapsed_time += loop_start_load - previous_loop_start_load;
         previous_loop_start_load = loop_start_load;
@@ -135,7 +135,7 @@ void App::run(){
     m_window_handler->setWindowShouldClose();
 
     m_asset_manager->cleanup();
-    m_bt_wrapper->stopSimulation();
+    m_physics->stopSimulation();
     m_render_context->stop();
     m_window_handler->terminate();
 }
@@ -188,7 +188,7 @@ void App::onRightMouseButton(){
                                                             btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]));
     ray_callback.m_collisionFilterGroup = CG_RAY_EDITOR_SELECT;
 
-    obj = m_bt_wrapper->testRay(ray_callback, 
+    obj = m_physics->testRay(ray_callback, 
                                 btVector3(ray_start_world.v[0], ray_start_world.v[1], ray_start_world.v[2]),
                                 btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]));
 

@@ -11,7 +11,7 @@ class GenericEngine : public BasePart{
         float m_thrust;
         std::uint32_t m_liquid_hydrogen_id, m_liquid_oxygen_id;
     public:
-        GenericEngine(Model* model, BtWrapper* bt_wrapper, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager);
+        GenericEngine(Model* model, Physics* physics, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager);
         GenericEngine(const GenericEngine& engine);
         GenericEngine();
         ~GenericEngine();
