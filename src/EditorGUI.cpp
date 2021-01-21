@@ -25,13 +25,11 @@ EditorGUI::EditorGUI(const FontAtlas* atlas, const RenderContext* render_context
     m_init = true;
     m_font_atlas = atlas;
     m_input = input;
-    m_button_mouseover = -1;
-    m_last_button_color = -1;
     m_button_select = -1;
-    std::memset(m_button_status, 0, EDITOR_GUI_N_BUTTONS * sizeof(bool));
-    std::memset(m_button_color_status, 0, EDITOR_GUI_N_BUTTONS * sizeof(bool));
+    std::memset(m_button_status, 0, EDITOR_GUI_N_TOP_BUTTONS * sizeof(bool));
     m_tab_option = TAB_OPTION_PARTS;
-    m_tab_mouseover = TAB_OPTION_NONE;
+    m_input->getMousePos(m_mouse_y, m_mouse_x);
+    m_mouse_y = m_fb_height - m_mouse_y;
 
     color c{0.85, 0.85, 0.85};
     m_text_debug.reset(new Text2D(m_fb_width, m_fb_height, c, m_font_atlas, render_context));
@@ -153,7 +151,7 @@ EditorGUI::EditorGUI(const FontAtlas* atlas, const RenderContext* render_context
     index_buffer[11] = 6;
 
     // buttons if I'm not mistaken
-    for(char i=0; i < EDITOR_GUI_N_BUTTONS; i++){
+    for(char i=0; i < EDITOR_GUI_N_TOP_BUTTONS; i++){
         int disp = i * 4;
 
         index_buffer[12 + i * 6] = disp + 7;
@@ -165,7 +163,7 @@ EditorGUI::EditorGUI(const FontAtlas* atlas, const RenderContext* render_context
     }
 
     // delete area
-    int disp = 17 + (EDITOR_GUI_N_BUTTONS - 1) * 6;
+    int disp = 17 + (EDITOR_GUI_N_TOP_BUTTONS - 1) * 6;
     index_buffer[disp + 1] = 19;
     index_buffer[disp + 2] = 20;
     index_buffer[disp + 3] = 21;
@@ -300,7 +298,7 @@ void EditorGUI::updateBuffers(){
 
     // buttons
     m_text_debug->clearStrings();
-    for(char i=0; i < EDITOR_GUI_N_BUTTONS; i++){
+    for(char i=0; i < EDITOR_GUI_N_TOP_BUTTONS; i++){
         x_start = (i+1) * BUTTON_PAD_X + i * BUTTON_SIZE_X;
 
         m_text_debug->addString(L"Button", x_start + BUTTON_SIZE_X / 2, m_fb_height - BUTTON_PAD_Y - BUTTON_SIZE_Y / 2 + 5,
@@ -317,7 +315,7 @@ void EditorGUI::updateBuffers(){
     }
 
     // delete area
-    int disp = 21 + (EDITOR_GUI_N_BUTTONS - 1) * 8;
+    int disp = 21 + (EDITOR_GUI_N_TOP_BUTTONS - 1) * 8;
     vertex_buffer[disp + 1] = DELETE_AREA_ORIGIN;
     vertex_buffer[disp + 2] = EDITOR_GUI_PP_MARGIN + EDITOR_GUI_PP_LOW_MARGIN - DELETE_AREA_MARGIN;
     vertex_buffer[disp + 3] = DELETE_AREA_ORIGIN;
@@ -372,125 +370,99 @@ void EditorGUI::updateBuffers(){
     glBufferData(GL_ARRAY_BUFFER, 12 * sizeof(GLfloat), parts_panel_vert, GL_STATIC_DRAW);
 }
 
-void EditorGUI::colorButton(const GLfloat* color_array, int button){
-        m_render_context->bindVao(m_vao);
-        glBindBuffer(GL_ARRAY_BUFFER, m_vbo_clr);
 
-        glBufferSubData(GL_ARRAY_BUFFER, ((7*4) + (button * 16)) * sizeof(GLfloat) , 16 * sizeof(GLfloat), color_array);
+void EditorGUI::setButtonColor(float r ,float g, float b, float a, GLintptr offset){
+    GLfloat new_color[16] = {r, g, b ,a,
+                             r, g, b ,a,
+                             r, g, b ,a,
+                             r, g, b ,a};
+    glBindBuffer(GL_ARRAY_BUFFER, m_vbo_clr);
+    glBufferSubData(GL_ARRAY_BUFFER, offset, 16 * sizeof(GLfloat), new_color);
+}
+
+
+void EditorGUI::updateTabsColor(){
+    char tab_mouseover = TAB_OPTION_NONE;
+    if(m_mouse_x > EDITOR_GUI_PP_MARGIN && m_mouse_x < EDITOR_GUI_PP_MARGIN + TAB_WIDTH * 2.0f &&
+       m_mouse_y > m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN - TAB_HEIGTH &&
+       m_mouse_y < m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN){
+        if(m_mouse_x < EDITOR_GUI_PP_MARGIN + TAB_WIDTH){
+            tab_mouseover = TAB_OPTION_PARTS;
+        }
+        else{
+            tab_mouseover = TAB_OPTION_STAGING;
+        }
+    }
+
+    for(int i=0; i < TAB_NUMBER; i++){
+        if(m_tab_option - 1 == i){
+            setButtonColor(TAB_COLOR_SELECTED, ((7*4) + (4*16) + 16*i) * sizeof(GLfloat));
+        }
+        else{
+            if(tab_mouseover -1 != i){
+                setButtonColor(TAB_COLOR_UNSELECTED, ((7*4) + (4*16) + 16*i) * sizeof(GLfloat));
+            }
+            else{
+                setButtonColor(TAB_COLOR_MOUSEOVER, ((7*4) + (4*16) + 16*i) * sizeof(GLfloat));
+            }
+        }
+    }
+}
+
+
+void EditorGUI::updateDeleteArea(){
+    bool delete_area_mouseover = false;
+    delete_area_mouseover = m_mouse_x > DELETE_AREA_ORIGIN && m_mouse_y > DELETE_AREA_ORIGIN &&
+                            m_mouse_x < EDITOR_GUI_LP_W - DELETE_AREA_MARGIN && 
+                            m_mouse_y < EDITOR_GUI_PP_MARGIN + EDITOR_GUI_PP_LOW_MARGIN - DELETE_AREA_MARGIN;
+
+    if(delete_area_mouseover){
+        setButtonColor(DELETE_AREA_MOUSEOVER, ((7*4) + (3 * 16)) * sizeof(GLfloat));
+    }
+    else{
+        setButtonColor(DELETE_AREA_COLOR, ((7*4) + (3 * 16)) * sizeof(GLfloat));
+    }
+}
+
+
+void EditorGUI::updateTopButtons(){
+    int button_mouseover = -1;
+    if(m_mouse_y > m_fb_height - EDITOR_GUI_TP_H){ // mouse over top panel
+        for(int i=0; i < EDITOR_GUI_N_TOP_BUTTONS; i++){
+            float x_start = (i+1) * BUTTON_PAD_X + i * BUTTON_SIZE_X;
+            
+            if(m_mouse_x > x_start && m_mouse_x < x_start + BUTTON_SIZE_X && m_mouse_y > m_fb_height - 
+               BUTTON_PAD_Y - BUTTON_SIZE_Y && m_mouse_y < m_fb_height - BUTTON_PAD_Y){
+                button_mouseover = i;
+            }
+        }
+    }
+
+    for(int i=0; i < EDITOR_GUI_N_TOP_BUTTONS; i++){
+        if(m_button_status[i]){
+            if(button_mouseover == i){
+                setButtonColor(BUTTON_COLOR_SELECTED_MOUSEOVER, ((7*4) + (i * 16)) * sizeof(GLfloat));
+            }
+            else{
+                setButtonColor(BUTTON_COLOR_SELECTED, ((7*4) + (i * 16)) * sizeof(GLfloat));
+            }
+        }
+        else{
+            if(button_mouseover == i){
+                setButtonColor(BUTTON_COLOR_MOUSEOVER, ((7*4) + (i * 16)) * sizeof(GLfloat));
+            }
+            else{
+                setButtonColor(BUTTON_COLOR_DEFAULT, ((7*4) + (i * 16)) * sizeof(GLfloat));
+            }
+        }
+    }
 }
 
 
 void EditorGUI::updateButtons(){ // used to update button colors
-    // grab the current value of m_button_mouseover in case it is overwritten in the update function while we are working with it
-    int button_mouseover = m_button_mouseover;
-    bool delete_area_mouseover = m_delete_area_mouseover;
-
-    for(int i=0; i < TAB_NUMBER; i++){
-        if(m_tab_option - 1 == i){
-            GLfloat new_color[16] = {TAB_COLOR_SELECTED,
-                                     TAB_COLOR_SELECTED,
-                                     TAB_COLOR_SELECTED,
-                                     TAB_COLOR_SELECTED};
-            glBindBuffer(GL_ARRAY_BUFFER, m_vbo_clr);
-            glBufferSubData(GL_ARRAY_BUFFER, ((7*4) + (4*16) + 16*i) * sizeof(GLfloat) , 16 * sizeof(GLfloat), new_color);
-        }
-        else{
-            if(m_tab_mouseover -1 != i){
-                GLfloat new_color[16] = {TAB_COLOR_UNSELECTED,
-                                         TAB_COLOR_UNSELECTED,
-                                         TAB_COLOR_UNSELECTED,
-                                         TAB_COLOR_UNSELECTED};
-                glBindBuffer(GL_ARRAY_BUFFER, m_vbo_clr);
-                glBufferSubData(GL_ARRAY_BUFFER, ((7*4) + (4*16) + 16*i) * sizeof(GLfloat) , 16 * sizeof(GLfloat), new_color);
-            }
-            else{
-                GLfloat new_color[16] = {TAB_COLOR_MOUSEOVER,
-                                         TAB_COLOR_MOUSEOVER,
-                                         TAB_COLOR_MOUSEOVER,
-                                         TAB_COLOR_MOUSEOVER};
-                glBindBuffer(GL_ARRAY_BUFFER, m_vbo_clr);
-                glBufferSubData(GL_ARRAY_BUFFER, ((7*4) + (4*16) + 16*i) * sizeof(GLfloat) , 16 * sizeof(GLfloat), new_color);
-            }
-        }
-    }
-
-    if(m_delete_area_mouseover_status != delete_area_mouseover){
-        m_delete_area_mouseover_status = delete_area_mouseover;
-
-        if(m_delete_area_mouseover_status){
-            GLfloat new_color[16] = {DELETE_AREA_MOUSEOVER,
-                                     DELETE_AREA_MOUSEOVER,
-                                     DELETE_AREA_MOUSEOVER,
-                                     DELETE_AREA_MOUSEOVER};
-            glBindBuffer(GL_ARRAY_BUFFER, m_vbo_clr);
-            glBufferSubData(GL_ARRAY_BUFFER, ((7*4) + (3 * 16)) * sizeof(GLfloat) , 16 * sizeof(GLfloat), new_color);
-        }
-        else{
-            GLfloat new_color[16] = {DELETE_AREA_COLOR,
-                                     DELETE_AREA_COLOR,
-                                     DELETE_AREA_COLOR,
-                                     DELETE_AREA_COLOR};
-            glBindBuffer(GL_ARRAY_BUFFER, m_vbo_clr);
-            glBufferSubData(GL_ARRAY_BUFFER, ((7*4) + (3 * 16)) * sizeof(GLfloat) , 16 * sizeof(GLfloat), new_color);
-        }
-    }
-
-    // reset button color if m_last_button_color != -1
-    if(m_last_button_color >= 0){
-        if(!m_button_status[m_last_button_color]){
-            GLfloat new_color[16] = {BUTTON_COLOR_DEFAULT,
-                                     BUTTON_COLOR_DEFAULT,
-                                     BUTTON_COLOR_DEFAULT,
-                                     BUTTON_COLOR_DEFAULT};
-
-            colorButton(new_color, m_last_button_color);
-        }
-    }
-    m_last_button_color = -1;
-
-    if(button_mouseover >= 0 && button_mouseover < EDITOR_GUI_N_BUTTONS){ // && button_mouseover < EDITOR_GUI_N_BUTTONS -> sanity check
-        if(m_button_status[button_mouseover]){
-            GLfloat new_color[16] = {BUTTON_COLOR_SELECTED_MOUSEOVER,
-                                     BUTTON_COLOR_SELECTED_MOUSEOVER,
-                                     BUTTON_COLOR_SELECTED_MOUSEOVER,
-                                     BUTTON_COLOR_SELECTED_MOUSEOVER};
-            colorButton(new_color, button_mouseover);
-            m_button_color_status[button_mouseover] = false;
-        }
-        else{
-            GLfloat new_color[16] = {BUTTON_COLOR_MOUSEOVER,
-                                     BUTTON_COLOR_MOUSEOVER,
-                                     BUTTON_COLOR_MOUSEOVER,
-                                     BUTTON_COLOR_MOUSEOVER};
-            colorButton(new_color, button_mouseover);
-        }
-
-        m_last_button_color = button_mouseover;
-
-        return;
-    }
-
-    for(int i=0; i < EDITOR_GUI_N_BUTTONS; i++){
-        if(m_button_color_status[i] != m_button_status[i]){
-            m_button_color_status[i] = m_button_status[i];
-
-            if(m_button_color_status[i]){
-                GLfloat new_color[16] = {BUTTON_COLOR_SELECTED,
-                                         BUTTON_COLOR_SELECTED,
-                                         BUTTON_COLOR_SELECTED,
-                                         BUTTON_COLOR_SELECTED};
-
-                colorButton(new_color, i);
-            }
-            else{
-                GLfloat new_color[16] = {BUTTON_COLOR_DEFAULT,
-                                         BUTTON_COLOR_DEFAULT,
-                                         BUTTON_COLOR_DEFAULT,
-                                         BUTTON_COLOR_DEFAULT};
-                colorButton(new_color, i);
-            }
-        }
-    }
+    updateTabsColor();
+    updateDeleteArea();
+    updateTopButtons();
 }
 
 
@@ -533,43 +505,35 @@ void EditorGUI::render(){
 
 
 int EditorGUI::update(){
-    double posx, posy;
     int lp_action;
     bool lmbpress = m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS;
 
-    m_input->getMousePos(posx, posy);
-    posx = (double)posx;
-    posy = m_fb_height - (double)posy;
+    m_input->getMousePos(m_mouse_x, m_mouse_y);
+    m_mouse_y = m_fb_height - m_mouse_y;
 
     if(m_tab_option == TAB_OPTION_PARTS){
-        lp_action = m_parts_panel->update(posx - EDITOR_GUI_PP_MARGIN, posy - EDITOR_GUI_PP_MARGIN - EDITOR_GUI_PP_LOW_MARGIN); // transform coord origin
+        lp_action = m_parts_panel->update(m_mouse_x - EDITOR_GUI_PP_MARGIN, m_mouse_y - EDITOR_GUI_PP_MARGIN - EDITOR_GUI_PP_LOW_MARGIN); // transform coord origin
     }
     else{
         lp_action = PANEL_ACTION_NONE;
     }
 
     if(m_render_context->imGuiWantCaptureMouse()){
-        m_button_mouseover = -1;
         return EDITOR_ACTION_NONE;
     }
 
-    m_button_mouseover = -1;
-    if(posy > m_fb_height - EDITOR_GUI_TP_H){ // mouse over top panel
-        for(int i=0; i < EDITOR_GUI_N_BUTTONS; i++){
+    if(m_mouse_y > m_fb_height - EDITOR_GUI_TP_H){ // mouse over top panel
+        for(int i=0; i < EDITOR_GUI_N_TOP_BUTTONS; i++){
             float x_start = (i+1) * BUTTON_PAD_X + i * BUTTON_SIZE_X;
             
-            if(posx > x_start && posx < x_start + BUTTON_SIZE_X && posy > m_fb_height - 
-               BUTTON_PAD_Y - BUTTON_SIZE_Y && posy < m_fb_height - BUTTON_PAD_Y){
-
-                if(lmbpress){
-                    m_button_status[i] = !m_button_status[i];
-                }
-                m_button_mouseover = i;
+            if(m_mouse_x > x_start && m_mouse_x < x_start + BUTTON_SIZE_X && m_mouse_y > m_fb_height - 
+               BUTTON_PAD_Y - BUTTON_SIZE_Y && m_mouse_y < m_fb_height - BUTTON_PAD_Y && lmbpress){
+                m_button_status[i] = !m_button_status[i];
             }
         }
     }
 
-    if(posx > DELETE_AREA_ORIGIN && posy > DELETE_AREA_ORIGIN && posx < EDITOR_GUI_LP_W - DELETE_AREA_MARGIN && 
+    /*if(posx > DELETE_AREA_ORIGIN && posy > DELETE_AREA_ORIGIN && posx < EDITOR_GUI_LP_W - DELETE_AREA_MARGIN && 
        posy < EDITOR_GUI_PP_MARGIN + EDITOR_GUI_PP_LOW_MARGIN - DELETE_AREA_MARGIN){
         m_delete_area_mouseover = true;
         if(lmbpress){
@@ -578,27 +542,16 @@ int EditorGUI::update(){
     }
     else{
         m_delete_area_mouseover = false;
-    }
+    }*/
 
-    m_tab_mouseover = TAB_OPTION_NONE;
-    if(posx > EDITOR_GUI_PP_MARGIN && posx < EDITOR_GUI_PP_MARGIN + TAB_WIDTH * 2.0f &&
-       posy > m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN - TAB_HEIGTH &&
-       posy < m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN){
-        if(posx < EDITOR_GUI_PP_MARGIN + TAB_WIDTH){
-            if(lmbpress){
-                m_tab_option = TAB_OPTION_PARTS;
-            }
-            else{
-                m_tab_mouseover = TAB_OPTION_PARTS;
-            }
+    if(m_mouse_x > EDITOR_GUI_PP_MARGIN && m_mouse_x < EDITOR_GUI_PP_MARGIN + TAB_WIDTH * 2.0f &&
+       m_mouse_y > m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN - TAB_HEIGTH &&
+       m_mouse_y < m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN){
+        if(m_mouse_x < EDITOR_GUI_PP_MARGIN + TAB_WIDTH && lmbpress){
+            m_tab_option = TAB_OPTION_PARTS;
         }
-        else{ // we only have 2
-            if(lmbpress){
-                m_tab_option = TAB_OPTION_STAGING;
-            }
-            else{
-                m_tab_mouseover = TAB_OPTION_STAGING;
-            }
+        else if(lmbpress){ // we only have 2
+            m_tab_option = TAB_OPTION_STAGING;
         }
     }
 
@@ -608,7 +561,7 @@ int EditorGUI::update(){
     }
     else{
         // focus check
-        if(posy > m_fb_height - EDITOR_GUI_TP_H || posx < EDITOR_GUI_LP_W){
+        if(m_mouse_y > m_fb_height - EDITOR_GUI_TP_H || m_mouse_x < EDITOR_GUI_LP_W){
             return EDITOR_ACTION_FOCUS;
         }
         else{

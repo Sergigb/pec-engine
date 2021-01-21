@@ -25,7 +25,7 @@ class StagingPanelGUI;
 
 #define EDITOR_GUI_LP_W 300.0f
 #define EDITOR_GUI_TP_H 40.0f
-#define EDITOR_GUI_N_BUTTONS 3 // changing this won't add buttons cuz the array sizes are fixed
+#define EDITOR_GUI_N_TOP_BUTTONS 3 // changing this won't add buttons cuz the array sizes are fixed
 #define EDITOR_GUI_PP_MARGIN 15.0f
 #define EDITOR_GUI_PP_LOW_MARGIN 100.0f
 
@@ -69,15 +69,10 @@ class EditorGUI : public BaseGUI{
     private:
         bool m_fb_update, m_init;
         float m_fb_height, m_fb_width;
-        int m_button_mouseover, m_button_select;
-        bool m_button_status[EDITOR_GUI_N_BUTTONS];
-        bool m_delete_area_mouseover;
-        char m_tab_option, m_tab_mouseover;
-
-        // used by the render thread
-        int m_last_button_color; // last button that changed color
-        bool m_button_color_status[EDITOR_GUI_N_BUTTONS];
-        bool m_delete_area_mouseover_status;
+        double m_mouse_x, m_mouse_y;
+        int m_button_select;
+        bool m_button_status[EDITOR_GUI_N_TOP_BUTTONS];
+        char m_tab_option;
 
         GLuint m_vao, m_vbo_vert, m_vbo_tex, m_vbo_ind, m_vbo_clr;
         GLuint m_texture_atlas;
@@ -98,7 +93,10 @@ class EditorGUI : public BaseGUI{
 
         void updateBuffers();
         void updateButtons();
-        void colorButton(const GLfloat* color_array, int button);
+        void updateTabsColor();
+        void updateDeleteArea();
+        void updateTopButtons();
+        void setButtonColor(float r ,float g, float b, float a, GLintptr offset);
     public:
         EditorGUI();
         EditorGUI(const FontAtlas* atlas, const RenderContext* render_context, const Input* input);
