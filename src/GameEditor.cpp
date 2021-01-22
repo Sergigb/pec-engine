@@ -730,6 +730,14 @@ void GameEditor::logic(){
         m_symmetry_sides = m_editor_gui->getSymmetrySides();
     }
 
+    if(m_gui_action == EDITOR_ACTION_TOGGLE_ALIGN){
+        m_radial_align = m_editor_gui->getRadialAlign();
+    }
+
+    if(m_gui_action == EDITOR_ACTION_CLEAR_SCENE){
+        m_clear_scene = true;
+    }
+
     // other input
     if(m_input->pressed_keys[GLFW_KEY_P] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
         m_physics_pause = !m_physics_pause;
@@ -783,7 +791,7 @@ void GameEditor::logic(){
 
     if(m_input->pressed_keys[GLFW_KEY_V] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
         m_radial_align = !m_radial_align;
-        std::cout << "Radial align: " << m_radial_align << std::endl;
+        m_editor_gui->setRadialAlign(m_radial_align);
     }
 
     if(m_input->pressed_keys[GLFW_KEY_F1] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
@@ -804,7 +812,6 @@ void GameEditor::clearScene(){
     m_vessel_id = 0;
     m_clear_scene = false;
     m_picked_obj = nullptr;
-    std::cout << "Scene cleared" << std::endl;
 }
 
 

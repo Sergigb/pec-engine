@@ -33,7 +33,7 @@ class StagingPanelGUI;
 #define EDITOR_GUI_PANEL_COLOR 0.15, 0.15, 0.15, 1.0
 
 // buttons
-#define BUTTON_PAD_X 20
+#define BUTTON_PAD_X 15
 #define BUTTON_PAD_Y 10
 #define BUTTON_SIZE_X 35
 #define BUTTON_SIZE_Y 35
@@ -64,9 +64,10 @@ class StagingPanelGUI;
 #define EDITOR_ACTION_NONE 0
 #define EDITOR_ACTION_FOCUS 1
 #define EDITOR_ACTION_OBJECT_PICK 2
-#define EDITOR_ACTION_BUTTON 3 // well see about this
-#define EDITOR_ACTION_DELETE 4
-#define EDITOR_ACTION_SYMMETRY_SIDES 5
+#define EDITOR_ACTION_DELETE 3
+#define EDITOR_ACTION_SYMMETRY_SIDES 4
+#define EDITOR_ACTION_TOGGLE_ALIGN 5
+#define EDITOR_ACTION_CLEAR_SCENE 6
 
 
 class EditorGUI : public BaseGUI{
@@ -76,6 +77,7 @@ class EditorGUI : public BaseGUI{
         double m_mouse_x, m_mouse_y;
         char m_tab_option;
         short m_symmetric_sides, m_max_symmetric_sides;
+        bool m_radial_align;
 
         GLuint m_vao, m_vbo_vert, m_vbo_tex, m_vbo_ind, m_vbo_clr;
         GLuint m_texture_atlas;
@@ -107,8 +109,10 @@ class EditorGUI : public BaseGUI{
 
         void setMasterPartList(const std::unordered_map<std::uint32_t, std::unique_ptr<BasePart>>* master_parts_list);
         void setSymmetrySides(int sides);
+        void setRadialAlign(bool to_what);
 
         int getSymmetrySides() const;
+        bool getRadialAlign() const;
 
         void onFramebufferSizeUpdate();
         void render();

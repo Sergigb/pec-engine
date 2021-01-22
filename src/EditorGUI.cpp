@@ -30,6 +30,7 @@ EditorGUI::EditorGUI(const FontAtlas* atlas, const RenderContext* render_context
     m_mouse_y = m_fb_height - m_mouse_y;
     m_symmetric_sides = 1;
     m_max_symmetric_sides = 8;
+    m_radial_align = true;
 
     color c{0.85, 0.85, 0.85};
     m_main_text.reset(new Text2D(m_fb_width, m_fb_height, c, m_font_atlas, render_context));
@@ -111,10 +112,10 @@ EditorGUI::EditorGUI(const FontAtlas* atlas, const RenderContext* render_context
                                                      0.0, 0.0, 1.0,
                                                      0.0, 0.0, 1.0,
                                                      0.0, 0.0, 1.0,
-                                                     0.0, 0.0, 1.0,
-                                                     0.0, 0.0, 1.0,
-                                                     0.0, 0.0, 1.0,
-                                                     0.0, 0.0, 1.0, // end buttons
+                                                     0.4101, 0.4101, 1.0,
+                                                     0.4101, 0.5468, 1.0,
+                                                     0.5468, 0.5468, 1.0,
+                                                     0.5468, 0.4101, 1.0, // end buttons
                                                      0.0, 0.0, 1.0,
                                                      0.0, 0.2734, 1.0,
                                                      0.9375, 0.2734, 1.0,
@@ -456,6 +457,17 @@ void EditorGUI::updateTopButtons(){
 
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo_tex);
     glBufferSubData(GL_ARRAY_BUFFER, 7 * 3 * sizeof(GLfloat), 12 * sizeof(GLfloat), new_coords);
+
+    // align button
+    row = m_radial_align ? 2.0f : 1.0f;
+
+    GLfloat new_coords2[12] = {0.1367f * row, 0.4101f, 1.0f,
+                              0.1367f * row, 0.5468f, 1.0f,
+                              0.1367f + 0.1367f * row, 0.5468f, 1.0f,
+                              0.1367f + 0.1367f * row, 0.4101f, 1.0f};
+
+    glBufferSubData(GL_ARRAY_BUFFER, (7 * 3 + 12) * sizeof(GLfloat), 12 * sizeof(GLfloat), new_coords2);
+
 }
 
 
@@ -536,17 +548,17 @@ int EditorGUI::update(){
                         else if(rmbpress && m_symmetric_sides > 1){
                             m_symmetric_sides--;
                         }
-                        break;
+                        return EDITOR_ACTION_SYMMETRY_SIDES;
                     case BUTTON_SYMMETRY_MODE:
-                        break;
+                        m_radial_align = !m_radial_align;
+                        return EDITOR_ACTION_TOGGLE_ALIGN;
                     case BUTTON_CLEAR:
-                        break;
+                        return EDITOR_ACTION_CLEAR_SCENE;
                 }
-                return EDITOR_ACTION_SYMMETRY_SIDES;
+                
             }
         }
     }
-
 
     if(m_mouse_x > EDITOR_GUI_PP_MARGIN && m_mouse_x < EDITOR_GUI_PP_MARGIN + TAB_WIDTH * 2.0f &&
        m_mouse_y > m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN - TAB_HEIGTH &&
@@ -556,6 +568,13 @@ int EditorGUI::update(){
         }
         else if(lmbpress){ // we only have 2
             m_tab_option = TAB_OPTION_STAGING;
+        }
+    }
+
+    if(m_mouse_x > DELETE_AREA_ORIGIN && m_mouse_y > DELETE_AREA_ORIGIN && m_mouse_x < EDITOR_GUI_LP_W - DELETE_AREA_MARGIN && 
+       m_mouse_y < EDITOR_GUI_PP_MARGIN + EDITOR_GUI_PP_LOW_MARGIN - DELETE_AREA_MARGIN){
+        if(lmbpress){
+            return EDITOR_ACTION_DELETE;
         }
     }
 
@@ -592,5 +611,15 @@ void EditorGUI::setSymmetrySides(int sides){
 
 int EditorGUI::getSymmetrySides() const{
     return m_symmetric_sides;
+}
+
+
+void EditorGUI::setRadialAlign(bool to_what){
+    m_radial_align = to_what;
+}
+
+
+bool EditorGUI::getRadialAlign() const{
+    return m_radial_align;
 }
 
