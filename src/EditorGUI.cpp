@@ -25,14 +25,14 @@ EditorGUI::EditorGUI(const FontAtlas* atlas, const RenderContext* render_context
     m_init = true;
     m_font_atlas = atlas;
     m_input = input;
-    m_button_select = -1;
-    std::memset(m_button_status, 0, EDITOR_GUI_N_TOP_BUTTONS * sizeof(bool));
     m_tab_option = TAB_OPTION_PARTS;
     m_input->getMousePos(m_mouse_y, m_mouse_x);
     m_mouse_y = m_fb_height - m_mouse_y;
+    m_symmetric_sides = 1;
+    m_max_symmetric_sides = 8;
 
     color c{0.85, 0.85, 0.85};
-    m_text_debug.reset(new Text2D(m_fb_width, m_fb_height, c, m_font_atlas, render_context));
+    m_main_text.reset(new Text2D(m_fb_width, m_fb_height, c, m_font_atlas, render_context));
 
     m_parts_panel.reset(new PartsPanelGUI(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2,
                                           m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2 - EDITOR_GUI_PP_LOW_MARGIN - TAB_HEIGTH,
@@ -95,7 +95,7 @@ EditorGUI::EditorGUI(const FontAtlas* atlas, const RenderContext* render_context
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo_tex);
     glVertexAttribPointer(2, 3,  GL_FLOAT, GL_FALSE, 0, NULL);
     glEnableVertexAttribArray(2);
-    // this works, but the alpha is set all to 0s because I don't have a good texture atlas yet :(
+
     GLfloat tex_coords[3 * EDITOR_GUI_VERTEX_NUM] = {0.0, 1.0, 0.0,
                                                      0.0, 0.0, 0.0,
                                                      1.0, 1.0, 0.0,
@@ -103,18 +103,18 @@ EditorGUI::EditorGUI(const FontAtlas* atlas, const RenderContext* render_context
                                                      0.0, 1.0, 0.0,
                                                      1.0, 1.0, 0.0,
                                                      1.0, 0.0, 0.0,
-                                                     0.0, 0.0, 0.0,
-                                                     0.0, 0.0, 0.0,
-                                                     0.0, 0.0, 0.0,
-                                                     0.0, 0.0, 0.0,
-                                                     0.0, 0.0, 0.0,
-                                                     0.0, 0.0, 0.0,
-                                                     0.0, 0.0, 0.0,
-                                                     0.0, 0.0, 0.0,
-                                                     0.0, 0.0, 0.0,
-                                                     0.0, 0.0, 0.0,
-                                                     0.0, 0.0, 0.0,
-                                                     0.0, 0.0, 0.0,
+                                                     0.0, 0.2734, 1.0, // start buttons
+                                                     0.0, 0.4101, 1.0,
+                                                     0.1367, 0.4101, 1.0,
+                                                     0.1367, 0.2734, 1.0,
+                                                     0.0, 0.0, 1.0,
+                                                     0.0, 0.0, 1.0,
+                                                     0.0, 0.0, 1.0,
+                                                     0.0, 0.0, 1.0,
+                                                     0.0, 0.0, 1.0,
+                                                     0.0, 0.0, 1.0,
+                                                     0.0, 0.0, 1.0,
+                                                     0.0, 0.0, 1.0, // end buttons
                                                      0.0, 0.0, 1.0,
                                                      0.0, 0.2734, 1.0,
                                                      0.9375, 0.2734, 1.0,
@@ -135,7 +135,7 @@ EditorGUI::EditorGUI(const FontAtlas* atlas, const RenderContext* render_context
     glVertexAttribPointer(3, 3, GL_UNSIGNED_SHORT, GL_FALSE, 0, NULL);
     glEnableVertexAttribArray(3);
 
-    // same thing for the index buffer
+    // panels
     GLushort index_buffer[EDITOR_GUI_INDEX_NUM];
     index_buffer[0] = 0;
     index_buffer[1] = 2;
@@ -277,6 +277,8 @@ void EditorGUI::onFramebufferSizeUpdate(){
 void EditorGUI::updateBuffers(){
     float x_start, y_start;
 
+    m_main_text->clearStrings();
+
     GLfloat vertex_buffer[2 * EDITOR_GUI_VERTEX_NUM];
 
     // left panel
@@ -297,12 +299,8 @@ void EditorGUI::updateBuffers(){
     vertex_buffer[13] = m_fb_height;
 
     // buttons
-    m_text_debug->clearStrings();
     for(char i=0; i < EDITOR_GUI_N_TOP_BUTTONS; i++){
         x_start = (i+1) * BUTTON_PAD_X + i * BUTTON_SIZE_X;
-
-        m_text_debug->addString(L"Button", x_start + BUTTON_SIZE_X / 2, m_fb_height - BUTTON_PAD_Y - BUTTON_SIZE_Y / 2 + 5,
-                                1, STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_CENTER_XY);
 
         vertex_buffer[14 + i * 8] = x_start; //1
         vertex_buffer[15 + i * 8] = m_fb_height - BUTTON_PAD_Y;
@@ -349,9 +347,9 @@ void EditorGUI::updateBuffers(){
     vertex_buffer[disp + 15] = x_start + TAB_WIDTH;
     vertex_buffer[disp + 16] = y_start;
 
-    m_text_debug->addString(L"Parts", EDITOR_GUI_PP_MARGIN + TAB_WIDTH * 0.5f, y_start + TAB_HEIGTH * 0.5 + 5,
+    m_main_text->addString(L"Parts", EDITOR_GUI_PP_MARGIN + TAB_WIDTH * 0.5f, y_start + TAB_HEIGTH * 0.5 + 5,
                             1, STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_CENTER_XY);
-    m_text_debug->addString(L"Staging", EDITOR_GUI_PP_MARGIN + TAB_WIDTH * 1.5f, y_start + TAB_HEIGTH * 0.5 + 5,
+    m_main_text->addString(L"Staging", EDITOR_GUI_PP_MARGIN + TAB_WIDTH * 1.5f, y_start + TAB_HEIGTH * 0.5 + 5,
                             1, STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_CENTER_XY);
 
     m_render_context->bindVao(m_vao);
@@ -372,10 +370,10 @@ void EditorGUI::updateBuffers(){
 
 
 void EditorGUI::setButtonColor(float r ,float g, float b, float a, GLintptr offset){
-    GLfloat new_color[16] = {r, g, b ,a,
-                             r, g, b ,a,
-                             r, g, b ,a,
-                             r, g, b ,a};
+    GLfloat new_color[16] = {r, g, b, a,
+                             r, g, b, a,
+                             r, g, b, a,
+                             r, g, b, a};
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo_clr);
     glBufferSubData(GL_ARRAY_BUFFER, offset, 16 * sizeof(GLfloat), new_color);
 }
@@ -439,23 +437,25 @@ void EditorGUI::updateTopButtons(){
     }
 
     for(int i=0; i < EDITOR_GUI_N_TOP_BUTTONS; i++){
-        if(m_button_status[i]){
-            if(button_mouseover == i){
-                setButtonColor(BUTTON_COLOR_SELECTED_MOUSEOVER, ((7*4) + (i * 16)) * sizeof(GLfloat));
-            }
-            else{
-                setButtonColor(BUTTON_COLOR_SELECTED, ((7*4) + (i * 16)) * sizeof(GLfloat));
-            }
+        if(button_mouseover == i){
+            setButtonColor(BUTTON_COLOR_MOUSEOVER, ((7*4) + (i * 16)) * sizeof(GLfloat));
         }
         else{
-            if(button_mouseover == i){
-                setButtonColor(BUTTON_COLOR_MOUSEOVER, ((7*4) + (i * 16)) * sizeof(GLfloat));
-            }
-            else{
-                setButtonColor(BUTTON_COLOR_DEFAULT, ((7*4) + (i * 16)) * sizeof(GLfloat));
-            }
+            setButtonColor(BUTTON_COLOR_DEFAULT, ((7*4) + (i * 16)) * sizeof(GLfloat));
         }
     }
+
+    // update symmetry sides
+    float row = m_symmetric_sides / 8;
+    float col = ((m_symmetric_sides - 1) % 7) + 1;
+
+    GLfloat new_coords[12] = {0.1367f * (col - 1), 0.2734f + 0.1367f * row, 1.0f,
+                              0.1367f * (col - 1), 0.2734f + 0.1367f * (row + 1), 1.0f,
+                              0.1367f * col, 0.2734f + 0.1367f * (row + 1), 1.0f,
+                              0.1367f * col, 0.2734f + 0.1367f * row, 1.0f};
+
+    glBindBuffer(GL_ARRAY_BUFFER, m_vbo_tex);
+    glBufferSubData(GL_ARRAY_BUFFER, 7 * 3 * sizeof(GLfloat), 12 * sizeof(GLfloat), new_coords);
 }
 
 
@@ -469,7 +469,7 @@ void EditorGUI::updateButtons(){ // used to update button colors
 void EditorGUI::render(){
     if(m_fb_update){
         m_render_context->getDefaultFbSize(m_fb_width, m_fb_height);
-        m_text_debug->onFramebufferSizeUpdate(m_fb_width, m_fb_height);
+        m_main_text->onFramebufferSizeUpdate(m_fb_width, m_fb_height);
         m_parts_panel->onFramebufferSizeUpdate(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2,
                                                m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2 - EDITOR_GUI_PP_LOW_MARGIN - TAB_HEIGTH);
         m_staging_panel->onFramebufferSizeUpdate(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2, 
@@ -500,13 +500,14 @@ void EditorGUI::render(){
     m_render_context->bindVao(m_left_panel_vao);
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
-    m_text_debug->render();
+    m_main_text->render();
 }
 
 
 int EditorGUI::update(){
     int lp_action;
     bool lmbpress = m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS;
+    bool rmbpress = m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2] & INPUT_MBUTTON_PRESS;
 
     m_input->getMousePos(m_mouse_x, m_mouse_y);
     m_mouse_y = m_fb_height - m_mouse_y;
@@ -525,24 +526,27 @@ int EditorGUI::update(){
     if(m_mouse_y > m_fb_height - EDITOR_GUI_TP_H){ // mouse over top panel
         for(int i=0; i < EDITOR_GUI_N_TOP_BUTTONS; i++){
             float x_start = (i+1) * BUTTON_PAD_X + i * BUTTON_SIZE_X;
-            
             if(m_mouse_x > x_start && m_mouse_x < x_start + BUTTON_SIZE_X && m_mouse_y > m_fb_height - 
-               BUTTON_PAD_Y - BUTTON_SIZE_Y && m_mouse_y < m_fb_height - BUTTON_PAD_Y && lmbpress){
-                m_button_status[i] = !m_button_status[i];
+               BUTTON_PAD_Y - BUTTON_SIZE_Y && m_mouse_y < m_fb_height - BUTTON_PAD_Y && (lmbpress || rmbpress)){
+                switch(i){
+                    case BUTTON_SYMMETRIC_SIDES:
+                        if(lmbpress && m_symmetric_sides < m_max_symmetric_sides){
+                            m_symmetric_sides++;
+                        }
+                        else if(rmbpress && m_symmetric_sides > 1){
+                            m_symmetric_sides--;
+                        }
+                        break;
+                    case BUTTON_SYMMETRY_MODE:
+                        break;
+                    case BUTTON_CLEAR:
+                        break;
+                }
+                return EDITOR_ACTION_SYMMETRY_SIDES;
             }
         }
     }
 
-    /*if(posx > DELETE_AREA_ORIGIN && posy > DELETE_AREA_ORIGIN && posx < EDITOR_GUI_LP_W - DELETE_AREA_MARGIN && 
-       posy < EDITOR_GUI_PP_MARGIN + EDITOR_GUI_PP_LOW_MARGIN - DELETE_AREA_MARGIN){
-        m_delete_area_mouseover = true;
-        if(lmbpress){
-            return EDITOR_ACTION_DELETE;
-        }
-    }
-    else{
-        m_delete_area_mouseover = false;
-    }*/
 
     if(m_mouse_x > EDITOR_GUI_PP_MARGIN && m_mouse_x < EDITOR_GUI_PP_MARGIN + TAB_WIDTH * 2.0f &&
        m_mouse_y > m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN - TAB_HEIGTH &&
@@ -578,5 +582,15 @@ void EditorGUI::setMasterPartList(const std::map<std::uint32_t, std::unique_ptr<
 
 const std::unique_ptr<BasePart>* EditorGUI::getPickedObject() const{
     return m_parts_panel->getPickedObject();
+}
+
+
+void EditorGUI::setSymmetrySides(int sides){
+    m_symmetric_sides = sides;
+}
+
+
+int EditorGUI::getSymmetrySides() const{
+    return m_symmetric_sides;
 }
 

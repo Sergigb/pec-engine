@@ -24,7 +24,7 @@ class StagingPanelGUI;
 #define EDITOR_GUI_INDEX_NUM 48
 
 #define EDITOR_GUI_LP_W 300.0f
-#define EDITOR_GUI_TP_H 40.0f
+#define EDITOR_GUI_TP_H 55.0f
 #define EDITOR_GUI_N_TOP_BUTTONS 3 // changing this won't add buttons cuz the array sizes are fixed
 #define EDITOR_GUI_PP_MARGIN 15.0f
 #define EDITOR_GUI_PP_LOW_MARGIN 100.0f
@@ -32,15 +32,18 @@ class StagingPanelGUI;
 // colors are defined per vertex
 #define EDITOR_GUI_PANEL_COLOR 0.15, 0.15, 0.15, 1.0
 
+// buttons
 #define BUTTON_PAD_X 20
-#define BUTTON_PAD_Y 5
-#define BUTTON_SIZE_X 100
-#define BUTTON_SIZE_Y 30
+#define BUTTON_PAD_Y 10
+#define BUTTON_SIZE_X 35
+#define BUTTON_SIZE_Y 35
 
-#define BUTTON_COLOR_DEFAULT 0.25, 0.25, 0.25, 1.0
-#define BUTTON_COLOR_MOUSEOVER 0.35, 0.35, 0.35, 1.0
-#define BUTTON_COLOR_SELECTED 0.0, 0.0, 0.9, 1.0
-#define BUTTON_COLOR_SELECTED_MOUSEOVER 0.0, 0.0, 0.7, 1.0
+#define BUTTON_COLOR_DEFAULT 0.25, 0.25, 0.25, 0.1
+#define BUTTON_COLOR_MOUSEOVER 0.35, 0.35, 0.35, 0.24
+
+#define BUTTON_SYMMETRIC_SIDES 0
+#define BUTTON_SYMMETRY_MODE 1
+#define BUTTON_CLEAR 2
 
 #define DELETE_AREA_ORIGIN 15.0f
 #define DELETE_AREA_MARGIN 15.0f
@@ -63,6 +66,7 @@ class StagingPanelGUI;
 #define EDITOR_ACTION_OBJECT_PICK 2
 #define EDITOR_ACTION_BUTTON 3 // well see about this
 #define EDITOR_ACTION_DELETE 4
+#define EDITOR_ACTION_SYMMETRY_SIDES 5
 
 
 class EditorGUI : public BaseGUI{
@@ -70,9 +74,8 @@ class EditorGUI : public BaseGUI{
         bool m_fb_update, m_init;
         float m_fb_height, m_fb_width;
         double m_mouse_x, m_mouse_y;
-        int m_button_select;
-        bool m_button_status[EDITOR_GUI_N_TOP_BUTTONS];
         char m_tab_option;
+        short m_symmetric_sides, m_max_symmetric_sides;
 
         GLuint m_vao, m_vbo_vert, m_vbo_tex, m_vbo_ind, m_vbo_clr;
         GLuint m_texture_atlas;
@@ -85,7 +88,7 @@ class EditorGUI : public BaseGUI{
 
         math::mat4 m_projection;
 
-        std::unique_ptr<Text2D> m_text_debug;
+        std::unique_ptr<Text2D> m_main_text;
 
         const FontAtlas* m_font_atlas;
         const RenderContext* m_render_context;
@@ -103,6 +106,9 @@ class EditorGUI : public BaseGUI{
         ~EditorGUI();
 
         void setMasterPartList(const std::map<std::uint32_t, std::unique_ptr<BasePart>>* master_parts_list);
+        void setSymmetrySides(int sides);
+
+        int getSymmetrySides() const;
 
         void onFramebufferSizeUpdate();
         void render();

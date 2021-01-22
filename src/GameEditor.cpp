@@ -726,6 +726,10 @@ void GameEditor::logic(){
         m_delete_current = true;
     }
 
+    if(m_gui_action == EDITOR_ACTION_SYMMETRY_SIDES){
+        m_symmetry_sides = m_editor_gui->getSymmetrySides();
+    }
+
     // other input
     if(m_input->pressed_keys[GLFW_KEY_P] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
         m_physics_pause = !m_physics_pause;
@@ -774,7 +778,7 @@ void GameEditor::logic(){
         if(m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] == INPUT_KEY_UP && m_symmetry_sides < MAX_SYMMETRY_SIDES){
             m_symmetry_sides++;
         }
-        std::cout << "Sym. sides: " << m_symmetry_sides << std::endl;
+        m_editor_gui->setSymmetrySides(m_symmetry_sides);
     }
 
     if(m_input->pressed_keys[GLFW_KEY_V] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
