@@ -421,7 +421,7 @@ void GameEditor::placeSubTree(float closest_dist, math::vec4& closest_att_point_
 
             if(m_symmetry_sides != cloned_from->getClones().size() + 1){
                 m_symmetry_sides = cloned_from->getClones().size() + 1;
-                std::cout << "Sym. sides: " << m_symmetry_sides << std::endl;
+                m_editor_gui->setSymmetrySides(m_symmetry_sides);
             }
             createSymmetrySubtrees();
             placeClonedSubtreesOnClones(closest, transform_final, clone_to);
@@ -533,7 +533,7 @@ void GameEditor::placeSubTree(float closest_dist, math::vec4& closest_att_point_
 
                 if(m_symmetry_sides != cloned_from->getClones().size() + 1){
                     m_symmetry_sides = cloned_from->getClones().size() + 1;
-                    std::cout << "Sym. sides: " << m_symmetry_sides << std::endl;
+                    m_editor_gui->setSymmetrySides(m_symmetry_sides);
                 }
                 createSymmetrySubtrees();
                 placeClonedSubtreesOnClones(parent, transform_final, clone_to);
