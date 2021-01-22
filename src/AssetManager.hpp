@@ -4,7 +4,7 @@
 #include <memory>
 #include <vector>
 #include <cstdint>
-#include <map>
+#include <unordered_map>
 
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/btBulletDynamicsCommon.h>
@@ -52,8 +52,8 @@ class AssetManager{
     public:
         std::vector<std::unique_ptr<btCollisionShape>> m_collision_shapes;
         std::vector<std::unique_ptr<Model>> m_models;
-        std::map<std::uint32_t, std::unique_ptr<BasePart>> m_master_parts;
-        std::map<std::uint32_t, std::unique_ptr<Resource>> m_resources;
+        std::unordered_map<std::uint32_t, std::unique_ptr<BasePart>> m_master_parts;
+        std::unordered_map<std::uint32_t, std::unique_ptr<Resource>> m_resources;
 
         // command buffers
         std::vector<struct set_motion_state_msg> m_set_motion_state_buffer;
@@ -67,15 +67,15 @@ class AssetManager{
         std::vector<BasePart*> m_build_constraint_subtree_buffer;
 
         // editor objects
-        std::map<std::uint32_t, std::shared_ptr<BasePart>> m_editor_subtrees;
-        std::map<std::uint32_t, std::shared_ptr<Vessel>> m_editor_vessels;
+        std::unordered_map<std::uint32_t, std::shared_ptr<BasePart>> m_editor_subtrees;
+        std::unordered_map<std::uint32_t, std::shared_ptr<Vessel>> m_editor_vessels;
         std::vector<std::shared_ptr<BasePart>> m_symmetry_subtrees;
 
         // universe
         std::vector<std::shared_ptr<Object>> m_objects;
         std::vector<std::shared_ptr<Kinematic>> m_kinematics;
         std::vector<std::unique_ptr<Planet>> m_planets; // too simple, it will be more complex in the future when I have a proper planetary system
-        std::map<std::uint32_t, std::shared_ptr<Vessel>> m_active_vessels;
+        std::unordered_map<std::uint32_t, std::shared_ptr<Vessel>> m_active_vessels;
 
         AssetManager(RenderContext* render_context, const Frustum* frustum, Physics* physics, render_buffers* buff_manager, Camera* camera);
         ~AssetManager();

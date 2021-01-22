@@ -80,12 +80,12 @@ PartsPanelGUI::~PartsPanelGUI(){
 }
 
 
-void PartsPanelGUI::setMasterPartList(const std::map<std::uint32_t, std::unique_ptr<BasePart>>* master_parts_list){
+void PartsPanelGUI::setMasterPartList(const std::unordered_map<std::uint32_t, std::unique_ptr<BasePart>>* master_parts_list){
     int i = 0;
     m_master_parts_list = master_parts_list;
     m_item_to_key.clear();
 
-    std::map<std::uint32_t, std::unique_ptr<BasePart>>::const_iterator it;
+    std::unordered_map<std::uint32_t, std::unique_ptr<BasePart>>::const_iterator it;
     for(it = m_master_parts_list->begin(); it != m_master_parts_list->end(); it++){
         std::string name;
         wchar_t wname[STRING_MAX_LEN];

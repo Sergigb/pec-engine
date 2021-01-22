@@ -14,7 +14,7 @@
 #include "Camera.hpp"
 #include "BasePart.hpp"
 
-#include <iostream>
+
 Player::Player(Camera* camera, AssetManager* asset_manager, Input* input){
     m_camera = camera;
     m_vessel = nullptr;
@@ -61,7 +61,7 @@ void Player::update(){
         }
         else{
             if(m_asset_manager->m_editor_vessels.size()){
-                std::map<std::uint32_t, std::shared_ptr<Vessel>>::iterator it = m_asset_manager->m_editor_vessels.begin();
+                std::unordered_map<std::uint32_t, std::shared_ptr<Vessel>>::iterator it = m_asset_manager->m_editor_vessels.begin();
                 m_vessel = it->second.get();
                 m_vessel->setPlayer(this);
             }

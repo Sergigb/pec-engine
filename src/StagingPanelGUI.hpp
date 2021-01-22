@@ -1,7 +1,7 @@
 #ifndef STAGINGPANELGUI_HPP
 #define STAGINGPANELGUI_HPP
 
-#include <map>
+#include <unordered_map>
 #include <memory>
 #include <cstdint>
 

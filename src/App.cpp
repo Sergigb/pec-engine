@@ -9,7 +9,7 @@
 #include "WindowHandler.hpp"
 
 // delete later most likely when the simulation is moved somewhere else
-#include <map>
+#include <unordered_map>
 
 #include "Input.hpp"
 #include "Camera.hpp"
@@ -202,8 +202,8 @@ void App::onRightMouseButton(){
 #define ed_subtrees m_asset_manager->m_editor_subtrees
 #define ed_vessels m_asset_manager->m_editor_vessels
 void App::editorToSimulation(){
-    std::map<std::uint32_t, std::shared_ptr<BasePart>>::iterator it;
-    std::map<std::uint32_t, std::shared_ptr<Vessel>>::iterator it2;
+    std::unordered_map<std::uint32_t, std::shared_ptr<BasePart>>::iterator it;
+    std::unordered_map<std::uint32_t, std::shared_ptr<Vessel>>::iterator it2;
 
     for(it=ed_subtrees.begin(); it != ed_subtrees.end(); it++){
         it->second->setRenderIgnoreSubTree();

@@ -575,7 +575,7 @@ int EditorGUI::update(){
 }
 
 
-void EditorGUI::setMasterPartList(const std::map<std::uint32_t, std::unique_ptr<BasePart>>* master_parts_list){
+void EditorGUI::setMasterPartList(const std::unordered_map<std::uint32_t, std::unique_ptr<BasePart>>* master_parts_list){
     m_parts_panel->setMasterPartList(master_parts_list);
 }
 

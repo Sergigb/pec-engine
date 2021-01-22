@@ -18,9 +18,9 @@
 #include "Kinematic.hpp"
 
 
-typedef std::map<std::uint32_t, std::shared_ptr<BasePart>>::iterator SubTreeIterator;
-typedef std::map<std::uint32_t, std::shared_ptr<Vessel>>::iterator VesselIterator;
-typedef std::map<std::uint32_t, std::unique_ptr<Resource>>::iterator ResourceIterator;
+typedef std::unordered_map<std::uint32_t, std::shared_ptr<BasePart>>::iterator SubTreeIterator;
+typedef std::unordered_map<std::uint32_t, std::shared_ptr<Vessel>>::iterator VesselIterator;
+typedef std::unordered_map<std::uint32_t, std::unique_ptr<Resource>>::iterator ResourceIterator;
 
 
 AssetManager::AssetManager(RenderContext* render_context, const Frustum* frustum, Physics* physics, render_buffers* buff_manager, Camera* camera){

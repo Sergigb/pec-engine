@@ -7,10 +7,29 @@
 #include <GLFW/glfw3.h>
 
 #include <vector>
-#include <map>
+#include <unordered_map>
 #include <memory>
 
 #include "common.hpp"
+
+
+struct character{
+    uint code; // unicode value
+    uint glyph_index; // freetype index
+
+    int width;             //size x
+    int height;            //size y 
+    int bearing_x;
+    int bearing_y;
+    int advance_x;
+    int advance_y;
+
+    // normalized texture coordinates
+    float tex_x_min;
+    float tex_x_max;
+    float tex_y_min;
+    float tex_y_max;
+};
 
 
 class FontAtlas{ //rename to font atlas?
@@ -21,7 +40,7 @@ class FontAtlas{ //rename to font atlas?
         uint m_atlas_size;
         int m_font_height;
         std::unique_ptr<unsigned char[]> m_atlas;
-        std::map<int, struct character> m_characters;
+        std::unordered_map<int, struct character> m_characters;
         std::vector<struct character> m_characters_vec;
         GLuint m_texture_id;
     public:
@@ -42,25 +61,6 @@ class FontAtlas{ //rename to font atlas?
         void bindTexture() const;
 
         // new function to calculate the width of a string?
-};
-
-
-struct character{
-    uint code; // unicode value
-    uint glyph_index; // freetype index
-
-    int width;             //size x
-    int height;            //size y 
-    int bearing_x;
-    int bearing_y;
-    int advance_x;
-    int advance_y;
-
-    // normalized texture coordinates
-    float tex_x_min;
-    float tex_x_max;
-    float tex_y_min;
-    float tex_y_max;
 };
 
 

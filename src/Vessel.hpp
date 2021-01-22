@@ -3,7 +3,7 @@
 
 #include <string>
 #include <cstdint>
-#include <map>
+#include <unordered_map>
 #include <vector>
 #include <memory>
 
@@ -19,7 +19,7 @@ class Vessel{
         std::string m_vessel_name, m_vessel_desc;
         std::shared_ptr<BasePart> m_vessel_root;
         std::vector<BasePart*> m_node_list;
-        std::map<std::uint32_t, BasePart*> m_node_map_by_id;
+        std::unordered_map<std::uint32_t, BasePart*> m_node_map_by_id;
         std::uint32_t m_vessel_id;
         float m_yaw, m_pitch;
         double m_total_mass;
