@@ -198,6 +198,11 @@ const Vessel* BasePart::getVessel() const{
 }
 
 
+Vessel* BasePart::getVessel(){
+    return m_vessel;
+}
+
+
 void BasePart::updateSubTreeVessel(Vessel* vessel){
     m_vessel = vessel;
 

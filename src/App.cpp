@@ -200,7 +200,6 @@ void App::onRightMouseButton(){
 
 
 #define ed_subtrees m_asset_manager->m_editor_subtrees
-#define ed_vessels m_asset_manager->m_editor_vessels
 void App::editorToSimulation(){
     std::unordered_map<std::uint32_t, std::shared_ptr<BasePart>>::iterator it;
     std::unordered_map<std::uint32_t, std::shared_ptr<Vessel>>::iterator it2;
@@ -212,8 +211,8 @@ void App::editorToSimulation(){
     ed_subtrees.clear();
 
     // should be only one vessel in the editor, change it!!
-    for(it2=ed_vessels.begin(); it2 != ed_vessels.end(); it2++){
-        std::shared_ptr<Vessel> vsl = std::move(it2->second);
+    if(m_asset_manager->m_editor_vessel.get()){
+        std::shared_ptr<Vessel> vsl = std::move(m_asset_manager->m_editor_vessel);
 
         BasePart* root = vsl->getRoot();
         btVector3 to(6371000.0 + 200000, 0.0, 0.0);
@@ -233,5 +232,4 @@ void App::editorToSimulation(){
 
         m_asset_manager->m_active_vessels.insert({vsl->getId(), vsl});
     }
-    ed_vessels.clear();
 }

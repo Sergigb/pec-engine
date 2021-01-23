@@ -58,11 +58,11 @@ void Player::update(){
         if(m_vessel){
             m_vessel->setPlayer(nullptr);
             m_vessel = nullptr;
+            m_camera->restoreCamOrientation();
         }
         else{
-            if(m_asset_manager->m_editor_vessels.size()){
-                std::unordered_map<std::uint32_t, std::shared_ptr<Vessel>>::iterator it = m_asset_manager->m_editor_vessels.begin();
-                m_vessel = it->second.get();
+            if(m_asset_manager->m_editor_vessel.get()){
+                m_vessel = m_asset_manager->m_editor_vessel.get();
                 m_vessel->setPlayer(this);
             }
         }
@@ -72,5 +72,6 @@ void Player::update(){
 
 void Player::onVesselDestroy(){
     m_vessel = nullptr;
+    m_camera->restoreCamOrientation();
 }
 

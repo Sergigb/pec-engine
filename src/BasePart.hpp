@@ -98,6 +98,7 @@ class BasePart : public Object{
         const struct attachment_point* getParentAttachmentPoint() const;
         const struct attachment_point* getFreeAttachmentPoint() const;
         const Vessel* getVessel() const;
+        Vessel* getVessel();
         bool isRoot() const;
 
         const BasePart* getParent() const;

@@ -68,7 +68,7 @@ class AssetManager{
 
         // editor objects
         std::unordered_map<std::uint32_t, std::shared_ptr<BasePart>> m_editor_subtrees;
-        std::unordered_map<std::uint32_t, std::shared_ptr<Vessel>> m_editor_vessels;
+        std::shared_ptr<Vessel> m_editor_vessel;
         std::vector<std::shared_ptr<BasePart>> m_symmetry_subtrees;
 
         // universe

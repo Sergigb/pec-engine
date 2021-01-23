@@ -200,11 +200,8 @@ void AssetManager::clearSceneEditor(){
     }
     m_editor_subtrees.clear();
 
-    for(it2=m_editor_vessels.begin(); it2 != m_editor_vessels.end(); it2++){
-        it2->second->getRoot()->setRenderIgnoreSubTree();
-        m_delete_subtree_buffer.emplace_back(std::static_pointer_cast<BasePart>(it2->second->getRoot()->getSharedPtr()));
-    }
-    m_editor_vessels.clear();
+    m_delete_subtree_buffer.emplace_back(std::static_pointer_cast<BasePart>(m_editor_vessel->getRoot()->getSharedPtr()));
+    m_editor_vessel.reset();
 }
 
 
@@ -213,10 +210,16 @@ void AssetManager::deleteObjectEditor(BasePart* part, std::uint32_t& vessel_id){
     if(part->getVessel()){
         std::uint32_t vid = part->getVessel()->getId();
 
-        m_editor_vessels.at(vid)->getRoot()->setRenderIgnoreSubTree();
-        m_editor_vessels.erase(vid);
-        if(vessel_id == vid){
+        if(vid == vessel_id){
+            m_editor_vessel->getRoot()->setRenderIgnoreSubTree();
+            m_editor_vessel.reset();
             vessel_id = 0;
+        }
+        else{
+            log("AssetManager::deleteObjectEditor: tried to delete a vessel from the editor but it's not the"
+                "editor's vessel. (", vid, " != ", vessel_id, ")");
+            std::cerr << "AssetManager::deleteObjectEditor: tried to delete a vessel from the editor but it's not the"
+                "editor's vessel. (" << vid << " != " << vessel_id << ")" << std::endl;
         }
     }
     else{
@@ -323,9 +326,7 @@ void AssetManager::updateBuffers(){
 void AssetManager::updateVesselsEditor(){
     VesselIterator it;
 
-    for(it=m_editor_vessels.begin(); it != m_editor_vessels.end(); it++){
-        it->second->update();
-    }
+    m_editor_vessel->update();
 }
 
 
@@ -349,8 +350,8 @@ void AssetManager::cleanup(){
         m_objects.at(i)->removeBody();
     }
 
-    for(it1=m_editor_vessels.begin(); it1 != m_editor_vessels.end(); it1++){
-        it1->second->getRoot()->removeBodiesSubtree();
+    if(m_editor_vessel.get()){
+        m_editor_vessel->getRoot()->removeBodiesSubtree();
     }
 
     for(it2=m_editor_subtrees.begin(); it2 != m_editor_subtrees.end(); it2++){
