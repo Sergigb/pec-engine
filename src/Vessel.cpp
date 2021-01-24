@@ -1,3 +1,6 @@
+#define BT_USE_DOUBLE_PRECISION
+#include <bullet/btBulletDynamicsCommon.h>
+
 #include "Vessel.hpp"
 #include "Player.hpp"
 #include "Physics.hpp" // collision flags
@@ -15,6 +18,7 @@ Vessel::Vessel(){
     m_yaw = 0.0f;
     m_pitch = 0.0f;
     m_total_mass = 0.0;
+    m_com = btVector3(0.0, 0.0, 0.0);
 }
 
 
@@ -23,12 +27,14 @@ Vessel::Vessel(std::shared_ptr<BasePart>& vessel_root, const Input* input){
     m_vessel_root->setRoot(true);
     m_vessel_root->updateSubTreeVessel(this);
     create_id(m_vessel_id, VESSEL_SET);
-    updateNodes();
     m_player = nullptr;
     m_input = input;
     m_yaw = 0.0f;
     m_pitch = 0.0f;
-    m_total_mass = 0.0;
+    m_com = btVector3(0.0, 0.0, 0.0);
+
+    updateNodes();
+    updateMass();
 }
 
 
@@ -57,7 +63,6 @@ void Vessel::setVesselDescription(const std::string& description){
 
 
 void Vessel::onTreeUpdate(){
-    // nothing else for now
     updateNodes();
     updateMass();
 }
@@ -213,7 +218,7 @@ bool Vessel::addChildById(std::shared_ptr<BasePart>& child, std::uint32_t parent
         child->updateSubTreeVessel(this);
         child->setCollisionMaskSubTree(child->m_body->getBroadphaseProxy()->m_collisionFilterMask | CG_RAY_EDITOR_RADIAL);
         parent->addChild(child);
-        updateNodes();
+        onTreeUpdate();
 
         return true;
     }
@@ -242,7 +247,7 @@ bool Vessel::addChild(BasePart* child, BasePart* parent){
     child->updateSubTreeVessel(this);
     child->setCollisionMaskSubTree(child->m_body->getBroadphaseProxy()->m_collisionFilterMask | CG_RAY_EDITOR_RADIAL);
     parent->addChild(child_sptr);
-    updateNodes();
+    onTreeUpdate();
 
     return true;
 }
@@ -267,7 +272,7 @@ std::shared_ptr<BasePart> Vessel::removeChildById(std::uint32_t child_id){
         child->updateSubTreeVessel(nullptr);
         child->setCollisionMaskSubTree(child->m_body->getBroadphaseProxy()->m_collisionFilterMask & ~CG_RAY_EDITOR_RADIAL);
         child_sptr = parent->removeChild(child);
-        updateNodes();
+        onTreeUpdate();
 
         return child_sptr;
     }
@@ -304,7 +309,7 @@ std::shared_ptr<BasePart> Vessel::removeChild(BasePart* child){
     child->updateSubTreeVessel(nullptr);
     child->setCollisionMaskSubTree(child->m_body->getBroadphaseProxy()->m_collisionFilterMask & ~CG_RAY_EDITOR_RADIAL);
     child_sptr = parent->removeChild(child);
-    updateNodes();
+    onTreeUpdate();
 
     return child_sptr;                
 }
@@ -376,5 +381,26 @@ double Vessel::getTotalMass() const{
 
 void Vessel::setVesselVelocity(const btVector3& velocity){
     m_vessel_root->setSubTreeVelocity(velocity);
+}
+
+
+void Vessel::updateCoM(){
+    btVector3 com(0.0, 0.0, 0.0);
+
+    for(uint i=0; i < m_node_list.size(); i++){
+        if(!m_node_list.at(i)->m_body.get()) continue;
+
+        btTransform trans;
+        m_node_list.at(i)->m_body->getMotionState()->getWorldTransform(trans);
+        const btVector3& origin = trans.getOrigin();
+
+        com += (m_node_list.at(i)->getMass() / m_total_mass) * origin;
+    }
+    m_com = com;
+}
+
+
+const btVector3& Vessel::getCoM() const{
+    return m_com;
 }
 

@@ -79,6 +79,9 @@ void GameEditor::start(){
         loop_start_load = std::chrono::steady_clock::now();
 
         m_asset_manager->processCommandBuffers(m_physics_pause);
+        if(m_asset_manager->m_editor_vessel.get())
+            m_asset_manager->m_editor_vessel->updateCoM();
+
         if(m_clear_scene){
             clearScene();
         }
@@ -136,7 +139,7 @@ void GameEditor::start(){
 
         m_player->update();
         m_asset_manager->updateBuffers();
-        
+
         // load ends here
 
         loop_end_load = std::chrono::steady_clock::now();

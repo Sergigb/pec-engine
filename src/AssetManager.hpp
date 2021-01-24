@@ -91,6 +91,7 @@ class AssetManager{
         void updateVesselsEditor(); // update when the editor is unpaused
         void updateVessels();
         void updateKinematics(); // testing
+        void updateCoMs(); // synch call
 
         void cleanup();
 };

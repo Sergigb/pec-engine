@@ -23,6 +23,7 @@ class Vessel{
         std::uint32_t m_vessel_id;
         float m_yaw, m_pitch;
         double m_total_mass;
+        btVector3 m_com;
 
         Player* m_player; // player controlling the vessel
         const Input* m_input;
@@ -62,8 +63,10 @@ class Vessel{
         float getYaw() const;
         float getPitch() const;
         double getTotalMass() const;
+        const btVector3& getCoM() const;
 
         void update();
+        void updateCoM();
 };
 
 

@@ -324,8 +324,6 @@ void AssetManager::updateBuffers(){
 
 
 void AssetManager::updateVesselsEditor(){
-    VesselIterator it;
-
     m_editor_vessel->update();
 }
 
@@ -335,7 +333,7 @@ void AssetManager::updateVessels(){
 
     for(it=m_active_vessels.begin(); it != m_active_vessels.end(); it++){
         it->second->update();
-    }   
+    }
 }
 
 
@@ -380,5 +378,14 @@ void AssetManager::initPlanets(){
 
     std::unique_ptr<Planet> earth = std::make_unique<Planet>(m_render_context);
     m_planets.emplace_back(std::move(earth));
+}
+
+
+void AssetManager::updateCoMs(){
+    VesselIterator it;
+
+    for(it=m_active_vessels.begin(); it != m_active_vessels.end(); it++){
+        it->second->updateCoM();
+    }
 }
 

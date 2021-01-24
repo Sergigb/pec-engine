@@ -115,6 +115,7 @@ void App::run(){
             m_thread_monitor.worker_ended = false;
         }
 
+        m_asset_manager->updateCoMs();
         m_asset_manager->updateKinematics();
         m_player->update();
         m_asset_manager->updateBuffers();
