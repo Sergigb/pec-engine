@@ -14,6 +14,16 @@ class Input;
 class btVector3;
 
 
+struct stage_action{
+    BasePart* part;
+    long action;
+    stage_action(BasePart* ptr, long act){
+        action = act;
+        part = ptr;
+    }
+};
+
+
 class Vessel{
     private:
         std::string m_vessel_name, m_vessel_desc;
@@ -24,12 +34,15 @@ class Vessel{
         float m_yaw, m_pitch;
         double m_total_mass;
         btVector3 m_com;
+        std::vector<std::vector<stage_action>> m_stages;
 
         Player* m_player; // player controlling the vessel
         const Input* m_input;
 
         void updateNodes(); // updates node list and map
         void updateMass();
+        void updateStaging();
+        void updateStagingRec(BasePart* part, int stage);
     public:
         Vessel();
         Vessel(std::shared_ptr<BasePart>& vessel_root, const Input* input);
@@ -64,6 +77,7 @@ class Vessel{
         float getPitch() const;
         double getTotalMass() const;
         const btVector3& getCoM() const;
+        void printStaging() const;
 
         void update();
         void updateCoM();

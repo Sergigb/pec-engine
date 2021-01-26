@@ -49,7 +49,7 @@ class BasePart : public Object{
         Vessel* m_vessel;
         bool m_is_root, m_has_parent_att, m_has_free_att;
         bool m_show_editor_menu, m_show_game_menu;
-        long long int m_properties;
+        long m_properties;
 
         // editor cloning stuff
         std::vector<BasePart*> m_clones;
@@ -85,7 +85,7 @@ class BasePart : public Object{
         void setCollisionMaskSubTree(short mask);
         bool hasParentAttPoint() const;
         bool hasFreeAttPoint() const;
-        void setProperties(long long int flags);
+        void setProperties(long flags);
         void addResource(const resource_container& resource);
         // removes m_body and the constraint from the dynamics world for all the subtree, should only be called from AssetManager when bullet is not stepping
         int removeBodiesSubtree();
@@ -100,6 +100,7 @@ class BasePart : public Object{
         const Vessel* getVessel() const;
         Vessel* getVessel();
         bool isRoot() const;
+        long getProperties() const;
 
         const BasePart* getParent() const;
         BasePart* getParent();

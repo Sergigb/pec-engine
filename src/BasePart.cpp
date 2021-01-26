@@ -402,7 +402,7 @@ void BasePart::decoupleSelf(){
 }
 
 
-void BasePart::setProperties(long long int flags){
+void BasePart::setProperties(long flags){
     m_properties = flags;
 }
 
@@ -599,5 +599,10 @@ void BasePart::setSubTreeVelocity(const btVector3& velocity){
     for(uint i=0; i < m_childs.size(); i++){
         m_childs.at(i)->setSubTreeVelocity(velocity);
     }
+}
+
+
+long BasePart::getProperties() const{
+    return m_properties;
 }
 

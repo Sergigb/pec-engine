@@ -88,7 +88,6 @@ class AssetManager{
         void deleteObjectEditor(BasePart* part, std::uint32_t& vessel_id);
 
         /* Simulation vessels update, this may not need to be here since m_editor_vessels is public */
-        void updateVesselsEditor(); // update when the editor is unpaused
         void updateVessels();
         void updateKinematics(); // testing
         void updateCoMs(); // synch call

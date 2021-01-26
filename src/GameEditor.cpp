@@ -103,7 +103,9 @@ void GameEditor::start(){
 
         if(!m_physics_pause){ /* Update vessels and parts */
             clearSymmetrySubtrees();
-            m_asset_manager->updateVesselsEditor();
+            if(m_asset_manager->m_editor_vessel.get()){
+                m_asset_manager->m_editor_vessel->update();
+            }            
         }
 
         logic();
@@ -167,7 +169,6 @@ void GameEditor::getClosestAtt(float& closest_dist, math::vec4& closest_att_poin
     mousey = ((mousey / h) * 2 - 1) * -1;
     mousex = (mousex / w) * 2 - 1;
 
-    //std::vector<BasePart*>* vessel_parts = m_asset_manager->m_editor_vessels.at(m_vessel_id)->getParts();
     std::vector<BasePart*>* vessel_parts = m_asset_manager->m_editor_vessel->getParts();
     for(uint i=0; i<vessel_parts->size(); i++){ // get closest att point to the mouse cursor
         if(part == vessel_parts->at(i)){
@@ -350,7 +351,6 @@ void GameEditor::placeClonedSubtreesOnClones(BasePart* closest, btTransform& tra
 
             if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
                 createConstraint(current.get(), current_parent, transform_final_current.inverse() * transform_parent);
-                //m_asset_manager->m_editor_vessels.at(current_parent->getVessel()->getId())->addChildById(current, current_parent->getUniqueId());
                 m_asset_manager->m_editor_vessel->addChildById(current, current_parent->getUniqueId());
             }
         }
@@ -402,7 +402,6 @@ void GameEditor::placeSubTree(float closest_dist, math::vec4& closest_att_point_
             createConstraint(part, closest, transform_final.inverse() * parent_transform);
 
             std::shared_ptr<BasePart> part_sptr = std::dynamic_pointer_cast<BasePart>(part->getSharedPtr());
-            //m_asset_manager->m_editor_vessels.at(closest->getVessel()->getId())->addChildById(part_sptr, closest->getUniqueId());
             m_asset_manager->m_editor_vessel->addChildById(part_sptr, closest->getUniqueId());
             m_asset_manager->m_editor_subtrees.erase(part->getUniqueId());
         }
@@ -515,7 +514,6 @@ void GameEditor::placeSubTree(float closest_dist, math::vec4& closest_att_point_
                 createConstraint(part, parent, transform_final.inverse() * p_transform);
 
                 std::shared_ptr<BasePart> part_sptr = std::dynamic_pointer_cast<BasePart>(part->getSharedPtr());
-                //m_asset_manager->m_editor_vessels.at(parent->getVessel()->getId())->addChildById(part_sptr, parent->getUniqueId());
                 m_asset_manager->m_editor_vessel->addChildById(part_sptr, parent->getUniqueId());
                 m_asset_manager->m_editor_subtrees.erase(part->getUniqueId());
             }
@@ -561,7 +559,6 @@ void GameEditor::placeSubTree(float closest_dist, math::vec4& closest_att_point_
                         symmetric_rotation.setEulerZYX(0.0, (2 * M_PI / m_symmetry_sides) * (i + 1), 0.0);
                         symmetric_rotation_transform = btTransform(symmetric_rotation);
 
-                        // rotate m_hitPointWorld around the Y axis, but we have to move it first to the origin wrt the parent's origin
                         transform_final = btTransform(btQuaternion::getIdentity(), -btv3_child_att);
                         btVector3 hit_point_world_rotated = object_iR * hit_point_world;
                         hit_point_world_rotated -= object_iR * p_transform.getOrigin();
@@ -583,7 +580,6 @@ void GameEditor::placeSubTree(float closest_dist, math::vec4& closest_att_point_
                             createConstraint(current, parent, transform_final.inverse() * p_transform);
 
                             std::shared_ptr<BasePart> part_sptr = std::dynamic_pointer_cast<BasePart>(current->getSharedPtr());
-                            //m_asset_manager->m_editor_vessels.at(parent->getVessel()->getId())->addChildById(part_sptr, parent->getUniqueId());
                             m_asset_manager->m_editor_vessel->addChildById(part_sptr, parent->getUniqueId());
                         }
                     }
@@ -621,7 +617,6 @@ void GameEditor::pickAttachedObject(BasePart* part){
 
             clone->clearSubTreeCloneData();
             m_asset_manager->m_remove_part_constraint_buffer.emplace_back(clone);
-            //m_asset_manager->m_delete_subtree_buffer.emplace_back(m_asset_manager->m_editor_vessels.at(clone->getVessel()->getId())->removeChild(clone));            
             m_asset_manager->m_delete_subtree_buffer.emplace_back(clone->getVessel()->removeChild(clone));
         }
     }
@@ -630,7 +625,6 @@ void GameEditor::pickAttachedObject(BasePart* part){
 
     if(!part->isRoot()){
         m_asset_manager->m_remove_part_constraint_buffer.emplace_back(part);
-        //m_asset_manager->m_editor_subtrees.insert({part->getUniqueId(), m_asset_manager->m_editor_vessels.at(part->getVessel()->getId())->removeChild(part)});
         m_asset_manager->m_editor_subtrees.insert({part->getUniqueId(), part->getVessel()->removeChild(part)});
     }
 }
@@ -718,7 +712,6 @@ void GameEditor::logic(){
 
             std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(part, m_input);
             m_vessel_id = vessel->getId();
-            //m_asset_manager->m_editor_vessels.insert({m_vessel_id, vessel});
             m_asset_manager->m_editor_vessel = std::move(vessel);
             part->setCollisionFilters(part->getCollisionFilters() | CG_RAY_EDITOR_RADIAL);
         }
@@ -806,8 +799,15 @@ void GameEditor::logic(){
     }
 
     if(m_input->pressed_keys[GLFW_KEY_F1] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
-        //m_asset_manager->m_editor_vessels.at(m_vessel_id)->printVessel();
-        m_asset_manager->m_editor_vessel->printVessel();
+        if(m_asset_manager->m_editor_vessel.get()){
+            m_asset_manager->m_editor_vessel->printVessel();
+        }
+    }
+
+    if(m_input->pressed_keys[GLFW_KEY_F2] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
+        if(m_asset_manager->m_editor_vessel.get()){
+            m_asset_manager->m_editor_vessel->printStaging();
+        }
     }
 
     if(m_input->pressed_keys[GLFW_KEY_ESCAPE] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){

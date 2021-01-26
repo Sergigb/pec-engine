@@ -323,11 +323,6 @@ void AssetManager::updateBuffers(){
 }
 
 
-void AssetManager::updateVesselsEditor(){
-    m_editor_vessel->update();
-}
-
-
 void AssetManager::updateVessels(){
     VesselIterator it;
 

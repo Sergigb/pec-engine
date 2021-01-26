@@ -65,6 +65,7 @@ void Vessel::setVesselDescription(const std::string& description){
 void Vessel::onTreeUpdate(){
     updateNodes();
     updateMass();
+    updateStaging();
 }
 
 
@@ -199,6 +200,7 @@ void print_tree_member(BasePart *node, std::string tail, bool last_child){
         print_tree_member(node->getChilds()->at(i).get(), next_tail, !(i == node->getChilds()->size() - 1));
 }
 
+
 void Vessel::printVessel() const{
     if(m_vessel_root == nullptr){
         std::cerr << "Ship::printTree - ship has no part tree" << std::endl;
@@ -208,6 +210,20 @@ void Vessel::printVessel() const{
     std::string tail = "";
     std::cout << m_vessel_name << "'s part tree:" << std::endl;
     print_tree_member(m_vessel_root.get(), tail, false);
+}
+
+
+void Vessel::printStaging() const{
+    std::cout << std::endl;
+    for(uint i=0; i < m_stages.size(); i++){
+        std::vector<stage_action> v = m_stages.at(i);
+        std::cout << "Stage " << i + 1 << std::endl;
+        for(uint j=0; j < v.size(); j++){
+            std::string name;
+            v.at(j).part->getFancyName(name);
+            std::cout << "\t" << name << " - " << v.at(j).part->getUniqueId() << std::endl;
+        }
+    }
 }
 
 
@@ -402,5 +418,38 @@ void Vessel::updateCoM(){
 
 const btVector3& Vessel::getCoM() const{
     return m_com;
+}
+
+
+void Vessel::updateStaging(){
+    m_stages.clear();
+    updateStagingRec(m_vessel_root.get(), 1);
+}
+
+
+void Vessel::updateStagingRec(BasePart* part, int stage){
+    // stage starts at 1
+    long properties = part->getProperties();
+    
+    if((int)m_stages.size() < stage){
+        std::vector<stage_action> s;
+        m_stages.emplace_back(s);
+    }
+
+    if(properties & PART_SEPARATES){
+        m_stages.at(stage - 1).emplace_back(part, PART_SEPARATES);
+    }
+    if(properties & PART_HAS_ENGINE){
+        m_stages.at(stage - 1).emplace_back(part, PART_HAS_ENGINE);
+    }
+
+    if(properties & PART_SEPARATES){
+        stage++;
+    }
+
+    std::vector<std::shared_ptr<BasePart>>* childs = part->getChilds();
+    for(uint i=0; i < childs->size(); i++){
+        updateStagingRec(childs->at(i).get(), stage);
+    }
 }
 
