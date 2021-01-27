@@ -358,6 +358,13 @@ void Vessel::update(){
         }
     }
 
+    // engage current active stage
+    if(m_input->pressed_keys[GLFW_KEY_SPACE] & INPUT_KEY_DOWN){
+        if(m_stages.size() > 0){
+            activateNextStage();
+        }
+    }
+
     for(uint i=0; i < m_node_list.size(); i++){
         m_node_list.at(i)->update();
     }
@@ -424,6 +431,9 @@ const btVector3& Vessel::getCoM() const{
 void Vessel::updateStaging(){
     m_stages.clear();
     updateStagingRec(m_vessel_root.get(), 1);
+    if(m_stages.back().size() == 0){
+        m_stages.pop_back();
+    }
 }
 
 
@@ -436,11 +446,12 @@ void Vessel::updateStagingRec(BasePart* part, int stage){
         m_stages.emplace_back(s);
     }
 
+    // maybe we could replace these ifs with a method on part that asks for the default action to take (only one?)
     if(properties & PART_SEPARATES){
-        m_stages.at(stage - 1).emplace_back(part, PART_SEPARATES);
+        m_stages.at(stage - 1).emplace_back(part, PART_ACTION_SEPARATE);
     }
     if(properties & PART_HAS_ENGINE){
-        m_stages.at(stage - 1).emplace_back(part, PART_HAS_ENGINE);
+        m_stages.at(stage - 1).emplace_back(part, PART_ACTION_ENGINE_START);
     }
 
     if(properties & PART_SEPARATES){
@@ -451,5 +462,28 @@ void Vessel::updateStagingRec(BasePart* part, int stage){
     for(uint i=0; i < childs->size(); i++){
         updateStagingRec(childs->at(i).get(), stage);
     }
+}
+
+
+void Vessel::activateNextStage(){
+    // decoupling parts need to be stored in a temporary vector because after a decoupling the staging gets updated
+    std::vector<BasePart*> to_decouple;
+    std::vector<stage_action>& stage = m_stages.back();
+
+    for(uint i=0; i < stage.size(); i++){
+        stage_action& current_action = stage.at(i);
+        if(current_action.action == PART_ACTION_SEPARATE){
+            to_decouple.emplace_back(current_action.part);
+        }
+        else{
+            current_action.part->action(current_action.action);
+        }
+    }
+
+    for(uint i=0; i < to_decouple.size(); i++){
+        to_decouple.at(i)->action(PART_ACTION_SEPARATE);
+    }
+
+    m_stages.pop_back();
 }
 

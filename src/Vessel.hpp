@@ -43,6 +43,7 @@ class Vessel{
         void updateMass();
         void updateStaging();
         void updateStagingRec(BasePart* part, int stage);
+        void activateNextStage();
     public:
         Vessel();
         Vessel(std::shared_ptr<BasePart>& vessel_root, const Input* input);
