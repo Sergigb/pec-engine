@@ -48,6 +48,22 @@ list of stuff i have to do/fix
 - check for leaks in planet
 - create a scene class to render different scenes (editor, space, planetarium etc)
 - classes should have the frame time (1/60)
+- cleanup planet side render (the function)
+- change maps to unordered maps
+- a cleanup of the editor file, maybe its somewhere in this list but it needs to be done
+- there might be invalid writes/reads in the log file
+- in the render buffers we could have two separate structs to hold the buffers and locks 1 and 2
+- since we only have one vessel at the editor, we don't need a map, change it to a single pointer
+- in the asset manager change m_editor_vessels to m_active_vessels when it needs to be changed
+- we need a vessel update method for the editor (for example, to set the mass)
+- seriously we need to stop using bullets collision object vector and use the structures (and stop using setRenderIgnore)
+- we don't need to activate rigid bodies anymore
+- add special debug menu in the editor
+- the physics engine should have access to the asset manager
+- todo tomorrow: remove render ignore, so proper update of the buffers
+- the add_vessel_buffer might be unnecessary in the case of decouplings, but can be useful to add vessels with parts that are not in the dynamics world
+- in the future we might not need to update all the coms synchronously, only the player vessel
+- basepart should have a boolean that indicates if that part has been started already via staging, this way we can avoid including it again after being activated, if the part below it was a separator and forced a staging update
 
 
 Interesting links:
