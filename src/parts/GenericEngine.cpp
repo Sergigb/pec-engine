@@ -1,11 +1,13 @@
 #include <sstream>
 #include <functional>
+#include <iostream>
 
 #include "GenericEngine.hpp"
 #include "../Resource.hpp"
 #include "../AssetManagerInterface.hpp"
 #include "../Vessel.hpp"
 #include "../maths_funcs.hpp"
+#include "../log.hpp"
 
 
 GenericEngine::GenericEngine(Model* model, Physics* physics, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager) : 
@@ -110,5 +112,19 @@ void GenericEngine::update(){
 
 GenericEngine* GenericEngine::clone() const{
     return new GenericEngine(*this);
+}
+
+
+void GenericEngine::action(int action){
+    if(action == PART_ACTION_ENGINE_START){
+        m_engine_status = true;
+    }
+    else if(action == PART_ACTION_ENGINE_TOGGLE){
+        m_engine_status = !m_engine_status;
+    }
+    else{
+        std::cerr << "GenericEngine::action: got an invalid action value: " << action << std::endl;
+        log("GenericEngine::action: got an invalid action value: ", action);
+    }
 }
 

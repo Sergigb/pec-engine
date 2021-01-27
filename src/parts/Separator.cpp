@@ -1,7 +1,9 @@
 #include <sstream>
+#include <iostream>
 
 #include "Separator.hpp"
 #include "../AssetManagerInterface.hpp"
+#include "../log.hpp"
 
 
 Separator::Separator(Model* model, Physics* physics, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager) : 
@@ -123,4 +125,15 @@ Separator* Separator::clone() const{
     return new Separator(*this);
 }
 
+
+void Separator::action(int action){
+    if(action == PART_ACTION_SEPARATE){
+        m_separate = true;
+    }
+    else{
+        std::cerr << "Separator::action: got an invalid action value: " << action << std::endl;
+        log("Separator::action: got an invalid action value: ", action);
+    }
+
+}
 

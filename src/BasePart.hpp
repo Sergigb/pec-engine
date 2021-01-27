@@ -39,6 +39,12 @@ struct resource_container{
 #define PART_HAS_ENGINE 4
 
 
+// generic actions
+#define PART_ACTION_SEPARATE 1
+#define PART_ACTION_ENGINE_TOGGLE 2
+#define PART_ACTION_ENGINE_START 3
+
+
 class BasePart : public Object{
     protected:
         struct attachment_point m_parent_att_point, m_free_att_point;
@@ -116,6 +122,7 @@ class BasePart : public Object{
         virtual void update();
         virtual int render();
         virtual int render(math::mat4 body_transform);
+        virtual void action(int action); // performs an action (engine start, decouple, ...), see generic actions
 
         void requestResource(const BasePart* requester, std::uint32_t resource_id, float& mass);
 

@@ -606,3 +606,8 @@ long BasePart::getProperties() const{
     return m_properties;
 }
 
+
+void BasePart::action(int action){
+    UNUSED(action);
+}
+

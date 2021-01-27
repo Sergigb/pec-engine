@@ -25,6 +25,7 @@ class Separator : public BasePart{
         void renderOther();
         void update();
         Separator* clone() const;
+        void action(int action);
 };
 
 #endif

@@ -19,6 +19,7 @@ class GenericEngine : public BasePart{
         void renderOther();
         void update();
         GenericEngine* clone() const;
+        void action(int action);
 };
 
 
