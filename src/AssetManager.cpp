@@ -121,6 +121,16 @@ void AssetManager::initResources(){
         log("Failed to insert resource with id ", str_hash(resource_name), " (collided with ", res.first->first, ")");
         std::cerr << "Failed to insert resource with id " << str_hash(resource_name) << " (collided with " << res.first->first << ")" << std::endl;
     }
+
+    resource_name = "htpb";
+    resource.reset(new Resource(resource_name, std::string(u8"Hydroxyl-terminated polybutadiene (HTPB)"), RESOURCE_TYPE_FUEL_SOLID, RESOURCE_STATE_SOLID, 913.0, 298.15));
+    resource->setId(str_hash(resource_name));
+    res = m_resources.insert({str_hash(resource_name), std::move(resource)});
+
+    if(!res.second){
+        log("Failed to insert resource with id ", str_hash(resource_name), " (collided with ", res.first->first, ")");
+        std::cerr << "Failed to insert resource with id " << str_hash(resource_name) << " (collided with " << res.first->first << ")" << std::endl;
+    }
 }
 
 
@@ -200,8 +210,10 @@ void AssetManager::clearSceneEditor(){
     }
     m_editor_subtrees.clear();
 
-    m_delete_subtree_buffer.emplace_back(std::static_pointer_cast<BasePart>(m_editor_vessel->getRoot()->getSharedPtr()));
-    m_editor_vessel.reset();
+    if(m_editor_vessel.get()){
+        m_delete_subtree_buffer.emplace_back(std::static_pointer_cast<BasePart>(m_editor_vessel->getRoot()->getSharedPtr()));
+        m_editor_vessel.reset();
+    }
 }
 
 
