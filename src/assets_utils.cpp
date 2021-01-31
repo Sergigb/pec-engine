@@ -35,7 +35,7 @@ void load_parts(AssetManager& asset_manager){
     std::unique_ptr<Model> com_module_model(new Model("../data/capsule.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, asset_manager.m_frustum, asset_manager.m_render_context, math::vec3(0.75, 0.75, 0.75)));
     std::unique_ptr<Model> separator_model(new Model("../data/separator.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, asset_manager.m_frustum, asset_manager.m_render_context, math::vec3(0.75, 0.75, 0.75)));
 
-    std::unique_ptr<BasePart> separator(new Separator(separator_model.get(), asset_manager.m_physics, cylinder_shape_separator.get(), btScalar(10.0), 555, &asset_manager.m_asset_manager_interface));
+    std::unique_ptr<BasePart> separator(new Separator(separator_model.get(), asset_manager.m_physics, cylinder_shape_separator.get(), 10.0, 555, &asset_manager.m_asset_manager_interface));
     separator->setColor(math::vec3(0.75, 0.75, 0.75));
     separator->setParentAttachmentPoint(math::vec3(0.0, 0.065, 0.0), math::vec3(0.0, 0.0, 0.0));
     separator->addAttachmentPoint(math::vec3(0.0, -0.065, 0.0), math::vec3(0.0, 0.0, 0.0));
@@ -52,7 +52,7 @@ void load_parts(AssetManager& asset_manager){
         std::cerr << "Failed to insert part with id " << 555 << " (collided with " << res.first->first << ")" << std::endl;
     }
 
-    std::unique_ptr<BasePart> com_module(new BasePart(com_module_model.get(), asset_manager.m_physics, cone.get(), btScalar(10.0), 444, &asset_manager.m_asset_manager_interface));
+    std::unique_ptr<BasePart> com_module(new BasePart(com_module_model.get(), asset_manager.m_physics, cone.get(), 10.0, 444, &asset_manager.m_asset_manager_interface));
     com_module->setColor(math::vec3(0.75, 0.75, 0.75));
     com_module->setParentAttachmentPoint(math::vec3(0.0, 0.605, 0.0), math::vec3(0.0, 0.0, 0.0));
     com_module->addAttachmentPoint(math::vec3(0.0, -0.653, 0.0), math::vec3(0.0, 0.0, 0.0));
@@ -69,7 +69,7 @@ void load_parts(AssetManager& asset_manager){
         std::cerr << "Failed to insert part with id " << 444 << " (collided with " << res.first->first << ")" << std::endl;
     }
 
-    std::unique_ptr<BasePart> tank(new BasePart(tank_model.get(), asset_manager.m_physics, cylinder_shape_tank.get(), btScalar(10.0), 222, &asset_manager.m_asset_manager_interface));
+    std::unique_ptr<BasePart> tank(new BasePart(tank_model.get(), asset_manager.m_physics, cylinder_shape_tank.get(), 10.0, 222, &asset_manager.m_asset_manager_interface));
     tank->setColor(math::vec3(0.75, 0.75, 0.75));
     tank->setParentAttachmentPoint(math::vec3(0.0, 5.0, 0.0), math::vec3(0.0, 0.0, 0.0));
     tank->addAttachmentPoint(math::vec3(0.0, -5.0, 0.0), math::vec3(0.0, 0.0, 0.0));
@@ -87,7 +87,7 @@ void load_parts(AssetManager& asset_manager){
         std::cerr << "Failed to insert part with id " << 222 << " (collided with " << res.first->first << ")" << std::endl;
     }
 
-    std::unique_ptr<BasePart> tank2(new BasePart(tank2_model.get(), asset_manager.m_physics, cylinder_shape_tank2.get(), btScalar(10.0), 111, &asset_manager.m_asset_manager_interface));
+    std::unique_ptr<BasePart> tank2(new BasePart(tank2_model.get(), asset_manager.m_physics, cylinder_shape_tank2.get(), 10.0, 111, &asset_manager.m_asset_manager_interface));
     tank2->setColor(math::vec3(0.75, 0.75, 0.75));
     tank2->setParentAttachmentPoint(math::vec3(0.0, 2.5, 0.0), math::vec3(0.0, 0.0, 0.0));
     tank2->setFreeAttachmentPoint(math::vec3(1.0, 0.0, 0.0), math::vec3(1.0, 0.0, 0.0));
@@ -107,7 +107,7 @@ void load_parts(AssetManager& asset_manager){
         std::cerr << "Failed to insert part with id " << 111 << " (collided with " << res.first->first << ")" << std::endl;
     }
 
-    std::unique_ptr<BasePart> engine(new GenericEngine(engine_model.get(), asset_manager.m_physics, cylinder_shape.get(), btScalar(10.0), 333, &asset_manager.m_asset_manager_interface));
+    std::unique_ptr<BasePart> engine(new GenericEngine(engine_model.get(), asset_manager.m_physics, cylinder_shape.get(), 10.0, 333, &asset_manager.m_asset_manager_interface));
     engine->setColor(math::vec3(0.75, 0.75, 0.75));
     engine->setParentAttachmentPoint(math::vec3(0.0, 0.43459, 0.0), math::vec3(0.0, 0.0, 0.0));
     engine->addAttachmentPoint(math::vec3(0.0, -0.848, 0.0), math::vec3(0.0, 0.0, 0.0));
@@ -124,6 +124,26 @@ void load_parts(AssetManager& asset_manager){
         std::cerr << "Failed to insert part with id " << 333 << " (collided with " << res.first->first << ")" << std::endl;
     }
 
+
+    std::unique_ptr<Model> p80_model(new Model("../data/vega/p80.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, asset_manager.m_frustum, asset_manager.m_render_context, math::vec3(0.75, 0.75, 0.75)));
+    std::unique_ptr<BasePart> p80(new P80(p80_model.get(), asset_manager.m_physics, cylinder_shape.get(), 7408.0, 666, &asset_manager.m_asset_manager_interface));
+    p80->setColor(math::vec3(0.75, 0.75, 0.75));
+    p80->setParentAttachmentPoint(math::vec3(0.0, 4.8467, 0.0), math::vec3(0.0, 0.0, 0.0));
+    p80->addAttachmentPoint(math::vec3(0.0, -6.3635, 0.0), math::vec3(0.0, 0.0, 0.0));
+    p80->setName(std::string("p80_") + std::to_string(666));
+    p80->setFancyName("P80");
+    p80->setCollisionGroup(CG_DEFAULT | CG_PART);
+    p80->setCollisionFilters(~CG_RAY_EDITOR_RADIAL);
+    p80->addResource({asset_manager.m_resources.at(str_hash("htpb")).get(), 88385.0f, 88385.0f});
+    p80->setProperties(PART_HAS_ENGINE);
+
+    res = asset_manager.m_master_parts.insert({666, std::move(p80)});
+
+    if(!res.second){
+        log("Failed to insert part with id ", 666, " (collided with ", res.first->first, ")");
+        std::cerr << "Failed to insert part with id " << 666 << " (collided with " << res.first->first << ")" << std::endl;
+    }
+
     asset_manager.m_collision_shapes.push_back(std::move(sphere_shape));
     asset_manager.m_collision_shapes.push_back(std::move(cube_shape));
     asset_manager.m_collision_shapes.push_back(std::move(cylinder_shape));
@@ -132,6 +152,7 @@ void load_parts(AssetManager& asset_manager){
     asset_manager.m_collision_shapes.push_back(std::move(cone));
     asset_manager.m_collision_shapes.push_back(std::move(cylinder_shape_separator));
 
+    asset_manager.m_models.push_back(std::move(p80_model));
     asset_manager.m_models.push_back(std::move(engine_model));
     asset_manager.m_models.push_back(std::move(tank_model));
     asset_manager.m_models.push_back(std::move(tank2_model));
