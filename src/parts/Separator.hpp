@@ -8,14 +8,14 @@
 #define BEHAVIOUR_SEPARATES_SELF 2
 #define BEHAVIOUR_SEPARATES_ALL 3
 
-#define SEPARATOR_MAX_FORCE 2000.0f
+#define DEFAULT_MAX_FORCE 10000.0f
 
 
 class Separator : public BasePart{
     private:
         char m_behaviour;
         bool m_separate;
-        float m_force;
+        float m_force, m_max_force;
     public:
         Separator(Model* model, Physics* physics, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager);
         Separator(const Separator& engine);
@@ -26,6 +26,8 @@ class Separator : public BasePart{
         void update();
         Separator* clone() const;
         void action(int action);
+
+        void setMaxForce(float force);
 };
 
 #endif

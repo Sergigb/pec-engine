@@ -10,14 +10,16 @@ Separator::Separator(Model* model, Physics* physics, btCollisionShape* col_shape
     BasePart(model, physics, col_shape, mass, baseID, asset_manager){
     m_behaviour = BEHAVIOUR_SEPARATES_SELF;
     m_separate = false;
-    m_force = SEPARATOR_MAX_FORCE;
+    m_max_force = DEFAULT_MAX_FORCE;
+    m_force = DEFAULT_MAX_FORCE;
 }
 
 
 Separator::Separator() : BasePart(){
     m_behaviour = BEHAVIOUR_SEPARATES_SELF;
     m_separate = false;
-    m_force = SEPARATOR_MAX_FORCE;
+    m_max_force = DEFAULT_MAX_FORCE;
+    m_force = DEFAULT_MAX_FORCE;
 }
 
 
@@ -61,7 +63,7 @@ void Separator::renderOther(){
         ImGui::Separator();
 
         ImGui::Text("Separator force");
-        ImGui::SliderFloat("N", &m_force, 0.0f, SEPARATOR_MAX_FORCE);
+        ImGui::SliderFloat("N", &m_force, 0.0f, m_max_force);
 
         ImGui::End();
     }
@@ -134,6 +136,11 @@ void Separator::action(int action){
         std::cerr << "Separator::action: got an invalid action value: " << action << std::endl;
         log("Separator::action: got an invalid action value: ", action);
     }
+}
 
+
+void Separator::setMaxForce(float force){
+    m_max_force = force;
+    m_force = force;
 }
 

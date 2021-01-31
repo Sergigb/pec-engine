@@ -3,6 +3,6 @@
 
 #include "GenericEngine.hpp"
 #include "Separator.hpp"
-#include "P80.hpp"
+#include "VegaSolidEngine.hpp"
 
 #endif
