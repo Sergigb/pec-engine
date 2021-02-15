@@ -29,6 +29,8 @@ class Player{
         // this method should be called by the player controlled vessel
         void onVesselDestroy();
         void setBehaviour();
+
+        Vessel* getVessel() const;
 };
 
 

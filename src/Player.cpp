@@ -65,3 +65,8 @@ void setBehaviour(){
 
 }
 
+
+Vessel* Player::getVessel() const{
+    return m_vessel;
+}
+

@@ -144,6 +144,19 @@ void App::run(){
 
 void App::logic(){
     processInput();
+
+    // testing
+    if(m_input->pressed_keys[GLFW_KEY_F1] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
+        if(m_player->getVessel()){
+            m_player->getVessel()->printVessel();
+        }
+    }
+
+    if(m_input->pressed_keys[GLFW_KEY_F2] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
+        if(m_player->getVessel()){
+            m_player->getVessel()->printStaging();
+        }
+    }
 }
 
 

@@ -375,9 +375,14 @@ void BasePart::onSimulationRightMouseButton(){
 
 
 void BasePart::decoupleChilds(){
+    // we don't use the vessel's removeChild method because it changes the size of the m_childs vector
+    // maybe this should be done in the Vessel class
     for(uint i=0; i < m_childs.size(); i++){
-        std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(m_childs.at(i), m_vessel->getInput());
         m_asset_manager->removePartConstraint(m_childs.at(i).get());
+        m_childs.at(i)->setParent(nullptr);
+        m_childs.at(i)->updateSubTreeVessel(nullptr);
+
+        std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(m_childs.at(i), m_vessel->getInput());
         m_asset_manager->addVessel(vessel);
     }
     m_childs.clear();
@@ -421,7 +426,7 @@ void BasePart::update(){
     if(temp_mass != m_mass){
         m_mass = temp_mass;
         m_asset_manager->setMassProps(this, m_mass);
-    }    
+    }
 }
 
 
