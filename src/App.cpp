@@ -18,6 +18,7 @@
 #include "log.hpp"
 #include "BasePart.hpp"
 #include "Vessel.hpp"
+#include "planet_utils.hpp"
 
 
 App::App() : BaseApp(){
@@ -144,19 +145,6 @@ void App::run(){
 
 void App::logic(){
     processInput();
-
-    // testing
-    if(m_input->pressed_keys[GLFW_KEY_F1] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
-        if(m_player->getVessel()){
-            m_player->getVessel()->printVessel();
-        }
-    }
-
-    if(m_input->pressed_keys[GLFW_KEY_F2] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
-        if(m_player->getVessel()){
-            m_player->getVessel()->printStaging();
-        }
-    }
 }
 
 
@@ -187,6 +175,19 @@ void App::processInput(){
 
     if(m_input->pressed_keys[GLFW_KEY_ESCAPE] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
         m_quit = true;
+    }
+
+    // testing
+    if(m_input->pressed_keys[GLFW_KEY_F1] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
+        if(m_player->getVessel()){
+            m_player->getVessel()->printVessel();
+        }
+    }
+
+    if(m_input->pressed_keys[GLFW_KEY_F2] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
+        if(m_player->getVessel()){
+            m_player->getVessel()->printStaging();
+        }
     }
 }
 
@@ -229,7 +230,13 @@ void App::editorToSimulation(){
         std::shared_ptr<Vessel> vsl = std::move(m_asset_manager->m_editor_vessel);
 
         BasePart* root = vsl->getRoot();
-        btVector3 to(6371000.0 + 200000, 0.0, 0.0);
+        
+        //btVector3 loc = reference_ellipse_to_xyz(btRadians(0), btRadians(0), 6473000.0);
+        //std::cout << loc.getX() << " " << loc.getY() << " " << loc.getZ() << std::endl;
+
+
+        //btVector3 to(0.0, 0.0, 6371000.0 + 200000);
+        btVector3 to = reference_ellipse_to_xyz(btRadians(69.073778), btRadians(48.967923), 6473000.0);
         btVector3 disp;
         btTransform transform;
 
@@ -242,7 +249,8 @@ void App::editorToSimulation(){
         vsl->getRoot()->updateSubTreeMotionState(m_asset_manager->m_set_motion_state_buffer,
                                                  disp, from, btQuaternion::getIdentity());
 
-        vsl->setVesselVelocity(btVector3(0.0, 7788.54, 0.0));
+        //vsl->setVesselVelocity(btVector3(0.0, 7788.54, 0.0));
+        vsl->setVesselVelocity(btVector3(0.0, 0.0, 0.0));
 
         m_asset_manager->m_active_vessels.insert({vsl->getId(), vsl});
     }
