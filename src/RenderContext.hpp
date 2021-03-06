@@ -17,6 +17,8 @@ class BaseGUI;
 class BasePart;
 class Physics;
 class DebugDrawer;
+class FontAtlas;
+class Text2D;
 
 struct object_transform;
 
@@ -36,6 +38,12 @@ struct object_transform;
 #define RENDER_NOTHING 0
 #define RENDER_EDITOR 1
 #define RENDER_UNIVERSE 2
+
+
+struct notification{
+    std::wstring string;
+    int ttl;
+};
 
 
 class RenderContext{
@@ -70,7 +78,8 @@ class RenderContext{
         const Camera* m_camera;
         const WindowHandler* m_window_handler;
         Physics* m_physics;
-        
+        const FontAtlas* m_default_atlas;
+
         std::unique_ptr<Model> m_att_point_model;
         math::mat4 m_att_point_scale;
         math::vec3 m_light_position;
@@ -91,6 +100,9 @@ class RenderContext{
         BaseGUI* m_editor_gui;
         // other ones...
         short m_gui_mode;
+        std::unique_ptr<Text2D> m_notification_text;
+
+        std::vector<struct notification> notifications;
 
         double m_glfw_time;
 
@@ -109,6 +121,7 @@ class RenderContext{
         int renderSceneUniverse();
         int renderObjects(bool render_att_points, const std::vector<object_transform>* buff, const math::mat4* view_mat);
         void renderBulletDebug(const math::mat4* view_mat);
+        void renderNotifications();
     public:
         RenderContext(const Camera* camera, const WindowHandler* window_handler, render_buffers* buff_manager);
         ~RenderContext();
@@ -130,6 +143,8 @@ class RenderContext{
         void reloadShaders();
         void setDebugDrawer(Physics* physics);
         void setRenderState(char state);
+        void addNotification(const wchar_t* string, int ttl=180);
+        void setDefaultFontAtlas(const FontAtlas* atlas);
 
         int getBoundShader() const;
         GLuint getBoundVao() const;

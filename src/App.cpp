@@ -40,6 +40,7 @@ void App::init(){
     m_def_font_atlas->loadCharacterRange(913, 1023); // greek and coptic
     m_def_font_atlas->createAtlas(false);
 
+    m_render_context->setDefaultFontAtlas(m_def_font_atlas.get());
     m_editor.reset(new GameEditor(this, m_def_font_atlas.get()));
 }
 
@@ -122,6 +123,10 @@ void App::run(){
         m_asset_manager->updateBuffers();
         
         // load ends here
+
+    dmath::vec3 pos = m_camera->getCamPosition();
+    std::cout << pos.v[0] << " " << pos.v[1] << " " << pos.v[2] << std::endl;
+
 
         loop_end_load = std::chrono::steady_clock::now();
         std::chrono::duration<double, std::micro> load_time = loop_end_load - loop_start_load;

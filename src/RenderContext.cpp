@@ -21,6 +21,7 @@
 #include "DebugDrawer.hpp"
 #include "Physics.hpp"
 #include "Planet.hpp"
+#include "Text2D.hpp"
 
 
 RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_handler, render_buffers* buff_manager){
@@ -57,6 +58,7 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
 
     m_gui_mode = GUI_MODE_NONE;
     m_editor_gui = nullptr;
+    m_default_atlas = nullptr;
 
     m_glfw_time = 0.0;
 
@@ -414,6 +416,7 @@ void RenderContext::render(){
     end_gui_start_imgui = std::chrono::steady_clock::now();
 
     renderImGui();
+    renderNotifications();
 
     end_imgui = std::chrono::steady_clock::now();
 
@@ -601,16 +604,23 @@ void RenderContext::pause(bool pause){
 
 void RenderContext::toggleDebugOverlay(){
     m_draw_overlay = !m_draw_overlay;
+
+    if(m_draw_overlay){
+        addNotification(L"Debug overlay enabled");
+    }
+    else{
+        addNotification(L"Debug overlay disabled");
+    }
 }
 
 
 void RenderContext::toggleDebugDraw(){
     m_debug_draw = !m_debug_draw;
     if(m_debug_draw){
-        std::cout << "Debug drawing activated" << std::endl;
+        addNotification(L"Debug drawing activated");
     }
     else{
-        std::cout << "Debug drawing deactivated" << std::endl;
+        addNotification(L"Debug drawing deactivated");
     }
 }
 
@@ -724,6 +734,8 @@ void RenderContext::contextUpdatePlanetarium(){
 
 void RenderContext::reloadShaders(){
     m_update_shaders = true;
+
+    addNotification(L"Shaders reloaded");
 }
 
 
@@ -731,4 +743,38 @@ void RenderContext::setRenderState(char state){
     m_render_state = state;
 }
 
+
+void RenderContext::addNotification(const wchar_t* string, int ttl){
+    notifications.emplace_back(notification{std::wstring(string), ttl});
+}
+
+
+void RenderContext::renderNotifications(){
+    m_notification_text->clearStrings();
+    if(!m_default_atlas){
+        return;
+    }
+
+    std::vector<notification>::iterator it = notifications.begin();
+    uint disp = 0.0;
+    while(it != notifications.end()){
+        disp += 20;
+        m_notification_text->addString(it->string.c_str(), m_fb_width / 2, (m_fb_height / 2) - disp, 1.0, STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_CENTER_XY);
+
+        it->ttl -= 1;
+        if(it->ttl < 0){
+            it = notifications.erase(it);
+        }
+        else{
+            it++;
+        }
+    }
+    m_notification_text->render();
+}
+
+
+void RenderContext::setDefaultFontAtlas(const FontAtlas* atlas){
+    m_default_atlas = atlas;
+    m_notification_text.reset(new Text2D(m_fb_width, m_fb_height, {0.f, 1.f, 0.f}, m_default_atlas, this));
+}
 
