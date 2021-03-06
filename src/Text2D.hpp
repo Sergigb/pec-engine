@@ -53,7 +53,7 @@ class Text2D{
         void getPenXY(float& pen_x, float& pen_y, struct string* string_);
     public:
         Text2D();
-        Text2D(int fb_width, int fb_height, color& , const FontAtlas* font, const RenderContext* render_context);
+        Text2D(int fb_width, int fb_height, const color& c, const FontAtlas* font, const RenderContext* render_context);
         ~Text2D();
 
         void addString(const wchar_t* string, uint x, uint y, float scale, int placement, int alignment);

@@ -16,7 +16,7 @@ Text2D::Text2D(){
 }
 
 
-Text2D::Text2D(int fb_width, int fb_height, color& c, const FontAtlas* font, const RenderContext* render_context){
+Text2D::Text2D(int fb_width, int fb_height, const color& c, const FontAtlas* font, const RenderContext* render_context){
     m_font_atlas = font;
     m_num_vertices = 0;
     m_num_indices = 0;
@@ -258,6 +258,7 @@ void Text2D::addString(const wchar_t* text, uint x, uint y, float scale, int pla
 
 void Text2D::clearStrings(){
     m_strings.clear();
+    m_update_buffer = true;
 }
 
 
