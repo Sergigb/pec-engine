@@ -27,6 +27,7 @@ class Camera;
 class Resource;
 class AssetManager;
 class Kinematic;
+class BaseApp;
 
 
 class AssetManager{
@@ -39,6 +40,7 @@ class AssetManager{
         const Frustum* m_frustum;
         Physics* m_physics;
         const Camera* m_camera;
+        BaseApp* m_app;
 
         friend class AssetManagerInterface;
         AssetManagerInterface m_asset_manager_interface;
@@ -77,7 +79,8 @@ class AssetManager{
         std::vector<std::unique_ptr<Planet>> m_planets; // too simple, it will be more complex in the future when I have a proper planetary system
         std::unordered_map<std::uint32_t, std::shared_ptr<Vessel>> m_active_vessels;
 
-        AssetManager(RenderContext* render_context, const Frustum* frustum, Physics* physics, render_buffers* buff_manager, Camera* camera);
+        //AssetManager(RenderContext* render_context, const Frustum* frustum, Physics* physics, render_buffers* buff_manager, Camera* camera);
+        AssetManager(BaseApp* app);
         ~AssetManager();
 
         void processCommandBuffers(bool physics_pause);

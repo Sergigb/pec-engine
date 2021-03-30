@@ -28,6 +28,8 @@ class BaseApp{
     protected:
         // in the future there should be a base class that we make a friend of this one, and derive the others from that one
         friend class GameEditor;
+        friend class AssetManager;
+        friend class RenderContext;
 
         std::unique_ptr<Input> m_input;
         std::unique_ptr<Camera> m_camera;

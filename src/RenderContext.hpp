@@ -19,6 +19,7 @@ class Physics;
 class DebugDrawer;
 class FontAtlas;
 class Text2D;
+class BaseApp;
 
 struct object_transform;
 
@@ -79,6 +80,7 @@ class RenderContext{
         const WindowHandler* m_window_handler;
         Physics* m_physics;
         const FontAtlas* m_default_atlas;
+        BaseApp *m_app;
 
         std::unique_ptr<Model> m_att_point_model;
         math::mat4 m_att_point_scale;
@@ -123,7 +125,7 @@ class RenderContext{
         void renderBulletDebug(const math::mat4* view_mat);
         void renderNotifications();
     public:
-        RenderContext(const Camera* camera, const WindowHandler* window_handler, render_buffers* buff_manager);
+        RenderContext(BaseApp* app);
         ~RenderContext();
         
         void start();

@@ -22,21 +22,23 @@
 #include "Physics.hpp"
 #include "Planet.hpp"
 #include "Text2D.hpp"
+#include "BaseApp.hpp"
 
 
-RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_handler, render_buffers* buff_manager){
-    int fb_width, fb_height;
-    window_handler->getFramebufferSize(fb_width, fb_height);
-    m_fb_width = fb_width;
-    m_fb_height = fb_height;
-
-    m_camera = camera;
-    m_window_handler = window_handler;
-    m_buffers = buff_manager;
+RenderContext::RenderContext(BaseApp* app){
+    m_camera = app->m_camera.get();
+    m_window_handler = app->m_window_handler.get();
+    m_buffers = &app->m_buffers;
+    m_app = app;
     m_draw_overlay = false;
     m_debug_draw = false;
     m_update_shaders = false;
     m_light_position = math::vec3(0.0f, 0.0f, 0.0f);
+
+    int fb_width, fb_height;
+    m_window_handler->getFramebufferSize(fb_width, fb_height);
+    m_fb_width = fb_width;
+    m_fb_height = fb_height;
 
     initGl();
     log_gl_params();
@@ -80,7 +82,7 @@ RenderContext::RenderContext(const Camera* camera, const WindowHandler* window_h
 
 
 void RenderContext::setDebugDrawer(Physics* physics){
-    m_physics = physics; // not needed????
+    m_physics = physics;
     m_debug_drawer.reset(new DebugDrawer(this));
     btDiscreteDynamicsWorld* d_world = m_physics->getDynamicsWorld();
     d_world->setDebugDrawer(m_debug_drawer.get());

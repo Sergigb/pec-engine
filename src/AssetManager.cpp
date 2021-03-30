@@ -16,6 +16,7 @@
 #include "BasePart.hpp"
 #include "log.hpp"
 #include "Kinematic.hpp"
+#include "BaseApp.hpp"
 
 
 typedef std::unordered_map<std::uint32_t, std::shared_ptr<BasePart>>::iterator SubTreeIterator;
@@ -23,12 +24,13 @@ typedef std::unordered_map<std::uint32_t, std::shared_ptr<Vessel>>::iterator Ves
 typedef std::unordered_map<std::uint32_t, std::unique_ptr<Resource>>::iterator ResourceIterator;
 
 
-AssetManager::AssetManager(RenderContext* render_context, const Frustum* frustum, Physics* physics, render_buffers* buff_manager, Camera* camera){
-    m_render_context = render_context;
-    m_frustum = frustum;
-    m_physics = physics;
-    m_buffers = buff_manager;
-    m_camera = camera;
+AssetManager::AssetManager(BaseApp* app){
+    m_render_context = app->m_render_context.get();
+    m_frustum = app->m_frustum.get();
+    m_physics = app->m_physics.get();
+    m_buffers = &app->m_buffers;
+    m_camera = app->m_camera.get();
+    m_app = app;
 
     m_asset_manager_interface = AssetManagerInterface(this);
 
