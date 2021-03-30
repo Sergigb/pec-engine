@@ -33,6 +33,14 @@ Planet::Planet(RenderContext* render_context){
     m_elevation_texture = m_render_context->getUniformLocation(SHADER_PLANET, "elevation");
 
     m_planet_transform = dmath::identity_mat4();
+
+#ifndef ASYNC_PLANET_TEXTURE_LOAD
+    std::cout << "Planet::Planet: Asynchronous planet texture loading is not enabled" << std::endl;
+    log("Planet::Planet: Asynchronous planet texture loading is not enabled");
+#else
+    std::cout << "Planet::Planet: Asynchronous planet texture loading is enabled" << std::endl;
+    log("Planet::Planet: Asynchronous planet texture loading is enabled");
+#endif
 }
 
 
@@ -81,10 +89,13 @@ void Planet::render_side(struct surface_node& node, math::mat4& planet_transform
         else{
             if(!node.uppermost_textured_parent->loading && !node.uppermost_textured_parent->data_ready){
                 node.uppermost_textured_parent->loading = true;
+#ifdef ASYNC_PLANET_TEXTURE_LOAD
                 std::thread thread(async_texture_load, node.uppermost_textured_parent, &m_surface);
                 thread.detach();
-                //async_texture_load(node.uppermost_textured_parent, &m_surface);
-                //bind_loaded_texture(*node.uppermost_textured_parent, m_surface);
+#else
+                async_texture_load(node.uppermost_textured_parent, &m_surface);
+                bind_loaded_texture(*node.uppermost_textured_parent, m_surface);
+#endif
             }
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, node.tex_id_fl);
@@ -107,10 +118,13 @@ void Planet::render_side(struct surface_node& node, math::mat4& planet_transform
         else{
             if(!node.loading && !node.data_ready){
                 node.loading = true;
-                std::thread thread(async_texture_load, &node, &m_surface);
-                thread.detach();
-                //async_texture_load(&node, &m_surface);
-                //bind_loaded_texture(node, m_surface);
+#ifdef ASYNC_PLANET_TEXTURE_LOAD
+                //std::thread thread(async_texture_load, &node, &m_surface);
+                //thread.detach();
+#else
+                async_texture_load(&node, &m_surface);
+                bind_loaded_texture(node, m_surface);
+#endif
             }
             glActiveTexture(GL_TEXTURE0);
             glBindTexture(GL_TEXTURE_2D, node.tex_id_fl);
@@ -163,7 +177,9 @@ void Planet::render(const dmath::vec3& cam_translation){
 
 
 void Planet::render(const dmath::vec3& cam_translation, const dmath::mat4 transform){
+#ifdef ASYNC_PLANET_TEXTURE_LOAD
     bind_loaded_textures(m_surface);
+#endif
 
     math::mat4 planet_transform_world;
     dmath::mat4 dplanet_transform_world = transform;

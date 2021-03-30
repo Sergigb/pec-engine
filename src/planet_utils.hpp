@@ -14,7 +14,7 @@ void bind_loaded_texture(struct surface_node& node, struct planet_surface& surfa
 void async_texture_load(struct surface_node* node, struct planet_surface* surface);
 void texture_free(struct planet_surface& surface);
 
-btVector3 reference_ellipse_to_xyz(btScalar longitude, btScalar latitude, btScalar radius);
+btVector3 reference_ellipse_to_xyz(btScalar latitude, btScalar longitude, btScalar radius);
 
 
 #endif
