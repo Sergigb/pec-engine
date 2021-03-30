@@ -43,6 +43,9 @@ void BaseApp::init(int gl_width, int gl_height){
     m_render_context->setAttPointModel(&att_model);
 
     m_buffers.last_updated = none;
+
+    m_gui_mode = 0;
+    m_render_state = 0;
 }
 
 
@@ -54,5 +57,14 @@ void BaseApp::run(){
        // glfwSwapBuffers(m_window_handler->getWindow());
     }
     m_window_handler->terminate();
+}
+
+short BaseApp::getGUIMode() const{
+    return m_gui_mode;
+}
+
+
+short BaseApp::getRenderState() const{
+    return m_render_state;
 }
 

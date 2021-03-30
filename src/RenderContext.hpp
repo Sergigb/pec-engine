@@ -101,14 +101,11 @@ class RenderContext{
         // gui
         BaseGUI* m_editor_gui;
         // other ones...
-        short m_gui_mode;
         std::unique_ptr<Text2D> m_notification_text;
 
         std::vector<struct notification> notifications;
 
         double m_glfw_time;
-
-        short m_render_state;
 
         void initGl();
         void initImgui();
@@ -141,10 +138,8 @@ class RenderContext{
         void toggleDebugOverlay();
         void toggleDebugDraw();
         void setEditorGUI(BaseGUI* editor_ptr);
-        void setGUIMode(short mode);
         void reloadShaders();
         void setDebugDrawer(Physics* physics);
-        void setRenderState(char state);
         void addNotification(const wchar_t* string, int ttl=180);
         void setDefaultFontAtlas(const FontAtlas* atlas);
 

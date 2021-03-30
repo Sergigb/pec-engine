@@ -72,8 +72,8 @@ void GameEditor::start(){
     double delta_t = (1. / 60.) * 1000000., accumulated_load = 0.0, accumulated_sleep = 0.0, average_load = 0.0, average_sleep = 0.0;
     int ticks_since_last_update = 0;
 
-    m_render_context->setGUIMode(GUI_MODE_EDITOR);
-    m_render_context->setRenderState(RENDER_EDITOR);
+    m_app->m_gui_mode = GUI_MODE_EDITOR;
+    m_app->m_render_state = RENDER_EDITOR;
 
     while(!m_exit_editor){
         loop_start_load = std::chrono::steady_clock::now();

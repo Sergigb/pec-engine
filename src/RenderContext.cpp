@@ -58,15 +58,12 @@ RenderContext::RenderContext(BaseApp* app){
     m_update_fb = false;
     m_update_projection = false;
 
-    m_gui_mode = GUI_MODE_NONE;
     m_editor_gui = nullptr;
     m_default_atlas = nullptr;
 
     m_glfw_time = 0.0;
 
     loadShaders();
-
-    m_render_state = RENDER_NOTHING;
 
     // debug overlay
     m_debug_overlay.reset(new DebugOverlay(fb_width, fb_height, this));
@@ -368,7 +365,7 @@ void RenderContext::render(){
 
         m_debug_overlay->onFramebufferSizeUpdate(m_fb_width, m_fb_height);
 
-        switch(m_gui_mode){
+        switch(m_app->getGUIMode()){
             case GUI_MODE_NONE:
             case GUI_MODE_EDITOR:
                 m_editor_gui->onFramebufferSizeUpdate();
@@ -385,7 +382,7 @@ void RenderContext::render(){
 
     setLightPositionRender();
 
-    switch(m_render_state){
+    switch(m_app->getRenderState()){
         case RENDER_NOTHING:
             break;
         case RENDER_EDITOR:
@@ -395,23 +392,23 @@ void RenderContext::render(){
             num_rendered = renderSceneUniverse();
             break;
         default:
-            std::cerr << "RenderContext::render: Warning, invalid render state value (" << (int)m_render_state << ")" << std::endl;
-            log("RenderContext::render: Warning, invalid render state value (", (int)m_render_state, ")");
+            std::cerr << "RenderContext::render: Warning, invalid render state value (" << (int)m_app->getRenderState() << ")" << std::endl;
+            log("RenderContext::render: Warning, invalid render state value (", (int)m_app->getRenderState(), ")");
     }
     
 
     end_scene_start_gui = std::chrono::steady_clock::now();
 
     glDisable(GL_DEPTH_TEST);
-    switch(m_gui_mode){
+    switch(m_app->getGUIMode()){
         case GUI_MODE_NONE:
             break;
         case GUI_MODE_EDITOR:
             m_editor_gui->render();
             break;
         default:
-            std::cerr << "RenderContext::render - Warning, invalid GUI mode (" << m_gui_mode << ")" << std::endl;
-            log("RenderContext::render - Warning, invalid GUI mode (", m_gui_mode, ")");
+            std::cerr << "RenderContext::render - Warning, invalid GUI mode (" << m_app->getGUIMode() << ")" << std::endl;
+            log("RenderContext::render - Warning, invalid GUI mode (", m_app->getGUIMode(), ")");
     }
     glEnable(GL_DEPTH_TEST);
 
@@ -638,11 +635,6 @@ void RenderContext::setEditorGUI(BaseGUI* editor_ptr){
 }
 
 
-void RenderContext::setGUIMode(short mode){
-    m_gui_mode = mode;
-}
-
-
 void RenderContext::renderImGui(){
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -738,11 +730,6 @@ void RenderContext::reloadShaders(){
     m_update_shaders = true;
 
     addNotification(L"Shaders reloaded");
-}
-
-
-void RenderContext::setRenderState(char state){
-    m_render_state = state;
 }
 
 

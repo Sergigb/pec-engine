@@ -68,8 +68,8 @@ void App::run(){
     int ticks_since_last_update = 0;
 
     m_physics->pauseSimulation(false);
-    m_render_context->setGUIMode(GUI_MODE_NONE);
-    m_render_context->setRenderState(RENDER_UNIVERSE);
+    m_gui_mode = GUI_MODE_NONE;
+    m_render_state = RENDER_UNIVERSE;
     m_camera->setCameraPosition(dmath::vec3(9300000.0, 0.0, 0.0));
     m_camera->setSpeed(630000.0f);
     m_render_context->setLightPosition(math::vec3(63000000000.0, 0.0, 0.0));
@@ -124,8 +124,8 @@ void App::run(){
         
         // load ends here
 
-    dmath::vec3 pos = m_camera->getCamPosition();
-    std::cout << pos.v[0] << " " << pos.v[1] << " " << pos.v[2] << std::endl;
+    //dmath::vec3 pos = m_camera->getCamPosition();
+    //std::cout << pos.v[0] << " " << pos.v[1] << " " << pos.v[2] << std::endl;
 
 
         loop_end_load = std::chrono::steady_clock::now();
@@ -230,18 +230,13 @@ void App::editorToSimulation(){
     }
     ed_subtrees.clear();
 
-    // should be only one vessel in the editor, change it!!
     if(m_asset_manager->m_editor_vessel.get()){
         std::shared_ptr<Vessel> vsl = std::move(m_asset_manager->m_editor_vessel);
 
         BasePart* root = vsl->getRoot();
         
-        //btVector3 loc = reference_ellipse_to_xyz(btRadians(0), btRadians(0), 6473000.0);
-        //std::cout << loc.getX() << " " << loc.getY() << " " << loc.getZ() << std::endl;
-
-
-        //btVector3 to(0.0, 0.0, 6371000.0 + 200000);
-        btVector3 to = reference_ellipse_to_xyz(btRadians(69.073778), btRadians(48.967923), 6473000.0);
+        // translate to lat/long 0.0-0.0, this function doesn't work well when lat or long != 0, for some reason
+        btVector3 to = reference_ellipse_to_xyz(btRadians(0.0), btRadians(0.0), 6473000.0);
         btVector3 disp;
         btTransform transform;
 
@@ -260,3 +255,8 @@ void App::editorToSimulation(){
         m_asset_manager->m_active_vessels.insert({vsl->getId(), vsl});
     }
 }
+
+
+/*void initLaunchBase(){
+
+}*/

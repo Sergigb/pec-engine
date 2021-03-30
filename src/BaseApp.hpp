@@ -26,7 +26,6 @@ class BaseApp{
     private:
         void init(int gl_width, int gl_height);
     protected:
-        // in the future there should be a base class that we make a friend of this one, and derive the others from that one
         friend class GameEditor;
         friend class AssetManager;
         friend class RenderContext;
@@ -40,6 +39,8 @@ class BaseApp{
         std::unique_ptr<AssetManager> m_asset_manager;
         std::unique_ptr<Player> m_player;
 
+        short m_gui_mode, m_render_state;
+
         // buffers used to synchronize the physics and rendering
         struct render_buffers m_buffers;
         struct thread_monitor m_thread_monitor;
@@ -49,6 +50,9 @@ class BaseApp{
         virtual ~BaseApp();
 
         virtual void run();
+
+        short getGUIMode() const;
+        short getRenderState() const;
 };
 
 
