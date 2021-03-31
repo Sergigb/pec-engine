@@ -18,6 +18,8 @@ class Resource;
 class Physics;
 class Model;
 
+struct object_transform;
+
 
 struct attachment_point{
     math::vec3 point; // attachment point translation wrt the center of the object
@@ -86,7 +88,6 @@ class BasePart : public Object{
         // each child adds its new motion state to the command buffer, the function is called recursively through all the subtree
         void updateSubTreeMotionState(std::vector<struct set_motion_state_msg>& command_buffer, const btVector3& disp, const btVector3& root_origin, const btQuaternion& rotation); // add root origin to rotate
         void updateSubTreeVessel(Vessel* vessel);
-        void setRenderIgnoreSubTree();
         void setRoot(bool root);
         void setCollisionMaskSubTree(short mask);
         bool hasParentAttPoint() const;
@@ -98,6 +99,7 @@ class BasePart : public Object{
         void cloneSubTree(std::shared_ptr<BasePart>& current, bool is_subtree_root, bool m_radial_clone);
         void buildSubTreeConstraints(const BasePart* parent);
         void setSubTreeVelocity(const btVector3& velocity); // bullet must not be stepping
+        void addSubTreeToRenderBuffer(std::vector<object_transform>& buffer, const btVector3& btv_cam_origin);
 
         const std::vector<struct attachment_point>* getAttachmentPoints() const;
         const btTypedConstraint* getParentConstraint() const;

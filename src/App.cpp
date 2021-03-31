@@ -225,7 +225,6 @@ void App::editorToSimulation(){
     std::unordered_map<std::uint32_t, std::shared_ptr<Vessel>>::iterator it2;
 
     for(it=ed_subtrees.begin(); it != ed_subtrees.end(); it++){
-        it->second->setRenderIgnoreSubTree();
         it->second->removeBodiesSubtree();
     }
     ed_subtrees.clear();

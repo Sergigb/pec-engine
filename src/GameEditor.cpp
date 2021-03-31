@@ -267,7 +267,6 @@ void GameEditor::clearSymmetrySubtrees(){
     if(m_asset_manager->m_symmetry_subtrees.size()){
         for(uint i=0; i < m_asset_manager->m_symmetry_subtrees.size(); i++){
             m_asset_manager->m_symmetry_subtrees.at(i)->clearSubTreeCloneData();
-            m_asset_manager->m_symmetry_subtrees.at(i)->setRenderIgnoreSubTree();
             m_asset_manager->m_delete_subtree_buffer.emplace_back(m_asset_manager->m_symmetry_subtrees.at(i));
         }
         m_asset_manager->m_symmetry_subtrees.clear();

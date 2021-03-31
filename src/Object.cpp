@@ -21,7 +21,6 @@ Object::Object(Model* model, Physics* physics, btCollisionShape* col_shape, btSc
     m_base_id = base_id;
     m_object_name = "unnamed";
     m_fancy_name = "unnamed";
-    m_render_ignore = false;
     create_id(m_unique_id, PART_SET);
     m_alpha = 1.0;
     m_col_group = 1;
@@ -41,7 +40,6 @@ Object::Object(const Object& obj) : std::enable_shared_from_this<Object>(){
     m_col_shape = obj.m_col_shape;
     m_dry_mass = obj.m_dry_mass;
     m_mass = obj.m_mass;
-    m_render_ignore = false;
     create_id(m_unique_id, PART_SET);
     m_alpha = 1.0;
     m_col_group = obj.m_col_group;
@@ -237,16 +235,6 @@ std::uint32_t Object::getBaseId() const{
 
 std::shared_ptr<Object> Object::getSharedPtr(){
     return shared_from_this();
-}
-
-
-bool Object::renderIgnore() const{
-    return m_render_ignore;
-}
-
-
-void Object::setRenderIgnore(){
-    m_render_ignore = true;
 }
 
 

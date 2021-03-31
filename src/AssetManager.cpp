@@ -52,7 +52,7 @@ void AssetManager::objectsInit(){
        twice, but in the future, if we have kinematic triangle meshes that need to be loaded
        from the disk, this should only be done once. */
 
-    btQuaternion quat;
+    //btQuaternion quat;
    /* std::unique_ptr<Model> terrain_model(new Model("../data/terrain.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, m_frustum, m_render_context, math::vec3(0.75, 0.75, 0.75)));
     std::unique_ptr<iv_array> array(new iv_array);
     std::unique_ptr<btGImpactMeshShape> shape;
@@ -71,7 +71,7 @@ void AssetManager::objectsInit(){
     m_models.push_back(std::move(terrain_model));
     m_collision_shapes.push_back(std::move(shape));*/
 
-    std::unique_ptr<Model> terrain_model(new Model("../data/sphere.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, m_frustum, m_render_context, math::vec3(0.75, 0.75, 0.75)));
+    /*std::unique_ptr<Model> terrain_model(new Model("../data/sphere.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, m_frustum, m_render_context, math::vec3(0.75, 0.75, 0.75)));
     std::unique_ptr<btCollisionShape> sphere_shape(new btSphereShape(50.0));
 
     quat.setEuler(0, 0, 0);
@@ -84,7 +84,7 @@ void AssetManager::objectsInit(){
 
     m_kinematics.emplace_back(ground);
     m_models.push_back(std::move(terrain_model));
-    m_collision_shapes.push_back(std::move(sphere_shape));
+    m_collision_shapes.push_back(std::move(sphere_shape));*/
 }
 
 
@@ -207,7 +207,6 @@ void AssetManager::clearSceneEditor(){
     VesselIterator it2;
 
     for(it=m_editor_subtrees.begin(); it != m_editor_subtrees.end(); it++){
-        it->second->setRenderIgnoreSubTree();
         m_delete_subtree_buffer.emplace_back(std::static_pointer_cast<BasePart>(it->second->getSharedPtr()));
     }
     m_editor_subtrees.clear();
@@ -225,7 +224,6 @@ void AssetManager::deleteObjectEditor(BasePart* part, std::uint32_t& vessel_id){
         std::uint32_t vid = part->getVessel()->getId();
 
         if(vid == vessel_id){
-            m_editor_vessel->getRoot()->setRenderIgnoreSubTree();
             m_editor_vessel.reset();
             vessel_id = 0;
         }
@@ -238,42 +236,85 @@ void AssetManager::deleteObjectEditor(BasePart* part, std::uint32_t& vessel_id){
     }
     else{
         std::uint32_t stid = part->getUniqueId();
-        m_editor_subtrees.at(stid)->setRenderIgnoreSubTree();
         m_editor_subtrees.erase(stid);
     }
 }
 
 
 void AssetManager::updateObjectBuffer(std::vector<object_transform>& buffer_, const dmath::vec3& cam_origin){
-    const btDiscreteDynamicsWorld* dynamics_world = m_physics->getDynamicsWorld();
-    const btCollisionObjectArray& col_object_array = dynamics_world->getCollisionObjectArray();
-    //dmath::vec3 cam_origin = m_camera->getCamPosition();
     btVector3 btv_cam_origin(cam_origin.v[0], cam_origin.v[1], cam_origin.v[2]);
 
     buffer_.clear();
-    std::vector<object_transform>::iterator it;
-    for(int i=0; i<col_object_array.size(); i++){
-        Object* obj = static_cast<Object *>(col_object_array.at(i)->getUserPointer());
-        if(obj->renderIgnore()){ // ignore if the object should be destroyed
-            continue;
-        }
-        try{
-            math::mat4 mat;
-            double b_transform[16];
+    switch(m_app->getRenderState()){
+        case RENDER_NOTHING:
+            break;
+        case RENDER_EDITOR:
+            updateObjectBufferEditor(buffer_, btv_cam_origin);
+            break;
+        case RENDER_UNIVERSE:
+            updateObjectBufferUniverse(buffer_, btv_cam_origin);
+            break;
+        default:
+            std::cerr << "AssetManager::updateObjectBuffer: got an invalid render state value from BaseApp::getRenderState (" << m_app->getRenderState() << ")" << std::endl;
+            log("AssetManager::updateObjectBuffer: got an invalid render state value from BaseApp::getRenderState (", m_app->getRenderState(), ")");
+            return;
+    }
+}
 
-            obj->getRigidBodyTransformDouble(b_transform);
-            b_transform[12] -= btv_cam_origin.getX();   // object is transformed wrt camera origin
-            b_transform[13] -= btv_cam_origin.getY();
-            b_transform[14] -= btv_cam_origin.getZ();
-            std::copy(b_transform, b_transform + 16, mat.m);
 
-            buffer_.emplace_back(std::move(obj->getSharedPtr()), mat);
-        }
-        catch(std::bad_weak_ptr& e){
-            std::string name;
-            obj->getFancyName(name);
-            std::cout << "AssetManager::updateObjectBuffer - Warning, weak ptr for object " << name << " with id " << obj->getBaseId() << '\n';
-        }
+void AssetManager::updateObjectBufferEditor(std::vector<object_transform>& buffer_, const btVector3& btv_cam_origin){
+    // draw distance check is probably irrelevant in the editor
+    SubTreeIterator it;
+
+    for(it=m_editor_subtrees.begin(); it != m_editor_subtrees.end(); it++){
+        it->second->addSubTreeToRenderBuffer(buffer_, btv_cam_origin);
+    }
+
+    if(m_editor_vessel.get()){
+        m_editor_vessel->getRoot()->addSubTreeToRenderBuffer(buffer_, btv_cam_origin);
+    }    
+
+    for(uint i=0; i < m_symmetry_subtrees.size(); i++){
+        m_symmetry_subtrees.at(i)->addSubTreeToRenderBuffer(buffer_, btv_cam_origin);
+    }
+}
+
+
+void AssetManager::updateObjectBufferUniverse(std::vector<object_transform>& buffer_, const btVector3& btv_cam_origin){
+    // missing: draw distance check
+    VesselIterator it;
+
+    for(it=m_active_vessels.begin(); it != m_active_vessels.end(); it++){
+        it->second->getRoot()->addSubTreeToRenderBuffer(buffer_, btv_cam_origin);;
+    }
+
+    for(uint i=0; i < m_kinematics.size(); i++){
+        addObjectBuffer(m_kinematics.at(i).get(), buffer_, btv_cam_origin);
+    }
+
+    for(uint i=0; i < m_objects.size(); i++){
+        addObjectBuffer(m_objects.at(i).get(), buffer_, btv_cam_origin);
+    }
+}
+
+
+void AssetManager::addObjectBuffer(Object* obj, std::vector<object_transform>& buffer_, const btVector3& btv_cam_origin){
+    try{
+        math::mat4 mat;
+        double b_transform[16];
+
+        obj->getRigidBodyTransformDouble(b_transform);
+        b_transform[12] -= btv_cam_origin.getX();   // object is transformed wrt camera origin
+        b_transform[13] -= btv_cam_origin.getY();
+        b_transform[14] -= btv_cam_origin.getZ();
+        std::copy(b_transform, b_transform + 16, mat.m);
+
+        buffer_.emplace_back(std::move(obj->getSharedPtr()), mat);
+    }
+    catch(std::bad_weak_ptr& e){
+        std::string name;
+        obj->getFancyName(name);
+        std::cout << "AssetManager::addObjectBuffer: Warning, weak ptr for object " << name << " with id " << obj->getBaseId() << '\n';
     }
 }
 

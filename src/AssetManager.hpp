@@ -51,6 +51,9 @@ class AssetManager{
         struct render_buffers* m_buffers;
         void updateObjectBuffer(std::vector<object_transform>& buffer_, const dmath::vec3& cam_origin);
         void updatePlanetBuffer(std::vector<planet_transform>& buffer_);
+        void updateObjectBufferEditor(std::vector<object_transform>& buffer_, const btVector3& btv_cam_origin);
+        void updateObjectBufferUniverse(std::vector<object_transform>& buffer_, const btVector3& btv_cam_origin);
+        void addObjectBuffer(Object* obj, std::vector<object_transform>& buffer_, const btVector3& btv_cam_origin);
     public:
         std::vector<std::unique_ptr<btCollisionShape>> m_collision_shapes;
         std::vector<std::unique_ptr<Model>> m_models;

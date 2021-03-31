@@ -246,16 +246,6 @@ int BasePart::render(math::mat4 body_transform){
 }
 
 
-
-void BasePart::setRenderIgnoreSubTree(){
-    m_render_ignore = true;
-
-    for(uint i=0; i < m_childs.size(); i++){
-        m_childs.at(i)->setRenderIgnoreSubTree();
-    }
-}
-
-
 void BasePart::setRoot(bool root){
     m_is_root = root;
 }
@@ -614,5 +604,31 @@ long BasePart::getProperties() const{
 
 void BasePart::action(int action){
     UNUSED(action);
+}
+
+
+void BasePart::addSubTreeToRenderBuffer(std::vector<object_transform>& buffer, const btVector3& btv_cam_origin){
+    try{
+        if(m_body.get()){
+            math::mat4 mat;
+            double b_transform[16];
+
+            getRigidBodyTransformDouble(b_transform);
+            b_transform[12] -= btv_cam_origin.getX();   // object is transformed wrt camera origin
+            b_transform[13] -= btv_cam_origin.getY();
+            b_transform[14] -= btv_cam_origin.getZ();
+            std::copy(b_transform, b_transform + 16, mat.m);
+
+            buffer.emplace_back(std::move(shared_from_this()), mat);
+        }
+    }
+    catch(std::bad_weak_ptr& e){
+        std::cout << "BasePart::addSubTreeToRenderBuffer: Warning, weak ptr for object " << m_fancy_name << " with id " << getBaseId() << '\n';
+        log("BasePart::addSubTreeToRenderBuffer: Warning, weak ptr for object ", m_fancy_name, " with id ", getBaseId());
+    }
+
+    for(uint i=0; i < m_childs.size(); i++){
+        m_childs.at(i)->addSubTreeToRenderBuffer(buffer, btv_cam_origin);
+    }
 }
 
