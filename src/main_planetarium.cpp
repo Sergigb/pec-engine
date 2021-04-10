@@ -1,6 +1,6 @@
-#include "log.hpp"
-#include "utils.hpp"
 #include "Planetarium.hpp"
+#include "core/log.hpp"
+#include "core/utils/utils.hpp"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
@@ -19,6 +19,10 @@ int main(int argc, char* argv[]){
     Planetarium* p = new Planetarium();
     p->run();
     delete p;
+
+            while(1){
+        
+    }
 
     return EXIT_SUCCESS;
 }

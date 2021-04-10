@@ -1,8 +1,8 @@
 #include <iostream>
 #include <cstdint>
 
-#include "../id_manager.hpp"
-#include "../common.hpp"
+#include "../../core/id_manager.hpp"
+#include "../../core/common.hpp"
 
 int main(){
     std::uint32_t id1, id2, id3, id4, id5;

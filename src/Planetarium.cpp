@@ -8,16 +8,17 @@
 #include <stb/stb_image.h>
 
 #include "Planetarium.hpp"
-#include "Model.hpp"
-#include "maths_funcs.hpp"
-#include "FontAtlas.hpp"
-#include "RenderContext.hpp"
-#include "Camera.hpp"
-#include "WindowHandler.hpp"
-#include "Input.hpp"
-#include "Player.hpp"
-#include "planet_utils.hpp"
-#include "Planet.hpp"
+#include "core/maths_funcs.hpp"
+#include "core/RenderContext.hpp"
+#include "core/Camera.hpp"
+#include "core/WindowHandler.hpp"
+#include "core/Input.hpp"
+#include "core/Player.hpp"
+#include "assets/Model.hpp"
+#include "assets/Planet.hpp"
+#include "assets/utils/planet_utils.hpp"
+#include "GUI/FontAtlas.hpp"
+
 
 
 Planetarium::Planetarium() : BaseApp(){

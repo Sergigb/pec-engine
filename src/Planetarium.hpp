@@ -5,7 +5,7 @@
 #include <memory>
 #include <vector>
 
-#include "BaseApp.hpp"
+#include "core/BaseApp.hpp"
 
 
 #define SIDE_PX 0

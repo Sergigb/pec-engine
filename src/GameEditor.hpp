@@ -7,7 +7,7 @@
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/btBulletDynamicsCommon.h>
 
-#include "maths_funcs.hpp"
+#include "core/maths_funcs.hpp"
 
 
 class Object;

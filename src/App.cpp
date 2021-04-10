@@ -1,24 +1,24 @@
 #include <iostream>
 
 #include "App.hpp"
-#include "FontAtlas.hpp"
-#include "RenderContext.hpp"
-#include "AssetManager.hpp"
+#include "GUI/FontAtlas.hpp"
+#include "core/RenderContext.hpp"
+#include "core/AssetManager.hpp"
 #include "GameEditor.hpp"
-#include "Physics.hpp"
-#include "WindowHandler.hpp"
+#include "core/Physics.hpp"
+#include "core/WindowHandler.hpp"
 
 // delete later most likely when the simulation is moved somewhere else
 #include <unordered_map>
 
-#include "Input.hpp"
-#include "Camera.hpp"
-#include "Frustum.hpp"
-#include "Player.hpp"
-#include "log.hpp"
-#include "BasePart.hpp"
-#include "Vessel.hpp"
-#include "planet_utils.hpp"
+#include "core/Input.hpp"
+#include "core/Camera.hpp"
+#include "core/Frustum.hpp"
+#include "core/Player.hpp"
+#include "core/log.hpp"
+#include "assets/BasePart.hpp"
+#include "assets/Vessel.hpp"
+#include "assets/utils/planet_utils.hpp"
 
 
 App::App() : BaseApp(){

@@ -1,30 +1,36 @@
-CXX = g++
-CC = gcc
-INC = -I../include/ -I../include/bullet/ -I/usr/include/freetype2 -I../include/imgui/
-CXXFLAGS = $(INC) -Wall -Wextra -Werror -pedantic -ubsan -g
-LDFLAGS = -L../lib/
-LDLIBS =  -lGL -lGLEW -lglfw -lz -fopenmp -lfreetype -lassimp -lIrrXML -lBulletDynamics -lBulletCollision -lLinearMath -lpng
-OBJPATH = ../bin
-EXECPATH = ../bin
+CXX := g++
+CC := gcc
+INC := -I../include/ -I../include/bullet/ -I/usr/include/freetype2 -I../include/imgui/
+CXXFLAGS := $(INC) -Wall -Wextra -Werror -pedantic -ubsan -g
+LDFLAGS := -L../lib/
+LDLIBS :=  -lGL -lGLEW -lglfw -lz -fopenmp -lfreetype -lassimp -lIrrXML -lBulletDynamics -lBulletCollision -lLinearMath -lpng
+OBJPATH := ../bin
+EXECPATH := ../bin
 
-BASESRCS = log.cpp utils.cpp gl_utils.cpp maths_funcs.cpp Camera.cpp Input.cpp WindowHandler.cpp Text2D.cpp FontAtlas.cpp Frustum.cpp DebugOverlay.cpp Model.cpp Physics.cpp Object.cpp RenderContext.cpp BaseApp.cpp BasePart.cpp EditorGUI.cpp PartsPanelGUI.cpp id_manager.cpp Vessel.cpp AssetManager.cpp AssetManagerInterface.cpp Player.cpp Resource.cpp assets_utils.cpp StagingPanelGUI.cpp Kinematic.cpp DebugDrawer.cpp GameEditor.cpp Planet.cpp planet_utils.cpp
-BASEOBJS = $(foreach source, $(BASESRCS), $(OBJPATH)/$(source:.cpp=.o))
+# base app objects
+CORESRCS := $(shell find core/ -name "*.cpp")
+ASSETSSRCS := $(shell find assets/ -name "*.cpp")
+GUISRCS := $(shell find GUI/ -name "*.cpp")
 
-PARTSSRCS = $(wildcard parts/*.cpp)
-PARTSOBJS = $(foreach source, $(PARTSSRCS:parts/%=%), $(OBJPATH)/$(source:.cpp=.o))
+BASESRCS := $(CORESRCS) $(ASSETSSRCS) $(GUISRCS)
+BASEOBJS := $(foreach source, $(BASESRCS), $(OBJPATH)/$(source:.cpp=.o))
 
-MAIN_APP_SCRS = main.cpp App.cpp
-MAIN_APP_OBJS = $(foreach source, $(MAIN_APP_SCRS), $(OBJPATH)/$(source:.cpp=.o))
+#main game objects
+MAIN_APP_SCRS := main.cpp App.cpp GameEditor.cpp
+MAIN_APP_OBJS := $(foreach source, $(MAIN_APP_SCRS), $(OBJPATH)/$(source:.cpp=.o))
 
-PLANETARIUM_APP_SRCS = main_planetarium.cpp Planetarium.cpp
-PLANETARIUM_APP_OBJS = $(foreach source, $(PLANETARIUM_APP_SRCS), $(OBJPATH)/$(source:.cpp=.o))
+#planetarium objects
+PLANETARIUM_APP_SRCS := main_planetarium.cpp Planetarium.cpp
+PLANETARIUM_APP_OBJS := $(foreach source, $(PLANETARIUM_APP_SRCS), $(OBJPATH)/$(source:.cpp=.o))
 
-IMGUISRCS = $(wildcard ../thirdparty/imgui/*.cpp)
-IMGUIOBJS = $(foreach source, $(IMGUISRCS:../thirdparty/imgui/%=%), $(OBJPATH)/$(source:.cpp=.o))
+#imgui
+IMGUISRCS := $(wildcard ../thirdparty/imgui/*.cpp)
+IMGUIOBJS := $(foreach source, $(IMGUISRCS:../thirdparty/imgui/%=%), $(OBJPATH)/$(source:.cpp=.o))
 
-MAINOBJS = $(MAIN_APP_OBJS) $(BASEOBJS) $(IMGUIOBJS) $(PARTSOBJS)
-PLANETARIUMOBJS = $(PLANETARIUM_APP_OBJS) $(BASEOBJS) $(IMGUIOBJS) $(PARTSOBJS)
+MAINOBJS := $(MAIN_APP_OBJS) $(BASEOBJS) $(IMGUIOBJS)
+PLANETARIUMOBJS := $(PLANETARIUM_APP_OBJS) $(BASEOBJS) $(IMGUIOBJS)
 
+.PHONY: clean clean-main clean-planetarium clean-imgui clean-all
 
 all: main planetarium
 
@@ -34,11 +40,8 @@ main: $(MAINOBJS)
 planetarium: $(PLANETARIUMOBJS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(PLANETARIUMOBJS) -o $(EXECPATH)/planetarium $(LDLIBS)
 
-# temporal, need to find a better system
-$(OBJPATH)/%.o: parts/%.cpp
-	$(CXX) $(CXXFLAGS) -c $< -o $@
-
 $(OBJPATH)/%.o: %.cpp
+	@mkdir -p $(@D)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 # imgui
@@ -46,12 +49,12 @@ $(OBJPATH)/%.o: ../thirdparty/imgui/%.cpp
 	$(CXX) $(INC) -O3 -Wall -Wformat -DIMGUI_IMPL_OPENGL_LOADER_GLEW -c $< -o $@
 
 clean: 
-	rm -f $(OBJPATH)/$(BASEOBJS) $(OBJPATH)/$(MAIN_APP_OBJS) $(OBJPATH)/$(PLANETARIUM_APP_OBJS) $(EXECPATH)/main $(EXECPATH)/planetarium $(OBJPATH)/$(PARTSOBJS)
+	rm -f $(BASEOBJS) $(MAIN_APP_OBJS) $(PLANETARIUM_APP_OBJS) $(EXECPATH)/main $(EXECPATH)/planetarium
 clean-main:
-	rm -f $(OBJPATH)/$(MAIN_APP_OBJS) $(EXECPATH)/main
+	rm -f $(MAIN_APP_OBJS) $(EXECPATH)/main
 clean-planetarium:
-	rm -f $(OBJPATH)/$(PLANETARIUM_APP_OBJS) $(EXECPATH)/planetarium
+	rm -f $(PLANETARIUM_APP_OBJS) $(EXECPATH)/planetarium
 clean-imgui:
-	rm -f $(OBJPATH)/$(IMGUIOBJS)
+	rm -f $(IMGUIOBJS)
 clean-all:
-	rm -f $(OBJPATH)/*.o $(EXECPATH)/main
+	rm -rf $(OBJPATH)/* $(EXECPATH)/*

@@ -1,6 +1,6 @@
-#include "log.hpp"
-#include "utils.hpp"
 #include "App.hpp"
+#include "core/log.hpp"
+#include "core/utils/utils.hpp"
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #define STB_IMAGE_IMPLEMENTATION
