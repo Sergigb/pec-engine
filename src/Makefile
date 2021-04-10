@@ -1,11 +1,17 @@
 CXX := g++
 CC := gcc
 INC := -I../include/ -I../include/bullet/ -I/usr/include/freetype2 -I../include/imgui/
-CXXFLAGS := $(INC) -Wall -Wextra -Werror -pedantic -ubsan -g
+CXXFLAGS := $(INC) -Wall -Wextra -Werror -pedantic -ubsan -MMD
 LDFLAGS := -L../lib/
 LDLIBS :=  -lGL -lGLEW -lglfw -lz -fopenmp -lfreetype -lassimp -lIrrXML -lBulletDynamics -lBulletCollision -lLinearMath -lpng
 OBJPATH := ../bin
 EXECPATH := ../bin
+
+ifdef RELEASE
+	CXXFLAGS := $(CXXFLAGS) -O3 -no-pie
+else
+	CXXFLAGS += $(CXXFLAGS) -ggdb
+endif
 
 # base app objects
 CORESRCS := $(shell find core/ -name "*.cpp")
@@ -14,6 +20,8 @@ GUISRCS := $(shell find GUI/ -name "*.cpp")
 
 BASESRCS := $(CORESRCS) $(ASSETSSRCS) $(GUISRCS)
 BASEOBJS := $(foreach source, $(BASESRCS), $(OBJPATH)/$(source:.cpp=.o))
+
+DEPENDS = ${BASEOBJS:.o=.d}
 
 #main game objects
 MAIN_APP_SCRS := main.cpp App.cpp GameEditor.cpp
@@ -58,3 +66,5 @@ clean-imgui:
 	rm -f $(IMGUIOBJS)
 clean-all:
 	rm -rf $(OBJPATH)/* $(EXECPATH)/*
+
+-include ${DEPENDS}
