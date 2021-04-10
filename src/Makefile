@@ -10,7 +10,7 @@ EXECPATH := ../bin
 ifdef RELEASE
 	CXXFLAGS := $(CXXFLAGS) -O3 -no-pie
 else
-	CXXFLAGS += $(CXXFLAGS) -ggdb
+	CXXFLAGS := $(CXXFLAGS) -ggdb
 endif
 
 # base app objects
