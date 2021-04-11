@@ -332,45 +332,39 @@ void AssetManager::updateBuffers(){
     std::chrono::steady_clock::time_point start = std::chrono::steady_clock::now();
     std::chrono::steady_clock::time_point end;*/
     const dmath::vec3& cam_origin = m_camera->getCamPosition();
+    struct render_buffer* rbuf;
+    buffer_manager which_buffer;
 
     if(m_buffers->last_updated == buffer_2 || m_buffers->last_updated == none){
-        if(m_buffers->buffer1_lock.try_lock()){
-            m_buffers->view_mat1 = m_camera->getCenteredViewMatrix();
-            updateObjectBuffer(m_buffers->buffer1, cam_origin);
-            updatePlanetBuffer(m_buffers->planet_buffer1);
-            m_buffers->last_updated = buffer_1;
-            m_buffers->buffer1_lock.unlock();
-            m_buffers->cam_origin1 = cam_origin;
+        if(m_buffers->buffer_1.buffer_lock.try_lock()){
+            rbuf = &m_buffers->buffer_1;
+            which_buffer = buffer_1;
         }
         else{
-            m_buffers->buffer2_lock.lock(); // very unlikely to not get the lock
-            m_buffers->view_mat2 = m_camera->getCenteredViewMatrix();
-            updateObjectBuffer(m_buffers->buffer2, cam_origin);
-            updatePlanetBuffer(m_buffers->planet_buffer2);
-            m_buffers->last_updated = buffer_2;
-            m_buffers->buffer2_lock.unlock();
-            m_buffers->cam_origin2 = cam_origin;
+            m_buffers->buffer_2.buffer_lock.lock();
+            rbuf = &m_buffers->buffer_2;
+            which_buffer = buffer_2;
         }
     }
     else{
-        if(m_buffers->buffer2_lock.try_lock()){
-            m_buffers->view_mat2 = m_camera->getCenteredViewMatrix();
-            updateObjectBuffer(m_buffers->buffer2, cam_origin);
-            updatePlanetBuffer(m_buffers->planet_buffer2);
-            m_buffers->last_updated = buffer_2;
-            m_buffers->buffer2_lock.unlock();
-            m_buffers->cam_origin2 = cam_origin;
+        if(m_buffers->buffer_2.buffer_lock.try_lock()){
+            rbuf = &m_buffers->buffer_2;
+            which_buffer = buffer_2;
         }
         else{
-            m_buffers->view_mat1 = m_camera->getCenteredViewMatrix();
-            m_buffers->buffer1_lock.lock();
-            updateObjectBuffer(m_buffers->buffer1, cam_origin);
-            updatePlanetBuffer(m_buffers->planet_buffer1);
-            m_buffers->last_updated = buffer_1;
-            m_buffers->buffer1_lock.unlock();
-            m_buffers->cam_origin1 = cam_origin;
+            m_buffers->buffer_1.buffer_lock.lock();
+            rbuf = &m_buffers->buffer_1;
+            which_buffer = buffer_1;
         }
     }
+
+    rbuf->view_mat = m_camera->getCenteredViewMatrix();
+    updateObjectBuffer(rbuf->buffer, cam_origin);
+    updatePlanetBuffer(rbuf->planet_buffer);
+    rbuf->cam_origin = cam_origin;
+    m_buffers->last_updated = which_buffer;
+    rbuf->buffer_lock.unlock();
+
     /*end = std::chrono::steady_clock::now();
     time = end - start;
     std::cout << "copy time: " << time.count() << std::endl;*/

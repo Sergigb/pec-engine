@@ -36,17 +36,17 @@ struct planet_transform{
 
 enum buffer_manager: char{none = 0, buffer_1 = 1, buffer_2 = 2};
 
+struct render_buffer{
+    std::vector<object_transform> buffer;
+    std::vector<planet_transform> planet_buffer;
+    math::mat4 view_mat;
+    dmath::vec3 cam_origin;
+    std::mutex buffer_lock;
+};
+
 struct render_buffers{
-    std::vector<object_transform> buffer1;
-    std::vector<object_transform> buffer2;
-    std::vector<planet_transform> planet_buffer1;
-    std::vector<planet_transform> planet_buffer2;
-    math::mat4 view_mat1;
-    math::mat4 view_mat2;
-    dmath::vec3 cam_origin1;
-    dmath::vec3 cam_origin2;
-    std::mutex buffer1_lock;
-    std::mutex buffer2_lock;
+    render_buffer buffer_1;
+    render_buffer buffer_2;
     buffer_manager last_updated;
 };
 

@@ -236,66 +236,50 @@ void RenderContext::renderAttPoints(const BasePart* part, const math::mat4& body
 
 int RenderContext::renderSceneEditor(){
     int num_rendered = 0;
-    const std::vector<object_transform>* buff;
-    const math::mat4* view_mat;
-    std::mutex* lock;
+    struct render_buffer* rbuf;
 
     if(m_buffers->last_updated != none){
         if(m_buffers->last_updated == buffer_1){
-            m_buffers->buffer1_lock.lock(); // extremely unlikely to not get the lock
-            buff = &m_buffers->buffer1;
-            view_mat = &m_buffers->view_mat1;
-            lock = &m_buffers->buffer1_lock;
+            m_buffers->buffer_1.buffer_lock.lock();
+            rbuf = &m_buffers->buffer_1;
         }
         else{
-            m_buffers->buffer2_lock.lock();
-            buff = &m_buffers->buffer2;
-            view_mat = &m_buffers->view_mat2;
-            lock = &m_buffers->buffer2_lock;
+            m_buffers->buffer_2.buffer_lock.lock();
+            rbuf = &m_buffers->buffer_2;
         }
-        num_rendered = renderObjects(true, buff, view_mat);
-        lock->unlock();
+        num_rendered = renderObjects(true, &rbuf->buffer, &rbuf->view_mat);
+        rbuf->buffer_lock.unlock();
     }
+
     return num_rendered;
 }
 
 
 int RenderContext::renderSceneUniverse(){
     int num_rendered = 0;
-    const std::vector<object_transform>* buff;
-    const math::mat4* view_mat;
-    const dmath::vec3* cam_origin;
-    std::vector<planet_transform>* buff_plt;
-    std::mutex* lock;
+    struct render_buffer* rbuf;
 
     if(m_buffers->last_updated != none){
         if(m_buffers->last_updated == buffer_1){
-            m_buffers->buffer1_lock.lock();
-            buff = &m_buffers->buffer1;
-            view_mat = &m_buffers->view_mat1;
-            lock = &m_buffers->buffer1_lock;
-            buff_plt = &m_buffers->planet_buffer1;
-            cam_origin = &m_buffers->cam_origin1;
+            m_buffers->buffer_1.buffer_lock.lock();
+            rbuf = &m_buffers->buffer_1;
         }
         else{
-            m_buffers->buffer2_lock.lock();
-            buff = &m_buffers->buffer2;
-            view_mat = &m_buffers->view_mat2;
-            lock = &m_buffers->buffer2_lock;
-            buff_plt = &m_buffers->planet_buffer2;
-            cam_origin = &m_buffers->cam_origin2;
+            m_buffers->buffer_2.buffer_lock.lock();
+            rbuf = &m_buffers->buffer_2;
         }
-        num_rendered = renderObjects(false, buff, view_mat);
+        num_rendered = renderObjects(false, &rbuf->buffer, &rbuf->view_mat);
 
         // really simple but it's ok for now
-        for(uint i=0; i < buff_plt->size(); i++){
-            planet_transform& tr = buff_plt->at(i);
-            tr.planet_ptr->render(*cam_origin, tr.transform);
+        for(uint i=0; i < rbuf->planet_buffer.size(); i++){
+            planet_transform& tr = rbuf->planet_buffer.at(i);
+            tr.planet_ptr->render(rbuf->cam_origin, tr.transform);
         }
 
-        lock->unlock();
+        rbuf->buffer_lock.unlock();
     }
-    return num_rendered; 
+
+    return num_rendered;
 }
 
 
@@ -315,9 +299,11 @@ int RenderContext::renderObjects(bool render_att_points, const std::vector<objec
     glUniformMatrix4fv(m_planet_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
 
     for(uint i=0; i<buff->size(); i++){
-        BasePart* part = dynamic_cast<BasePart*>(buff->at(i).object_ptr.get());
-        if(part && render_att_points){
-            renderAttPoints(part, buff->at(i).transform);
+        if(render_att_points){
+            BasePart* part = dynamic_cast<BasePart*>(buff->at(i).object_ptr.get());
+            if(part){
+                renderAttPoints(part, buff->at(i).transform);
+            }
         }
         num_rendered += buff->at(i).object_ptr->render(buff->at(i).transform);
     }
@@ -640,21 +626,20 @@ void RenderContext::renderImGui(){
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
 
-    /*This is okay for now, but might not be correct in the future*/
     if(m_buffers->last_updated != none){
         if(m_buffers->last_updated == buffer_1){
-            m_buffers->buffer1_lock.lock();
-            for(uint i=0; i<m_buffers->buffer1.size(); i++){
-                m_buffers->buffer1.at(i).object_ptr.get()->renderOther();
+            m_buffers->buffer_1.buffer_lock.lock();
+            for(uint i=0; i<m_buffers->buffer_1.buffer.size(); i++){
+                m_buffers->buffer_1.buffer.at(i).object_ptr.get()->renderOther();
             }
-            m_buffers->buffer1_lock.unlock();
+            m_buffers->buffer_1.buffer_lock.unlock();
         }
         else{
-            m_buffers->buffer2_lock.lock();
-            for(uint i=0; i<m_buffers->buffer2.size(); i++){
-                m_buffers->buffer2.at(i).object_ptr.get()->renderOther();
+            m_buffers->buffer_2.buffer_lock.lock();
+            for(uint i=0; i<m_buffers->buffer_2.buffer.size(); i++){
+                m_buffers->buffer_2.buffer.at(i).object_ptr.get()->renderOther();
             }
-            m_buffers->buffer2_lock.unlock();
+            m_buffers->buffer_2.buffer_lock.unlock();
         }
     }
 
