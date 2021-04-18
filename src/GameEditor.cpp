@@ -24,6 +24,9 @@
 #define SIDE_ANGLE_STEP double(M_PI / MAX_SYMMETRY_SIDES)
 
 
+bool lmb_focused_press = false;
+
+
 GameEditor::GameEditor(BaseApp* app, FontAtlas* font_atlas){
     m_input = app->m_input.get();
     m_camera = app->m_camera.get();
@@ -348,13 +351,13 @@ void GameEditor::placeClonedSubtreesOnClones(BasePart* closest, btTransform& tra
                                               disp, transform_final_current.getOrigin(),
                                               transform_final_current.getRotation() * transform_original.getRotation().inverse());
 
-            if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
+            if(lmb_focused_press){
                 createConstraint(current.get(), current_parent, transform_final_current.inverse() * transform_parent);
                 m_asset_manager->m_editor_vessel->addChildById(current, current_parent->getUniqueId());
             }
         }
     }
-    if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
+    if(lmb_focused_press){
         m_asset_manager->m_symmetry_subtrees.clear();
     }
 }
@@ -397,7 +400,7 @@ void GameEditor::placeSubTree(float closest_dist, math::vec4& closest_att_point_
         btTransform parent_transform;
         closest->m_body->getMotionState()->getWorldTransform(parent_transform);
 
-        if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
+        if(lmb_focused_press){
             createConstraint(part, closest, transform_final.inverse() * parent_transform);
 
             std::shared_ptr<BasePart> part_sptr = std::dynamic_pointer_cast<BasePart>(part->getSharedPtr());
@@ -509,7 +512,7 @@ void GameEditor::placeSubTree(float closest_dist, math::vec4& closest_att_point_
 
             BasePart* parent = static_cast<BasePart*>(obj);
 
-            if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
+            if(lmb_focused_press){
                 createConstraint(part, parent, transform_final.inverse() * p_transform);
 
                 std::shared_ptr<BasePart> part_sptr = std::dynamic_pointer_cast<BasePart>(part->getSharedPtr());
@@ -575,7 +578,7 @@ void GameEditor::placeSubTree(float closest_dist, math::vec4& closest_att_point_
                                                           align_rotation * symmetric_rotation * 
                                                           part->m_user_rotation * rotation_current.inverse());
 
-                        if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
+                        if(lmb_focused_press){
                             createConstraint(current, parent, transform_final.inverse() * p_transform);
 
                             std::shared_ptr<BasePart> part_sptr = std::dynamic_pointer_cast<BasePart>(current->getSharedPtr());
@@ -585,7 +588,7 @@ void GameEditor::placeSubTree(float closest_dist, math::vec4& closest_att_point_
                 }
             }
 
-            if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
+            if(lmb_focused_press){
                 m_asset_manager->m_symmetry_subtrees.clear();
             }
         }
@@ -797,6 +800,14 @@ void GameEditor::processInput(){
 
 
 void GameEditor::logic(){
+    if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS &&
+      !m_render_context->imGuiWantCaptureMouse()){
+        lmb_focused_press = true;
+    }
+    else{
+        lmb_focused_press = false;
+    }
+
     if(m_picked_obj && m_gui_action != EDITOR_ACTION_DELETE){
         BasePart* part = static_cast<BasePart*>(m_picked_obj);
 
@@ -809,14 +820,13 @@ void GameEditor::logic(){
         }
         placeSubTree(closest_dist, closest_att_point_world, closest, part);
 
-        if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
+        if(lmb_focused_press){
             m_picked_obj->activate(true);
             m_picked_obj = nullptr;
         }
     }
     else{ // if not picked object
-        if(!m_gui_action && m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS &&
-            m_physics_pause && !m_render_context->imGuiWantCaptureMouse()){ // scene has the focus
+        if(!m_gui_action && m_physics_pause && lmb_focused_press){ // scene has the focus
             pickObject();
         }
     }
