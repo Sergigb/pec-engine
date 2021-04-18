@@ -23,15 +23,13 @@ typedef std::unordered_map<std::uint32_t, std::shared_ptr<Vessel>>::iterator Ves
 typedef std::unordered_map<std::uint32_t, std::unique_ptr<Resource>>::iterator ResourceIterator;
 
 
-AssetManager::AssetManager(BaseApp* app){
+AssetManager::AssetManager(BaseApp* app) : m_asset_manager_interface(AssetManagerInterface(this)){
     m_render_context = app->m_render_context.get();
     m_frustum = app->m_frustum.get();
     m_physics = app->m_physics.get();
     m_buffers = &app->m_buffers;
     m_camera = app->m_camera.get();
     m_app = app;
-
-    m_asset_manager_interface = AssetManagerInterface(this);
 
     initResources();
     objectsInit();

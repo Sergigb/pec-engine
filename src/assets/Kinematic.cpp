@@ -9,13 +9,11 @@
 
 
 Kinematic::Kinematic(Model* model, Physics* physics, btCollisionShape* col_shape, btScalar mass, int baseID) : 
-    Object(model, physics, col_shape, mass, baseID){
-    m_velocity = btVector3(0.0, 0.0, 0.0);
+    Object(model, physics, col_shape, mass, baseID), m_velocity(btVector3(0.0, 0.0, 0.0)){
 }
 
 
-Kinematic::Kinematic(const Kinematic& object) : Object(object){
-    m_velocity = btVector3(0.0, 0.0, 0.0);
+Kinematic::Kinematic(const Kinematic& object) : Object(object), m_velocity(btVector3(0.0, 0.0, 0.0)){
 }
 
 

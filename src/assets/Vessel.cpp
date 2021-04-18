@@ -10,7 +10,7 @@
 #include "../core/Input.hpp"
 
 
-Vessel::Vessel(){
+Vessel::Vessel() : m_com(btVector3(0.0, 0.0, 0.0)){
     m_vessel_root = nullptr;
     create_id(m_vessel_id, VESSEL_SET);
     m_player = nullptr;
@@ -18,12 +18,11 @@ Vessel::Vessel(){
     m_yaw = 0.0f;
     m_pitch = 0.0f;
     m_total_mass = 0.0;
-    m_com = btVector3(0.0, 0.0, 0.0);
 }
 
 
-Vessel::Vessel(std::shared_ptr<BasePart>& vessel_root, const Input* input){
-    m_vessel_root = vessel_root;
+Vessel::Vessel(std::shared_ptr<BasePart>& vessel_root, const Input* input) : m_vessel_root(vessel_root), 
+               m_com(btVector3(0.0, 0.0, 0.0)){
     m_vessel_root->setRoot(true);
     m_vessel_root->updateSubTreeVessel(this);
     create_id(m_vessel_id, VESSEL_SET);
@@ -31,7 +30,6 @@ Vessel::Vessel(std::shared_ptr<BasePart>& vessel_root, const Input* input){
     m_input = input;
     m_yaw = 0.0f;
     m_pitch = 0.0f;
-    m_com = btVector3(0.0, 0.0, 0.0);
 
     updateNodes();
     updateMass();

@@ -13,30 +13,25 @@
 
 
 BasePart::BasePart(Model* model, Physics* physics, btCollisionShape* col_shape, btScalar dry_mass, int baseID, AssetManagerInterface* asset_manager) : 
-    Object(model, physics, col_shape, dry_mass, baseID){
-    m_parent = nullptr;
-    m_vessel = nullptr;
-    m_is_root = false;
-    m_user_rotation = btQuaternion::getIdentity();
-    m_has_parent_att = false;
-    m_has_free_att = false;
-    m_show_editor_menu = false;
+    Object(model, physics, col_shape, dry_mass, baseID), m_user_rotation(btQuaternion::getIdentity()){
     m_asset_manager = asset_manager;
-    m_properties = 0;
-    m_show_game_menu = false;
-    m_cloned_from = nullptr;
+    init();
 }
 
 
-BasePart::BasePart(){
+BasePart::BasePart() : Object(), m_user_rotation(btQuaternion::getIdentity()){
+    m_asset_manager = nullptr;
+    init();
+}
+
+
+void BasePart::init(){
     m_parent = nullptr;
     m_vessel = nullptr;
     m_is_root = false;
-    m_user_rotation = btQuaternion::getIdentity();
     m_has_parent_att = false;
     m_has_free_att = false;
     m_show_editor_menu = false;
-    m_asset_manager = nullptr;
     m_properties = 0;
     m_show_game_menu = false;
     m_cloned_from = nullptr;
@@ -50,7 +45,7 @@ BasePart::~BasePart(){
 }
 
 
-BasePart::BasePart(const BasePart& part) : Object(part) {
+BasePart::BasePart(const BasePart& part) : Object(part), m_user_rotation(btQuaternion::getIdentity()){
     m_parent_att_point = part.m_parent_att_point;
     m_attachment_points = part.m_attachment_points;
     m_free_att_point = part.m_free_att_point;
@@ -58,7 +53,6 @@ BasePart::BasePart(const BasePart& part) : Object(part) {
     m_parent = nullptr;
     m_is_root = false;
     m_vessel = nullptr;
-    m_user_rotation = btQuaternion::getIdentity();
     m_has_parent_att = part.m_has_parent_att;
     m_has_free_att = part.m_has_free_att;
     m_show_editor_menu = false;

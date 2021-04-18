@@ -10,8 +10,8 @@ Object::Object(){
 }
 
 
-Object::Object(Model* model, Physics* physics, btCollisionShape* col_shape, btScalar dry_mass, std::uint32_t base_id){
-    m_mesh_color = math::vec4(1.0, 1.0, 1.0, 1.0);
+Object::Object(Model* model, Physics* physics, btCollisionShape* col_shape, btScalar dry_mass, std::uint32_t base_id) : 
+              m_mesh_color(math::vec4(1.0, 1.0, 1.0, 1.0)){
     m_physics = physics;
     m_model = model;
     m_has_transform = false;

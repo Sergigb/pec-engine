@@ -2,9 +2,8 @@
 
 #include <iostream>
 
-Resource::Resource(const std::string& name, const std::string& fancy_name, char rtype, char rstate, double density, double temperature){
-    m_resource_name = name;
-    m_resource_fancy_name = fancy_name;
+Resource::Resource(const std::string& name, const std::string& fancy_name, char rtype, char rstate, double density, double temperature) : 
+                   m_resource_name(name), m_resource_fancy_name(fancy_name){
     m_resource_type = rtype;
     m_resource_state = rstate;
     m_density = density;

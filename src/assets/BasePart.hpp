@@ -71,6 +71,7 @@ class BasePart : public Object{
 
         void decoupleChilds();
         void decoupleSelf();
+        void init();
     public:
         BasePart(Model* model, Physics* physics, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager);
         BasePart(const BasePart& part);
