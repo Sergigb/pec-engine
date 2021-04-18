@@ -63,6 +63,8 @@ class GameEditor{
         struct thread_monitor* m_thread_monitor;
 
         //void placeClonedSubtreesRadial(BasePart* parent);
+        void processInput();
+        void processGUI();
         void placeClonedSubtreesOnClones(BasePart* closest, btTransform& transform_final, std::vector<BasePart*>& clone_to);
         void pickAttachedObject(BasePart* part);
         void hitPointAlign(btVector3& hit_point_world, btVector3& hit_normal_world, btTransform& parent_transform);

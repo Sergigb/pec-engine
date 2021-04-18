@@ -670,31 +670,7 @@ void GameEditor::pickObject(){
 }
 
 
-void GameEditor::logic(){
-    if(m_picked_obj && m_gui_action != EDITOR_ACTION_DELETE){
-        BasePart* part = static_cast<BasePart*>(m_picked_obj);
-
-        float closest_dist = 99999999999.9;;
-        math::vec4 closest_att_point_world;
-        BasePart* closest = nullptr;
-
-        if(m_vessel_id != 0){
-            getClosestAtt(closest_dist, closest_att_point_world, closest, part);
-        }
-        placeSubTree(closest_dist, closest_att_point_world, closest, part);
-
-        if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
-            m_picked_obj->activate(true);
-            m_picked_obj = nullptr;
-        }
-    }
-    else{ // if not picked object
-        if(!m_gui_action && m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS &&
-            m_physics_pause && !m_render_context->imGuiWantCaptureMouse()){ // scene has the focus
-            pickObject();
-        }
-    }
-
+void GameEditor::processGUI(){
     // GUI processing
     if(m_gui_action == EDITOR_ACTION_OBJECT_PICK && m_physics_pause){
         const std::unique_ptr<BasePart>* editor_picked_object = m_editor_gui->getPickedObject();
@@ -740,78 +716,113 @@ void GameEditor::logic(){
     if(m_gui_action == EDITOR_ACTION_CLEAR_SCENE){
         m_clear_scene = true;
     }
+}
 
-    // other input
-    if(m_input->pressed_keys[GLFW_KEY_P] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
-        m_physics_pause = !m_physics_pause;
-        m_physics->pauseSimulation(m_physics_pause);
-        if(m_picked_obj){
+
+void GameEditor::processInput(){
+    double scx, scy;
+    m_input->getScroll(scx, scy);
+
+    if(!m_render_context->imGuiWantCaptureMouse()){
+        if(scy && !m_gui_action){
+            m_camera->incrementOrbitalCamDistance(-scy * 5.0); // we should check the camera mode
+        }
+
+        if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2] & INPUT_MBUTTON_RELEASE &&
+            !m_gui_action && m_camera->getPrevInputMode() != GLFW_CURSOR_DISABLED){
+            onRightMouseButton();
+        }
+    }
+
+    // keyboard input
+    if(!m_render_context->imGuiWantCaptureKeyboard()){
+        if(m_input->pressed_keys[GLFW_KEY_F12] == INPUT_KEY_DOWN){
+            m_render_context->toggleDebugOverlay();
+        }
+
+        if(m_input->pressed_keys[GLFW_KEY_F11] == INPUT_KEY_DOWN){
+            m_render_context->toggleDebugDraw();
+        }
+
+        if(m_input->pressed_keys[GLFW_KEY_F] == INPUT_KEY_DOWN){
+            m_clear_scene = true;
+        }
+
+        if(m_input->pressed_keys[GLFW_KEY_F10] == INPUT_KEY_DOWN){
+            m_render_context->reloadShaders();
+            m_render_context->setLightPosition(math::vec3(150.0, 100.0, 0.0));
+        }
+
+        if(m_input->pressed_keys[GLFW_KEY_X] == INPUT_KEY_DOWN){
+            if(m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] != INPUT_KEY_UP && m_symmetry_sides > 1){
+                m_symmetry_sides--;
+            }
+            if(m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] == INPUT_KEY_UP && m_symmetry_sides < MAX_SYMMETRY_SIDES){
+                m_symmetry_sides++;
+            }
+            m_editor_gui->setSymmetrySides(m_symmetry_sides);
+        }
+
+        if(m_input->pressed_keys[GLFW_KEY_V] == INPUT_KEY_DOWN){
+            m_radial_align = !m_radial_align;
+            m_editor_gui->setRadialAlign(m_radial_align);
+        }
+
+        if(m_input->pressed_keys[GLFW_KEY_F1] == INPUT_KEY_DOWN){
+            if(m_asset_manager->m_editor_vessel.get()){
+                m_asset_manager->m_editor_vessel->printVessel();
+            }
+        }
+
+        if(m_input->pressed_keys[GLFW_KEY_F2] == INPUT_KEY_DOWN){
+            if(m_asset_manager->m_editor_vessel.get()){
+                m_asset_manager->m_editor_vessel->printStaging();
+            }
+        }
+
+        if(m_input->pressed_keys[GLFW_KEY_ESCAPE] == INPUT_KEY_DOWN){
+            m_exit_editor = true;
+        }
+
+        if(m_input->pressed_keys[GLFW_KEY_P] == INPUT_KEY_DOWN){
+            m_physics_pause = !m_physics_pause;
+            m_physics->pauseSimulation(m_physics_pause);
+            if(m_picked_obj){
+                m_picked_obj->activate(true);
+                m_picked_obj = nullptr;
+            }
+        }
+    }
+}
+
+
+void GameEditor::logic(){
+    if(m_picked_obj && m_gui_action != EDITOR_ACTION_DELETE){
+        BasePart* part = static_cast<BasePart*>(m_picked_obj);
+
+        float closest_dist = 99999999999.9;;
+        math::vec4 closest_att_point_world;
+        BasePart* closest = nullptr;
+
+        if(m_vessel_id != 0){
+            getClosestAtt(closest_dist, closest_att_point_world, closest, part);
+        }
+        placeSubTree(closest_dist, closest_att_point_world, closest, part);
+
+        if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS && !m_render_context->imGuiWantCaptureMouse()){
             m_picked_obj->activate(true);
             m_picked_obj = nullptr;
         }
     }
-
-    // this should be cleaned up
-
-    double scx, scy;
-    m_input->getScroll(scx, scy);
-    if((scy) && !m_render_context->imGuiWantCaptureMouse() && !m_gui_action){
-        m_camera->incrementOrbitalCamDistance(-scy * 5.0); // we should check the camera mode
-    }
-
-    if(m_input->pressed_keys[GLFW_KEY_F12] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
-        m_render_context->toggleDebugOverlay();
-    }
-
-    if(m_input->pressed_keys[GLFW_KEY_F11] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
-        m_render_context->toggleDebugDraw();
-    }
-
-    if(m_input->pressed_keys[GLFW_KEY_F] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
-        m_clear_scene = true;
-    }
-
-    if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2] & INPUT_MBUTTON_RELEASE &&
-        !m_render_context->imGuiWantCaptureMouse() && !m_gui_action &&
-        m_camera->getPrevInputMode() != GLFW_CURSOR_DISABLED){
-        onRightMouseButton();
-    }
-
-    if(m_input->pressed_keys[GLFW_KEY_F10] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
-        m_render_context->reloadShaders();
-        m_render_context->setLightPosition(math::vec3(150.0, 100.0, 0.0));
-    }
-
-    if(m_input->pressed_keys[GLFW_KEY_X] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
-        if(m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] != INPUT_KEY_UP && m_symmetry_sides > 1){
-            m_symmetry_sides--;
-        }
-        if(m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] == INPUT_KEY_UP && m_symmetry_sides < MAX_SYMMETRY_SIDES){
-            m_symmetry_sides++;
-        }
-        m_editor_gui->setSymmetrySides(m_symmetry_sides);
-    }
-
-    if(m_input->pressed_keys[GLFW_KEY_V] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
-        m_radial_align = !m_radial_align;
-        m_editor_gui->setRadialAlign(m_radial_align);
-    }
-
-    if(m_input->pressed_keys[GLFW_KEY_F1] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
-        if(m_asset_manager->m_editor_vessel.get()){
-            m_asset_manager->m_editor_vessel->printVessel();
+    else{ // if not picked object
+        if(!m_gui_action && m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS &&
+            m_physics_pause && !m_render_context->imGuiWantCaptureMouse()){ // scene has the focus
+            pickObject();
         }
     }
 
-    if(m_input->pressed_keys[GLFW_KEY_F2] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
-        if(m_asset_manager->m_editor_vessel.get()){
-            m_asset_manager->m_editor_vessel->printStaging();
-        }
-    }
-
-    if(m_input->pressed_keys[GLFW_KEY_ESCAPE] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
-        m_exit_editor = true;
-    }
+    processGUI();
+    processInput();
 }
 
 
