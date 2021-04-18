@@ -64,7 +64,6 @@ class Object : public std::enable_shared_from_this<Object>{
         void setMotionState(const btVector3& origin, const btQuaternion& initial_rotation);
         void setName(std::string name);
         void setFancyName(std::string name);
-        void activate(bool activate);
         virtual int render();
         virtual int render(math::mat4 body_transform);
         virtual void renderOther(); // gui, other stuff

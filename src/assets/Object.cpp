@@ -144,13 +144,11 @@ void Object::setMeshTransform(const math::mat4& transform){
 
 
 void Object::applyCentralForce(const btVector3& force){
-    m_body->activate(true);
     m_body->applyCentralForce(force);
 }
 
 
 void Object::applyTorque(const btVector3& torque){
-    m_body->activate(true);
     m_body->applyTorque(torque);
 }
 
@@ -164,11 +162,6 @@ void Object::setMotionState(const btVector3& origin, const btQuaternion& initial
     m_motion_state.reset(new btDefaultMotionState(transform));
 
     m_body->setMotionState(m_motion_state.get());
-}
-
-
-void Object::activate(bool activate){
-    m_body->activate(activate);
 }
 
 

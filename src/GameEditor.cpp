@@ -680,7 +680,6 @@ void GameEditor::processGUI(){
         std::shared_ptr<BasePart> part(editor_picked_object->get()->clone());
 
         if(m_picked_obj){ // if the user has an scene object picked just leave it "there"
-            m_picked_obj->activate(true);
             m_picked_obj = nullptr;
         }
 
@@ -791,7 +790,6 @@ void GameEditor::processInput(){
             m_physics_pause = !m_physics_pause;
             m_physics->pauseSimulation(m_physics_pause);
             if(m_picked_obj){
-                m_picked_obj->activate(true);
                 m_picked_obj = nullptr;
             }
         }
@@ -821,7 +819,6 @@ void GameEditor::logic(){
         placeSubTree(closest_dist, closest_att_point_world, closest, part);
 
         if(lmb_focused_press){
-            m_picked_obj->activate(true);
             m_picked_obj = nullptr;
         }
     }
