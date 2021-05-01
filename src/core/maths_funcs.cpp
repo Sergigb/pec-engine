@@ -1305,6 +1305,10 @@ double dmath::distance( const vec3 &a, const vec3 &b ) {
     return sqrt( x_diff * x_diff + y_diff * y_diff + z_diff * z_diff );
 }
 
+double dmath::dot( const vec3 &a, const vec3 &b ) {
+    return a.v[0] * b.v[0] + a.v[1] * b.v[1] + a.v[2] * b.v[2];
+}
+
 dmath::mat4 dmath::rotate_x_deg( const mat4 &m, double deg ) {
     double rad = deg * ONE_DEG_IN_RAD;
     mat4 m_r = dmath::identity_mat4();
