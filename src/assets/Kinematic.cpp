@@ -37,22 +37,6 @@ void Kinematic::update(){
 
 
 void Kinematic::renderOther(){
-    std::stringstream ss;
-    ss << m_unique_id;
-
-    ImGui::SetNextWindowSize(ImVec2(300.f, 300.f), ImGuiCond_Appearing);
-    ImGui::Begin((m_fancy_name + ss.str()).c_str());
-
-    float v[3];
-    v[0] = m_velocity.getX();
-    v[1] = m_velocity.getY();
-    v[2] = m_velocity.getZ();
-
-    ImGui::SliderFloat3("Velocity", v, -10.0f, 10.0f);
-
-    m_velocity = btVector3(v[0], v[1], v[2]);
-
-    ImGui::End();
 }
 
 
