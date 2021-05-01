@@ -18,6 +18,8 @@
 #include "core/log.hpp"
 #include "assets/BasePart.hpp"
 #include "assets/Vessel.hpp"
+#include "assets/Model.hpp"
+#include "assets/Kinematic.hpp"
 #include "assets/utils/planet_utils.hpp"
 
 
@@ -58,6 +60,7 @@ void App::run(){
     log("App::run: game state changed from editor to simulation");
 
     editorToSimulation();
+    initLaunchBase();
 
     /* Simple version of the simulator */
 
@@ -235,7 +238,7 @@ void App::editorToSimulation(){
         BasePart* root = vsl->getRoot();
         
         // translate to lat/long 0.0-0.0, this function doesn't work well when lat or long != 0, for some reason
-        btVector3 to = reference_ellipse_to_xyz(btRadians(0.0), btRadians(0.0), 6473000.0);
+        btVector3 to = reference_ellipse_to_xyz(btRadians(0.0), btRadians(0.0), 6371030.0);
         btVector3 disp;
         btTransform transform;
 
@@ -244,9 +247,9 @@ void App::editorToSimulation(){
 
         disp = to - from;
 
-        // move the object to the surface, 200 km avobe sea level
+        // move the object to the sea launch base
         vsl->getRoot()->updateSubTreeMotionState(m_asset_manager->m_set_motion_state_buffer,
-                                                 disp, from, btQuaternion::getIdentity());
+                                                 disp, from, btQuaternion(0.0, 0.0, -M_PI / 2.0));
 
         //vsl->setVesselVelocity(btVector3(0.0, 7788.54, 0.0));
         vsl->setVesselVelocity(btVector3(0.0, 0.0, 0.0));
@@ -256,6 +259,20 @@ void App::editorToSimulation(){
 }
 
 
-/*void initLaunchBase(){
+void App::initLaunchBase(){
+    std::unique_ptr<Model> bigcube(new Model("../data/bigcube.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE,
+                                   m_frustum.get(), m_render_context.get(), math::vec3(0.75, 0.75, 0.75)));
+    std::unique_ptr<btCollisionShape> sphere_shape(new btBoxShape(btVector3(25.0, 25.0, 25.0)));
 
-}*/
+    btVector3 origin = reference_ellipse_to_xyz(btRadians(0.0), btRadians(0.0), 6371000.0);
+    btQuaternion quat(0.0, 0.0, 0.0);
+    std::shared_ptr<Kinematic> ground = std::make_shared<Kinematic>(bigcube.get(), m_physics.get(), 
+                                                                    sphere_shape.get(), btScalar(0.0), 1);
+    ground->setCollisionGroup(CG_DEFAULT | CG_KINEMATIC);
+    ground->setCollisionFilters(~CG_RAY_EDITOR_RADIAL & ~CG_RAY_EDITOR_SELECT);
+    ground->addBody(origin, btVector3(0.0, 0.0, 0.0), quat);
+
+    m_asset_manager->m_kinematics.emplace_back(ground);
+    m_asset_manager->m_models.push_back(std::move(bigcube));
+    m_asset_manager->m_collision_shapes.push_back(std::move(sphere_shape));
+}

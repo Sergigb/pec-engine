@@ -34,6 +34,7 @@ class App : public BaseApp{
         
         // state transition
         void editorToSimulation();
+        void initLaunchBase();
     public:
         App();
         App(int gl_width, int gl_height);
