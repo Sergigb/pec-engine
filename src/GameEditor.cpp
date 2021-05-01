@@ -77,6 +77,7 @@ void GameEditor::start(){
 
     m_app->m_gui_mode = GUI_MODE_EDITOR;
     m_app->m_render_state = RENDER_EDITOR;
+    m_app->m_player->setBehaviour(PLAYER_BEHAVIOUR_EDITOR);
 
     while(!m_exit_editor){
         loop_start_load = std::chrono::steady_clock::now();

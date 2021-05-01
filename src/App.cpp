@@ -73,6 +73,7 @@ void App::run(){
     m_physics->pauseSimulation(false);
     m_gui_mode = GUI_MODE_NONE;
     m_render_state = RENDER_UNIVERSE;
+    m_player->setBehaviour(PLAYER_BEHAVIOUR_SIMULATION);
     m_camera->setCameraPosition(dmath::vec3(9300000.0, 0.0, 0.0));
     m_camera->setSpeed(630000.0f);
     m_render_context->setLightPosition(math::vec3(63000000000.0, 0.0, 0.0));

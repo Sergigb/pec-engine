@@ -11,6 +11,7 @@ class Vessel;
 class Camera;
 class AssetManager;
 class Input;
+class BaseApp;
 
 
 class Player{
@@ -19,16 +20,20 @@ class Player{
         Camera* m_camera;
         AssetManager* m_asset_manager;
         const Input* m_input;
+        const BaseApp* m_app;
         short m_behaviour;
+
+        void setCamMode();
+        void switchVessel();
     public:
-        Player(Camera* camera, AssetManager* asset_manager, Input* input);
+        Player(Camera* camera, AssetManager* asset_manager, const Input* input);
         ~Player();
 
         void update();
 
         // this method should be called by the player controlled vessel
         void onVesselDestroy();
-        void setBehaviour();
+        void setBehaviour(short behaviour);
 
         Vessel* getVessel() const;
 };
