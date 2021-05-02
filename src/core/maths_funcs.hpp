@@ -230,6 +230,7 @@ namespace dmath{ // double precision for the camera
         double q[4];
     };
 
+    void print( const mat4& m );
     // vector functions
     vec3 normalise(const vec3 &v );
     vec4 normalise(const vec4 &v );
@@ -247,6 +248,7 @@ namespace dmath{ // double precision for the camera
     mat4 rotate_x_deg( const mat4 &m, double deg );
     mat4 rotate_y_deg( const mat4 &m, double deg );
     mat4 rotate_z_deg( const mat4 &m, double deg );
+    mat4 rotate_axis( const mat4 &m, double deg, const vec3 &axis );
     //versor functions
     mat4 quat_to_mat4( const versor &q );
     versor normalise( versor &q );

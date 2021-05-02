@@ -36,6 +36,8 @@ Camera::Camera(){
     m_polar_angle = M_PI / 2;
     m_azimuthal_angle = 0.0;
     m_radial_distance = 10.0;
+    m_inclination = 0.0;
+    m_inclination_axis = dmath::vec3(0.0, 0.0, 0.0);
 }
 
 
@@ -64,20 +66,23 @@ Camera::Camera(const dmath::vec3& pos, float fovy, float ar, float near, float f
     m_polar_angle = M_PI / 2;
     m_azimuthal_angle = 0.0;
     m_radial_distance = 10.0;
+    m_inclination = 0.0;
+    m_inclination_axis = dmath::vec3(0.0, 0.0, 0.0);
 }
+
 
 Camera::~Camera(){
     
 }
 
 
-void Camera::setCameraOrientation(const dmath::versor* orientation){
-    m_cam_orientation = *orientation; 
+void Camera::setCameraOrientation(const dmath::versor& orientation){
+    m_cam_orientation = orientation;
 }
 
 
-void Camera::setCameraOrientationFromAxisRad(float cam_heading, const dmath::vec3* axis){
-    m_cam_orientation = dmath::quat_from_axis_rad(-cam_heading, axis->v[0], axis->v[1], axis->v[2]);    
+void Camera::setCameraOrientationFromAxisRad(float cam_heading, const dmath::vec3& axis){
+    m_cam_orientation = dmath::quat_from_axis_rad(-cam_heading, axis.v[0], axis.v[1], axis.v[2]);    
 }
 
 
@@ -157,8 +162,8 @@ void Camera::rotateCameraPitch(double degrees){
 }
 
 
-void Camera::moveCamera(const dmath::vec3* motion){
-    m_cam_translation += *motion;
+void Camera::moveCamera(const dmath::vec3& motion){
+    m_cam_translation += motion;
 }
 
 
@@ -256,17 +261,17 @@ void Camera::castRayMousePos(float dist, dmath::vec3& ray_start_world, dmath::ve
 }
 
 
-void Camera::setForwardVector(const dmath::vec4 vec){
+void Camera::setForwardVector(const dmath::vec4& vec){
     m_fwd = vec;
 }
 
 
-void Camera::setRightVector(const dmath::vec4 vec){
+void Camera::setRightVector(const dmath::vec4& vec){
     m_rgt = vec;
 }
 
 
-void Camera::setUpVector(const dmath::vec4 vec){
+void Camera::setUpVector(const dmath::vec4& vec){
     m_up = vec;
 }
 
@@ -354,7 +359,7 @@ void Camera::freeCameraUpdate(){
 void Camera::orbitalCameraUpdate(){
     double x, y, z;
     dmath::mat4 R, T;
-    dmath::vec3 up(0.0, 1.0, 0.0);
+    dmath::vec4 up(0.0, 1.0, 0.0, 0.0);
 
     update();
 
@@ -394,12 +399,15 @@ void Camera::orbitalCameraUpdate(){
         }
     }
 
+    dmath::mat4 R_o = dmath::identity_mat4();
+    R_o = dmath::rotate_axis(R_o, -m_inclination, m_inclination_axis);
+
     x = std::sin(m_polar_angle) * std::cos(m_azimuthal_angle);
     z = std::sin(m_polar_angle) * std::sin(m_azimuthal_angle);
     y = std::cos(m_polar_angle);
 
-    m_fwd = dmath::vec4(-x, -y, -z, 0.0);
-    m_rgt = dmath::normalise(dmath::vec4(dmath::cross(up, dmath::vec3(m_fwd)), 0.0));
+    m_fwd = dmath::normalise(R_o * dmath::vec4(-x, -y, -z, 0.0));
+    m_rgt = dmath::normalise(dmath::vec4(dmath::cross(dmath::vec3(R_o * up), dmath::vec3(m_fwd)), 0.0));
     m_up = dmath::normalise(dmath::vec4(dmath::cross(dmath::vec3(m_fwd), dmath::vec3(m_rgt)), 0.0));
 
     R = dmath::mat4(m_rgt.v[0], m_rgt.v[1], m_rgt.v[2], 0.0,
@@ -447,5 +455,11 @@ void Camera::restoreCamOrientation(){
                   R.m[2], R.m[6], R.m[10]);
     
     m_cam_orientation = dmath::from_mat3(R_);*/
+}
+
+
+void Camera::setOrbitalInclination(double inclination, const dmath::vec3& axis){
+    m_inclination = inclination;
+    m_inclination_axis = axis;
 }
 

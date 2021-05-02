@@ -952,6 +952,16 @@ dmath::vec4::vec4( const vec3 &vv, double w ) {
 
 dmath::versor::versor(){}
 
+/*-----------------------------PRINT FUNCTIONS--------------------------------*/
+
+void dmath::print( const mat4 &m ) {
+    printf( "\n" );
+    printf( "[%.2f][%.2f][%.2f][%.2f]\n", m.m[0], m.m[4], m.m[8], m.m[12] );
+    printf( "[%.2f][%.2f][%.2f][%.2f]\n", m.m[1], m.m[5], m.m[9], m.m[13] );
+    printf( "[%.2f][%.2f][%.2f][%.2f]\n", m.m[2], m.m[6], m.m[10], m.m[14] );
+    printf( "[%.2f][%.2f][%.2f][%.2f]\n", m.m[3], m.m[7], m.m[11], m.m[15] );
+}
+
 /*------------------------------VECTOR FUNCTIONS------------------------------*/
 
 dmath::vec3 dmath::vec3::operator+( const vec3 &rhs ) const {
@@ -1336,6 +1346,25 @@ dmath::mat4 dmath::rotate_z_deg( const mat4 &m, double deg ) {
     m_r.m[4] = -sin( rad );
     m_r.m[1] = sin( rad );
     m_r.m[5] = cos( rad );
+    return m_r * m;
+}
+
+dmath::mat4 dmath::rotate_axis( const mat4 &m, double deg, const vec3 &axis ) {
+    // https://en.wikipedia.org/wiki/Rotation_matrix#Rotation_matrix_from_axis_and_angle
+    double cos_deg = cos(deg);
+    double sin_deg = sin(deg);
+    double om_cos_deg = 1.0 - cos_deg;
+
+    dmath::mat4 m_r( cos_deg + axis.v[0] * axis.v[0] * om_cos_deg,
+                     axis.v[0] * axis.v[1] * om_cos_deg + axis.v[2] * sin_deg,
+                     axis.v[0] * axis.v[2] * om_cos_deg - axis.v[1] * sin_deg, 0.0,
+                     axis.v[0] * axis.v[1] * om_cos_deg - axis.v[2] * sin_deg,
+                     cos_deg + axis.v[1] * axis.v[1] * om_cos_deg,
+                     axis.v[1] * axis.v[2] * om_cos_deg + axis.v[0] * sin_deg, 0.0,
+                     axis.v[0] * axis.v[2] * om_cos_deg + axis.v[1] * sin_deg,
+                     axis.v[1] * axis.v[2] * om_cos_deg - axis.v[0] * sin_deg,
+                     cos_deg + axis.v[2] * axis.v[2] * om_cos_deg, 0.0,
+                     0.0, 0.0, 0.0, 1.0);
     return m_r * m;
 }
 

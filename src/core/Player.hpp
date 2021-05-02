@@ -6,6 +6,8 @@
 #define PLAYER_BEHAVIOUR_EDITOR 1
 #define PLAYER_BEHAVIOUR_SIMULATION 2
 
+#define ORBITAL_CAM_MODE_SURFACE 0
+#define ORBITAL_CAM_MODE_ORBIT 1
 
 class Vessel;
 class Camera;
@@ -21,10 +23,11 @@ class Player{
         AssetManager* m_asset_manager;
         const Input* m_input;
         const BaseApp* m_app;
-        short m_behaviour;
+        short m_behaviour, m_orbital_cam_mode;
 
         void setCamMode();
         void switchVessel();
+        void setCamUpVector();
     public:
         Player(Camera* camera, AssetManager* asset_manager, const Input* input);
         ~Player();

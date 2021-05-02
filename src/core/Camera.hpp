@@ -21,7 +21,8 @@ class Camera{
         int m_cam_input_mode, m_prev_cam_input_mode;
 
         // oribital camera params
-        double m_polar_angle, m_azimuthal_angle, m_radial_distance;
+        double m_polar_angle, m_azimuthal_angle, m_radial_distance, m_inclination;
+        dmath::vec3 m_inclination_axis;
 
         const WindowHandler* m_window_handler;
         const Input* m_input;
@@ -32,24 +33,25 @@ class Camera{
         Camera(const dmath::vec3& pos, float fovy, float ar, float near, float far, const Input* input_ptr);
         ~Camera(); 
 
-        void setCameraOrientation(const dmath::versor* orientation);
-        void setCameraOrientationFromAxisRad(float cam_heading, const dmath::vec3* axis);
+        void setCameraOrientation(const dmath::versor& orientation);
+        void setCameraOrientationFromAxisRad(float cam_heading, const dmath::vec3& axis);
         void setSpeed(float speed);
         void setAngularSpeed(float speed);
         void setWindowHandler(const WindowHandler* window_handler);
         void createProjMat(float near, float far, float fovy, float ar);
         void onFramebufferSizeUpdate(int width, int heigth);
-        void setForwardVector(const dmath::vec4 vec);
-        void setRightVector(const dmath::vec4 vec);
-        void setUpVector(const dmath::vec4 vec);
+        void setForwardVector(const dmath::vec4& vec);
+        void setRightVector(const dmath::vec4& vec);
+        void setUpVector(const dmath::vec4& vec);
         void setOrbitalCamDistance(double distance);
         void incrementOrbitalCamDistance(double increment);
         void restoreCamOrientation();
+        void setOrbitalInclination(double inclination, const dmath::vec3& axis);
 
         void rotateCameraYaw(double degrees);
         void rotateCameraRoll(double degrees);
         void rotateCameraPitch(double degrees);
-        void moveCamera(const dmath::vec3* motion);
+        void moveCamera(const dmath::vec3& motion);
         void setCameraPosition(const dmath::vec3& translation);
 
         bool projChanged() const;
