@@ -358,7 +358,7 @@ void Camera::freeCameraUpdate(){
 
 void Camera::orbitalCameraUpdate(){
     double x, y, z;
-    dmath::mat4 R, T;
+    dmath::mat4 R, T, R_o;
     dmath::vec4 up(0.0, 1.0, 0.0, 0.0);
 
     update();
@@ -399,8 +399,8 @@ void Camera::orbitalCameraUpdate(){
         }
     }
 
-    dmath::mat4 R_o = dmath::identity_mat4();
-    R_o = dmath::rotate_axis(R_o, -m_inclination, m_inclination_axis);
+    R_o = dmath::identity_mat4();
+    R_o = dmath::rotate_axis(R_o, m_inclination, m_inclination_axis);
 
     x = std::sin(m_polar_angle) * std::cos(m_azimuthal_angle);
     z = std::sin(m_polar_angle) * std::sin(m_azimuthal_angle);

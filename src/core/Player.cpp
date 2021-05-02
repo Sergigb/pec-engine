@@ -83,7 +83,7 @@ void Player::setCamUpVector(){
         dmath::vec3 planet_center(0.0, 0.0, 0.0);
 
         planet_normal = dmath::normalise(planet_center - com_d);
-        double theta = M_PI + acos(dmath::dot(planet_normal, up) / (dmath::length(planet_normal) * 1.0));
+        double theta = acos(dmath::dot(planet_normal, up) / (dmath::length(planet_normal) * 1.0));
         axis = dmath::normalise(dmath::cross(planet_normal, up)); // right vector
 
         m_camera->setOrbitalInclination(theta, axis);
