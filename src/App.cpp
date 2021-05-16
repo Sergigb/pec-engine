@@ -239,7 +239,7 @@ void App::editorToSimulation(){
         BasePart* root = vsl->getRoot();
         
         // translate to lat/long 0.0-0.0, this function doesn't work well when lat or long != 0, for some reason
-        btVector3 to = reference_ellipse_to_xyz(btRadians(0.0), btRadians(0.0), 6371030.0);
+        btVector3 to = reference_ellipse_to_xyz(btRadians(0.0), btRadians(0.0), 6371025.0 - vsl->getLowerBound());
         btVector3 disp;
         btTransform transform;
 

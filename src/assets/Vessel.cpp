@@ -485,3 +485,28 @@ void Vessel::activateNextStage(){
     m_stages.pop_back();
 }
 
+
+double Vessel::getLowerBound() const{
+    double lower_bound = 9999999999999.9, local_y = 0.0;
+
+    if(m_vessel_root->m_body){
+        btVector3& origin = m_vessel_root->m_body->getWorldTransform().getOrigin();
+        local_y = origin.getY();
+    }
+
+    for(uint i=0; i < m_node_list.size(); i++){
+        const btRigidBody* body = m_node_list.at(i)->m_body.get();
+
+        if(body){
+            btVector3 aabb_min, aabb_max;
+            body->getAabb(aabb_min, aabb_max);
+
+            if(aabb_min.getY() < lower_bound)
+                lower_bound = aabb_min.getY();
+            if(aabb_max.getY() < lower_bound)
+                lower_bound = aabb_max.getY();
+        }
+    }
+    return lower_bound - local_y;
+}
+

@@ -79,6 +79,7 @@ class Vessel{
         double getTotalMass() const;
         const btVector3& getCoM() const;
         void printStaging() const;
+        double getLowerBound() const;
 
         void update();
         void updateCoM();
