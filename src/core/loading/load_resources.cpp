@@ -130,7 +130,6 @@ int create_resource(std::unordered_map<std::uint32_t, std::unique_ptr<Resource>>
 void load_resources(std::unordered_map<std::uint32_t, std::unique_ptr<Resource>>& resource_map,
                     const char* path){
     current_file = path;
-    UNUSED(resource_map);
     tinyxml2::XMLDocument doc;
     tinyxml2::XMLElement* root;
     doc.LoadFile(path);
@@ -172,23 +171,4 @@ void load_resources(std::unordered_map<std::uint32_t, std::unique_ptr<Resource>>
     }   
     
 }
-
-    /*std::pair<ResourceIterator, bool> res;
-    std::string resource_name;
-    std::unique_ptr<Resource> resource;
-    std::hash<std::string> str_hash; // size_t = 64bit?? change???
-
-    resource_name = "liquid_oxygen";
-    resource.reset(new Resource(resource_name, std::string(u8"Liquid Oxygen (LOx/O₂)"), RESOURCE_TYPE_OXIDIZER, RESOURCE_STATE_LIQUID, 1141.0, 60.0));
-    resource->setId(str_hash(resource_name));
-    res = m_resources.insert({str_hash(resource_name), std::move(resource)});
-
-    if(!res.second){
-        log("Failed to insert resource with id ", str_hash(resource_name), " (collided with ", res.first->first, ")");
-        std::cerr << "Failed to insert resource with id " << str_hash(resource_name) << " (collided with " << res.first->first << ")" << std::endl;
-    }*/
-
-
-
-
 
