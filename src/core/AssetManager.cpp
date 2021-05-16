@@ -4,6 +4,7 @@
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/BulletCollision/Gimpact/btGImpactCollisionAlgorithm.h>
 
+#include "loading/load_resources.hpp"
 #include "AssetManager.hpp"
 #include "RenderContext.hpp"
 #include "Frustum.hpp"
@@ -31,7 +32,7 @@ AssetManager::AssetManager(BaseApp* app) : m_asset_manager_interface(AssetManage
     m_camera = app->m_camera.get();
     m_app = app;
 
-    initResources();
+    load_resources(m_resources);
     objectsInit();
     load_parts(*this);
     initPlanets();
@@ -50,7 +51,7 @@ void AssetManager::objectsInit(){
        from the disk, this should only be done once. */
 
     //btQuaternion quat;
-   /* std::unique_ptr<Model> terrain_model(new Model("../data/terrain.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, m_frustum, m_render_context, math::vec3(0.75, 0.75, 0.75)));
+    /*std::unique_ptr<Model> terrain_model(new Model("../data/terrain.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, m_frustum, m_render_context, math::vec3(0.75, 0.75, 0.75)));
     std::unique_ptr<iv_array> array(new iv_array);
     std::unique_ptr<btGImpactMeshShape> shape;
 
@@ -67,69 +68,6 @@ void AssetManager::objectsInit(){
     m_kinematics.emplace_back(ground);
     m_models.push_back(std::move(terrain_model));
     m_collision_shapes.push_back(std::move(shape));*/
-
-    /*std::unique_ptr<Model> terrain_model(new Model("../data/sphere.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, m_frustum, m_render_context, math::vec3(0.75, 0.75, 0.75)));
-    std::unique_ptr<btCollisionShape> sphere_shape(new btSphereShape(50.0));
-
-    quat.setEuler(0, 0, 0);
-    std::shared_ptr<Kinematic> ground = std::make_shared<Kinematic>(terrain_model.get(), m_physics, 
-                                                                    sphere_shape.get(), btScalar(0.0), 1);
-    ground->setCollisionGroup(CG_DEFAULT | CG_KINEMATIC);
-    ground->setCollisionFilters(~CG_RAY_EDITOR_RADIAL & ~CG_RAY_EDITOR_SELECT);
-    ground->addBody(btVector3(0.0, 0.0, 0.0), btVector3(0.0, 0.0, 0.0), quat);
-    ground->setMeshScale(50.f);
-
-    m_kinematics.emplace_back(ground);
-    m_models.push_back(std::move(terrain_model));
-    m_collision_shapes.push_back(std::move(sphere_shape));*/
-}
-
-
-void AssetManager::initResources(){
-    std::pair<ResourceIterator, bool> res;
-    std::string resource_name;
-    std::unique_ptr<Resource> resource;
-    std::hash<std::string> str_hash; // size_t = 64bit?? change???
-
-    resource_name = "liquid_oxygen";
-    resource.reset(new Resource(resource_name, std::string(u8"Liquid Oxygen (LOx/O₂)"), RESOURCE_TYPE_OXIDIZER, RESOURCE_STATE_LIQUID, 1141.0, 60.0));
-    resource->setId(str_hash(resource_name));
-    res = m_resources.insert({str_hash(resource_name), std::move(resource)});
-
-    if(!res.second){
-        log("Failed to insert resource with id ", str_hash(resource_name), " (collided with ", res.first->first, ")");
-        std::cerr << "Failed to insert resource with id " << str_hash(resource_name) << " (collided with " << res.first->first << ")" << std::endl;
-    }
-
-    resource_name = "liquid_hydrogen";
-    resource.reset(new Resource(resource_name, std::string(u8"Liquid Hydrogen (LH₂)"), RESOURCE_TYPE_FUEL_LIQUID, RESOURCE_STATE_LIQUID, 70.99, 30.0));
-    resource->setId(str_hash(resource_name));
-    res = m_resources.insert({str_hash(resource_name), std::move(resource)});
-
-    if(!res.second){
-        log("Failed to insert resource with id ", str_hash(resource_name), " (collided with ", res.first->first, ")");
-        std::cerr << "Failed to insert resource with id " << str_hash(resource_name) << " (collided with " << res.first->first << ")" << std::endl;
-    }
-
-    resource_name = "rp1";
-    resource.reset(new Resource(resource_name, std::string(u8"Rocket Propellant-1 (RP-1)"), RESOURCE_TYPE_FUEL_LIQUID, RESOURCE_STATE_LIQUID, 70.99, 30.0));
-    resource->setId(str_hash(resource_name));
-    res = m_resources.insert({str_hash(resource_name), std::move(resource)});
-
-    if(!res.second){
-        log("Failed to insert resource with id ", str_hash(resource_name), " (collided with ", res.first->first, ")");
-        std::cerr << "Failed to insert resource with id " << str_hash(resource_name) << " (collided with " << res.first->first << ")" << std::endl;
-    }
-
-    resource_name = "htpb";
-    resource.reset(new Resource(resource_name, std::string(u8"Hydroxyl-terminated polybutadiene (HTPB)"), RESOURCE_TYPE_FUEL_SOLID, RESOURCE_STATE_SOLID, 913.0, 298.15));
-    resource->setId(str_hash(resource_name));
-    res = m_resources.insert({str_hash(resource_name), std::move(resource)});
-
-    if(!res.second){
-        log("Failed to insert resource with id ", str_hash(resource_name), " (collided with ", res.first->first, ")");
-        std::cerr << "Failed to insert resource with id " << str_hash(resource_name) << " (collided with " << res.first->first << ")" << std::endl;
-    }
 }
 
 
@@ -201,7 +139,6 @@ void AssetManager::processCommandBuffers(bool physics_pause){
 
 void AssetManager::clearSceneEditor(){
     SubTreeIterator it;
-    VesselIterator it2;
 
     for(it=m_editor_subtrees.begin(); it != m_editor_subtrees.end(); it++){
         m_delete_subtree_buffer.emplace_back(std::static_pointer_cast<BasePart>(it->second->getSharedPtr()));

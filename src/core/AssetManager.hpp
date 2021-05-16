@@ -33,7 +33,6 @@ class BaseApp;
 class AssetManager{
     private:
         void objectsInit();
-        void initResources();
         void initPlanets();
 
         RenderContext* m_render_context;
@@ -82,7 +81,6 @@ class AssetManager{
         std::vector<std::unique_ptr<Planet>> m_planets; // too simple, it will be more complex in the future when I have a proper planetary system
         std::unordered_map<std::uint32_t, std::shared_ptr<Vessel>> m_active_vessels;
 
-        //AssetManager(RenderContext* render_context, const Frustum* frustum, Physics* physics, render_buffers* buff_manager, Camera* camera);
         AssetManager(BaseApp* app);
         ~AssetManager();
 

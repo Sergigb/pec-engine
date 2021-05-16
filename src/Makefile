@@ -1,9 +1,9 @@
 CXX := g++
 CC := gcc
-INC := -I../include/ -I../include/bullet/ -I/usr/include/freetype2 -I../include/imgui/
+INC := -I../include/ -I../include/bullet/ -I/usr/include/freetype2 -I../include/imgui/ -I../include/tinyxml2
 CXXFLAGS := $(INC) -Wall -Wextra -Werror -pedantic -ubsan -MMD
 LDFLAGS := -L../lib/
-LDLIBS :=  -lGL -lGLEW -lglfw -lz -fopenmp -lfreetype -lassimp -lIrrXML -lBulletDynamics -lBulletCollision -lLinearMath -lpng
+LDLIBS :=  -lGL -lGLEW -lglfw -lz -fopenmp -lfreetype -lassimp -lIrrXML -lBulletDynamics -lBulletCollision -lLinearMath -lpng -ltinyxml2
 OBJPATH := ../bin
 EXECPATH := ../bin
 

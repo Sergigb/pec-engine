@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!--#define RESOURCE_TYPE_LIQUID 1
+    #define RESOURCE_TYPE_SOLID 2
+    #define RESOURCE_TYPE_FUEL_LIQUID 4
+    #define RESOURCE_TYPE_FUEL_SOLID 8
+    #define RESOURCE_TYPE_FUEL_GAS 16
+    #define RESOURCE_TYPE_OXIDIZER 32
+
+
+    #define RESOURCE_STATE_SOLID 1
+    #define RESOURCE_STATE_LIQUID 2
+    #define RESOURCE_STATE_GAS 3-->
+
+<resources>
+    <resource>
+        <name>liquid_oxygen</name>
+        <fancy_name>Liquid Oxygen (LOx/O₂)</fancy_name>
+        <type>32</type>
+        <state>2</state>
+        <density>1141.0</density>
+        <temperature>60.0</temperature>
+    </resource>
+
+    <resource>
+        <name>liquid_hydrogen</name>
+        <fancy_name>Liquid Hydrogen (LH₂)</fancy_name>
+        <type>4</type>
+        <state>2</state>
+        <density>70.99</density>
+        <temperature>30.0</temperature>
+    </resource>
+
+    <resource>
+        <name>rp1</name>
+        <fancy_name>Rocket Propellant-1 (RP-1)</fancy_name>
+        <type>4</type>
+        <state>2</state>
+        <density>810.0</density>
+        <temperature>21.0</temperature>
+    </resource>
+
+    <resource>
+        <name>htpb</name>
+        <fancy_name>Hydroxyl-terminated polybutadiene (HTPB)</fancy_name>
+        <type>8</type>
+        <state>1</state>
+        <density>913.0</density>
+        <temperature>298.15</temperature> <!-- not sure where this number came from... -->
+    </resource>
+</resources>
