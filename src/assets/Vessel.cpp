@@ -427,38 +427,33 @@ const btVector3& Vessel::getCoM() const{
 
 
 void Vessel::updateStaging(){
+    std::vector<stage_action> s;
     m_stages.clear();
-    updateStagingRec(m_vessel_root.get(), 1);
+    m_stages.emplace_back(s);
+
+    updateStagingRec(m_vessel_root.get());
     if(m_stages.back().size() == 0){
         m_stages.pop_back();
     }
 }
 
 
-void Vessel::updateStagingRec(BasePart* part, int stage){
-    // stage starts at 1
+void Vessel::updateStagingRec(BasePart* part){
     long properties = part->getProperties();
     
-    if((int)m_stages.size() < stage){
+    // maybe we could replace these ifs with a method on part that asks for the default action to take (only one?)
+    if(properties & PART_SEPARATES){
+        m_stages.back().emplace_back(part, PART_ACTION_SEPARATE);
         std::vector<stage_action> s;
         m_stages.emplace_back(s);
     }
-
-    // maybe we could replace these ifs with a method on part that asks for the default action to take (only one?)
-    if(properties & PART_SEPARATES){
-        m_stages.at(stage - 1).emplace_back(part, PART_ACTION_SEPARATE);
-    }
     if(properties & PART_HAS_ENGINE){
-        m_stages.at(stage - 1).emplace_back(part, PART_ACTION_ENGINE_START);
-    }
-
-    if(properties & PART_SEPARATES){
-        stage++;
+        m_stages.back().emplace_back(part, PART_ACTION_ENGINE_START);
     }
 
     std::vector<std::shared_ptr<BasePart>>* childs = part->getChilds();
     for(uint i=0; i < childs->size(); i++){
-        updateStagingRec(childs->at(i).get(), stage);
+        updateStagingRec(childs->at(i).get());
     }
 }
 

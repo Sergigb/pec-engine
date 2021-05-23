@@ -42,7 +42,7 @@ class Vessel{
         void updateNodes(); // updates node list and map
         void updateMass();
         void updateStaging();
-        void updateStagingRec(BasePart* part, int stage);
+        void updateStagingRec(BasePart* part);
         void activateNextStage();
     public:
         Vessel();
