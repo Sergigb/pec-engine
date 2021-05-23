@@ -115,8 +115,10 @@ void load_parts(AssetManager& asset_manager){
     p80->setCollisionGroup(CG_DEFAULT | CG_PART);
     p80->setCollisionFilters(~CG_RAY_EDITOR_RADIAL);
     p80->addResource({asset_manager.m_resources.at(str_hash("htpb")).get(), 88385.0f, 88385.0f});
-    p80->setProperties(PART_HAS_ENGINE);
+    p80->setProperties(PART_HAS_ENGINE | PART_SEPARATES);
     p80->setEngineStats(2271000.0, 828.35, 6.5 * ONE_DEG_IN_RAD);
+    p80->setSeparationForce(100000.0);
+
 
     res = asset_manager.m_master_parts.insert({666, std::move(p80)});
 
@@ -142,9 +144,10 @@ void load_parts(AssetManager& asset_manager){
     z23->setCollisionGroup(CG_DEFAULT | CG_PART);
     z23->setCollisionFilters(~CG_RAY_EDITOR_RADIAL);
     z23->addResource({asset_manager.m_resources.at(str_hash("htpb")).get(), 23900.0f, 23900.0f});
-    z23->setProperties(PART_HAS_ENGINE);
+    z23->setProperties(PART_HAS_ENGINE | PART_SEPARATES);
     z23->setFairingModel(z23_f_model.get());
     z23->setEngineStats(871000.0, 331.94, 6.5 * ONE_DEG_IN_RAD);
+    z23->setSeparationForce(50000.0);
 
     res = asset_manager.m_master_parts.insert({777, std::move(z23)});
 
@@ -170,9 +173,10 @@ void load_parts(AssetManager& asset_manager){
     z9->setCollisionGroup(CG_DEFAULT | CG_PART);
     z9->setCollisionFilters(~CG_RAY_EDITOR_RADIAL);
     z9->addResource({asset_manager.m_resources.at(str_hash("htpb")).get(), 10115.0f, 10115.0f});
-    z9->setProperties(PART_HAS_ENGINE);
+    z9->setProperties(PART_HAS_ENGINE | PART_SEPARATES);
     z9->setFairingModel(z9_f_model.get());
     z9->setEngineStats(260000.0, 91.95, 6.5 * ONE_DEG_IN_RAD);
+    z9->setSeparationForce(10000.0);
 
     res = asset_manager.m_master_parts.insert({888, std::move(z9)});
 

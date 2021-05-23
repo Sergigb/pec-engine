@@ -37,6 +37,8 @@ void VegaSolidEngine::init(){
     m_average_thrust = 0.0;
     m_mass_flow_rate = 0.0;
     m_max_deflection_angle = 0.0;
+    m_separate = false;
+    m_separation_force = 100000.0;
 }
 
 
@@ -47,6 +49,8 @@ VegaSolidEngine::VegaSolidEngine(const VegaSolidEngine& engine) : BasePart(engin
     m_average_thrust = engine.m_average_thrust;
     m_mass_flow_rate = engine.m_mass_flow_rate;
     m_max_deflection_angle = engine.m_max_deflection_angle;
+    m_separate = false;
+    m_separation_force = engine.m_separation_force;
 }
 
 
@@ -160,6 +164,20 @@ void VegaSolidEngine::update(){
         force = basis * gimbal * force;
         m_asset_manager->applyForce(this, force, basis * btVector3(0.0, -5.0, 0.0));
     }
+
+    if(m_separate){
+        btTransform transform;
+        m_body->getMotionState()->getWorldTransform(transform);
+        const btMatrix3x3& part_rotation = transform.getBasis();
+        btVector3 force = part_rotation * btVector3(0.0, m_separation_force, 0.0);  // todo: find the real force
+
+        m_separate = false;
+
+        m_asset_manager->applyForce(m_parent, force, btVector3(0.0, 0.0, 0.0));
+        m_asset_manager->applyForce(this, -1 * force, btVector3(0.0, 0.0, 0.0));
+
+        decoupleSelf();
+    }
 }
 
 VegaSolidEngine* VegaSolidEngine::clone() const{
@@ -168,12 +186,16 @@ VegaSolidEngine* VegaSolidEngine::clone() const{
 
 
 void VegaSolidEngine::action(int action){
-    if(action == PART_ACTION_ENGINE_START){
-        m_engine_status = ENGINE_ON;
-    }
-    else{
-        std::cerr << "VegaSolidEngine::action: got an invalid action value: " << action << std::endl;
-        log("VegaSolidEngine::action: got an invalid action value: ", action);
+    switch(action){
+        case PART_ACTION_ENGINE_START:
+            m_engine_status = ENGINE_ON;
+            break;
+        case PART_ACTION_SEPARATE:
+            m_separate = true;
+            break;
+        default:
+            std::cerr << "VegaSolidEngine::action: got an invalid action value: " << action << std::endl;
+            log("VegaSolidEngine::action: got an invalid action value: ", action);
     }
 }
 
@@ -241,5 +263,10 @@ void VegaSolidEngine::setEngineStats(double average_thrust, double mass_flow_rat
     m_average_thrust = average_thrust;
     m_mass_flow_rate = mass_flow_rate;
     m_max_deflection_angle = max_deflection_angle;
+}
+
+
+void VegaSolidEngine::setSeparationForce(double force){
+    m_separation_force = force;
 }
 

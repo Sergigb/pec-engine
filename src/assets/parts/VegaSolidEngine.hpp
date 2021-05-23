@@ -15,7 +15,8 @@ class VegaSolidEngine : public BasePart{
     private:
         short m_engine_status;
         std::uint32_t m_htpb_id;
-        double m_average_thrust, m_mass_flow_rate, m_max_deflection_angle;
+        double m_average_thrust, m_mass_flow_rate, m_max_deflection_angle, m_separation_force;
+        bool m_separate;
 
         Model* m_fairing_model;
 
@@ -36,6 +37,7 @@ class VegaSolidEngine : public BasePart{
 
         void setFairingModel(Model* fairing_model);
         void setEngineStats(double average_thrust, double mass_flow_rate, double max_deflection_angle);
+        void setSeparationForce(double force);
 };
 
 
