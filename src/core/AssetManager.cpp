@@ -354,7 +354,7 @@ void AssetManager::updateKinematics(){
 void AssetManager::initPlanets(){
     Planet::loadBases(m_frustum, m_render_context);
 
-    std::unique_ptr<Planet> earth = std::make_unique<Planet>(m_render_context);
+    std::unique_ptr<Planet> earth(new Planet(m_render_context));
     m_planets.emplace_back(std::move(earth));
 }
 
