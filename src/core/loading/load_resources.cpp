@@ -4,6 +4,7 @@
 #include <tinyxml2.h>
 
 #include "load_resources.hpp"
+#include "xml_utils.hpp"
 #include "../common.hpp"
 #include "../log.hpp"
 #include "../../assets/Resource.hpp"
@@ -14,84 +15,12 @@ typedef std::unordered_map<std::uint32_t, std::unique_ptr<Resource>>::iterator R
 const char* current_file; // not thread safe
 
 
-const tinyxml2::XMLElement* get_resource_element(const tinyxml2::XMLElement* resource, 
-                                                 const char* element_name){
-    const tinyxml2::XMLElement* element = resource->FirstChildElement(element_name);
-
-    if(!element){
-        std::cerr << "load_resources::create_resource: missing element \""<< element_name 
-                  << "\" for resource element found in line " << resource->GetLineNum() << " (" 
-                  << current_file << ")" << std::endl;
-        log("load_resources::create_resource: missing element ", element_name, " for resource"
-            " element found in line ", resource->GetLineNum(), " (", current_file, ")");
-        return nullptr;
-    }
-    return element;
-}
-
-
-int get_double(const tinyxml2::XMLElement* resource, const char* element_name, double &value){
-    const tinyxml2::XMLElement* element = get_resource_element(resource, element_name);
-
-    if(element){
-        if(element->QueryDoubleText(&value)){
-            std::cerr << "load_resources::get_double: invalid float value for element with"
-                          " name \"" << element_name << "\" in resource found in line " <<
-                         resource->GetLineNum() << " (" << current_file << ")" << std::endl;
-            log("load_resources::get_double: invalid float value for element with name \"",
-                 element_name, "\" in resource found in line ", resource->GetLineNum(), " (",
-                 current_file, ")");
-            return EXIT_FAILURE;
-        }
-        return EXIT_SUCCESS;
-    }
-    else{
-        return EXIT_FAILURE;
-    }
-}
-
-
-int get_int(const tinyxml2::XMLElement* resource, const char* element_name, int &value){
-    const tinyxml2::XMLElement* element = get_resource_element(resource, element_name);
-
-    if(element){
-        if(element->QueryIntText(&value)){
-            std::cerr << "load_resources::get_int: invalid integer value for element with"
-                          " name \"" << element_name << "\" in resource found in line " <<
-                         resource->GetLineNum() << " (" << current_file << ")" << std::endl;
-            log("load_resources::get_int: invalid integer value for element with name \"",
-                 element_name, "\" in resource found in line ", resource->GetLineNum(), " (",
-                 current_file, ")");
-            return EXIT_FAILURE;
-        }
-        return EXIT_SUCCESS;
-    }
-    else{
-        return EXIT_FAILURE;
-    }
-}
-
-
-int get_string(const tinyxml2::XMLElement* resource, const char* element_name, 
-               const char** string){
-    const tinyxml2::XMLElement* element = get_resource_element(resource, element_name);
-
-    if(element){
-        *string = element->GetText();
-        return EXIT_SUCCESS;
-    }
-    else{
-        return EXIT_FAILURE;
-    }
-}
-
-
 int create_resource(std::unordered_map<std::uint32_t, std::unique_ptr<Resource>>& resource_map,
                      const tinyxml2::XMLElement* resource){
     std::pair<ResourceIterator, bool> res;
     std::unique_ptr<Resource> resource_uptr;
     std::hash<std::string> str_hash; // size_t = 64bit?? change???
-    
+
     const char* name,* fancy_name;
     int resource_type, resource_state;
     double density, temperature;
@@ -109,7 +38,6 @@ int create_resource(std::unordered_map<std::uint32_t, std::unique_ptr<Resource>>
     if(get_double(resource, "temperature", temperature) == EXIT_FAILURE)
         return EXIT_FAILURE;
 
-
     resource_uptr.reset(new Resource(name, std::string(fancy_name), resource_type,
                                      resource_state, density, temperature));
     resource_uptr->setId(str_hash(name));
@@ -120,7 +48,7 @@ int create_resource(std::unordered_map<std::uint32_t, std::unique_ptr<Resource>>
             (std::uint32_t)str_hash(name), " (collided with another resource with the same name)");
         std::cerr << "load_resources::create_resource: failed to insert resource with id " 
                   << (std::uint32_t)str_hash(name) << " (collided with another resource with the "
-                  "same name" << std::endl;
+                  "same name)" << std::endl;
     }
 
     return EXIT_SUCCESS;
@@ -168,7 +96,6 @@ void load_resources(std::unordered_map<std::uint32_t, std::unique_ptr<Resource>>
                 resource->GetLineNum(), " for file ", path);
         }
         resource = resource->NextSiblingElement("resource");
-    }   
-    
+    }
 }
 
