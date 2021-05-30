@@ -31,22 +31,30 @@ MAIN_APP_OBJS := $(foreach source, $(MAIN_APP_SCRS), $(OBJPATH)/$(source:.cpp=.o
 PLANETARIUM_APP_SRCS := main_planetarium.cpp Planetarium.cpp
 PLANETARIUM_APP_OBJS := $(foreach source, $(PLANETARIUM_APP_SRCS), $(OBJPATH)/$(source:.cpp=.o))
 
+# kepler orbits test thing
+KEPLER_APP_SRCS := kepler.cpp
+KEPLER_APP_OBJS := $(foreach source, $(KEPLER_APP_SRCS), $(OBJPATH)/$(source:.cpp=.o))
+
 #imgui
 IMGUISRCS := $(wildcard ../thirdparty/imgui/*.cpp)
 IMGUIOBJS := $(foreach source, $(IMGUISRCS:../thirdparty/imgui/%=%), $(OBJPATH)/$(source:.cpp=.o))
 
 MAINOBJS := $(MAIN_APP_OBJS) $(BASEOBJS) $(IMGUIOBJS)
 PLANETARIUMOBJS := $(PLANETARIUM_APP_OBJS) $(BASEOBJS) $(IMGUIOBJS)
+KEPLEROBJS := $(KEPLER_APP_OBJS) $(BASEOBJS) $(IMGUIOBJS)
 
 .PHONY: clean clean-main clean-planetarium clean-imgui clean-all
 
-all: main planetarium
+all: main planetarium kepler-test
 
 main: $(MAINOBJS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(MAINOBJS) -o $(EXECPATH)/main $(LDLIBS)
 
 planetarium: $(PLANETARIUMOBJS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(PLANETARIUMOBJS) -o $(EXECPATH)/planetarium $(LDLIBS)
+
+kepler-test: $(KEPLEROBJS)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(KEPLEROBJS) -o $(EXECPATH)/kepler-test $(LDLIBS)
 
 $(OBJPATH)/%.o: %.cpp
 	@mkdir -p $(@D)
