@@ -662,7 +662,7 @@ bool RenderContext::imGuiWantCaptureKeyboard() const{
 }
 
 
-void RenderContext::contextUpdatePlanetarium(){
+void RenderContext::contextUpdatePlanetRenderer(){
     if(m_update_fb){
         m_update_fb = false;
         m_update_projection = true;

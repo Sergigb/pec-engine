@@ -150,7 +150,7 @@ class RenderContext{
         bool imGuiWantCaptureKeyboard() const;
         GLuint getUniformLocation(int shader, const char* location) const;
 
-        void contextUpdatePlanetarium();
+        void contextUpdatePlanetRenderer();
 };
 
 

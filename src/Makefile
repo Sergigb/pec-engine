@@ -27,9 +27,9 @@ DEPENDS = ${BASEOBJS:.o=.d}
 MAIN_APP_SCRS := main.cpp App.cpp GameEditor.cpp
 MAIN_APP_OBJS := $(foreach source, $(MAIN_APP_SCRS), $(OBJPATH)/$(source:.cpp=.o))
 
-#planetarium objects
-PLANETARIUM_APP_SRCS := main_planetarium.cpp Planetarium.cpp
-PLANETARIUM_APP_OBJS := $(foreach source, $(PLANETARIUM_APP_SRCS), $(OBJPATH)/$(source:.cpp=.o))
+#planet renderer objects
+PLANET_RENDERER_APP_SRCS := main_planet_renderer.cpp PlanetRenderer.cpp
+PLANET_RENDERER_APP_OBJS := $(foreach source, $(PLANET_RENDERER_APP_SRCS), $(OBJPATH)/$(source:.cpp=.o))
 
 # kepler orbits test thing
 KEPLER_APP_SRCS := kepler.cpp
@@ -40,18 +40,18 @@ IMGUISRCS := $(wildcard ../thirdparty/imgui/*.cpp)
 IMGUIOBJS := $(foreach source, $(IMGUISRCS:../thirdparty/imgui/%=%), $(OBJPATH)/$(source:.cpp=.o))
 
 MAINOBJS := $(MAIN_APP_OBJS) $(BASEOBJS) $(IMGUIOBJS)
-PLANETARIUMOBJS := $(PLANETARIUM_APP_OBJS) $(BASEOBJS) $(IMGUIOBJS)
+PLENET_RENDERER_OBJS := $(PLANET_RENDERER_APP_OBJS) $(BASEOBJS) $(IMGUIOBJS)
 KEPLEROBJS := $(KEPLER_APP_OBJS) $(BASEOBJS) $(IMGUIOBJS)
 
-.PHONY: clean clean-main clean-planetarium clean-imgui clean-all
+.PHONY: clean clean-main clean-planet-renderer clean-imgui clean-all
 
-all: main planetarium kepler-test
+all: main planet-renderer kepler-test
 
 main: $(MAINOBJS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(MAINOBJS) -o $(EXECPATH)/main $(LDLIBS)
 
-planetarium: $(PLANETARIUMOBJS)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(PLANETARIUMOBJS) -o $(EXECPATH)/planetarium $(LDLIBS)
+planet-renderer: $(PLENET_RENDERER_OBJS)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(PLENET_RENDERER_OBJS) -o $(EXECPATH)/planet-renderer $(LDLIBS)
 
 kepler-test: $(KEPLEROBJS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(KEPLEROBJS) -o $(EXECPATH)/kepler-test $(LDLIBS)
@@ -65,11 +65,11 @@ $(OBJPATH)/%.o: ../thirdparty/imgui/%.cpp
 	$(CXX) $(INC) -O3 -Wall -Wformat -DIMGUI_IMPL_OPENGL_LOADER_GLEW -c $< -o $@
 
 clean: 
-	rm -f $(BASEOBJS) $(MAIN_APP_OBJS) $(PLANETARIUM_APP_OBJS) $(EXECPATH)/main $(EXECPATH)/planetarium
+	rm -f $(BASEOBJS) $(MAIN_APP_OBJS) $(PLANET_RENDERER_APP_OBJS) $(EXECPATH)/main $(EXECPATH)/planet-renderer
 clean-main:
 	rm -f $(MAIN_APP_OBJS) $(EXECPATH)/main
-clean-planetarium:
-	rm -f $(PLANETARIUM_APP_OBJS) $(EXECPATH)/planetarium
+clean-planet-renderer:
+	rm -f $(PLANET_RENDERER_APP_OBJS) $(EXECPATH)/planet-renderer
 clean-imgui:
 	rm -f $(IMGUIOBJS)
 clean-all:
