@@ -4,7 +4,9 @@
 
 #include "load_star_system.hpp"
 #include "xml_utils.hpp"
-#include  "../log.hpp"
+#include "../log.hpp"
+#include "../Physics.hpp"
+#include "../maths_funcs.hpp"
 
 
 void load_star(const tinyxml2::XMLElement* star_element, star& system_star){
@@ -43,11 +45,13 @@ int load_planets(const tinyxml2::XMLElement* planets_element, planet_map& planet
         if(get_double(planet_element, "radius", current_planet.radius) == EXIT_FAILURE)
             current_planet.radius = 0.0;
 
+        current_planet.std_grav_parameter = current_planet.mass * GRAVITATIONAL_CONSTANT;
+
         param_element = get_element(planet_element, "semi_major_axis");
             if(!param_element)
                 return EXIT_FAILURE;
-        if(get_double(param_element, "value", current_planet.semi_major_axis) == EXIT_FAILURE)
-            current_planet.semi_major_axis = 0.0;
+        if(get_double(param_element, "value", current_planet.semi_major_axis_0) == EXIT_FAILURE)
+            current_planet.semi_major_axis_0 = 0.0;
         if(get_double(param_element, "derivative", 
                       current_planet.semi_major_axis_d) == EXIT_FAILURE)
             current_planet.semi_major_axis_d = 0.0;
@@ -55,24 +59,24 @@ int load_planets(const tinyxml2::XMLElement* planets_element, planet_map& planet
         param_element = get_element(planet_element, "eccentricity");
             if(!param_element)
                 return EXIT_FAILURE;
-        if(get_double(param_element, "value", current_planet.eccentricity) == EXIT_FAILURE)
-            current_planet.eccentricity = 0.0;
+        if(get_double(param_element, "value", current_planet.eccentricity_0) == EXIT_FAILURE)
+            current_planet.eccentricity_0 = 0.0;
         if(get_double(param_element, "derivative", current_planet.eccentricity_d) == EXIT_FAILURE)
             current_planet.eccentricity_d = 0.0;
 
         param_element = get_element(planet_element, "inclination");
             if(!param_element)
                 return EXIT_FAILURE;
-        if(get_double(param_element, "value", current_planet.inclination) == EXIT_FAILURE)
-            current_planet.inclination = 0.0;
+        if(get_double(param_element, "value", current_planet.inclination_0) == EXIT_FAILURE)
+            current_planet.inclination_0 = 0.0;
         if(get_double(param_element, "derivative", current_planet.inclination_d) == EXIT_FAILURE)
             current_planet.inclination_d = 0.0;
 
         param_element = get_element(planet_element, "mean_longitude");
             if(!param_element)
                 return EXIT_FAILURE;
-        if(get_double(param_element, "value", current_planet.mean_longitude) == EXIT_FAILURE)
-            current_planet.mean_longitude = 0.0;
+        if(get_double(param_element, "value", current_planet.mean_longitude_0) == EXIT_FAILURE)
+            current_planet.mean_longitude_0 = 0.0;
         if(get_double(param_element, "derivative",
                       current_planet.mean_longitude_d) == EXIT_FAILURE)
             current_planet.mean_longitude_d = 0.0;
@@ -80,8 +84,8 @@ int load_planets(const tinyxml2::XMLElement* planets_element, planet_map& planet
         param_element = get_element(planet_element, "longitude_perigee");
             if(!param_element)
                 return EXIT_FAILURE;
-        if(get_double(param_element, "value", current_planet.longitude_perigee) == EXIT_FAILURE)
-            current_planet.longitude_perigee = 0.0;
+        if(get_double(param_element, "value", current_planet.longitude_perigee_0) == EXIT_FAILURE)
+            current_planet.longitude_perigee_0 = 0.0;
         if(get_double(param_element, "derivative", 
                       current_planet.longitude_perigee_d) == EXIT_FAILURE)
             current_planet.longitude_perigee_d = 0.0;
@@ -89,13 +93,21 @@ int load_planets(const tinyxml2::XMLElement* planets_element, planet_map& planet
         param_element = get_element(planet_element, "long_asc_node");
             if(!param_element)
                 return EXIT_FAILURE;
-        if(get_double(param_element, "value", current_planet.long_asc_node) == EXIT_FAILURE)
-            current_planet.long_asc_node = 0.0;
+        if(get_double(param_element, "value", current_planet.long_asc_node_0) == EXIT_FAILURE)
+            current_planet.long_asc_node_0 = 0.0;
         if(get_double(param_element, "derivative", current_planet.long_asc_node_d) == EXIT_FAILURE)
             current_planet.long_asc_node_d = 0.0;
 
+        current_planet.inclination_0 *= ONE_DEG_IN_RAD;
+        current_planet.inclination_d *= ONE_DEG_IN_RAD;
+        current_planet.mean_longitude_0 *= ONE_DEG_IN_RAD;
+        current_planet.mean_longitude_d *= ONE_DEG_IN_RAD;
+        current_planet.longitude_perigee_0 *= ONE_DEG_IN_RAD;
+        current_planet.longitude_perigee_d *= ONE_DEG_IN_RAD;
+        current_planet.long_asc_node_0 *= ONE_DEG_IN_RAD;
+        current_planet.long_asc_node_d *= ONE_DEG_IN_RAD;
+
         current_planet.id = str_hash(name);
-        std::cout << name << std::endl;
         res = planets.insert({current_planet.id, current_planet});
 
         if(!res.second){
@@ -158,9 +170,9 @@ void load_star_system(struct planetary_system& system, const char* path){
         return;
 
     if(load_planets(planets_element, system.planets) == EXIT_FAILURE){
-        std::cerr << "load_star_system::load_star_system: failed to load star system from name "
+        std::cerr << "load_star_system::load_star_system: failed to load star system from"
                   << "file " << path << std::endl;
-        log("load_star_system::load_star_system: failed to load star system from name file ", path);
+        log("load_star_system::load_star_system: failed to load star system from file ", path);
     }
 }
 
