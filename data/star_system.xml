@@ -7,7 +7,7 @@
 
         <planets>
             <planet name="Mercury">
-                <mass>0.0</mass>
+                <mass>3.3011e23</mass>
                 <radius>0.0</radius>
                 <semi_major_axis>
                     <value>0.38709927</value>
@@ -36,7 +36,7 @@
             </planet>
 
             <planet name="Venus">
-                <mass>0.0</mass>
+                <mass>4.8675e24</mass>
                 <radius>0.0</radius>
                 <semi_major_axis>
                     <value>0.72333566</value>
@@ -65,7 +65,7 @@
             </planet>
 
             <planet name="Earth">
-                <mass>0.0</mass>
+                <mass>5.97237e24</mass>
                 <radius>0.0</radius>
                 <semi_major_axis>
                     <value>1.00000261</value>
@@ -94,7 +94,7 @@
             </planet>
 
             <planet name="Mars">
-                <mass>0.0</mass>
+                <mass>6.4171e23</mass>
                 <radius>0.0</radius>
                 <semi_major_axis>
                     <value>1.52371034</value>
@@ -123,7 +123,7 @@
             </planet>
 
             <planet name="Jupiter">
-                <mass>0.0</mass>
+                <mass>1.8982e27</mass>
                 <radius>0.0</radius>
                 <semi_major_axis>
                     <value>5.20288700</value>
@@ -152,7 +152,7 @@
             </planet>
 
             <planet name="Saturn">
-                <mass>0.0</mass>
+                <mass>5.6834e26</mass>
                 <radius>0.0</radius>
                 <semi_major_axis>
                     <value>9.53667594</value>
@@ -181,7 +181,7 @@
             </planet>
 
             <planet name="Uranus">
-                <mass>0.0</mass>
+                <mass>8.6810e25</mass>
                 <radius>0.0</radius>
                 <semi_major_axis>
                     <value>19.18916464</value>
@@ -210,7 +210,7 @@
             </planet>
 
             <planet name="Neptune">
-                <mass>0.0</mass>
+                <mass>1.02413e26</mass>
                 <radius>0.0</radius>
                 <semi_major_axis>
                     <value>30.06992276</value>
@@ -239,7 +239,7 @@
             </planet>
 
             <planet name="Pluto">
-                <mass>0.0</mass>
+                <mass>1.303e22</mass>
                 <radius>0.0</radius>
                 <semi_major_axis>
                     <value>39.48211675</value>
