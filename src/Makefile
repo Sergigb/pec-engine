@@ -31,9 +31,9 @@ MAIN_APP_OBJS := $(foreach source, $(MAIN_APP_SCRS), $(OBJPATH)/$(source:.cpp=.o
 PLANET_RENDERER_APP_SRCS := main_planet_renderer.cpp PlanetRenderer.cpp
 PLANET_RENDERER_APP_OBJS := $(foreach source, $(PLANET_RENDERER_APP_SRCS), $(OBJPATH)/$(source:.cpp=.o))
 
-# kepler orbits test thing
-KEPLER_APP_SRCS := kepler.cpp
-KEPLER_APP_OBJS := $(foreach source, $(KEPLER_APP_SRCS), $(OBJPATH)/$(source:.cpp=.o))
+# planetarium test thing
+PLANETARIUM_APP_SRCS := main_planetarium.cpp Planetarium.cpp
+PLANETARIUM_APP_OBJS := $(foreach source, $(PLANETARIUM_APP_SRCS), $(OBJPATH)/$(source:.cpp=.o))
 
 #imgui
 IMGUISRCS := $(wildcard ../thirdparty/imgui/*.cpp)
@@ -41,11 +41,11 @@ IMGUIOBJS := $(foreach source, $(IMGUISRCS:../thirdparty/imgui/%=%), $(OBJPATH)/
 
 MAINOBJS := $(MAIN_APP_OBJS) $(BASEOBJS) $(IMGUIOBJS)
 PLENET_RENDERER_OBJS := $(PLANET_RENDERER_APP_OBJS) $(BASEOBJS) $(IMGUIOBJS)
-KEPLEROBJS := $(KEPLER_APP_OBJS) $(BASEOBJS) $(IMGUIOBJS)
+PLANETARIUMOBJS := $(PLANETARIUM_APP_OBJS) $(BASEOBJS) $(IMGUIOBJS)
 
-.PHONY: clean clean-main clean-planet-renderer clean-imgui clean-all
+.PHONY: clean clean-main clean-planetarium clean-planet-renderer clean-imgui clean-all
 
-all: main planet-renderer kepler-test
+all: main planet-renderer planetarium
 
 main: $(MAINOBJS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(MAINOBJS) -o $(EXECPATH)/main $(LDLIBS)
@@ -53,8 +53,8 @@ main: $(MAINOBJS)
 planet-renderer: $(PLENET_RENDERER_OBJS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(PLENET_RENDERER_OBJS) -o $(EXECPATH)/planet-renderer $(LDLIBS)
 
-kepler-test: $(KEPLEROBJS)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(KEPLEROBJS) -o $(EXECPATH)/kepler-test $(LDLIBS)
+planetarium: $(PLANETARIUMOBJS)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) $(PLANETARIUMOBJS) -o $(EXECPATH)/planetarium $(LDLIBS)
 
 $(OBJPATH)/%.o: %.cpp
 	@mkdir -p $(@D)
@@ -70,6 +70,8 @@ clean-main:
 	rm -f $(MAIN_APP_OBJS) $(EXECPATH)/main
 clean-planet-renderer:
 	rm -f $(PLANET_RENDERER_APP_OBJS) $(EXECPATH)/planet-renderer
+clean-planetarium:
+	rm -f $(PLANETARIUM_APP_OBJS) $(EXECPATH)/planetarium
 clean-imgui:
 	rm -f $(IMGUIOBJS)
 clean-all:

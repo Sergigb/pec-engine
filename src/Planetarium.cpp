@@ -2,28 +2,38 @@
 #include <ctime>
 #include <cmath>
 
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb/stb_image_write.h>
-#include <stb/stb_image.h>
-
+#include "Planetarium.hpp"
 #include "core/log.hpp"
 #include "core/utils/utils.hpp"
 #include "core/loading/load_star_system.hpp"
 #include "core/maths_funcs.hpp"
+#include "core/RenderContext.hpp"
+#include "GUI/FontAtlas.hpp"
 
 
-#pragma GCC diagnostic push  // annoying shit
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-variable"
+Planetarium::Planetarium() : BaseApp(){
+    init();
+}
 
 
-#define SECS_FROM_UNIX_TO_J2000 946684800.0
-#define SECONDS_IN_A_CENTURY 3155760000.0
-#define AU_TO_METERS 149597900000.0
+Planetarium::Planetarium(int gl_width, int gl_height) : BaseApp(gl_width, gl_height){
+    init();
+}
+
+
+void Planetarium::init(){
+    m_render_context->setLightPosition(math::vec3(150.0, 100.0, 0.0));
+
+    m_def_font_atlas.reset(new FontAtlas(256));
+    m_def_font_atlas->loadFont("../data/fonts/Liberastika-Regular.ttf", 15);
+    m_def_font_atlas->loadCharacterRange(32, 255); // ascii
+    m_def_font_atlas->loadCharacterRange(913, 1023); // greek and coptic
+    m_def_font_atlas->createAtlas(false);
+}
+
+
+Planetarium::~Planetarium(){
+}
 
 
 void update_orbital_elements(planetary_system& system, const double centuries_since_j2000){
@@ -108,7 +118,33 @@ current.pos.v[1] = std::sin(current.long_asc_node) * xtemp +
 */
 
 
-void run(){
+void Planetarium::run(){
+    /*m_camera->setCameraPosition(dmath::vec3(9300000.0, 0.0, 0.0));
+    m_camera->setSpeed(630000.0f);
+    m_camera->createProjMat(1.0, 63000000, 67.0, 1.0);
+
+    //glDisable(GL_CULL_FACE);
+
+    m_render_context->setLightPosition(math::vec3(63000000000.0, 0.0, 0.0));
+    m_render_context->toggleDebugOverlay();
+
+    while(!glfwWindowShouldClose(m_window_handler->getWindow())){
+        m_input->update();
+        m_window_handler->update();
+        m_frustum->extractPlanes(m_camera->getCenteredViewMatrix(), m_camera->getProjMatrix(), false);
+        m_player->update();
+
+        //m_render_context->contextUpdatePlanetarium();
+
+        if(m_input->pressed_keys[GLFW_KEY_R] & INPUT_KEY_RELEASE){
+            m_render_context->reloadShaders();
+            std::cout << "Shaders reloaded" << std::endl;
+        }
+
+        glfwSwapBuffers(m_window_handler->getWindow());
+    }
+
+    m_window_handler->terminate();*/
     double seconds_since_j2000 = 0.0, centuries_since_j2000 = 0.0;
     double delta_t = (1000. / 60.) / 1000.0;
     time_t current_time;
@@ -117,7 +153,7 @@ void run(){
     struct planetary_system system;
     load_star_system(system);
 
-    while(1 == 1 - 0 + 1000 - 1000){
+    while(1){
         centuries_since_j2000 = seconds_since_j2000 / SECONDS_IN_A_CENTURY;
         update_orbital_elements(system, centuries_since_j2000);
 
@@ -127,34 +163,14 @@ void run(){
 
         std::hash<std::string> str_hash;
         planet& earth = system.planets.at(str_hash("Earth"));
-        dmath::vec3 disp = earth.pos - earth.pos_prev;
+        //dmath::vec3 disp = earth.pos - earth.pos_prev;
         std::cout << earth.pos.v[0] << ", " << earth.pos.v[1] << ", " << earth.pos.v[2] << std::endl;
-        double velocity = dmath::length(disp) / delta_t;
-        //dmath::vec3 disp2 = earth.test - earth.test_prev;
-        //double velocity2 = dmath::length(disp2) / delta_t;
+        //double velocity = dmath::length(disp) / delta_t;
 
         //std::cout.precision(10);
         //std::cout << "vel earth: " << velocity << std::endl;
-        //std::cout << "tst earth: " << velocity2 << std::endl;
 
         seconds_since_j2000 += delta_t;
     }
-}
-
-#pragma GCC diagnostic pop
-#pragma GCC diagnostic pop
-#pragma GCC diagnostic pop
-
-
-int main(int argc, char* argv[]){
-    UNUSED(argc); UNUSED(argv);
-
-    if(change_cwd_to_selfpath() == EXIT_FAILURE)
-        std::cerr << "Could not change the cwd to executable path, proceeding" << std::endl;
-
-    log_start();
-    run();
-
-    return EXIT_SUCCESS;
 }
 
