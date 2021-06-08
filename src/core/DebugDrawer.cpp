@@ -45,7 +45,7 @@ struct colorbufferdata color_buf(1.0f, 0.0f, 0.0f);
 DebugDrawer::DebugDrawer(const RenderContext* render_context) : m_camera_center(btVector3(0.0, 0.0, 0.0)){
     m_render_context = render_context;
 
-    m_color_location = render_context->getUniformLocation(SHADER_DEBUG, "object_color");
+    m_color_location = render_context->getUniformLocation(SHADER_DEBUG, "line_color");
 
     glGenVertexArrays(1, &m_line_vao);
     glBindVertexArray(m_line_vao);

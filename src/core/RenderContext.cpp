@@ -500,7 +500,7 @@ GLuint RenderContext::getUniformLocation(int shader, const char* location) const
         case SHADER_PLANET:
             return glGetUniformLocation(m_planet_shader, location);
         case SHADER_DEBUG:
-            return glGetUniformLocation(m_debug_draw, location);
+            return glGetUniformLocation(m_debug_shader, location);
         default:
             std::cerr << "RenderContext::getUniformLocation - wrong shader value " << shader << std::endl;
             log("RenderContext::getUniformLocation - wrong shader value ", shader);
