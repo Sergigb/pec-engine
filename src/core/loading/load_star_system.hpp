@@ -29,7 +29,7 @@ struct planet{
     // updated at each time step
     double semi_major_axis, eccentricity, inclination, mean_longitude, longitude_perigee, long_asc_node;
     // derivated
-    double mean_anomaly, arg_periapsis, eccentric_anomaly;
+    double mean_anomaly, arg_periapsis, eccentric_anomaly, true_anomaly, period;
 
     dmath::vec3 pos, pos_prev;
 

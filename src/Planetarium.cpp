@@ -3,6 +3,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <iomanip>
+#include <algorithm>
 
 #include "Planetarium.hpp"
 #include "core/log.hpp"
@@ -28,16 +29,30 @@ Planetarium::Planetarium(int gl_width, int gl_height) : BaseApp(gl_width, gl_hei
 }
 
 
+bool comparator(const planet* a, const planet* b){
+    return a->semi_major_axis_0 < b->semi_major_axis_0;
+}
+
+
 void Planetarium::init(){
     m_delta_t = (10000000000. / 60.0) / 1000.0;  // in ms
     load_star_system(m_system);
+
+    planet_map::iterator it;
+    planet_map& planets = m_system.planets;
+
+    for(it=planets.begin();it!=planets.end();it++)
+        m_bodies.emplace_back(&it->second);
+    std::sort(m_bodies.begin(), m_bodies.end(), comparator);
+    m_pick = 2;
+
     initBuffers();
     update_orbital_elements(m_system, 0.0);
 
     m_render_context->setLightPosition(math::vec3(150.0, 100.0, 0.0));
 
     m_def_font_atlas.reset(new FontAtlas(256));
-    m_def_font_atlas->loadFont("../data/fonts/VeraMoBI.ttf", 15);
+    m_def_font_atlas->loadFont("../data/fonts/Liberastika-Regular.ttf", 15);
     m_def_font_atlas->loadCharacterRange(32, 255); // ascii
     m_def_font_atlas->loadCharacterRange(913, 1023); // greek and coptic
     m_def_font_atlas->createAtlas(false);
@@ -179,18 +194,15 @@ void Planetarium::updateOrbitBuffers(double current_time){
         planet& current = it->second;
 
         vertex_buffer.reset(new GLfloat[3 * NUM_VERTICES]);
-        index_buffer.reset(new GLushort[2 * NUM_VERTICES]);
+        index_buffer.reset(new GLushort[2 * (NUM_VERTICES + 1)]);
 
         m_render_context->bindVao(current.m_vao);
-
-        double mean_anomaly_d = current.mean_longitude_d - current.longitude_perigee_d;
-        double period = (4 * M_PI) / mean_anomaly_d;
 
         double eccentricity, long_asc_node, arg_periapsis, inclination, semi_major_axis,
                mean_longitude, longitude_perigee, mean_anomaly;
         double time = current_time;
         for(uint i=0; i < NUM_VERTICES; i++){
-            time += period / NUM_VERTICES;
+            time += 2 * current.period / NUM_VERTICES;
 
             semi_major_axis = current.semi_major_axis_0 + current.semi_major_axis_d * time;
             eccentricity = current.eccentricity_0 + current.eccentricity_d * time;
@@ -212,32 +224,32 @@ void Planetarium::updateOrbitBuffers(double current_time){
                 eccentric_anomaly -= ecc_d;
             }
 
-            double true_anomaly = 2 * std::atan(std::sqrt((1 + eccentricity)/
+            current.true_anomaly = 2 * std::atan(std::sqrt((1 + eccentricity)/
                                                            (1 - eccentricity)) * 
                                                  std::tan(eccentric_anomaly / 2));
 
             double rad = semi_major_axis * (1 - eccentricity * std::cos(eccentric_anomaly)) * (AU_TO_METERS / 1e10);
 
-            vertex_buffer[i * 3] = rad * (std::cos(long_asc_node) * std::cos(arg_periapsis + true_anomaly) -
-                                   std::sin(long_asc_node) * std::sin(arg_periapsis + true_anomaly) *
+            vertex_buffer[i * 3] = rad * (std::cos(long_asc_node) * std::cos(arg_periapsis + current.true_anomaly) -
+                                   std::sin(long_asc_node) * std::sin(arg_periapsis + current.true_anomaly) *
                                    std::cos(inclination));
 
-            vertex_buffer[i * 3 + 1] = rad * (std::sin(inclination) * std::sin(arg_periapsis + true_anomaly));
+            vertex_buffer[i * 3 + 1] = rad * (std::sin(inclination) * std::sin(arg_periapsis + current.true_anomaly));
 
-            vertex_buffer[i * 3 + 2] = rad * (std::sin(long_asc_node) * std::cos(arg_periapsis + true_anomaly) +
-                                       std::cos(long_asc_node) * std::sin(arg_periapsis + true_anomaly) *
+            vertex_buffer[i * 3 + 2] = rad * (std::sin(long_asc_node) * std::cos(arg_periapsis + current.true_anomaly) +
+                                       std::cos(long_asc_node) * std::sin(arg_periapsis + current.true_anomaly) *
                                        std::cos(inclination));
 
             index_buffer[i * 2] = i;
             index_buffer[i * 2 + 1] = i + 1;
         }
-        index_buffer[2 * NUM_VERTICES - 1] = 0;
+        index_buffer[2 * NUM_VERTICES] = 0;
 
         glBindBuffer(GL_ARRAY_BUFFER, current.m_vbo_vert);
         glBufferData(GL_ARRAY_BUFFER, 3 * NUM_VERTICES * sizeof(GLfloat), vertex_buffer.get(), GL_STATIC_DRAW);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, current.m_vbo_ind);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, 2 * NUM_VERTICES * sizeof(GLushort), index_buffer.get(), GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, 2 * (NUM_VERTICES + 1) * sizeof(GLushort), index_buffer.get(), GL_STATIC_DRAW);
     }
 }
 
@@ -249,12 +261,16 @@ void Planetarium::renderOrbits(){
     m_render_context->useProgram(SHADER_DEBUG);
     glUniformMatrix4fv(view_location, 1, GL_FALSE, m_camera->getViewMatrix().m);
     glUniformMatrix4fv(proj_location, 1, GL_FALSE, m_camera->getProjMatrix().m);
-    glUniform3f(color_location, 1.0, 0.0, 0.0);
 
     for(it=planets.begin();it!=planets.end();it++){
         planet& current = it->second;
 
         m_render_context->bindVao(current.m_vao);
+
+        if(&current == m_bodies.at(m_pick))
+            glUniform3f(color_location, 0.0, 1.0, 0.0);
+        else
+            glUniform3f(color_location, 1.0, 0.0, 0.0);
 
         glDrawElements(GL_LINES, NUM_VERTICES, GL_UNSIGNED_SHORT, NULL);
     }
@@ -327,24 +343,58 @@ void Planetarium::updateSceneText(){
     const math::mat4 proj_mat = m_camera->getProjMatrix();
     const math::mat4 view_mat = m_camera->getViewMatrix();
     int w, h;
+    std::wostringstream woss;
+    std::ostringstream oss;
+    wchar_t buff[32];
 
     m_window_handler->getFramebufferSize(w, h);
 
     m_text->clearStrings();
+    m_text->onFramebufferSizeUpdate(w, h);  // this is not updated or notified by anyone in RenderContext so we do it here
 
     for(it=planets.begin();it!=planets.end();it++){
         planet& current = it->second;
-        wchar_t name[32];
 
         math::vec4 pos(current.pos.v[0] / 1e10, current.pos.v[1] / 1e10, current.pos.v[2] / 1e10, 1.0f);
         math::vec4 pos_screen = proj_mat * view_mat * pos;
         pos_screen = ((pos_screen / pos_screen.v[3]) + 1. ) / 2.; // there's something wrong here
 
-        mbstowcs(name, current.name.c_str(), 32);
-        m_text->addString(name, pos_screen.v[0] * w, pos_screen.v[1] * h, 1.0f,
+        mbstowcs(buff, current.name.c_str(), 32);
+        m_text->addString(buff, pos_screen.v[0] * w, pos_screen.v[1] * h + 5, 1.0f,
                           STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_CENTER_XY);
-
     }
+
+    const planet& picked = *m_bodies.at(m_pick);
+    double speed = dmath::length(picked.pos - picked.pos_prev) / m_delta_t;
+    oss << "Selected object: " << picked.name;
+    mbstowcs(buff, oss.str().c_str(), 32);
+
+    woss << buff << std::fixed << std::setprecision(2);
+    woss << L"\n\nOrbital parameters (J2000 eliptic): ";
+    woss << L"\nOrbital speed: " << speed << L"m/s";
+    woss << L"\nEccentricity (e): " << picked.eccentricity;
+    woss << L"\nSemi major axis (a): " << picked.semi_major_axis << "AU";
+    woss << L"\nInclination (i): " << picked.inclination * ONE_RAD_IN_DEG << L"º";
+    woss << L"\nLongitude of the asciending node (Ω): " << picked.long_asc_node * ONE_RAD_IN_DEG<< L"º";
+    woss << L"\nArgument of the periapsis (ω): " << picked.arg_periapsis * ONE_RAD_IN_DEG << L"º"
+         << L" (ϖ: " << picked.longitude_perigee << L"º)";
+    
+    // too many strings already...
+    m_text->addString(woss.str().c_str(), 10, 15, 1.0f,
+                      STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
+
+    woss.str(L"");
+    woss.clear();
+    
+    woss << L"True anomaly (f): " << picked.true_anomaly * ONE_RAD_IN_DEG << L"º"
+         << L" (M: " << picked.mean_anomaly << L"º, L: " << picked.mean_longitude << L"º)";
+
+    woss << L"\nPeriod: " << picked.period * 36525 << L" days (" << picked.period * 100. << L" years)";
+    woss << L"\nPerigee: " << (1 - picked.eccentricity) * picked.semi_major_axis * AU_TO_METERS / 1000.0 << L"km";
+    woss << L"\nApogee : " << (1 + picked.eccentricity) * picked.semi_major_axis * AU_TO_METERS / 1000.0 << L"km";
+
+    m_text->addString(woss.str().c_str(), 10, 195, 1.0f,
+                      STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);    
 }
 
 

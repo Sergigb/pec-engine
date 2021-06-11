@@ -16,6 +16,7 @@
 
 class FontAtlas;
 class Text2D;
+struct planetary_system;
 
 
 #define MAX_ITER 10
@@ -26,6 +27,9 @@ class Planetarium : public BaseApp{
         double m_delta_t, m_seconds_since_j2000;
         struct planetary_system m_system;
         std::unique_ptr<Text2D> m_text, m_text2;
+
+        std::vector<const planet*> m_bodies;
+        uint m_pick;
 
         void init();
         void logic();
