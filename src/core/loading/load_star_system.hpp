@@ -4,6 +4,10 @@
 
 #include <unordered_map>
 #include <string>
+#include <memory>
+
+#include <GL/glew.h>
+#include <GLFW/glfw3.h>
 
 #include "../maths_funcs.hpp"
 
@@ -25,9 +29,12 @@ struct planet{
     // updated at each time step
     double semi_major_axis, eccentricity, inclination, mean_longitude, longitude_perigee, long_asc_node;
     // derivated
-    double mean_anomaly, arg_periapsis, eccentric_anomaly, std_grav_parameter;
+    double mean_anomaly, arg_periapsis, eccentric_anomaly;
 
-    dmath::vec3 pos, pos_prev, test, test_prev;
+    dmath::vec3 pos, pos_prev;
+
+    // orbit buffer
+    GLuint m_vao, m_vbo_vert, m_vbo_ind;
 };
 
 struct star{

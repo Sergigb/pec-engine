@@ -477,7 +477,7 @@ void RenderContext::useProgram(int shader) const{
             glUseProgram(m_planet_shader);
             break;
         case SHADER_DEBUG:
-            glUseProgram(m_debug_draw);
+            glUseProgram(m_debug_shader);
             break;
         default:
             std::cerr << "RenderContext::useProgram - wrong shader value " << shader << std::endl;

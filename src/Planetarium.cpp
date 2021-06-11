@@ -31,11 +31,13 @@ Planetarium::Planetarium(int gl_width, int gl_height) : BaseApp(gl_width, gl_hei
 void Planetarium::init(){
     m_delta_t = (10000000000. / 60.0) / 1000.0;  // in ms
     load_star_system(m_system);
+    initBuffers();
+    update_orbital_elements(m_system, 0.0);
 
     m_render_context->setLightPosition(math::vec3(150.0, 100.0, 0.0));
 
     m_def_font_atlas.reset(new FontAtlas(256));
-    m_def_font_atlas->loadFont("../data/fonts/Liberastika-Regular.ttf", 15);
+    m_def_font_atlas->loadFont("../data/fonts/VeraMoBI.ttf", 15);
     m_def_font_atlas->loadCharacterRange(32, 255); // ascii
     m_def_font_atlas->loadCharacterRange(913, 1023); // greek and coptic
     m_def_font_atlas->createAtlas(false);
@@ -79,31 +81,33 @@ void update_orbital_elements(planetary_system& system, const double centuries_si
 
         current.eccentric_anomaly = current.mean_anomaly;
         double ecc_d = 10.8008135;
-        while(std::abs(ecc_d) > 1e-6){
+        int iter = 0;
+        while(std::abs(ecc_d) > 1e-6 && iter < MAX_ITER){
             ecc_d = (current.eccentric_anomaly - current.eccentricity *
                      std::sin(current.eccentric_anomaly) - current.mean_anomaly) / 
                      (1 - current.eccentricity * std::cos(current.eccentric_anomaly));
             current.eccentric_anomaly -= ecc_d;
+            iter++;
         }
 
         current.pos_prev = current.pos;
 
         // results in a singularity as e -> 1
-        double true_annomaly = 2 * std::atan(std::sqrt((1 + current.eccentricity)/
+        double true_anomaly = 2 * std::atan(std::sqrt((1 + current.eccentricity)/
                                                        (1 - current.eccentricity)) * 
                                              std::tan(current.eccentric_anomaly / 2));
 
         double rad = current.semi_major_axis * (1 - current.eccentricity * 
                                                 std::cos(current.eccentric_anomaly)) * AU_TO_METERS;
 
-        current.pos.v[0] = rad * (std::cos(current.long_asc_node) * std::cos(current.arg_periapsis + true_annomaly) -
-                           std::sin(current.long_asc_node) * std::sin(current.arg_periapsis + true_annomaly) *
+        current.pos.v[0] = rad * (std::cos(current.long_asc_node) * std::cos(current.arg_periapsis + true_anomaly) -
+                           std::sin(current.long_asc_node) * std::sin(current.arg_periapsis + true_anomaly) *
                            std::cos(current.inclination));
 
-        current.pos.v[1] = rad * (std::sin(current.inclination) * std::sin(current.arg_periapsis + true_annomaly));
+        current.pos.v[1] = rad * (std::sin(current.inclination) * std::sin(current.arg_periapsis + true_anomaly));
 
-        current.pos.v[2] = rad * (std::sin(current.long_asc_node) * std::cos(current.arg_periapsis + true_annomaly) +
-                           std::cos(current.long_asc_node) * std::sin(current.arg_periapsis + true_annomaly) *
+        current.pos.v[2] = rad * (std::sin(current.long_asc_node) * std::cos(current.arg_periapsis + true_anomaly) +
+                           std::cos(current.long_asc_node) * std::sin(current.arg_periapsis + true_anomaly) *
                            std::cos(current.inclination));
     }
 }
@@ -134,6 +138,127 @@ current.pos.v[1] = std::sin(current.long_asc_node) * xtemp +
                    std::cos(current.long_asc_node) * current.test.v[1];
 
 */
+
+GLuint color_location, proj_location, view_location; // change me :)
+
+void Planetarium::initBuffers(){
+    planet_map::iterator it;
+    planet_map& planets = m_system.planets;
+
+    for(it=planets.begin();it!=planets.end();it++){
+        planet& current = it->second;
+
+        glGenVertexArrays(1, &current.m_vao);
+        m_render_context->bindVao(current.m_vao);
+
+        glGenBuffers(1, &current.m_vbo_vert);
+        glBindBuffer(GL_ARRAY_BUFFER, current.m_vbo_vert);
+        glVertexAttribPointer(0, 3,  GL_FLOAT, GL_FALSE, 0, NULL);
+        glEnableVertexAttribArray(0);
+
+        glGenBuffers(1, &current.m_vbo_ind);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, current.m_vbo_ind);
+        glVertexAttribPointer(1, 2, GL_UNSIGNED_SHORT, GL_FALSE, 0, NULL);
+        glEnableVertexAttribArray(1);
+
+        color_location = m_render_context->getUniformLocation(SHADER_DEBUG, "line_color");
+        proj_location = m_render_context->getUniformLocation(SHADER_DEBUG, "proj");
+        view_location = m_render_context->getUniformLocation(SHADER_DEBUG, "view");
+    }
+}
+
+#define NUM_VERTICES 300
+
+void Planetarium::updateOrbitBuffers(double current_time){
+    planet_map::iterator it;
+    planet_map& planets = m_system.planets;
+    std::unique_ptr<GLfloat[]> vertex_buffer;
+    std::unique_ptr<GLushort[]> index_buffer;
+
+    for(it=planets.begin();it!=planets.end();it++){
+        planet& current = it->second;
+
+        vertex_buffer.reset(new GLfloat[3 * NUM_VERTICES]);
+        index_buffer.reset(new GLushort[2 * NUM_VERTICES]);
+
+        m_render_context->bindVao(current.m_vao);
+
+        double mean_anomaly_d = current.mean_longitude_d - current.longitude_perigee_d;
+        double period = (4 * M_PI) / mean_anomaly_d;
+
+        double eccentricity, long_asc_node, arg_periapsis, inclination, semi_major_axis,
+               mean_longitude, longitude_perigee, mean_anomaly;
+        double time = current_time;
+        for(uint i=0; i < NUM_VERTICES; i++){
+            time += period / NUM_VERTICES;
+
+            semi_major_axis = current.semi_major_axis_0 + current.semi_major_axis_d * time;
+            eccentricity = current.eccentricity_0 + current.eccentricity_d * time;
+            inclination = current.inclination_0 + current.inclination_d * time;
+            mean_longitude = current.mean_longitude_0 + current.mean_longitude_d * time;
+            longitude_perigee = current.longitude_perigee_0 + current.longitude_perigee_d * time;
+            long_asc_node = current.long_asc_node_0 + current.long_asc_node_d * time;
+
+            mean_anomaly = mean_longitude - longitude_perigee;
+            arg_periapsis = longitude_perigee - long_asc_node;
+
+            double eccentric_anomaly = mean_anomaly;
+            double ecc_d = 10.8008135;
+            int iter = 0;
+            while(std::abs(ecc_d) > 1e-6 && iter < MAX_ITER){
+                ecc_d = (eccentric_anomaly - eccentricity *
+                         std::sin(eccentric_anomaly) - mean_anomaly) / 
+                         (1 - eccentricity * std::cos(eccentric_anomaly));
+                eccentric_anomaly -= ecc_d;
+            }
+
+            double true_anomaly = 2 * std::atan(std::sqrt((1 + eccentricity)/
+                                                           (1 - eccentricity)) * 
+                                                 std::tan(eccentric_anomaly / 2));
+
+            double rad = semi_major_axis * (1 - eccentricity * std::cos(eccentric_anomaly)) * (AU_TO_METERS / 1e10);
+
+            vertex_buffer[i * 3] = rad * (std::cos(long_asc_node) * std::cos(arg_periapsis + true_anomaly) -
+                                   std::sin(long_asc_node) * std::sin(arg_periapsis + true_anomaly) *
+                                   std::cos(inclination));
+
+            vertex_buffer[i * 3 + 1] = rad * (std::sin(inclination) * std::sin(arg_periapsis + true_anomaly));
+
+            vertex_buffer[i * 3 + 2] = rad * (std::sin(long_asc_node) * std::cos(arg_periapsis + true_anomaly) +
+                                       std::cos(long_asc_node) * std::sin(arg_periapsis + true_anomaly) *
+                                       std::cos(inclination));
+
+            index_buffer[i * 2] = i;
+            index_buffer[i * 2 + 1] = i + 1;
+        }
+        index_buffer[2 * NUM_VERTICES - 1] = 0;
+
+        glBindBuffer(GL_ARRAY_BUFFER, current.m_vbo_vert);
+        glBufferData(GL_ARRAY_BUFFER, 3 * NUM_VERTICES * sizeof(GLfloat), vertex_buffer.get(), GL_STATIC_DRAW);
+
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, current.m_vbo_ind);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, 2 * NUM_VERTICES * sizeof(GLushort), index_buffer.get(), GL_STATIC_DRAW);
+    }
+}
+
+
+void Planetarium::renderOrbits(){
+    planet_map::iterator it;
+    planet_map& planets = m_system.planets;
+
+    m_render_context->useProgram(SHADER_DEBUG);
+    glUniformMatrix4fv(view_location, 1, GL_FALSE, m_camera->getViewMatrix().m);
+    glUniformMatrix4fv(proj_location, 1, GL_FALSE, m_camera->getProjMatrix().m);
+    glUniform3f(color_location, 1.0, 0.0, 0.0);
+
+    for(it=planets.begin();it!=planets.end();it++){
+        planet& current = it->second;
+
+        m_render_context->bindVao(current.m_vao);
+
+        glDrawElements(GL_LINES, NUM_VERTICES, GL_UNSIGNED_SHORT, NULL);
+    }
+}
 
 
 void Planetarium::processInput(){
@@ -167,6 +292,8 @@ void Planetarium::logic(){
     wchar_t buff[256];
     std::ostringstream oss;
 
+    processInput();
+
     centuries_since_j2000 = m_seconds_since_j2000 / SECONDS_IN_A_CENTURY;
     update_orbital_elements(m_system, centuries_since_j2000);
     updateSceneText();
@@ -184,10 +311,13 @@ void Planetarium::logic(){
     m_text2->addString(buff, 25, 35, 1.0f,
                       STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_RIGHT);
 
+    m_seconds_since_j2000 += m_delta_t;
+
+    updateOrbitBuffers(centuries_since_j2000);
+    renderOrbits();
+
     m_text->render();
     m_text2->render();
-
-    m_seconds_since_j2000 += m_delta_t;
 }
 
 
@@ -208,7 +338,7 @@ void Planetarium::updateSceneText(){
 
         math::vec4 pos(current.pos.v[0] / 1e10, current.pos.v[1] / 1e10, current.pos.v[2] / 1e10, 1.0f);
         math::vec4 pos_screen = proj_mat * view_mat * pos;
-        pos_screen = ((pos_screen / pos_screen.v[3]) + 1. ) / 2.;
+        pos_screen = ((pos_screen / pos_screen.v[3]) + 1. ) / 2.; // there's something wrong here
 
         mbstowcs(name, current.name.c_str(), 32);
         m_text->addString(name, pos_screen.v[0] * w, pos_screen.v[1] * h, 1.0f,
@@ -237,7 +367,6 @@ void Planetarium::run(){
         glClearColor(0.f, 0.f, 0.f, 0.f); // loook at the todo list
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        processInput();
         logic();
 
         glfwSwapBuffers(m_window_handler->getWindow());

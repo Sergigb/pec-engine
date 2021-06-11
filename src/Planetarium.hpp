@@ -18,6 +18,9 @@ class FontAtlas;
 class Text2D;
 
 
+#define MAX_ITER 10
+
+
 class Planetarium : public BaseApp{
     private:
         double m_delta_t, m_seconds_since_j2000;
@@ -27,6 +30,9 @@ class Planetarium : public BaseApp{
         void init();
         void logic();
         void updateSceneText();
+        void updateOrbitBuffers(double current_time);
+        void initBuffers();
+        void renderOrbits();
 
         // application default font atlas
         std::unique_ptr<FontAtlas> m_def_font_atlas;
@@ -40,5 +46,6 @@ class Planetarium : public BaseApp{
         void run();
 };
 
+void update_orbital_elements(planetary_system& system, const double centuries_since_j2000);
 
 #endif

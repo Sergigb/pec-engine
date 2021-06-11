@@ -48,8 +48,8 @@ int load_planets(const tinyxml2::XMLElement* planets_element, planet_map& planet
         current_planet.std_grav_parameter = current_planet.mass * GRAVITATIONAL_CONSTANT;
 
         param_element = get_element(planet_element, "semi_major_axis");
-            if(!param_element)
-                return EXIT_FAILURE;
+        if(!param_element)
+            return EXIT_FAILURE;
         if(get_double(param_element, "value", current_planet.semi_major_axis_0) == EXIT_FAILURE)
             current_planet.semi_major_axis_0 = 0.0;
         if(get_double(param_element, "derivative", 
@@ -57,24 +57,24 @@ int load_planets(const tinyxml2::XMLElement* planets_element, planet_map& planet
             current_planet.semi_major_axis_d = 0.0;
 
         param_element = get_element(planet_element, "eccentricity");
-            if(!param_element)
-                return EXIT_FAILURE;
+        if(!param_element)
+            return EXIT_FAILURE;
         if(get_double(param_element, "value", current_planet.eccentricity_0) == EXIT_FAILURE)
             current_planet.eccentricity_0 = 0.0;
         if(get_double(param_element, "derivative", current_planet.eccentricity_d) == EXIT_FAILURE)
             current_planet.eccentricity_d = 0.0;
 
         param_element = get_element(planet_element, "inclination");
-            if(!param_element)
-                return EXIT_FAILURE;
+        if(!param_element)
+            return EXIT_FAILURE;
         if(get_double(param_element, "value", current_planet.inclination_0) == EXIT_FAILURE)
             current_planet.inclination_0 = 0.0;
         if(get_double(param_element, "derivative", current_planet.inclination_d) == EXIT_FAILURE)
             current_planet.inclination_d = 0.0;
 
         param_element = get_element(planet_element, "mean_longitude");
-            if(!param_element)
-                return EXIT_FAILURE;
+        if(!param_element)
+            return EXIT_FAILURE;
         if(get_double(param_element, "value", current_planet.mean_longitude_0) == EXIT_FAILURE)
             current_planet.mean_longitude_0 = 0.0;
         if(get_double(param_element, "derivative",
@@ -82,8 +82,8 @@ int load_planets(const tinyxml2::XMLElement* planets_element, planet_map& planet
             current_planet.mean_longitude_d = 0.0;
 
         param_element = get_element(planet_element, "longitude_perigee");
-            if(!param_element)
-                return EXIT_FAILURE;
+        if(!param_element)
+            return EXIT_FAILURE;
         if(get_double(param_element, "value", current_planet.longitude_perigee_0) == EXIT_FAILURE)
             current_planet.longitude_perigee_0 = 0.0;
         if(get_double(param_element, "derivative", 
@@ -91,8 +91,8 @@ int load_planets(const tinyxml2::XMLElement* planets_element, planet_map& planet
             current_planet.longitude_perigee_d = 0.0;
 
         param_element = get_element(planet_element, "long_asc_node");
-            if(!param_element)
-                return EXIT_FAILURE;
+        if(!param_element)
+            return EXIT_FAILURE;
         if(get_double(param_element, "value", current_planet.long_asc_node_0) == EXIT_FAILURE)
             current_planet.long_asc_node_0 = 0.0;
         if(get_double(param_element, "derivative", current_planet.long_asc_node_d) == EXIT_FAILURE)
