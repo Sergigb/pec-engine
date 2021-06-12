@@ -61,6 +61,7 @@ class Camera{
         dmath::vec3 getCamPosition() const;
         void castRayMousePos(float dist, dmath::vec3& ray_start_world, dmath::vec3& ray_end_world_ext) const;
         int getPrevInputMode() const;
+        float getSpeed() const;
 
         void update();
         void freeCameraUpdate();

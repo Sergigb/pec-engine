@@ -463,3 +463,8 @@ void Camera::setOrbitalInclination(double inclination, const dmath::vec3& axis){
     m_inclination_axis = axis;
 }
 
+
+float Camera::getSpeed() const{
+    return m_cam_speed;
+}
+
