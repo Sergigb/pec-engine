@@ -35,7 +35,7 @@ bool comparator(const planet* a, const planet* b){
 
 
 void Planetarium::init(){
-    m_delta_t = (10000000000. / 60.0) / 1000.0;  // in ms
+    m_delta_t = (1000. / 60.0) / 1000.0;  // in ms
     load_star_system(m_system);
 
     planet_map::iterator it;
@@ -282,10 +282,10 @@ void Planetarium::processInput(){
 
     m_input->getScroll(scx, scy);
 
-    if(scy < 0.0)
-        m_delta_t *= 0.1f;
-    if(scy > 0.0)
-        m_delta_t *= 10.f;
+    if(m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] & INPUT_KEY_REPEAT)
+        m_delta_t *= scy == 0.f ? 1.f : (scy < 0.f ? .1f : 10.f);
+    else
+        m_camera->setSpeed(m_camera->getSpeed() * (scy == 0.f ? 1.f : (scy < 0.f ? .1f : 10.f)));
 
     if(m_input->pressed_keys[GLFW_KEY_R] & INPUT_KEY_RELEASE){
         m_render_context->reloadShaders();
@@ -299,6 +299,12 @@ void Planetarium::processInput(){
     if(m_input->pressed_keys[GLFW_KEY_F12] & INPUT_KEY_RELEASE){
         m_render_context->toggleDebugOverlay();
     }
+
+    if(m_input->pressed_keys[GLFW_KEY_TAB] & INPUT_KEY_DOWN)
+        m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] & INPUT_KEY_REPEAT ? m_pick-- : m_pick++;
+
+    if(m_pick >= m_bodies.size())
+        m_pick = 0;
 }
 
 
@@ -306,7 +312,7 @@ void Planetarium::logic(){
     double centuries_since_j2000 = 0.0;
     time_t current_time;
     wchar_t buff[256];
-    std::ostringstream oss;
+    std::wostringstream woss;
 
     processInput();
 
@@ -321,10 +327,9 @@ void Planetarium::logic(){
     m_text2->addString(buff, 25, 50, 1.0f,
                       STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_RIGHT);
 
-    oss << "delta_t: " << m_delta_t << "ms (" << std::setprecision(3) <<
-            m_delta_t / 36000.0 << " hours)";
-    mbstowcs(buff, oss.str().c_str(), 256);
-    m_text2->addString(buff, 25, 35, 1.0f,
+    woss << L"delta_t: " << m_delta_t << L"ms (" << m_delta_t / 36000.0
+         << L" hours, x" << long(m_delta_t / (1. / 60.)) << L")";
+    m_text2->addString(woss.str().c_str(), 25, 35, 1.0f,
                       STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_RIGHT);
 
     m_seconds_since_j2000 += m_delta_t;
@@ -376,8 +381,6 @@ void Planetarium::updateSceneText(){
     woss << L"\nSemi major axis (a): " << picked.semi_major_axis << "AU";
     woss << L"\nInclination (i): " << picked.inclination * ONE_RAD_IN_DEG << L"º";
     woss << L"\nLongitude of the asciending node (Ω): " << picked.long_asc_node * ONE_RAD_IN_DEG<< L"º";
-    woss << L"\nArgument of the periapsis (ω): " << picked.arg_periapsis * ONE_RAD_IN_DEG << L"º"
-         << L" (ϖ: " << picked.longitude_perigee << L"º)";
     
     // too many strings already...
     m_text->addString(woss.str().c_str(), 10, 15, 1.0f,
@@ -385,15 +388,20 @@ void Planetarium::updateSceneText(){
 
     woss.str(L"");
     woss.clear();
-    
-    woss << L"True anomaly (f): " << picked.true_anomaly * ONE_RAD_IN_DEG << L"º"
+
+    woss << L"Argument of the periapsis (ω): " << picked.arg_periapsis * ONE_RAD_IN_DEG << L"º"
+         << L" (ϖ: " << picked.longitude_perigee << L"º)";    
+    woss << L"\nTrue anomaly (f): " << picked.true_anomaly * ONE_RAD_IN_DEG << L"º"
          << L" (M: " << picked.mean_anomaly << L"º, L: " << picked.mean_longitude << L"º)";
 
     woss << L"\nPeriod: " << picked.period * 36525 << L" days (" << picked.period * 100. << L" years)";
     woss << L"\nPerigee: " << (1 - picked.eccentricity) * picked.semi_major_axis * AU_TO_METERS / 1000.0 << L"km";
     woss << L"\nApogee : " << (1 + picked.eccentricity) * picked.semi_major_axis * AU_TO_METERS / 1000.0 << L"km";
 
-    m_text->addString(woss.str().c_str(), 10, 195, 1.0f,
+    woss << L"\n\nPhysical properties: ";
+    woss << L"\nMass: " << std::scientific << picked.mass << "kg";
+
+    m_text->addString(woss.str().c_str(), 10, 175, 1.0f,
                       STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);    
 }
 
@@ -401,7 +409,7 @@ void Planetarium::updateSceneText(){
 void Planetarium::run(){
     m_camera->setCameraPosition(dmath::vec3(500.0, 1000.0, 0.0));
     m_camera->setSpeed(50.0f);
-    m_camera->createProjMat(1.0, 100000.0, 67.0, 1.0);
+    m_camera->createProjMat(.001, 100000.0, 67.0, 1.0);
 
     //glDisable(GL_CULL_FACE);
 
