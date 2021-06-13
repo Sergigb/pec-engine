@@ -43,6 +43,7 @@ class WindowHandler{
         void update();
         void terminate();
         void setWindowShouldClose();
+        void setWindowTitle(const char* title);
 };
 
 

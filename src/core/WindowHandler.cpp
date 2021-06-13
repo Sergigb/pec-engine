@@ -132,6 +132,11 @@ void WindowHandler::setWindowShouldClose(){
 }
 
 
+void WindowHandler::setWindowTitle(const char* title){
+    glfwSetWindowTitle(m_window, title);
+}
+
+
 /////// static functions ///////
 
 void WindowHandler::glfwKeyCallback(GLFWwindow* window, int key, int scancode, int action, int mods){
