@@ -24,6 +24,8 @@ class GameEditor;
 
 class BaseApp{
     private:
+        void displayLoadingScreen();
+
         void init(int gl_width, int gl_height);
     protected:
         friend class GameEditor;
