@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "core/BaseApp.hpp"
-#include "core/loading/load_star_system.hpp" // planetary_system defined here, move later
 
 
 #define SECS_FROM_UNIX_TO_J2000 946684800.0
@@ -17,6 +16,7 @@
 class FontAtlas;
 class Text2D;
 struct planetary_system;
+struct planet;
 
 
 #define MAX_ITER 10
@@ -25,7 +25,6 @@ struct planetary_system;
 class Planetarium : public BaseApp{
     private:
         double m_delta_t, m_seconds_since_j2000;
-        struct planetary_system m_system;
         std::unique_ptr<Text2D> m_text, m_text2;
 
         std::vector<const planet*> m_bodies;

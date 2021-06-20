@@ -12,7 +12,6 @@
 #include "AssetManagerInterface.hpp"
 #include "utils/assets_utils.hpp"
 #include "buffers.hpp"
-#include "../assets/Planet.hpp"
 
 
 class Model;
@@ -28,6 +27,9 @@ class Resource;
 class AssetManager;
 class Kinematic;
 class BaseApp;
+class Planet;
+
+struct planetary_system;
 
 
 class AssetManager{
@@ -80,6 +82,7 @@ class AssetManager{
         std::vector<std::shared_ptr<Kinematic>> m_kinematics;
         std::vector<std::unique_ptr<Planet>> m_planets; // too simple, it will be more complex in the future when I have a proper planetary system
         std::unordered_map<std::uint32_t, std::shared_ptr<Vessel>> m_active_vessels;
+        std::unique_ptr<struct planetary_system> m_system;
 
         AssetManager(BaseApp* app);
         ~AssetManager();

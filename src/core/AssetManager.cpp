@@ -5,6 +5,7 @@
 #include <bullet/BulletCollision/Gimpact/btGImpactCollisionAlgorithm.h>
 
 #include "loading/load_resources.hpp"
+#include "loading/load_star_system.hpp"
 #include "AssetManager.hpp"
 #include "RenderContext.hpp"
 #include "Frustum.hpp"
@@ -18,6 +19,9 @@
 #include "../assets/BasePart.hpp"
 #include "../assets/Kinematic.hpp"
 #include "../assets/Vessel.hpp"
+#include "../assets/Planet.hpp"
+#include "../assets/PlanetarySystem.hpp"
+
 
 typedef std::unordered_map<std::uint32_t, std::shared_ptr<BasePart>>::iterator SubTreeIterator;
 typedef std::unordered_map<std::uint32_t, std::shared_ptr<Vessel>>::iterator VesselIterator;
@@ -36,6 +40,8 @@ AssetManager::AssetManager(BaseApp* app) : m_asset_manager_interface(AssetManage
     objectsInit();
     load_parts(*this);
     initPlanets();
+    m_system.reset(new planetary_system);
+    load_star_system(*m_system);
 }
 
 

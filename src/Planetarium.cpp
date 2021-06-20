@@ -15,8 +15,10 @@
 #include "core/WindowHandler.hpp"
 #include "core/Player.hpp"
 #include "core/Frustum.hpp"
+#include "core/AssetManager.hpp"
 #include "GUI/FontAtlas.hpp"
 #include "GUI/Text2D.hpp"
+#include "assets/PlanetarySystem.hpp"
 
 
 Planetarium::Planetarium() : BaseApp(){
@@ -38,10 +40,9 @@ void Planetarium::init(){
     m_window_handler->setWindowTitle("Planetarium");
 
     m_delta_t = (1000. / 60.0) / 1000.0;  // in ms
-    load_star_system(m_system);
 
     planet_map::iterator it;
-    planet_map& planets = m_system.planets;
+    planet_map& planets = m_asset_manager->m_system->planets;
 
     for(it=planets.begin();it!=planets.end();it++)
         m_bodies.emplace_back(&it->second);
@@ -49,7 +50,7 @@ void Planetarium::init(){
     m_pick = 2;
 
     initBuffers();
-    update_orbital_elements(m_system, 0.0);
+    update_orbital_elements(*m_asset_manager->m_system, 0.0);
 
     m_render_context->setLightPosition(math::vec3(150.0, 100.0, 0.0));
 
@@ -160,7 +161,7 @@ GLuint color_location, proj_location, view_location; // change me :)
 
 void Planetarium::initBuffers(){
     planet_map::iterator it;
-    planet_map& planets = m_system.planets;
+    planet_map& planets = m_asset_manager->m_system->planets;
 
     for(it=planets.begin();it!=planets.end();it++){
         planet& current = it->second;
@@ -188,7 +189,7 @@ void Planetarium::initBuffers(){
 
 void Planetarium::updateOrbitBuffers(double current_time){
     planet_map::iterator it;
-    planet_map& planets = m_system.planets;
+    planet_map& planets = m_asset_manager->m_system->planets;
     std::unique_ptr<GLfloat[]> vertex_buffer;
     std::unique_ptr<GLushort[]> index_buffer;
 
@@ -258,7 +259,7 @@ void Planetarium::updateOrbitBuffers(double current_time){
 
 void Planetarium::renderOrbits(){
     planet_map::iterator it;
-    planet_map& planets = m_system.planets;
+    planet_map& planets = m_asset_manager->m_system->planets;
 
     m_render_context->useProgram(SHADER_DEBUG);
     glUniformMatrix4fv(view_location, 1, GL_FALSE, m_camera->getViewMatrix().m);
@@ -319,7 +320,7 @@ void Planetarium::logic(){
     processInput();
 
     centuries_since_j2000 = m_seconds_since_j2000 / SECONDS_IN_A_CENTURY;
-    update_orbital_elements(m_system, centuries_since_j2000);
+    update_orbital_elements(*m_asset_manager->m_system, centuries_since_j2000);
     updateSceneText();
 
     m_text2->clearStrings();
@@ -346,7 +347,7 @@ void Planetarium::logic(){
 
 void Planetarium::updateSceneText(){
     planet_map::iterator it;
-    planet_map& planets = m_system.planets;
+    planet_map& planets = m_asset_manager->m_system->planets;
     const math::mat4 proj_mat = m_camera->getProjMatrix();
     const math::mat4 view_mat = m_camera->getViewMatrix();
     int w, h;
