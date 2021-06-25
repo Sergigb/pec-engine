@@ -2,9 +2,10 @@
 #define PLAYER_HPP
 
 
-#define PLAYER_BEHAVIOUR_NONE 0
-#define PLAYER_BEHAVIOUR_EDITOR 1
-#define PLAYER_BEHAVIOUR_SIMULATION 2
+#define PLAYER_BEHAVIOUR_NONE 0x01
+#define PLAYER_BEHAVIOUR_EDITOR 0x02
+#define PLAYER_BEHAVIOUR_SIMULATION 0x04
+#define PLAYER_BEHAVIOUR_PLANETARIUM 0x08
 
 #define ORBITAL_CAM_MODE_SURFACE 0
 #define ORBITAL_CAM_MODE_ORBIT 1
@@ -24,10 +25,15 @@ class Player{
         const Input* m_input;
         const BaseApp* m_app;
         short m_behaviour, m_orbital_cam_mode;
+        std::uint32_t m_selected_planet;
 
-        void setCamMode();
+        void unsetVessel();
+        void setCamTarget();
         void switchVessel();
-        void setCamUpVector();
+        void switchPlanet();
+        void setCamAxisRotation();
+        void processInput();
+        void updateCamera();
     public:
         Player(Camera* camera, AssetManager* asset_manager, const Input* input);
         ~Player();
