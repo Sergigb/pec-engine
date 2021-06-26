@@ -1016,6 +1016,14 @@ dmath::vec3 &dmath::vec3::operator=( const vec3 &rhs ) {
     return *this;
 }
 
+dmath::vec3 dmath::vec3::operator/( double rhs ) const {
+    dmath::vec3 vc;
+    vc.v[0] = v[0] / rhs;
+    vc.v[1] = v[1] / rhs;
+    vc.v[2] = v[2] / rhs;
+    return vc;
+}
+
 dmath::vec4 dmath::vec4::operator*( double rhs ) const {
     dmath::vec4 vc;
     vc.v[0] = v[0] * rhs;
