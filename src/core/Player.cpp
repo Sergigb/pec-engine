@@ -29,6 +29,8 @@ Player::Player(Camera* camera, AssetManager* asset_manager, const Input* input){
     m_behaviour = PLAYER_BEHAVIOUR_NONE;
     m_orbital_cam_mode = ORBITAL_CAM_MODE_ORBIT;
     m_selected_planet = 0;
+    m_planetarium_freecam = true;
+    m_planetarium_scale_factor = 1e10;
 }
 
 
@@ -44,35 +46,39 @@ void Player::update(){
 
 
 void Player::updateCamera(){
-    if((m_behaviour & PLAYER_BEHAVIOUR_NONE) | (m_behaviour & (PLAYER_BEHAVIOUR_EDITOR | PLAYER_BEHAVIOUR_SIMULATION))
-        && !m_vessel)
+    if((m_behaviour & PLAYER_BEHAVIOUR_NONE) || ((m_behaviour & (PLAYER_BEHAVIOUR_EDITOR | PLAYER_BEHAVIOUR_SIMULATION))
+        && !m_vessel) || ((m_behaviour & PLAYER_BEHAVIOUR_PLANETARIUM) && (!m_selected_planet || m_planetarium_freecam))){
         m_camera->freeCameraUpdate();
-    else if(m_behaviour & (PLAYER_BEHAVIOUR_SIMULATION | PLAYER_BEHAVIOUR_EDITOR) && m_vessel){
-        btVector3 com = m_vessel->getCoM();
-        m_camera->setCameraPosition(dmath::vec3(com.getX(), com.getY(), com.getZ()));
-        m_camera->orbitalCameraUpdate();
-        setCamAxisRotation();
     }
-
+        
+    else if(m_behaviour & (PLAYER_BEHAVIOUR_SIMULATION | PLAYER_BEHAVIOUR_EDITOR) && m_vessel){
+        const btVector3& com = m_vessel->getCoM();
+        m_camera->setCameraPosition(dmath::vec3(com.getX(), com.getY(), com.getZ()));
+        setCamAxisRotation();
+        m_camera->orbitalCameraUpdate();
+    }
+    else if(m_behaviour & PLAYER_BEHAVIOUR_PLANETARIUM && m_selected_planet && !m_planetarium_freecam){
+        m_camera->setCameraPosition(m_asset_manager->m_system->planets.at(m_selected_planet).pos / m_planetarium_scale_factor);
+        m_camera->setOrbitalInclination(0.0, dmath::vec3(0.0, 0.0, 0.0));
+        m_camera->orbitalCameraUpdate();
+    }
 }
 
 
 void Player::processInput(){
     if((m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)) 
-        && (m_input->pressed_keys[GLFW_KEY_C] & INPUT_KEY_DOWN)){
+        && (m_input->pressed_keys[GLFW_KEY_C] & INPUT_KEY_DOWN))
         setCamTarget();
-    }
     else if(m_input->pressed_keys[GLFW_KEY_C] & INPUT_KEY_DOWN && PLAYER_BEHAVIOUR_SIMULATION){
         m_orbital_cam_mode = m_orbital_cam_mode == ORBITAL_CAM_MODE_ORBIT ? 
                              ORBITAL_CAM_MODE_SURFACE : ORBITAL_CAM_MODE_ORBIT;
     }
 
     if(m_input->pressed_keys[GLFW_KEY_TAB] & INPUT_KEY_DOWN){
-        if(m_behaviour & PLAYER_BEHAVIOUR_SIMULATION && m_vessel){
+        if(m_behaviour & PLAYER_BEHAVIOUR_SIMULATION && m_vessel)
             switchVessel();
-        }
-        else if(m_behaviour & PLAYER_BEHAVIOUR_PLANETARIUM)
-            switchPlanet();
+//        else if(m_behaviour & PLAYER_BEHAVIOUR_PLANETARIUM)
+//            switchPlanet();
     }
 }
 
@@ -126,7 +132,7 @@ void Player::setCamTarget(){
         }
     }
     else if(m_behaviour & PLAYER_BEHAVIOUR_PLANETARIUM){
-
+        togglePlanetariumFreecam();
     }
 }
 
@@ -152,8 +158,16 @@ void Player::switchVessel(){
 }
 
 
-void Player::switchPlanet(){
-    planet_iterator it = m_asset_manager->m_system->planets.find(m_selected_planet); // if this fails eh, bad luck
+/*void Player::switchPlanet(){
+    planet_iterator it;
+
+    if(!m_selected_planet){
+        std::cerr << "Player::switchPlanet: warning, player has no target to switch from (m_selected_planet is 0)" << std::endl;
+        log("Player::switchPlanet: warning, player has no target to switch from (m_selected_planet is 0)");
+        return;
+    }
+
+    it = m_asset_manager->m_system->planets.find(m_selected_planet); // if this fails eh, bad luck
 
     it++;
     if(it != m_asset_manager->m_system->planets.end()){
@@ -163,7 +177,7 @@ void Player::switchPlanet(){
         it = m_asset_manager->m_system->planets.begin();
         m_selected_planet = it->first;
     }
-}
+}*/
 
 
 void Player::onVesselDestroy(){
@@ -179,5 +193,25 @@ void Player::setBehaviour(short behaviour){
 
 Vessel* Player::getVessel() const{
     return m_vessel;
+}
+
+
+void Player::togglePlanetariumFreecam(){
+    m_planetarium_freecam = !m_planetarium_freecam;
+}
+
+
+void Player::setSelectedPlanet(std::uint32_t planet_id){
+    m_selected_planet = planet_id;
+}
+
+
+bool Player::getPlanetariumFreecam() const{
+    return m_planetarium_freecam;
+}
+
+
+void Player::setPlanetariumScaleFactor(double factor){
+    m_planetarium_scale_factor = factor;
 }
 

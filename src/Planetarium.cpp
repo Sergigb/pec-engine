@@ -48,6 +48,7 @@ void Planetarium::init(){
         m_bodies.emplace_back(&it->second);
     std::sort(m_bodies.begin(), m_bodies.end(), comparator);
     m_pick = 2;
+    m_player->setSelectedPlanet(m_bodies.at(m_pick)->id);
 
     initBuffers();
     update_orbital_elements(*m_asset_manager->m_system, 0.0);
@@ -282,13 +283,17 @@ void Planetarium::renderOrbits(){
 
 void Planetarium::processInput(){
     double scx, scy;
-
     m_input->getScroll(scx, scy);
 
     if(m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] & INPUT_KEY_REPEAT)
         m_delta_t *= scy == 0.f ? 1.f : (scy < 0.f ? .1f : 10.f);
-    else
-        m_camera->setSpeed(m_camera->getSpeed() * (scy == 0.f ? 1.f : (scy < 0.f ? .1f : 10.f)));
+    
+    else{
+        if(m_player->getPlanetariumFreecam())
+            m_camera->setSpeed(m_camera->getSpeed() * (scy == 0.f ? 1.f : (scy < 0.f ? .1f : 10.f)));
+        else
+            m_camera->incrementOrbitalCamDistance(-scy * 5.0);
+    }
 
     if(m_input->pressed_keys[GLFW_KEY_R] & INPUT_KEY_RELEASE){
         m_render_context->reloadShaders();
@@ -303,11 +308,12 @@ void Planetarium::processInput(){
         m_render_context->toggleDebugOverlay();
     }
 
-    if(m_input->pressed_keys[GLFW_KEY_TAB] & INPUT_KEY_DOWN)
+    if(m_input->pressed_keys[GLFW_KEY_TAB] & INPUT_KEY_DOWN){
         m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] & INPUT_KEY_REPEAT ? m_pick-- : m_pick++;
-
-    if(m_pick >= m_bodies.size())
-        m_pick = 0;
+        if(m_pick >= m_bodies.size())
+            m_pick = 0;
+        m_player->setSelectedPlanet(m_bodies.at(m_pick)->id);
+    }
 }
 
 
@@ -413,6 +419,7 @@ void Planetarium::run(){
     m_camera->setCameraPosition(dmath::vec3(500.0, 1000.0, 0.0));
     m_camera->setSpeed(50.0f);
     m_camera->createProjMat(.001, 100000.0, 67.0, 1.0);
+    m_player->setBehaviour(PLAYER_BEHAVIOUR_PLANETARIUM);
 
     //glDisable(GL_CULL_FACE);
 
