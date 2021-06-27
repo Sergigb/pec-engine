@@ -198,7 +198,7 @@ void Planetarium::updateOrbitBuffers(double current_time){
         planet& current = it->second;
 
         vertex_buffer.reset(new GLfloat[3 * NUM_VERTICES]);
-        index_buffer.reset(new GLushort[2 * (NUM_VERTICES + 1)]);
+        index_buffer.reset(new GLushort[2 * NUM_VERTICES]);
 
         m_render_context->bindVao(current.m_vao);
 
@@ -206,7 +206,7 @@ void Planetarium::updateOrbitBuffers(double current_time){
                mean_longitude, longitude_perigee, mean_anomaly;
         double time = current_time;
         for(uint i=0; i < NUM_VERTICES; i++){
-            time += 2 * current.period / NUM_VERTICES;
+            time += current.period / NUM_VERTICES;
 
             semi_major_axis = current.semi_major_axis_0 + current.semi_major_axis_d * time;
             eccentricity = current.eccentricity_0 + current.eccentricity_d * time;
@@ -247,13 +247,13 @@ void Planetarium::updateOrbitBuffers(double current_time){
             index_buffer[i * 2] = i;
             index_buffer[i * 2 + 1] = i + 1;
         }
-        index_buffer[2 * NUM_VERTICES] = 0;
+        index_buffer[(2 * NUM_VERTICES) - 1] = 0;
 
         glBindBuffer(GL_ARRAY_BUFFER, current.m_vbo_vert);
         glBufferData(GL_ARRAY_BUFFER, 3 * NUM_VERTICES * sizeof(GLfloat), vertex_buffer.get(), GL_STATIC_DRAW);
 
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, current.m_vbo_ind);
-        glBufferData(GL_ELEMENT_ARRAY_BUFFER, 2 * (NUM_VERTICES + 1) * sizeof(GLushort), index_buffer.get(), GL_STATIC_DRAW);
+        glBufferData(GL_ELEMENT_ARRAY_BUFFER, 2 * NUM_VERTICES * sizeof(GLushort), index_buffer.get(), GL_STATIC_DRAW);
     }
 }
 
@@ -276,7 +276,7 @@ void Planetarium::renderOrbits(){
         else
             glUniform3f(color_location, 1.0, 0.0, 0.0);
 
-        glDrawElements(GL_LINES, NUM_VERTICES, GL_UNSIGNED_SHORT, NULL);
+        glDrawElements(GL_LINES, NUM_VERTICES * 2, GL_UNSIGNED_SHORT, NULL);
     }
 }
 
