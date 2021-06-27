@@ -10,16 +10,19 @@
 
 
 void load_star(const tinyxml2::XMLElement* star_element, star& system_star){
-    const char* star_name;
+    const char* star_name,* description;
     double mass;
 
-    if(get_attribute(star_element, "name", &star_name))
+    if(get_attribute(star_element, "name", &star_name) == EXIT_FAILURE)
         star_name = "unk";
     if(get_double(star_element, "mass", mass) == EXIT_FAILURE)
         mass = 0.0;
+    if(get_string(star_element, "description", &description) == EXIT_FAILURE)
+        description = "";
 
     system_star.star_name = star_name;
     system_star.mass = mass;
+    system_star.description = description;
 }
 
 

@@ -37,6 +37,7 @@ struct planet{
 
 struct star{
     std::string star_name;
+    std::string description;
     double mass;
 };
 

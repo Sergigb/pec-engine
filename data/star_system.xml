@@ -2,6 +2,7 @@
 
 <system name="Solar System">
     <star name="Sun"> 
+        <description>G-type main-sequence star</description>
         <mass>1.9885e30</mass>
         <!-- other physical characteristics will go here-->
 

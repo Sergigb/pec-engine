@@ -359,7 +359,7 @@ void Planetarium::updateSceneText(){
     int w, h;
     std::wostringstream woss;
     std::ostringstream oss;
-    wchar_t buff[32];
+    wchar_t buff[256];
 
     m_window_handler->getFramebufferSize(w, h);
 
@@ -373,18 +373,28 @@ void Planetarium::updateSceneText(){
         math::vec4 pos_screen = proj_mat * view_mat * pos;
         pos_screen = ((pos_screen / pos_screen.v[3]) + 1. ) / 2.; // there's something wrong here
 
-        mbstowcs(buff, current.name.c_str(), 32);
+        mbstowcs(buff, current.name.c_str(), 256);
         m_text->addString(buff, pos_screen.v[0] * w, pos_screen.v[1] * h + 5, 1.0f,
                           STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_CENTER_XY);
     }
 
+    oss << "System name: " << m_asset_manager->m_system->system_name;
+    oss << "\nStar name: " << m_asset_manager->m_system->system_star.star_name;
+    oss << "\nStar description: " << m_asset_manager->m_system->system_star.description;
+
     const planet& picked = *m_bodies.at(m_pick);
     double speed = dmath::length(picked.pos - picked.pos_prev) / m_delta_t;
-    oss << "Selected object: " << picked.name;
-    mbstowcs(buff, oss.str().c_str(), 32);
+    oss << "\n\nSelected object: " << picked.name;
+    mbstowcs(buff, oss.str().c_str(), 256);
 
     woss << buff << std::fixed << std::setprecision(2);
-    woss << L"\n\nOrbital parameters (J2000 eliptic): ";
+    m_text->addString(woss.str().c_str(), 10, 15, 1.0f,
+                      STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
+
+    woss.str(L"");
+    woss.clear();
+
+    woss << L"\nOrbital parameters (J2000 eliptic): ";
     woss << L"\nOrbital speed: " << speed << L"m/s";
     woss << L"\nEccentricity (e): " << picked.eccentricity;
     woss << L"\nSemi major axis (a): " << picked.semi_major_axis << "AU";
@@ -392,7 +402,7 @@ void Planetarium::updateSceneText(){
     woss << L"\nLongitude of the asciending node (Ω): " << picked.long_asc_node * ONE_RAD_IN_DEG<< L"º";
     
     // too many strings already...
-    m_text->addString(woss.str().c_str(), 10, 15, 1.0f,
+    m_text->addString(woss.str().c_str(), 10, 95, 1.0f,
                       STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
 
     woss.str(L"");
@@ -410,7 +420,7 @@ void Planetarium::updateSceneText(){
     woss << L"\n\nPhysical properties: ";
     woss << L"\nMass: " << std::scientific << picked.mass << "kg";
 
-    m_text->addString(woss.str().c_str(), 10, 175, 1.0f,
+    m_text->addString(woss.str().c_str(), 10, 235, 1.0f,
                       STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);    
 }
 
