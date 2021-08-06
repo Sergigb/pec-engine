@@ -36,6 +36,11 @@ App::App(int gl_width, int gl_height) : BaseApp(gl_width, gl_height){
 void App::init(){
     m_quit = false;
 
+    m_asset_manager->loadResources();
+    m_asset_manager->loadParts();
+    //m_asset_manager->loadStarSystem();
+    m_asset_manager->initPlanets();
+
     m_def_font_atlas.reset(new FontAtlas(256));
     m_def_font_atlas->loadFont("../data/fonts/Liberastika-Regular.ttf", 15);
     m_def_font_atlas->loadCharacterRange(32, 255); // ascii

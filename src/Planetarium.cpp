@@ -39,6 +39,8 @@ bool comparator(const planet* a, const planet* b){
 void Planetarium::init(){
     m_window_handler->setWindowTitle("Planetarium");
 
+    m_asset_manager->loadStarSystem();
+
     m_delta_t = (1000. / 60.0) / 1000.0;  // in ms
 
     planet_map::iterator it;

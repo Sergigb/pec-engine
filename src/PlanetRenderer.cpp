@@ -14,6 +14,7 @@
 #include "core/WindowHandler.hpp"
 #include "core/Input.hpp"
 #include "core/Player.hpp"
+#include "core/AssetManager.hpp"
 #include "assets/Model.hpp"
 #include "assets/Planet.hpp"
 #include "assets/utils/planet_utils.hpp"
@@ -33,6 +34,8 @@ PlanetRenderer::PlanetRenderer(int gl_width, int gl_height) : BaseApp(gl_width, 
 
 void PlanetRenderer::init(){
     m_render_context->setLightPosition(math::vec3(150.0, 100.0, 0.0));
+
+    m_asset_manager->initPlanets();
 
     m_def_font_atlas.reset(new FontAtlas(256));
     m_def_font_atlas->loadFont("../data/fonts/Liberastika-Regular.ttf", 15);

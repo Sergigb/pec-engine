@@ -35,7 +35,6 @@ struct planetary_system;
 class AssetManager{
     private:
         void objectsInit();
-        void initPlanets();
 
         RenderContext* m_render_context;
         const Frustum* m_frustum;
@@ -98,6 +97,12 @@ class AssetManager{
         void updateVessels();
         void updateKinematics(); // testing
         void updateCoMs(); // synch call
+
+        // loading, call these depending on the application
+        void loadResources();
+        void loadParts();
+        void loadStarSystem();
+        void initPlanets(); // eventually remove this and merge with loadStarSystem
 
         void cleanup();
 };

@@ -36,17 +36,28 @@ AssetManager::AssetManager(BaseApp* app) : m_asset_manager_interface(AssetManage
     m_camera = app->m_camera.get();
     m_app = app;
 
-    load_resources(m_resources);
     objectsInit();
-    load_parts(*this);
-    initPlanets();
-    m_system.reset(new planetary_system);
-    load_star_system(*m_system);
 }
 
 
 AssetManager::~AssetManager(){
 
+}
+
+
+void AssetManager::loadResources(){
+    load_resources(m_resources);
+}
+
+
+void AssetManager::loadParts(){
+    load_parts(*this);
+}
+
+
+void AssetManager::loadStarSystem(){
+    m_system.reset(new planetary_system);
+    load_star_system(*m_system);
 }
 
 
