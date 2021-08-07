@@ -21,7 +21,7 @@ GUISRCS := $(shell find GUI/ -name "*.cpp")
 BASESRCS := $(CORESRCS) $(ASSETSSRCS) $(GUISRCS)
 BASEOBJS := $(foreach source, $(BASESRCS), $(OBJPATH)/$(source:.cpp=.o))
 
-DEPENDS = ${BASEOBJS:.o=.d}
+DEPENDS_BASE = ${BASEOBJS:.o=.d}
 
 #main game objects
 MAIN_APP_SCRS := main.cpp App.cpp GameEditor.cpp
@@ -34,6 +34,8 @@ PLANET_RENDERER_APP_OBJS := $(foreach source, $(PLANET_RENDERER_APP_SRCS), $(OBJ
 # planetarium test thing
 PLANETARIUM_APP_SRCS := main_planetarium.cpp Planetarium.cpp
 PLANETARIUM_APP_OBJS := $(foreach source, $(PLANETARIUM_APP_SRCS), $(OBJPATH)/$(source:.cpp=.o))
+
+DEPENDS = $(DEPENDS_BASE) ${MAIN_APP_OBJS:.o=.d} ${PLANET_RENDERER_APP_OBJS:.o=.d} ${PLANETARIUM_APP_OBJS:.o=.d}
 
 #imgui
 IMGUISRCS := $(wildcard ../thirdparty/imgui/*.cpp)
