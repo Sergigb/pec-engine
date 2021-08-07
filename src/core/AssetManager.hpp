@@ -32,8 +32,19 @@ class Planet;
 struct planetary_system;
 
 
+/*
+ * Class used to manage assets (planets/parts/resources etc) and buffers, performs basic tasks such
+ * as updating render and command buffers (required for multithreading) or deleting/updating assets. 
+ * This class exposes most of its members, so it should only be visible to core classes that might
+ * need it, but not to the assets. AssetManagerInterface is used instead to interact with this 
+ * class (for example, adding commands to the command buffers).
+ */
+
 class AssetManager{
     private:
+        /* 
+         * Old method called to load some stuff that's not used anymore, will be gone in the future
+         */
         void objectsInit();
 
         RenderContext* m_render_context;
@@ -42,13 +53,19 @@ class AssetManager{
         const Camera* m_camera;
         BaseApp* m_app;
 
+        /* Interface class for parts */
         friend class AssetManagerInterface;
         AssetManagerInterface m_asset_manager_interface;
 
         friend void load_parts(AssetManager& asset_manager);
 
-        // render buffers
+        /* render buffers */
         struct render_buffers* m_buffers;
+
+        /* 
+         * Methods used to update render buffers once updateBuffers is called. These functions
+         * are called depending on the render state of the app.
+         */
         void updateObjectBuffer(std::vector<object_transform>& buffer_, const dmath::vec3& cam_origin);
         void updatePlanetBuffer(std::vector<planet_transform>& buffer_);
         void updateObjectBufferEditor(std::vector<object_transform>& buffer_, const btVector3& btv_cam_origin);
@@ -60,7 +77,7 @@ class AssetManager{
         std::unordered_map<std::uint32_t, std::unique_ptr<BasePart>> m_master_parts;
         std::unordered_map<std::uint32_t, std::unique_ptr<Resource>> m_resources;
 
-        // command buffers
+        /* command buffers */
         std::vector<struct set_motion_state_msg> m_set_motion_state_buffer;
         std::vector<BasePart*> m_remove_part_constraint_buffer;
         std::vector<struct add_contraint_msg> m_add_constraint_buffer;
@@ -71,12 +88,12 @@ class AssetManager{
         std::vector<std::shared_ptr<BasePart>> m_delete_subtree_buffer;
         std::vector<BasePart*> m_build_constraint_subtree_buffer;
 
-        // editor objects
+        /* editor objects */
         std::unordered_map<std::uint32_t, std::shared_ptr<BasePart>> m_editor_subtrees;
         std::shared_ptr<Vessel> m_editor_vessel;
         std::vector<std::shared_ptr<BasePart>> m_symmetry_subtrees;
 
-        // universe
+        /* universe */
         std::vector<std::shared_ptr<Object>> m_objects;
         std::vector<std::shared_ptr<Kinematic>> m_kinematics;
         std::vector<std::unique_ptr<Planet>> m_planets; // too simple, it will be more complex in the future when I have a proper planetary system
@@ -86,24 +103,70 @@ class AssetManager{
         AssetManager(BaseApp* app);
         ~AssetManager();
 
+        /* 
+         * Used to process the command buffers, must be called by the app from the main thread
+         * when the physics thread is paused.
+         * 
+         * @physics_pause: wether the physics is paused (and thus Bullet has not stepped), in order
+         * to update the AABBs.
+         */
         void processCommandBuffers(bool physics_pause);
+
+        /* 
+         * Called to update the render buffers, must be called when the physics thread is stopped.
+         */
         void updateBuffers();
 
-        /*Editor methods, only call them before calling logic() and waking up the physics thread*/
+        /*
+         * Clears the editor scene (main vessel and subtrees), must be called with the physics
+         * thread is stopped.
+         */
         void clearSceneEditor();
+
+        /*
+         * Deletes a subtree from the editor. The part should be the root of a subtree, if the
+         * part is the root of the editor vessel the editor vessel gets deleted. This method should
+         * be re-written.
+         *
+         * @part: root of the subtree to be deleted, should be the root of a subtree in
+         * m_editor_subtrees or the root of m_editor_vessel.
+         * @vessel_id: id of the editor's vessel, should not be required and will be deleted in the
+         * future.
+         */
         void deleteObjectEditor(BasePart* part, std::uint32_t& vessel_id);
 
-        /* Simulation vessels update, this may not need to be here since m_editor_vessels is public */
+        /* 
+         * Calls the update method of all the vessels, this should be called when the physics 
+         * thread is running, as the vessel and the parts should be using the command buffers (see
+         * BasePart's and Vessel's update method)
+         */
         void updateVessels();
-        void updateKinematics(); // testing
-        void updateCoMs(); // synch call
 
-        // loading, call these depending on the application
+        /*
+         * Old testing function for kinematics, but will probably not be used, as kinematics will
+         * be updated from the Planet class
+         */
+        void updateKinematics();
+
+        /*
+         * Updates the center of mass of all the active vessels, should be called when the physics
+         * thread is stopped to avoid data races while retrieving the position of the objects.
+         */
+        void updateCoMs();
+
+        /*
+         * Loading methods, call these depending on what the application needs. Note that you will
+         * probably need to load the resources if you want to have parts.
+         */
         void loadResources();
         void loadParts();
         void loadStarSystem();
         void initPlanets(); // eventually remove this and merge with loadStarSystem
 
+        /*
+         * Cleans everything (vessels, subtrees and buffers), call when the application is about to
+         * exit.
+         */
         void cleanup();
 };
 

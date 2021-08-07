@@ -9,7 +9,6 @@
 #include "multithreading.hpp"
 #include "buffers.hpp"
 
-// base app for future shenanigans
 
 class Camera;
 class Input;
@@ -21,6 +20,11 @@ class AssetManager;
 class Player;
 class GameEditor;
 
+
+/*
+ * Base application class, should be inherited by any application class. Has most of the essential
+ * stuff to display, render, and manage whatever we need.
+ */
 
 class BaseApp{
     private:
@@ -43,7 +47,7 @@ class BaseApp{
 
         short m_gui_mode, m_render_state;
 
-        // buffers used to synchronize the physics and rendering
+        /* buffers used to synchronize the physics and rendering */
         struct render_buffers m_buffers;
         struct thread_monitor m_thread_monitor;
     public:
@@ -53,7 +57,16 @@ class BaseApp{
 
         virtual void run();
 
+        /*
+         * Returns the GUI mode of the application, used by RenderContext to know which GUI it
+         * should be rendering. The values are defined in that class (GUI_MODE_*).
+         */
         short getGUIMode() const;
+
+        /*
+         * Returns the render state of the application (editor, simulation, etc), the values are
+         * defined in RenderContext (RENDER_*).
+         */
         short getRenderState() const;
 };
 
