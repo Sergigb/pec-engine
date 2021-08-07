@@ -17,6 +17,7 @@
 #include "core/AssetManager.hpp"
 #include "assets/Model.hpp"
 #include "assets/Planet.hpp"
+#include "assets/PlanetTree.hpp"
 #include "assets/utils/planet_utils.hpp"
 #include "GUI/FontAtlas.hpp"
 
@@ -53,7 +54,7 @@ void PlanetRenderer::run(){
     bool polygon_mode_lines = false;
     Planet planet(m_render_context.get());
 
-    Planet::loadBases(m_frustum.get(), m_render_context.get());
+    PlanetTree::loadBases(m_frustum.get(), m_render_context.get());
 
     m_camera->setCameraPosition(dmath::vec3(9300000.0, 0.0, 0.0));
     m_camera->setSpeed(630000.0f);
