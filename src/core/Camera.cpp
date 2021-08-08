@@ -126,9 +126,9 @@ math::mat4 Camera::getProjMatrix() const{
 
 
 // TODO: maybe put all these three functions in one function?
-void Camera::rotateCameraYaw(double degrees){
+void Camera::rotateCameraYaw(double rads){
     dmath::mat4 R;
-    dmath::versor q_yaw = dmath::quat_from_axis_rad(degrees, 0.0f, 1.0f, 0.0f); // rotate around the y vector to keep the right vector parallel to the "ground"
+    dmath::versor q_yaw = dmath::quat_from_axis_rad(rads, 0.0f, 1.0f, 0.0f); // rotate around the y vector to keep the right vector parallel to the "ground"
 
     m_cam_orientation = q_yaw * m_cam_orientation;
     R = dmath::quat_to_mat4(m_cam_orientation);
@@ -138,9 +138,9 @@ void Camera::rotateCameraYaw(double degrees){
 }
 
 
-void Camera::rotateCameraRoll(double degrees){
+void Camera::rotateCameraRoll(double rads){
     dmath::mat4 R;
-    dmath::versor q_pitch = dmath::quat_from_axis_rad(degrees, m_fwd.v[0], m_fwd.v[1], m_fwd.v[2]);
+    dmath::versor q_pitch = dmath::quat_from_axis_rad(rads, m_fwd.v[0], m_fwd.v[1], m_fwd.v[2]);
 
     m_cam_orientation = q_pitch * m_cam_orientation;
     R = dmath::quat_to_mat4(m_cam_orientation);
@@ -150,9 +150,9 @@ void Camera::rotateCameraRoll(double degrees){
 }
 
 
-void Camera::rotateCameraPitch(double degrees){
+void Camera::rotateCameraPitch(double rads){
     dmath::mat4 R;
-    dmath::versor q_roll = dmath::quat_from_axis_rad(degrees, m_rgt.v[0], m_rgt.v[1], m_rgt.v[2]);
+    dmath::versor q_roll = dmath::quat_from_axis_rad(rads, m_rgt.v[0], m_rgt.v[1], m_rgt.v[2]);
 
     m_cam_orientation = q_roll * m_cam_orientation;
     R = dmath::quat_to_mat4(m_cam_orientation);

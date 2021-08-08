@@ -8,6 +8,12 @@ class WindowHandler;
 class Input;
 
 
+/*
+ * Camera class for the main rendering, maybe it's not ideal for other cameras. In the future
+ * maybe this class could be a simple class that doesn't deal with input or changes in the 
+ * framebuffer size, and then extend in case we need it to deal with input or window size changes
+ */
+
 class Camera{
     private:
         dmath::vec3 m_cam_pos, m_cam_translation;
@@ -20,7 +26,7 @@ class Camera{
         bool m_proj_change, m_fb_callback;
         int m_cam_input_mode, m_prev_cam_input_mode;
 
-        // oribital camera params
+        /* oribital camera params */
         double m_polar_angle, m_azimuthal_angle, m_radial_distance, m_inclination;
         dmath::vec3 m_inclination_axis;
 
@@ -28,43 +34,187 @@ class Camera{
         const Input* m_input;
 
         void updateViewMatrix();
+        void update();
     public:
         Camera();
+        /*
+         * Constructor.
+         *
+         * @pos: starting position of the camera.
+         * @fovy: horizontal field of view of the camera, in degrees.
+         * @ar: aspect-ratio of the camera.
+         * @near: near plane of the camera, in meters.
+         * @far: far plane of the camera, in meters.
+         * @input_ptr: pointer to the input object of the app. Will change in the future.
+         */
         Camera(const dmath::vec3& pos, float fovy, float ar, float near, float far, const Input* input_ptr);
         ~Camera(); 
 
+        /*
+         * Sets the orientation of the camera given a versor.
+         *
+         * @orientation: versor with the new orientation.
+         */
         void setCameraOrientation(const dmath::versor& orientation);
+
+        /*
+         * Sets the orientation of the camera given the heading and the camera axis. I suppose the
+         * camera heading is the roll?
+         *
+         * @cam_heading: camera heading, most likely the roll.
+         * @axis: camera orientation.
+         */
         void setCameraOrientationFromAxisRad(float cam_heading, const dmath::vec3& axis);
+
+        /*
+         * Sets the free camera speed, in m/s.
+         *
+         * @speed: camera speed in m/s.
+         */
         void setSpeed(float speed);
+
+        /*
+         * Angular speed of the free camera (yaw and pitch) when the keyboard is used, in rad/s.
+         * 
+         * @speed: angular speed, in rad/s.
+         */
         void setAngularSpeed(float speed);
+
+        /*
+         * This will be gone in the future, better ignore it :).
+         */
         void setWindowHandler(const WindowHandler* window_handler);
+
+        /*
+         * Creates a new projection matrix.
+         * 
+         * @near: near plane, in meters.
+         * @far: far plane, in meters.
+         * @fovy: horizontal field of view, in degrees.
+         * @ar: aspect-ratio, should match the viewport's.
+         */
         void createProjMat(float near, float far, float fovy, float ar);
+
+        /*
+         * Method called by the window handler in case the framebuffer size changes. Could be
+         * used to change the fb size in case this class is used for other cameras. The new size
+         * is used to update the aspect-ratio of the projection matrix.
+         *
+         * @width: new width of the framebuffer.
+         * @heigth: new heigth of the framebuffer.
+         */
         void onFramebufferSizeUpdate(int width, int heigth);
+
+        /*
+         * These functions reset the forward/right/up vectors, should only be used in the free
+         * camera, the orbital camera computes its own vectors.
+         */
         void setForwardVector(const dmath::vec4& vec);
         void setRightVector(const dmath::vec4& vec);
         void setUpVector(const dmath::vec4& vec);
+
+        /*
+         * Sets the distance to the object in the orbital camera.
+         *
+         * @distance: distance from the camera to the object, in meters.
+         */
         void setOrbitalCamDistance(double distance);
+
+        /*
+         * Increments the distance between the camera and the object in the orbital camera.
+         *
+         * @incremet: increment, positive or negative, in meters.
+         */
         void incrementOrbitalCamDistance(double increment);
+
+        /*
+         * Test method, should be used to recover the orientation of the camera when we change
+         * from the orbital camera to the free camera. Doesn't work.
+         */
         void restoreCamOrientation();
+
+        /*
+         * Sets how much the orbital camera should be inclined. For example, when the orbital 
+         * camera mode is set to "surface" in the class Player ("ORBITAL_CAM_MODE_SURFACE"),
+         * the right vector of the camera should always be perpendicular to the vector that crosses
+         * the center of the planet and the vessel. When the camera mode is set to
+         * ORBITAL_CAM_MODE_ORBITAL, we apply no rotation so the right vector should be parallel
+         * to the earth's orbital plane around the sun. In any case, this doesn't seem to be
+         * working right, so it'll change in the future.
+         *
+         * @inclination: inclination angle, in radians.
+         * @axis: axis of the rotation.
+         */
         void setOrbitalInclination(double inclination, const dmath::vec3& axis);
 
-        void rotateCameraYaw(double degrees);
-        void rotateCameraRoll(double degrees);
-        void rotateCameraPitch(double degrees);
+        /*
+         * Methods used to rotate the free camera along one of its axis.
+         *
+         * @rads: amount of rotation, in radians.
+         */
+        void rotateCameraYaw(double rads);
+        void rotateCameraRoll(double rads);
+        void rotateCameraPitch(double rads);
+
+        /*
+         * Moves the camera given a vector (m_cam_pos += motion).
+         *
+         * @motion: vector to be added to the camera translation.
+         */
         void moveCamera(const dmath::vec3& motion);
+
+        /*
+         * Resets the camera position.
+         *
+         * @translation: new position of the camera.
+         */
         void setCameraPosition(const dmath::vec3& translation);
 
         bool projChanged() const;
+
+        /*
+         * Getters for the view and projection matrices. Note that getViewMatrix returns a single
+         * precision view matrix, which might result in loss of precision. getCenteredViewMatrix
+         * returns the view matrix center at the origin, which is used for rendering.
+         */
         math::mat4 getViewMatrix() const;
         math::mat4 getProjMatrix() const;
         math::mat4 getCenteredViewMatrix() const;
+
+        /*
+         * Returns the position of the camera, in double precision.
+         */
         dmath::vec3 getCamPosition() const;
+
+        /*
+         * Returns the start and end of a ray casted from the current mouse position with 
+         * length "dist".
+         *
+         * @dist: length of the ray to be casted
+         * @ray_start_world: where the start of the ray will be saved.
+         * @ray_end_world_ext: where the end of the ray will be saved.
+         */
         void castRayMousePos(float dist, dmath::vec3& ray_start_world, dmath::vec3& ray_end_world_ext) const;
+
+        /* 
+         * Returns the last glfw input mode of the cursor, used by some functions to avoid, for
+         * example, casting rays when the rmb is released after the camera is moved with the mouse.
+         */
         int getPrevInputMode() const;
+
+        /*
+         * Returns the speed of the orbital camera, in m/s.
+         */
         float getSpeed() const;
 
-        void update();
+        /*
+         * Updates the free camera, including the input.
+         */
         void freeCameraUpdate();
+
+        /*
+         * Updates the orbital camera, including the input.
+         */
         void orbitalCameraUpdate();
 };
 

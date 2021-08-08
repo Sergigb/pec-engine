@@ -199,7 +199,6 @@ btDiscreteDynamicsWorld* Physics::getDynamicsWorld(){
 // this should be easy to optimize in the future, calculate gravity with the com of the vessel, and then apply f
 // to individual objects 
 #define EARTH_MASS 5973600000000000000000000.0
-#define GRAVITATIONAL_CONSTANT 6.67430e-11
 void Physics::applyGravity(){
     double acceleration;
     btCollisionObjectArray& col_object_array = m_dynamics_world->getCollisionObjectArray();

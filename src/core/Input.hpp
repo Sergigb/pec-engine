@@ -16,6 +16,10 @@
 #define INPUT_KEY_RELEASE   0x08
 
 
+/*
+ * Class used to manage the input as an interface to glfw. 
+ */
+
 class Input{
     private:
         int m_num_pressed_mbuttons;
@@ -25,22 +29,46 @@ class Input{
         bool m_mouse_moved = false;
         std::vector<int> m_keys_pressed;
     public:
+        /*
+         * Status of the keyboard and mouse buttons, uses the glfw key values.
+         * https://www.glfw.org/docs/latest/group__keys.html
+         * https://www.glfw.org/docs/latest/group__buttons.html
+         */
         char pressed_keys[GLFW_KEY_LAST + 1];
         char pressed_mbuttons[GLFW_MOUSE_BUTTON_LAST + 1];
 
         Input();
-        //Input();
         ~Input(); 
 
+        /*
+         * This method is mostly used to prepare the mouse/keyboard status (key/mbutton down/
+         * repeat/release) before the glfwPollEvents function in the windows handler is called.
+         */
         void update();
-        
+
+        /*
+         * These functions return true if the keyboard or the mouse buttons have been pressed.
+         * mouseMoved returns true if the mouse moved.
+         */        
         bool keyboardPressed() const;
         bool mButtonPressed() const;
+        bool mouseMoved() const;
+
+        /*
+         * Returns by reference the mouse pos x and y in glfw coordinates. getMousePosPrev returns
+         * the coordinates of the mouse during in previous tick.
+         */
         void getMousePos(double& posx, double& posy) const;
         void getMousePosPrev(double& posx, double& posy) const;
-        bool mouseMoved() const;
+
+        /*
+         * Returns by reference the scroll of the mouse.
+         */
         void getScroll(double& xoffset, double& yoffset) const;
 
+        /*
+         * These functions are called by the windows handler's input callback functions.
+         */
         void onKeyboardInput(int key, int scancode, int action, int mods);
         void onMouseButton(int button, int action, int mods);
         void onMousePos(double posx, double posy);

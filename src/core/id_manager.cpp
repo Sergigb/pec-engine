@@ -85,7 +85,7 @@ short create_id(std::uint32_t& id, short set){
 
     do{
         id = distribution(generator);
-    }while(uset_ptr->find(id) != uset_ptr->end());
+    }while(uset_ptr->find(id) != uset_ptr->end() || id == 0);
 
     uset_ptr->insert(id);
     
