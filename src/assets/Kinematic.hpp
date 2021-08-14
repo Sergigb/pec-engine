@@ -9,6 +9,11 @@
 struct iv_array;
 
 
+/*
+ * Class used for kinematics. Since it behaves slightly different from Object, I made a new
+ * part. In its current state this class doesn't do much, it will have proper functionality when
+ * we have terrain or static props in the planets. The constructor works the same as in Object.
+ */
 class Kinematic : public Object{
     private:
         std::unique_ptr<iv_array> m_trimesh;
@@ -21,9 +26,20 @@ class Kinematic : public Object{
         Kinematic();
         ~Kinematic();
 
-        void update(); // update position/velocity
+        /*
+         * Update method, updates the motion state of the kinematic.
+         */
+        void update();
+
+        /*
+         * Will be gone in the future.
+         */
         void renderOther();
-        // passes ownership of the triangle mesh to the current object
+        
+        /*
+         * If the collision object of the Kinematic is an iv_array (see core/Physics.hpp), pass the
+         * ownership to this object.
+         */
         void setTrimesh(std::unique_ptr<iv_array>& array);
 };
 

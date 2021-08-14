@@ -12,6 +12,9 @@
 class RenderContext;
 
 
+/*
+ * Model class, holds a 3D model. Quite simple but ok for now.
+ */
 class Model{
     private:
         int m_model_mat_location, m_color_location, m_shader;
@@ -29,11 +32,38 @@ class Model{
         int loadScene(const std::string& pFile);
     public:
         Model();
+        /*
+         * Constructor.
+         *
+         * @path_to_mesh: char string with the path to the mesh file.
+         * @path_to_texture: char string with the path to the mesh texture.
+         * @shader: shader to be used to render this model (see RenderContext, macros SHADER_*)
+         * @frustum: pointer to the frustum.
+         * @render_context: pointer to the render context.
+         * @mesh_color: color of the mesh.
+         */
         Model(const char* path_to_mesh, const char* path_to_texture, int shader, const Frustum* frustum, const RenderContext* render_context, const math::vec3& mesh_color);
         ~Model();
 
+        /*
+         * Sets the color of the mesh.
+         *
+         * @mesh_color: new color of the mesh.
+         */
         void setMeshColor(const math::vec4& mesh_color);
+
+        /*
+         * Render method.
+         *
+         * @transform: transform matrix of the model.
+         */
         int render(const math::mat4& transform) const;
+
+        /*
+         * Special method for when we are rendering terrain.
+         *
+         * @transform: transform matrix of the model.
+         */
         void render_terrain(const math::mat4& transform) const;
 
 };

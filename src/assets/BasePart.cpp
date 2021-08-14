@@ -99,11 +99,6 @@ void BasePart::removeParentConstraint(){
 }
 
 
-const btTypedConstraint* BasePart::getParentConstraint() const{
-    return m_parent_constraint.get();
-}
-
-
 const struct attachment_point* BasePart::getParentAttachmentPoint() const{
     return &m_parent_att_point;
 }
