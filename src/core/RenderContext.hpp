@@ -24,6 +24,7 @@ class BaseApp;
 struct object_transform;
 
 
+/* shader macros */
 #define SHADER_PHONG_BLINN 1
 #define SHADER_PHONG_BLINN_NO_TEXTURE 2
 #define SHADER_TEXT 3
@@ -31,11 +32,11 @@ struct object_transform;
 #define SHADER_PLANET 5
 #define SHADER_DEBUG 6
 
-// gui modes, only editor for now
+/* gui modes, only editor for now */
 #define GUI_MODE_NONE 0
 #define GUI_MODE_EDITOR 1
 
-// renders states, ie what to render
+/* renders states, ie what to render */
 #define RENDER_NOTHING 0
 #define RENDER_EDITOR 1
 #define RENDER_UNIVERSE 2
@@ -46,6 +47,18 @@ struct notification{
     int ttl;
 };
 
+
+/*
+ * This big-ass class deals with the rendering. Basically manages the OpenGL state machine, you
+ * probably shouldn't change the state of OpenGL from anywhere outside of this class. State changes
+ * should be performed by calling the members of this class. Once the context of the window is 
+ * passed to the render thread (in multithreaded applications), any OpenGL calls outside of this
+ * thread will probably take no effect. Objects, Planets and other stuff that is drawn on the
+ * screen have render methods that can contain OpenGL code (well, more like they must, but the 
+ * point is that they will be called from the render thread).
+ *
+ * All the public methods of this class are thread-safe.
+ */
 
 class RenderContext{
     private:
@@ -87,7 +100,7 @@ class RenderContext{
         math::vec3 m_light_position;
 
         std::thread m_render_thread;
-        bool m_pause, m_stop;
+        bool m_stop;
 
         int m_fb_width, m_fb_height;
         bool m_update_fb, m_update_projection;
@@ -107,49 +120,201 @@ class RenderContext{
 
         double m_glfw_time;
 
+        /*
+         * Inits OpenGL
+         */
         void initGl();
+
+        /*
+         * Inits Dear-ImGUI.
+         */
         void initImgui();
+
+        /*
+         * Called from the "start" method as a separate thread. Contains the main rendering loop.
+         */
         void run();
+
+        /*
+         * Internal call to render the scene.
+         */
         void render();
+
         void renderAttPoints(const BasePart* part, const math::mat4& body_transform);
+
+        /*
+         * Renders Dear-ImGUI.
+         */
         void renderImGui();
+
+        /*
+         * Loads or re-loads the shaders.
+         */
         void loadShaders();
+
+        /*
+         * Sets the main light position when we are going to render, we have a very simple 
+         * rendering pipeline for now.
+         */
         void setLightPositionRender();
 
+        /*
+         * Different methods that can be called to render different stuff.
+         */
         int renderSceneEditor();
         int renderSceneUniverse();
         int renderObjects(bool render_att_points, const std::vector<object_transform>* buff, const math::mat4* view_mat);
         void renderBulletDebug(const math::mat4* view_mat);
         void renderNotifications();
     public:
+        /*
+         * Constructor.
+         *
+         * @app: raw pointer to the app.
+         */
         RenderContext(BaseApp* app);
         ~RenderContext();
-        
-        void start();
-        void stop();
-        void pause(bool pause);
 
+        /*
+         * Starts and launches the rendering thread. This thread is completely asynchronous from
+         * the main thread.
+         */
+        void start();
+
+        /*
+         * Stops the rendering thread
+         */
+        void stop();
+
+        /*
+         * Sets the main light position.
+         *
+         * @pos: const reference to the light position, relative to the centered camera.
+         */
         void setLightPosition(const math::vec3& pos);
+
+        /*
+         * Sets the average times for the debug overlay. The times are in milliseconds.
+         *
+         * physics_load_time: average load time of the physics.
+         * logic_load_time: average load time of the logic.
+         * logic_sleep_time: average sleep time of the logic.
+         */
         void setDebugOverlayTimes(double physics_load_time, double logic_load_time, double logic_sleep_time);
+
+        /*
+         * Sets the model for the attachment points in the editor. This are the small attachment
+         * thingies that are rendered on the parts.
+         *
+         * @att_point_model: raw pointer... to unique pointer... of the model. It will probably
+         * change to something less stupid at some point.
+         */
         void setAttPointModel(std::unique_ptr<Model>* att_point_model);
+
+        /*
+         * Binds a program (shader), you should pass one of the shader macros defined at the top of
+         * this file (SHADER_PHONG_*).
+         *
+         * @program: program macro value.
+         */
         void useProgram(int program) const;
+
+        /*
+         * Binds a buffer array object.
+         *
+         * @vao: value of the vao.
+         */
         void bindVao(GLuint vao) const;
+
+        /*
+         * Method called from the WindowManager in case the size of the screen changes.
+         *
+         * @width: width of the framebuffer.
+         * @height: height of the framebuffer.
+         */
         void onFramebufferSizeUpdate(int width, int height);
+
+        /*
+         * Toggles the rendering of the debug overlay.
+         */
         void toggleDebugOverlay();
+
+        /*
+         * Toggles the Bullet debug rendering.
+         */
         void toggleDebugDraw();
+
+        /*
+         * Sets the editor's gui. In the future, when we have more GUIs, we could just pass the 
+         * macro of the GUI and the pointer, for example setGUI(GUI_MODE_EDITOR, editor_gui_ptr)
+         *
+         * @editor_ptr: pointer to the editor GUI object.
+         */
         void setEditorGUI(BaseGUI* editor_ptr);
+
+        /*
+         * Reloads the shaders.
+         */
         void reloadShaders();
+
+        /*
+         * Sets the debug drawer, we pass the physics pointer because we are fucking crazy here.
+         * Also because it holds the pointer to the DebugDrawer object.
+         *
+         * @physics: pointer to the physics object.
+         */
         void setDebugDrawer(Physics* physics);
+
+        /*
+         * Adds a notification that will be rendered at the center of the screen, in bright green
+         * color.
+         *
+         * @string: constant wchar_t string. Has to be null-terminated.
+         * @ttl: time-to-live of the notification.
+         */
         void addNotification(const wchar_t* string, int ttl=180);
+
+        /*
+         * Sets the default font atlas to be used to render most of the text on the screen.
+         *
+         * @atlas: pointer to the atlas.
+         */
         void setDefaultFontAtlas(const FontAtlas* atlas);
 
-        int getBoundShader() const;
-        GLuint getBoundVao() const;
+        /*
+         * Returns by reference the size of the default framebuffer size (the size of the screen).
+         * Used by GUI classes to restore the viewport to the right size.
+         *
+         * @width: width of the framebuffer.
+         * @height: height of the framebuffer.
+         */
         void getDefaultFbSize(float& width, float& height) const;
+
+        /*
+         * Returns true if Dear-ImGUI wants to process the mouse input.
+         */
         bool imGuiWantCaptureMouse() const;
+
+        /*
+         * Returns true if Dear-ImGUI wants to process the keyboard input.
+         */
         bool imGuiWantCaptureKeyboard() const;
+
+        /*
+         * Used to get the location of a uniform variable of a specific shader, since the shader
+         * values are internally stored in this class. This method may be thread safe but should
+         * ONLY be called from the render methods and the rendering thread, otherwise it may not
+         * work.
+
+         * @shader: shader macro.
+         * @location: char string with the name of the uniform variable.
+         */
         GLuint getUniformLocation(int shader, const char* location) const;
 
+        /*
+         * Special context update method for the Planetarium and PlanetRenderer. These applications
+         * are single-threaded, so their main thread retains the OpenGL context.
+         */
         void contextUpdatePlanetRenderer();
 };
 

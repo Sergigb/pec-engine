@@ -52,7 +52,6 @@ RenderContext::RenderContext(BaseApp* app){
     m_bound_vao = 0;
     m_bound_programme = 0;
 
-    m_pause = false;
     m_stop = false;
 
     m_update_fb = false;
@@ -446,16 +445,6 @@ void RenderContext::setAttPointModel(std::unique_ptr<Model>* att_point_model){
 }
 
 
-int RenderContext::getBoundShader() const{
-    return m_bound_programme;
-}
-
-
-GLuint RenderContext::getBoundVao() const{
-    return m_bound_vao;
-}
-
-
 void RenderContext::useProgram(int shader) const{
     if(shader == m_bound_programme){
         return;
@@ -579,11 +568,6 @@ void RenderContext::stop(){
     m_stop = true;
     m_render_thread.join();
     log("RenderContext: stopping rendering thread");
-}
-
-
-void RenderContext::pause(bool pause){
-    m_pause = pause;
 }
 
 

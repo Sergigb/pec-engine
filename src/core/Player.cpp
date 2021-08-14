@@ -68,7 +68,7 @@ void Player::updateCamera(){
 void Player::processInput(){
     if((m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)) 
         && (m_input->pressed_keys[GLFW_KEY_C] & INPUT_KEY_DOWN))
-        setCamTarget();
+        setPlayerTarget();
     else if(m_input->pressed_keys[GLFW_KEY_C] & INPUT_KEY_DOWN && PLAYER_BEHAVIOUR_SIMULATION){
         m_orbital_cam_mode = m_orbital_cam_mode == ORBITAL_CAM_MODE_ORBIT ? 
                              ORBITAL_CAM_MODE_SURFACE : ORBITAL_CAM_MODE_ORBIT;
@@ -113,7 +113,7 @@ void Player::unsetVessel(){
 }
 
 
-void Player::setCamTarget(){
+void Player::setPlayerTarget(){
     if(m_behaviour & PLAYER_BEHAVIOUR_EDITOR){
         if(m_vessel){
             unsetVessel();
