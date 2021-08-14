@@ -11,7 +11,7 @@ class Input;
 /*
  * Camera class for the main rendering, maybe it's not ideal for other cameras. In the future
  * maybe this class could be a simple class that doesn't deal with input or changes in the 
- * framebuffer size, and then extend in case we need it to deal with input or window size changes
+ * framebuffer size, and then extend in case we need it to deal with input or window size changes.
  */
 
 class Camera{

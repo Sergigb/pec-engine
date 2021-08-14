@@ -18,7 +18,7 @@
 
 /*
  * Functions used to manage object IDs. The IDs are stored in three sets, a vessel set, part set
- * an resource set. These functions are not thread safe, so these functions should be called from
+ * and resource set. These functions are not thread safe, so these functions should be called from
  * the main thread. The ID 0 is a reserved ID and it's not valid. These functions may return
  * REQUEST_INVALID_SET if the picked set does not exist. For the vessel and part sets, these IDs
  * are supposed to be unique identifiers of a particular object (m_unique_id and m_vessel_id). The

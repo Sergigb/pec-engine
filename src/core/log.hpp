@@ -30,7 +30,7 @@ void log_gl_params();
 template<typename T, typename... Args> int log(T, Args...);
 
 /*
- * Loging function with as single argument.
+ * Loging function with a single argument.
  */
 template<typename T> int log(T);
 

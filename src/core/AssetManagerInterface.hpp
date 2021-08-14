@@ -13,7 +13,8 @@ class btTypedConstraint;
 /*
  * This class is used as an interface between the asset manager and the vessels/parts, this is
  * mainly used to add commands to the command buffers, usually from the update methods, as the
- * physics thread is most likely stepping.
+ * physics thread is most likely stepping. Command buffers can be used, for example, to change
+ * the motion state of a part or to add/remove constraints.
  */
 
 class AssetManagerInterface{
@@ -83,8 +84,8 @@ class AssetManagerInterface{
 
         /* 
          * Adds parts to the m_build_constraint_subtree_buffer. All the parts in this buffer will
-         * have the constraints of their subtrees built by calling the part's buildSubTreeConstraints
-         * method.
+         * have the constraints of their subtrees built by recursively calling the parts
+         * buildSubTreeConstraints method.
          *
          * This method should be used when a subtree is cloned (for example in the editor) or when
          * a vessel is spawned in the middle of the simulation, as the constraints can't be added

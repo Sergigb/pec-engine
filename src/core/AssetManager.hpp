@@ -35,7 +35,7 @@ struct planetary_system;
 /*
  * Class used to manage assets (planets/parts/resources etc) and buffers, performs basic tasks such
  * as updating render and command buffers (required for multithreading) or deleting/updating assets. 
- * This class exposes most of its members, so it should only be visible to core classes that might
+ * This class exposes most of its members, so it should only be visible to core classes that may
  * need it, but not to the assets. AssetManagerInterface is used instead to interact with this 
  * class (for example, adding commands to the command buffers).
  */
@@ -105,21 +105,22 @@ class AssetManager{
 
         /* 
          * Used to process the command buffers, must be called by the app from the main thread
-         * when the physics thread is paused.
+         * when the physics thread is not running.
          * 
          * @physics_pause: wether the physics is paused (and thus Bullet has not stepped), in order
-         * to update the AABBs.
+         * to update AABBs.
          */
         void processCommandBuffers(bool physics_pause);
 
         /* 
-         * Called to update the render buffers, must be called when the physics thread is stopped.
+         * Called to update the render buffers, must be called when the physics thread is not 
+         * running.
          */
         void updateBuffers();
 
         /*
          * Clears the editor scene (main vessel and subtrees), must be called with the physics
-         * thread is stopped.
+         * thread is not running.
          */
         void clearSceneEditor();
 
@@ -128,8 +129,8 @@ class AssetManager{
          * part is the root of the editor vessel the editor vessel gets deleted. This method should
          * be re-written.
          *
-         * @part: root of the subtree to be deleted, should be the root of a subtree in
-         * m_editor_subtrees or the root of m_editor_vessel.
+         * @part: pointer to the root part of the subtree to be deleted, should be the root of a 
+         * subtree in m_editor_subtrees or the root of m_editor_vessel.
          * @vessel_id: id of the editor's vessel, should not be required and will be deleted in the
          * future.
          */
@@ -137,8 +138,9 @@ class AssetManager{
 
         /* 
          * Calls the update method of all the vessels, this should be called when the physics 
-         * thread is running, as the vessel and the parts should be using the command buffers (see
-         * BasePart's and Vessel's update method)
+         * thread is running, the vessel's and part's update methods should use the command buffers
+         * via AssetManagerInterface to interact with the AssetManager (see BasePart's and Vessel's
+         * update method)
          */
         void updateVessels();
 

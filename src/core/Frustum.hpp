@@ -5,7 +5,7 @@
 
 
 /*
- * Class is used to perform frustum culling.
+ * This class is used to perform frustum culling.
  */
 
 class Frustum{
@@ -16,7 +16,7 @@ class Frustum{
         ~Frustum();
 
         /*
-         * Updates frustum planes given the projection and view matrices.
+         * Updates the frustum planes given the projection and view matrices.
          *
          * @proj_mat: projection matrix.
          * @view_mat: view matrix, should be the centered view matrix.

@@ -84,7 +84,7 @@ class Physics{
         void init(const btVector3& gravity);
 
         /*
-         * Runs the simulation, is launched as a separate thead from startSimulation, uses the
+         * Runs the simulation, is launched as a separate thead through startSimulation, uses the
          * thread monitor to synchronize itself with the main thead.
          */
         void runSimulation(btScalar time_step, int max_sub_steps);
@@ -120,7 +120,8 @@ class Physics{
          * flags look here:
          * https://pybullet.org/Bullet/phpBB3/viewtopic.php?t=11865
          *
-         * @body: pointer to the rigid body, this class does not take ownership of rigid bodies.
+         * @body: pointer to the rigid body, this class does not take ownership of the rigid 
+         * bodies.
          * @group: collision group of the body, we use custom collision groups (defined at the
          * top of this file).
          * @mask: collision mask, essentialy what should collide with this body.
@@ -156,7 +157,7 @@ class Physics{
          * Tests a ray, if it collides with an object it returns the pointer to that object. Mainly
          * used in the editor because it uses single precision. The collision group of this ray is
          * set to 1 (CG_DEFAULT) by default, so it will collide with everything. This method is 
-         * thread safe.
+         * thread safe (data races might still occur).
          *
          * @ray_start_world: start of the ray, single precision.
          * @ray_end_world: end of the ray, single precision.
@@ -199,8 +200,9 @@ class Physics{
          * @max_sub_steps: maximum number of internal substeps of Bullet. Ideally it should be more
          * than 1, since we have a fixed time step. However, multiple substeps interferes with the
          * creation of the render buffers. For some reason, the coordinates of the objects appear
-         * shifted from the camera. There may be a method to fix this, but I have found nothing so
-         * far. I found someone with the same problem a while ago, but I can't find the page now.
+         * shifted from the camera because of some interpolation that Bullet does. There may be a
+         * method to fix this, but I have found nothing so far. I found someone with the same 
+         * problem a while ago, but I can't find the page now.
          */
         void startSimulation(btScalar time_step, int max_sub_steps);
 
