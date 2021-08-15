@@ -35,6 +35,21 @@ list of stuff i have to do/fix
 - reference_ellipse_to_xyz doesn't work right when lat or long is not equal to 0
 - object view distance is missing on the buffer update method in the asset manager
 - we should add a macro that avoids having to compile with the parts (assets/parts/) in, for example, the planetarium. That way we wouldn't need them in PLANETARIUMOBJS (now automatically included in ASSETSSRCS)
+- we need cross product for vec3
+- macros RESOURCE_TYPE_FUEL_SOLID, RESOURCE_TYPE_FUEL_GAS and RESOURCE_TYPE_OXIDIZER should be merged?
+- investigate about the ejection force of the vega's stages
+- in Vessel::addChild(BasePart* child, BasePart* parent), why do I pass a raw pointer? just pass a reference to the shared pointer???
+- create a method in render context to change the clear color
+- in the camera: /* This should be precomputed, doesn't matter right now because we still have the single precision problem*/, fix it you lazy retard
+- STRING_ALIGN_LEFT/RIGHT broken????????
+- we should organise better the player class, the orbital distance maybe should be kept for the different player behaviours (so when we change simulation/planetarium we keep the orbital cam distance)
+- precompute path_translation_normd in Planet.cpp
+- deleteObjectEditor should be revised.... also when we do m_editor_subtrees.erase(stid) we should check if it's in the map. m_delete_subtree_buffer.emplace_back should be called only if the checks pass. The vessel_id parameter should be deleted. Also update the description in the header once this is done.
+- maybe bullet doesn't need to be initialised in the physics' class constructor, just have a separate method.
+- maybe render_buffers m_buffers should be in the asset manager?
+- I don't like the friend classes in BaseApp
+- maybe the camera could keep the app pointer and ask for the window handler and input pointer whenever it needs them.
+- render context, setAttPointModel shouldnt take a raw pointer to shared pointer
 
 Interesting links:
 - things about planets:
