@@ -5,6 +5,7 @@
 #include <memory>
 #include <thread>
 #include <vector>
+#include <string>
 
 #include "maths_funcs.hpp"
 

@@ -205,6 +205,7 @@ namespace dmath{ // double precision for the camera
         vec4 operator-( double rhs ) const;
         vec4 operator-( const vec4 &rhs ) const;
         vec4 operator/( double rhs ) const;
+        vec4 &operator=( const vec4 &rhs );
 
         double v[4];
     };

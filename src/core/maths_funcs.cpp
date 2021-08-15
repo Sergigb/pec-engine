@@ -1078,6 +1078,14 @@ dmath::vec4 dmath::vec4::operator/( double rhs ) const {
     return vc;
 }
 
+dmath::vec4 &dmath::vec4::operator=( const vec4 &rhs ) {
+    v[0] = rhs.v[0];
+    v[1] = rhs.v[1];
+    v[2] = rhs.v[2];
+    v[3] = rhs.v[3];
+    return *this;
+}
+
 dmath::vec4 dmath::normalise(const vec4 &v) {
     dmath::vec4 vb;
     double l = length( v );
