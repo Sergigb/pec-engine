@@ -251,6 +251,7 @@ namespace dmath{ // double precision for the camera
     mat4 rotate_y_deg( const mat4 &m, double deg );
     mat4 rotate_z_deg( const mat4 &m, double deg );
     mat4 rotate_axis( const mat4 &m, double deg, const vec3 &axis );
+    mat4 identity_mat4();
     //versor functions
     mat4 quat_to_mat4( const versor &q );
     versor normalise( versor &q );
