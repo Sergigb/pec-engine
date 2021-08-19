@@ -19,10 +19,16 @@ std::unique_ptr<Model> PlanetTree::m_base128;
 #define ELEVATION_LOCATION 1
 
 
+PlanetTree::PlanetTree(){
+    m_surface.is_built = false;
+}
+
+
 PlanetTree::PlanetTree(RenderContext* render_context, Planet* planet){
     m_surface.max_levels = 6;
     m_surface.planet_sea_level = 6371000.f;
-    buildSurface();
+
+    m_surface.is_built = false;
 
     m_render_context = render_context;
     m_planet = planet;
@@ -46,11 +52,14 @@ PlanetTree::PlanetTree(RenderContext* render_context, Planet* planet){
 
 
 PlanetTree::~PlanetTree(){
-    for(uint i=0; i < 6; i++){
-        cleanSide(m_surface.surface_tree[i], m_surface.max_levels);
+    if(m_surface.is_built){
+        for(uint i=0; i < 6; i++){
+            cleanSide(m_surface.surface_tree[i], m_surface.max_levels);
+        }
+        // still not checking if we have threads running in the background
+        textureFree();
     }
-    // still not checking if we have threads running in the background
-    textureFree();
+    m_surface.is_built = false;
 }
 
 
@@ -215,6 +224,7 @@ void PlanetTree::bindLoadedTexture(struct surface_node& node){
 
 void PlanetTree::buildSurface(){
     short num_levels = m_surface.max_levels;
+    m_surface.is_built = true;
 
     m_surface.surface_tree[0].side = SIDE_PX;
     m_surface.surface_tree[1].side = SIDE_NX;

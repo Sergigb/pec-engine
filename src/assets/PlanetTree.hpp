@@ -59,6 +59,7 @@ struct surface_node{
 
 
 struct planet_surface{
+    bool is_built;
     struct surface_node surface_tree[6];
     short max_levels;
     double planet_sea_level;
@@ -97,7 +98,6 @@ class PlanetTree{
         void bindTexture(struct surface_node& node);
         void bindElevationTexture(struct surface_node& node);
         void buildChilds(struct surface_node& node, int num_levels);
-        void buildSurface();
 
         void bindLoadedTexture(struct surface_node& node);
         void asyncTextureLoad(struct surface_node* node, struct planet_surface* surface);
@@ -108,8 +108,11 @@ class PlanetTree{
 
         void renderSide(struct surface_node& node, math::mat4& planet_transform_world, int max_level, const dmath::vec3& cam_origin, double sea_level);
     public:
+        PlanetTree();
         PlanetTree(RenderContext* render_context, Planet* planet);
         ~PlanetTree();
+
+        void buildSurface();
 
         void render(const dmath::vec3& cam_translation, const dmath::mat4 transform);
 
