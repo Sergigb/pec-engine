@@ -111,6 +111,10 @@ int load_planets(const tinyxml2::XMLElement* planets_element, planet_map& planet
         data.longitude_perigee_d *= ONE_DEG_IN_RAD;
         data.long_asc_node_0 *= ONE_DEG_IN_RAD;
         data.long_asc_node_d *= ONE_DEG_IN_RAD;
+        // avoids valgrind reporting uninitialised values
+        data.pos = dmath::vec3(0.0, 0.0, 0.0);
+        data.pos_prev = dmath::vec3(0.0, 0.0, 0.0);
+        data.true_anomaly = 0.0;
         double mean_anomaly_d = data.mean_longitude_d - data.longitude_perigee_d;
         double period = ((2 * M_PI) / mean_anomaly_d);
         data.period = period;

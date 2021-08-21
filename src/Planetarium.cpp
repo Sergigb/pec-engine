@@ -40,6 +40,7 @@ bool comparator(const Planet* a, const Planet* b){
 
 void Planetarium::init(){
     m_window_handler->setWindowTitle("Planetarium");
+    m_seconds_since_j2000 = 0.0;
 
     m_asset_manager->loadStarSystem();
 

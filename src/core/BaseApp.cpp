@@ -95,6 +95,8 @@ void BaseApp::displayLoadingScreen(){
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     }
 
+    stbi_image_free(image_data);
+
     m_render_context->useProgram(SHADER_GUI);
     glUniform2f(m_disp_location, 0.0, 0.0);
 
