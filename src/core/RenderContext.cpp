@@ -74,6 +74,8 @@ RenderContext::RenderContext(BaseApp* app){
 
     m_rscene_acc_load_time = 0.0;
     m_rgui_acc_load_time = 0.0;
+
+    check_gl_errors(true, "RenderContext::RenderContext");
 }
 
 
@@ -100,12 +102,12 @@ void RenderContext::loadShaders(){
 
     m_debug_shader = create_programme_from_files("../shaders/debug_vs.glsl",
                                                  "../shaders/debug_fs.glsl");
-    log_programme_info(m_planet_shader);
+    log_programme_info(m_debug_shader);
     m_debug_view_mat = glGetUniformLocation(m_debug_shader, "view");
     m_debug_proj_mat = glGetUniformLocation(m_debug_shader, "proj");
 
     m_planet_shader = create_programme_from_files("../shaders/planet_vs.glsl",
-                                                    "../shaders/planet_fs.glsl");
+                                                  "../shaders/planet_fs.glsl");
     log_programme_info(m_planet_shader);
     m_planet_view_mat = glGetUniformLocation(m_planet_shader, "view");
     m_planet_proj_mat = glGetUniformLocation(m_planet_shader, "proj");
@@ -155,6 +157,8 @@ void RenderContext::loadShaders(){
 
     glUseProgram(m_gui_shader);
     glUniformMatrix4fv(m_gui_proj_mat, 1, GL_FALSE, orto_proj.m);
+
+    check_gl_errors(true, "RenderContext::loadShaders");
 }
 
 
@@ -187,6 +191,8 @@ void RenderContext::initGl(){
         log("MSAA is available with ", samples, " samples");
     else
         log("MSAA is unavailable");
+
+    check_gl_errors(true, "RenderContext::initGl");
 }
 
 
@@ -416,6 +422,8 @@ void RenderContext::render(){
         m_debug_overlay->render();
         glEnable(GL_DEPTH_TEST);
     }
+
+    check_gl_errors(true, "RenderContext::render - fix them :P");
 }
 
 

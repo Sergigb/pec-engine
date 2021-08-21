@@ -312,3 +312,22 @@ struct bbox get_AABB(GLfloat* vbuffer, int n_vert){
 
     return da_box;
 }
+
+
+bool check_gl_errors(bool print, const char* caller){
+    bool error = false;
+    GLenum e = glGetError();
+
+    while(e != GL_NO_ERROR){
+        error = true;
+        if(print){
+            std::cerr << "check_gl_errors: GL error with value " << e << " from "
+                      << caller << std::endl;
+            log("check_gl_errors: GL error with value ", e, " from ", caller);
+        }
+
+        e = glGetError();
+    }
+
+    return error;
+}

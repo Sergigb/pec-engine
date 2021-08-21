@@ -22,6 +22,7 @@ void update_fps_counter(GLFWwindow* window);
 double get_fps();
 struct bbox get_AABB(GLfloat* vbuffer, int n_vert);
 struct bbox get_OBB(GLfloat* vbuffer, int n_vert); // todo
+bool check_gl_errors(bool print, const char* caller = "unknown caller");
 
 struct bbox{
     math::vec3 vert[8];
