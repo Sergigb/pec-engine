@@ -1253,10 +1253,6 @@ double dmath::determinant( const mat4 &mm ) {
            mm.m[0] * mm.m[5] * mm.m[10] * mm.m[15];
 }
 
-dmath::dmat4 dmath::identity_mat4() {
-    return dmath::mat4( 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
-                             0.0f, 0.0f, 0.0f, 0.0f, 1.0f );
-}
 
 /*------------------------------VERSOR FUNCTIONS------------------------------*/
 
