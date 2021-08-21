@@ -57,8 +57,8 @@ void AssetManager::loadParts(){
 
 
 void AssetManager::loadStarSystem(){
-    m_system.reset(new planetary_system);
-    load_star_system(*m_system);
+    m_planetary_system.reset(new PlanetarySystem(m_render_context));
+    load_star_system(m_planetary_system.get(), m_render_context);
 }
 
 
@@ -272,10 +272,13 @@ void AssetManager::addObjectBuffer(Object* obj, std::vector<object_transform>& b
 
 
 void AssetManager::updatePlanetBuffer(std::vector<planet_transform>& buffer_){
+    planet_map& planets = m_planetary_system->getPlanets();
+    planet_map::iterator it;
+
     buffer_.clear();
 
-    for(uint i=0; i < m_planets.size(); i++){
-        buffer_.emplace_back(m_planets.at(i).get(), m_planets.at(i)->getTransform());
+    for(it=planets.begin(); it!=planets.end(); it++){
+        buffer_.emplace_back(it->second.get(), it->second->getTransform());
     }
 }
 
@@ -366,14 +369,6 @@ void AssetManager::updateKinematics(){
     for(uint i=0; i < m_kinematics.size(); i++){
         m_kinematics.at(i)->update();
     }
-}
-
-
-void AssetManager::initPlanets(){
-    PlanetTree::loadBases(m_frustum, m_render_context);
-
-    std::unique_ptr<Planet> earth(new Planet(m_render_context));
-    m_planets.emplace_back(std::move(earth));
 }
 
 

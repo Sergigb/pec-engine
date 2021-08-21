@@ -8,15 +8,9 @@
 #include "core/BaseApp.hpp"
 
 
-#define SECS_FROM_UNIX_TO_J2000 946684800.0
-#define SECONDS_IN_A_CENTURY 3155760000.0
-#define AU_TO_METERS 149597900000.0
-
-
 class FontAtlas;
 class Text2D;
-struct planetary_system;
-struct planet;
+class Planet;
 
 
 #define MAX_ITER 10
@@ -27,14 +21,13 @@ class Planetarium : public BaseApp{
         double m_delta_t, m_seconds_since_j2000;
         std::unique_ptr<Text2D> m_text, m_text2;
 
-        std::vector<const planet*> m_bodies;
+        std::vector<const Planet*> m_bodies;
         uint m_pick;
 
         void init();
         void logic();
         void updateSceneText();
-        void updateOrbitBuffers(double current_time);
-        void initBuffers();
+        void initGl();
         void renderOrbits();
 
         // application default font atlas
@@ -48,7 +41,5 @@ class Planetarium : public BaseApp{
 
         void run();
 };
-
-void update_orbital_elements(planetary_system& system, const double centuries_since_j2000);
 
 #endif

@@ -53,7 +53,7 @@ struct object_transform{
  * on.
  */
 struct planet_transform{
-    Planet* planet_ptr;
+    Planet* planet_ptr; // maybe could be constant?
     dmath::mat4 transform;
 
     /*

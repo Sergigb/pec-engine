@@ -478,10 +478,12 @@ void PlanetTree::renderSide(struct surface_node& node, math::mat4& planet_transf
 
 
 void PlanetTree::render(const dmath::vec3& cam_translation, const dmath::mat4 transform){
+    if(!m_surface.is_built)
+        return;
+
 #ifdef ASYNC_PLANET_TEXTURE_LOAD
     bindLoadedTextures();
 #endif
-
     math::mat4 planet_transform_world;
     dmath::mat4 dplanet_transform_world = transform;
     dplanet_transform_world.m[12] -= cam_translation.v[0];

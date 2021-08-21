@@ -269,7 +269,6 @@ int RenderContext::renderSceneUniverse(){
         }
         num_rendered = renderObjects(false, &rbuf->buffer, &rbuf->view_mat);
 
-        // really simple but it's ok for now
         for(uint i=0; i < rbuf->planet_buffer.size(); i++){
             planet_transform& tr = rbuf->planet_buffer.at(i);
             tr.planet_ptr->render(rbuf->cam_origin, tr.transform);

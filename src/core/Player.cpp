@@ -18,7 +18,7 @@
 
 
 typedef std::unordered_map<std::uint32_t, std::shared_ptr<Vessel>>::iterator VesselIterator;
-typedef std::unordered_map<std::uint32_t, struct planet>::iterator planet_iterator;
+typedef std::unordered_map<std::uint32_t, std::unique_ptr<Planet>>::iterator planet_iterator;
 
 
 Player::Player(Camera* camera, AssetManager* asset_manager, const Input* input){
@@ -58,7 +58,7 @@ void Player::updateCamera(){
         m_camera->orbitalCameraUpdate();
     }
     else if(m_behaviour & PLAYER_BEHAVIOUR_PLANETARIUM && m_selected_planet && !m_planetarium_freecam){
-        m_camera->setCameraPosition(m_asset_manager->m_system->planets.at(m_selected_planet).pos / m_planetarium_scale_factor);
+        m_camera->setCameraPosition(m_asset_manager->m_planetary_system->getPlanets().at(m_selected_planet)->getPosition() / m_planetarium_scale_factor);
         m_camera->setOrbitalInclination(0.0, dmath::vec3(0.0, 0.0, 0.0));
         m_camera->orbitalCameraUpdate();
     }

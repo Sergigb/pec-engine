@@ -14,7 +14,7 @@
 
 class RenderContext;
 
-typedef std::unordered_map<std::uint32_t, Planet> planet_map;
+typedef std::unordered_map<std::uint32_t, std::unique_ptr<Planet>> planet_map;
 
 
 // simple star
@@ -27,7 +27,7 @@ struct star{
 
 class PlanetarySystem{
     private:
-        planet_map m_planets;
+        std::unique_ptr<planet_map> m_planets;
         std::string m_system_name;
         struct star m_system_star;
 
@@ -36,8 +36,19 @@ class PlanetarySystem{
         PlanetarySystem(RenderContext* render_context);
         ~PlanetarySystem();
 
-        planet_map& getPlanets();
+        void setPlanetMap(std::unique_ptr<planet_map>& map);
+        void setSystemName(const char* name);
+        void setStar(star& system_star);
+
+        void updateRenderBuffers(double current_time);
+        void updateOrbitalElements(const double cent_since_j2000);
+
+        void renderOrbits() const;
+
         const planet_map& getPlanets() const;
+        planet_map& getPlanets();
+        const star& getStar() const;
+        const std::string& getSystemName() const;
 };
 
 

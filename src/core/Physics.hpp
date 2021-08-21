@@ -21,6 +21,13 @@
 
 #define GRAVITATIONAL_CONSTANT 6.67430e-11
 
+/* time macros */
+#define SECS_FROM_UNIX_TO_J2000 946684800.0
+#define SECONDS_IN_A_CENTURY 3155760000.0
+
+/* distance macros */
+#define AU_TO_METERS 149597900000.0
+
 class Object;
 
 struct thread_monitor;

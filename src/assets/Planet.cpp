@@ -14,6 +14,7 @@
 
 Planet::Planet(RenderContext* render_context) : m_planet_tree(render_context, this){
     m_render_context = render_context;
+    initBuffers();
 }
 
 
@@ -24,13 +25,50 @@ Planet::~Planet(){
 }
 
 
-dmath::mat4& Planet::getTransform(){
-    return m_planet_transform;
+const dmath::mat4 Planet::getTransform() const{
+    dmath::mat4 t;
+    dmath::translate(t, m_orbital_data.pos);
+    return t;
 }
 
 
-dmath::mat4 Planet::getTransform() const{
-    return m_planet_transform;
+const orbital_data& Planet::getOrbitalData() const{
+    return m_orbital_data;
+}
+
+
+const dmath::vec3& Planet::getPosition() const{
+    return m_orbital_data.pos;
+}
+
+
+const dmath::vec3& Planet::getPrevPosition() const{
+    return m_orbital_data.pos_prev;
+}
+
+
+const std::string& Planet::getName() const{
+    return m_name;
+}
+
+
+std::uint32_t Planet::getId() const{
+    return m_id;
+}
+
+
+orbital_data& Planet::getOrbitalData(){
+    return m_orbital_data;
+}
+
+
+void Planet::setID(std::uint32_t id){
+    m_id = id;
+}
+
+
+void Planet::setName(const char* name){
+    m_name = name;
 }
 
 
@@ -41,8 +79,7 @@ void Planet::render(const dmath::vec3& cam_translation){
 }
 
 void Planet::render(const dmath::vec3& cam_translation, const dmath::mat4 transform){
-    UNUSED(cam_translation);
-    UNUSED(transform);
+    m_planet_tree.render(cam_translation, transform);
 }
 
 
@@ -217,8 +254,6 @@ void Planet::updateRenderBuffers(double current_time){
 
 
 void Planet::renderOrbit() const{
-    /* We suppose that the shader has been bound 
-       We also suppose that the shader's color uniform has been set up */
     m_render_context->bindVao(m_vao);
     glDrawElements(GL_LINES, NUM_VERTICES * 2, GL_UNSIGNED_SHORT, NULL);
 }

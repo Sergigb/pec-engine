@@ -17,8 +17,6 @@ class RenderContext;
 /* Everything in this struct is too verbose and it bothers me... */
 
 struct orbital_data{
-    std::uint32_t id;
-    std::string name;
     // initially read from file
     double mass, radius, semi_major_axis_0, semi_major_axis_d, eccentricity_0, eccentricity_d,
            inclination_0, inclination_d, mean_longitude_0, mean_longitude_d, longitude_perigee_0,
@@ -33,17 +31,13 @@ struct orbital_data{
 
 class Planet{
     private:
-        dmath::mat4 m_planet_transform; // this will change
         orbital_data m_orbital_data;
+        std::uint32_t m_id;
+        std::string m_name;
 
         // orbit render buffers
         GLuint m_vao, m_vbo_vert, m_vbo_ind;
-        //GLuint m_color_location, m_proj_location, m_view_location; MOVE THIS TO PlanetarySystem!!
-        /*
-        m_color_location = m_render_context->getUniformLocation(SHADER_DEBUG, "line_color");
-        m_proj_location = m_render_context->getUniformLocation(SHADER_DEBUG, "proj");
-        m_view_location = m_render_context->getUniformLocation(SHADER_DEBUG, "view");
-        */
+
         RenderContext* m_render_context;
 
         PlanetTree m_planet_tree;
@@ -63,8 +57,16 @@ class Planet{
         void updateOrbitalElements(const double cent_since_j2000);
         void updateRenderBuffers(double current_time);
 
-        dmath::mat4& getTransform();
-        dmath::mat4 getTransform() const;
+        void setID(std::uint32_t id);
+        void setName(const char* name);
+
+        const dmath::vec3& getPosition() const;
+        const dmath::vec3& getPrevPosition() const;
+        const std::string& getName() const;
+        const orbital_data& getOrbitalData() const;
+        orbital_data& getOrbitalData();
+        const dmath::mat4 getTransform() const;
+        std::uint32_t getId() const;
 };
 
 
