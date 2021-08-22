@@ -38,8 +38,7 @@ void App::init(){
 
     m_asset_manager->loadResources();
     m_asset_manager->loadParts();
-    //m_asset_manager->loadStarSystem();
-    m_asset_manager->initPlanets();
+    m_asset_manager->loadStarSystem();
 
     m_def_font_atlas.reset(new FontAtlas(256));
     m_def_font_atlas->loadFont("../data/fonts/Liberastika-Regular.ttf", 15);
@@ -133,7 +132,7 @@ void App::run(){
         
         // load ends here
 
-    //dmath::vec3 pos = m_camera->getCamPosition();
+    //const dmath::vec3& pos = m_camera->getCamPosition();
     //std::cout << pos.v[0] << " " << pos.v[1] << " " << pos.v[2] << std::endl;
 
 
@@ -218,8 +217,8 @@ void App::onRightMouseButton(){
     ray_callback.m_collisionFilterGroup = CG_RAY_EDITOR_SELECT;
 
     obj = m_physics->testRay(ray_callback, 
-                                btVector3(ray_start_world.v[0], ray_start_world.v[1], ray_start_world.v[2]),
-                                btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]));
+                             btVector3(ray_start_world.v[0], ray_start_world.v[1], ray_start_world.v[2]),
+                             btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]));
 
     if(obj){
         part = static_cast<BasePart*>(obj);

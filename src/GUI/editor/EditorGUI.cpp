@@ -210,6 +210,7 @@ EditorGUI::EditorGUI(const FontAtlas* atlas, const RenderContext* render_context
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     }
+    stbi_image_free(image_data);
 
     // part list panel
     glGenVertexArrays(1, &m_left_panel_vao);
