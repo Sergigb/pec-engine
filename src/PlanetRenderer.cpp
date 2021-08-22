@@ -36,7 +36,7 @@ PlanetRenderer::PlanetRenderer(int gl_width, int gl_height) : BaseApp(gl_width, 
 void PlanetRenderer::init(){
     m_render_context->setLightPosition(math::vec3(150.0, 100.0, 0.0));
 
-    m_asset_manager->initPlanets();
+    m_asset_manager->loadStarSystem();
 
     m_def_font_atlas.reset(new FontAtlas(256));
     m_def_font_atlas->loadFont("../data/fonts/Liberastika-Regular.ttf", 15);
@@ -51,7 +51,7 @@ PlanetRenderer::~PlanetRenderer(){
 
 
 void PlanetRenderer::run(){
-    bool polygon_mode_lines = false;
+    /*bool polygon_mode_lines = false;
     Planet planet(m_render_context.get());
 
     PlanetTree::loadBases(m_frustum.get(), m_render_context.get());
@@ -73,7 +73,7 @@ void PlanetRenderer::run(){
 
         m_render_context->contextUpdatePlanetRenderer();
 
-        dmath::vec3 cam_translation = m_camera->getCamPosition();
+        const dmath::vec3& cam_translation = m_camera->getCamPosition();
         planet.render(cam_translation);
 
         if(m_input->pressed_keys[GLFW_KEY_R] & INPUT_KEY_RELEASE){
@@ -99,7 +99,7 @@ void PlanetRenderer::run(){
         glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
         glfwSwapBuffers(m_window_handler->getWindow());
-    }
+    }*/
 
     m_window_handler->terminate();
 }

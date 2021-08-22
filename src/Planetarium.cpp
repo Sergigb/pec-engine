@@ -96,14 +96,6 @@ void Planetarium::renderOrbits(){
     glUniformMatrix4fv(view_location, 1, GL_FALSE, m_camera->getViewMatrix().m);
     glUniformMatrix4fv(proj_location, 1, GL_FALSE, m_camera->getProjMatrix().m);
 
-
-    GLenum e = glGetError();
-    while(e != GL_NO_ERROR){
-        std::cout << "error: " << e << std::endl;
-        e = glGetError();
-    }
-
-
     for(it=planets.begin();it!=planets.end();it++){
         Planet* current = it->second.get();
 
@@ -190,7 +182,7 @@ void Planetarium::logic(){
 void Planetarium::updateSceneText(){
     planet_map::const_iterator it;
     const planet_map& planets = m_asset_manager->m_planetary_system->getPlanets();
-    const math::mat4 proj_mat = m_camera->getProjMatrix();
+    const math::mat4& proj_mat = m_camera->getProjMatrix();
     const math::mat4 view_mat = m_camera->getViewMatrix();
     int w, h;
     std::wostringstream woss;

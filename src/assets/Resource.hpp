@@ -36,8 +36,8 @@ class Resource{
         char getState() const;
         double getDensity() const;
         double getTemperature() const;
-        void getName(std::string& name) const;
-        void getFancyName(std::string& fancy_name) const;
+        const std::string& getName() const;
+        const std::string& getFancyName() const;
         std::uint32_t getId() const;
 };
 

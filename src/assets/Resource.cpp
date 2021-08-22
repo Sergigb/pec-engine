@@ -41,13 +41,13 @@ double Resource::getTemperature() const{
 }
 
 
-void Resource::getName(std::string& name) const{
-    name = m_resource_name;
+const std::string& Resource::getName() const{
+    return m_resource_name;
 }
 
 
-void Resource::getFancyName(std::string& fancy_name) const{
-    fancy_name = m_resource_fancy_name;
+const std::string& Resource::getFancyName() const{
+    return m_resource_fancy_name;
 }
 
 

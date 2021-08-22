@@ -72,8 +72,7 @@ void VegaSolidEngine::renderOther(){
         ImGui::ColorEdit3("Mesh color", m_mesh_color.v);
 
         for(uint i=0; i < m_resources.size(); i++){
-            std::string rname;
-            m_resources.at(i).resource->getFancyName(rname);
+            const std::string& rname = m_resources.at(i).resource->getFancyName();
             ImGui::SliderFloat(rname.c_str(), &m_resources.at(i).mass, 0.0f, m_resources.at(i).max_mass);
         }
 
@@ -117,8 +116,7 @@ void VegaSolidEngine::renderOther(){
 
         ImGui::Separator();
         for(uint i=0; i < m_resources.size(); i++){
-            std::string rname;
-            m_resources.at(i).resource->getFancyName(rname);
+            const std::string& rname = m_resources.at(i).resource->getFancyName();
             ImGui::Text(rname.c_str());
             ImGui::ProgressBar(m_resources.at(i).mass / m_resources.at(i).max_mass);
         }
@@ -145,7 +143,7 @@ void VegaSolidEngine::update(){
     if(m_engine_status == ENGINE_ON){
         float current_flow = m_mass_flow_rate * TIME_STEP;
 
-        btMatrix3x3& basis = m_body->getWorldTransform().getBasis();
+        const btMatrix3x3& basis = m_body->getWorldTransform().getBasis();
         btMatrix3x3 gimbal;
         btVector3 force;
 
