@@ -89,7 +89,7 @@ void Separator::update(){
     if(m_separate){
         btTransform transform;
         m_body->getMotionState()->getWorldTransform(transform);
-        btMatrix3x3 part_rotation = transform.getBasis();
+        const btMatrix3x3& part_rotation = transform.getBasis();
         btVector3 force = part_rotation * btVector3(0.0, m_force, 0.0);
 
         m_separate = false;

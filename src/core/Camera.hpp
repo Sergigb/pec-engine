@@ -178,13 +178,13 @@ class Camera{
          * returns the view matrix center at the origin, which is used for rendering.
          */
         math::mat4 getViewMatrix() const;
-        math::mat4 getProjMatrix() const;
+        const math::mat4& getProjMatrix() const;
         math::mat4 getCenteredViewMatrix() const;
 
         /*
          * Returns the position of the camera, in double precision.
          */
-        dmath::vec3 getCamPosition() const;
+        const dmath::vec3& getCamPosition() const;
 
         /*
          * Returns the start and end of a ray casted from the current mouse position with 

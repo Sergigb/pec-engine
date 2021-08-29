@@ -111,17 +111,17 @@ void Planet::initBuffers(){
 
 void Planet::updateOrbitalElements(const double cent_since_j2000){
     m_orbital_data.semi_major_axis = m_orbital_data.semi_major_axis_0 +
-                              m_orbital_data.semi_major_axis_d * cent_since_j2000;
+                                     m_orbital_data.semi_major_axis_d * cent_since_j2000;
     m_orbital_data.eccentricity = m_orbital_data.eccentricity_0 +
-                           m_orbital_data.eccentricity_d * cent_since_j2000;
+                                  m_orbital_data.eccentricity_d * cent_since_j2000;
     m_orbital_data.inclination = m_orbital_data.inclination_0 +
-                          m_orbital_data.inclination_d * cent_since_j2000;
+                                 m_orbital_data.inclination_d * cent_since_j2000;
     m_orbital_data.mean_longitude = m_orbital_data.mean_longitude_0 +
-                             m_orbital_data.mean_longitude_d * cent_since_j2000;
+                                    m_orbital_data.mean_longitude_d * cent_since_j2000;
     m_orbital_data.longitude_perigee = m_orbital_data.longitude_perigee_0 +
-                                m_orbital_data.longitude_perigee_d * cent_since_j2000;
+                                       m_orbital_data.longitude_perigee_d * cent_since_j2000;
     m_orbital_data.long_asc_node = m_orbital_data.long_asc_node_0 +
-                            m_orbital_data.long_asc_node_d * cent_since_j2000;
+                                   m_orbital_data.long_asc_node_d * cent_since_j2000;
 
     m_orbital_data.mean_anomaly = m_orbital_data.mean_longitude - m_orbital_data.longitude_perigee;
     m_orbital_data.arg_periapsis = m_orbital_data.longitude_perigee - m_orbital_data.long_asc_node;

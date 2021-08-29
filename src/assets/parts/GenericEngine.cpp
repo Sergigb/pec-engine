@@ -56,8 +56,7 @@ void GenericEngine::renderOther(){
         ImGui::ColorEdit3("Mesh color", m_mesh_color.v);
 
         for(uint i=0; i < m_resources.size(); i++){
-            std::string rname;
-            m_resources.at(i).resource->getFancyName(rname);
+            const std::string& rname = m_resources.at(i).resource->getFancyName();
             ImGui::SliderFloat(rname.c_str(), &m_resources.at(i).mass, 0.0f, m_resources.at(i).max_mass);
         }
 
@@ -92,7 +91,7 @@ void GenericEngine::update(){
         float flow_hyd = liq_hyd, flow_oxy = liq_oxy;
         float flow = 1.0f; // the quantities are made up
         float max_gimbal_angle = 10.5f * ONE_DEG_IN_RAD; // all this stuff won't be hardcoded in the future
-        btMatrix3x3& basis = m_body->getWorldTransform().getBasis();
+        const btMatrix3x3& basis = m_body->getWorldTransform().getBasis();
         btMatrix3x3 gimbal;
         btVector3 force;
 

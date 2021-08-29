@@ -76,7 +76,7 @@ class WindowHandler{
         static void glfwScrollCallback(GLFWwindow* window, double xoffset, double yoffset);
 
         /*
-         * Update method to be called from the main thread, for now in polls GLFW events.
+         * Update method to be called from the main thread, for now it polls GLFW events.
          */
         void update();
 

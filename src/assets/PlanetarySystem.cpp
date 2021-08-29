@@ -4,8 +4,6 @@
 
 PlanetarySystem::PlanetarySystem(RenderContext* render_context){
     m_render_context = render_context;
-
-    // somehow we need to init the planets
 }
 
 

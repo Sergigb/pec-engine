@@ -211,13 +211,12 @@ void RenderContext::initImgui(){
 
 
 void RenderContext::renderAttPoints(const BasePart* part, const math::mat4& body_transform){
-    const std::vector<struct attachment_point>* att_points = part->getAttachmentPoints();
+    const std::vector<struct attachment_point>& att_points = part->getAttachmentPoints();
 
     math::mat4 att_transform;
-    math::vec3 point;
 
     if(part->hasParentAttPoint()){
-        point = part->getParentAttachmentPoint()->point;
+        const math::vec3& point = part->getParentAttachmentPoint().point;
         att_transform = body_transform * math::translate(math::identity_mat4(), point);
         m_att_point_model->setMeshColor(math::vec4(0.0, 1.0, 0.0, 1.0));
         m_att_point_model->render(att_transform * m_att_point_scale);
@@ -230,8 +229,8 @@ void RenderContext::renderAttPoints(const BasePart* part, const math::mat4& body
         num_rendered += m_att_point_model->render(att_transform * m_att_point_scale);
     }*/
 
-    for(uint j=0; j<att_points->size(); j++){
-        point = att_points->at(j).point;
+    for(uint j=0; j<att_points.size(); j++){
+        const math::vec3& point = att_points.at(j).point;
         att_transform = body_transform * math::translate(math::identity_mat4(), point);
         m_att_point_model->setMeshColor(math::vec4(1.0, 0.0, 0.0, 1.0));
         m_att_point_model->render(att_transform * m_att_point_scale);
@@ -325,7 +324,7 @@ void RenderContext::renderBulletDebug(const math::mat4* view_mat){
     glUniformMatrix4fv(m_debug_view_mat, 1, GL_FALSE, view_mat->m);
     glUniformMatrix4fv(m_debug_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
 
-    dmath::vec3 cam_position = m_camera->getCamPosition();
+    const dmath::vec3& cam_position = m_camera->getCamPosition();
     m_debug_drawer->getReady();
     m_debug_drawer->setCameraCenter(btVector3(cam_position.v[0], cam_position.v[1], cam_position.v[2]));
     m_physics->getDynamicsWorld()->debugDrawWorld();

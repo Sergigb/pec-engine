@@ -4,17 +4,23 @@
 #include <bullet/BulletCollision/Gimpact/btGImpactCollisionAlgorithm.h>
 
 #include "Physics.hpp"
+#include "BaseApp.hpp"
+#include "AssetManager.hpp"
 #include "log.hpp"
 #include "multithreading.hpp"
 #include "../assets/Object.hpp"
+#include "../assets/PlanetarySystem.hpp"
 
 
 Physics::Physics(){
     init(btVector3(0.0, -9.81, 0.0));
 }
 
-Physics::Physics(const btVector3& gravity, thread_monitor* thread_monitor){
+Physics::Physics(const btVector3& gravity, thread_monitor* thread_monitor, BaseApp* app){
     m_thread_monitor = thread_monitor;
+    m_app = app;
+    m_delta_t = REAL_TIME_S;
+    m_secs_since_j2000 = 0.0;
 
     init(gravity);
 }
@@ -107,8 +113,8 @@ void Physics::updateCollisionWorldSingleAABB(btRigidBody* body){
 }
 
 
-void Physics::startSimulation(btScalar time_step, int max_sub_steps){
-    m_thread_simulation = std::thread(&Physics::runSimulation, this, time_step, max_sub_steps);
+void Physics::startSimulation(int max_sub_steps){
+    m_thread_simulation = std::thread(&Physics::runSimulation, this, max_sub_steps);
     log("Physics: starting simulation, thread launched");
 }
 
@@ -148,18 +154,24 @@ void Physics::waitLogic(){
 }
 
 
-void Physics::runSimulation(btScalar time_step, int max_sub_steps){
+void Physics::runSimulation(int max_sub_steps){
     std::chrono::steady_clock::time_point loop_start_load, loop_end_load;
     double accumulated_load_time = 0.0;
     int ticks_since_last_update = 0;
+    double cents_since_j2000;
 
     waitLogic();
     while(!m_end_simulation){
         loop_start_load = std::chrono::steady_clock::now();
+        cents_since_j2000 = m_secs_since_j2000 / SECONDS_IN_A_CENTURY;
 
         if(!m_simulation_paused){
+            /* updating the orbital elements could be done in a different thread while the thigs
+               below are updating, a buffering system could be used */
+            m_app->m_asset_manager->m_planetary_system->updateOrbitalElements(cents_since_j2000);
             applyGravity();
-            m_dynamics_world->stepSimulation(time_step , max_sub_steps);
+            m_dynamics_world->stepSimulation(m_delta_t, max_sub_steps);
+            m_secs_since_j2000 += m_delta_t;
         }
 
         loop_end_load = std::chrono::steady_clock::now();

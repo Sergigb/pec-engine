@@ -21,7 +21,7 @@ Vessel::Vessel() : m_com(btVector3(0.0, 0.0, 0.0)){
 }
 
 
-Vessel::Vessel(std::shared_ptr<BasePart>& vessel_root, const Input* input) : m_vessel_root(vessel_root), 
+Vessel::Vessel(std::shared_ptr<BasePart>& vessel_root, const Input* input) : m_vessel_root(std::move(vessel_root)), 
                m_com(btVector3(0.0, 0.0, 0.0)){
     m_vessel_root->setRoot(true);
     m_vessel_root->updateSubTreeVessel(this);
@@ -97,12 +97,12 @@ const BasePart* Vessel::getPartById(std::uint32_t id) const{
 }
 
 
-const std::string Vessel::getVesselName() const{
+const std::string& Vessel::getVesselName() const{
     return m_vessel_name;
 }
 
 
-const std::string Vessel::getVesselDescription() const{
+const std::string& Vessel::getVesselDescription() const{
     return m_vessel_desc;
 }
 
@@ -123,11 +123,11 @@ void Vessel::updateNodes(){
     m_node_map_by_id[current->getUniqueId()] = current;
 
     while(!to_visit.empty()){
-        const std::vector<std::shared_ptr<BasePart>>* current_childs = current->getChilds();
-        for(uint i=0; i < current_childs->size(); i++){
-            m_node_list.insert(m_node_list.end(), current_childs->at(i).get());
-            m_node_map_by_id[current_childs->at(i)->getUniqueId()] = current_childs->at(i).get();
-            to_visit.insert(to_visit.end(), current_childs->at(i).get());
+        const std::vector<std::shared_ptr<BasePart>>& current_childs = current->getChilds();
+        for(uint i=0; i < current_childs.size(); i++){
+            m_node_list.insert(m_node_list.end(), current_childs.at(i).get());
+            m_node_map_by_id[current_childs.at(i)->getUniqueId()] = current_childs.at(i).get();
+            to_visit.insert(to_visit.end(), current_childs.at(i).get());
         }
         current = to_visit.back();
         to_visit.pop_back();
@@ -135,13 +135,13 @@ void Vessel::updateNodes(){
 }
 
 
-std::vector<BasePart*>* Vessel::getParts(){
-    return &m_node_list;
+std::vector<BasePart*>& Vessel::getParts(){
+    return m_node_list;
 }
 
 
-const std::vector<BasePart*>* Vessel::getParts() const{
-    return &m_node_list;
+const std::vector<BasePart*>& Vessel::getParts() const{
+    return m_node_list;
 }
 
 
@@ -194,8 +194,8 @@ void print_tree_member(BasePart *node, std::string tail, bool last_child){
         next_tail = tail + vertical + separator;
     }
 
-    for(uint i=0; i < node->getChilds()->size(); i++)
-        print_tree_member(node->getChilds()->at(i).get(), next_tail, !(i == node->getChilds()->size() - 1));
+    for(uint i=0; i < node->getChilds().size(); i++)
+        print_tree_member(node->getChilds().at(i).get(), next_tail, !(i == node->getChilds().size() - 1));
 }
 
 
@@ -451,9 +451,9 @@ void Vessel::updateStagingRec(BasePart* part){
         m_stages.back().emplace_back(part, PART_ACTION_ENGINE_START);
     }
 
-    std::vector<std::shared_ptr<BasePart>>* childs = part->getChilds();
-    for(uint i=0; i < childs->size(); i++){
-        updateStagingRec(childs->at(i).get());
+    std::vector<std::shared_ptr<BasePart>>& childs = part->getChilds();
+    for(uint i=0; i < childs.size(); i++){
+        updateStagingRec(childs.at(i).get());
     }
 }
 
@@ -485,7 +485,7 @@ double Vessel::getLowerBound() const{
     double lower_bound = 9999999999999.9, local_y = 0.0;
 
     if(m_vessel_root->m_body){
-        btVector3& origin = m_vessel_root->m_body->getWorldTransform().getOrigin();
+        const btVector3& origin = m_vessel_root->m_body->getWorldTransform().getOrigin();
         local_y = origin.getY();
     }
 

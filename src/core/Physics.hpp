@@ -24,11 +24,13 @@
 /* time macros */
 #define SECS_FROM_UNIX_TO_J2000 946684800.0
 #define SECONDS_IN_A_CENTURY 3155760000.0
+#define REAL_TIME_S 1./60.
 
 /* distance macros */
 #define AU_TO_METERS 149597900000.0
 
 class Object;
+class BaseApp;
 
 struct thread_monitor;
 
@@ -94,7 +96,7 @@ class Physics{
          * Runs the simulation, is launched as a separate thead through startSimulation, uses the
          * thread monitor to synchronize itself with the main thead.
          */
-        void runSimulation(btScalar time_step, int max_sub_steps);
+        void runSimulation(int max_sub_steps);
         void noticeLogic();
         void waitLogic();
 
@@ -103,6 +105,9 @@ class Physics{
          */
         void applyGravity();
 
+        BaseApp* m_app;
+
+        double m_delta_t, m_secs_since_j2000; // m_delta_t in s
         std::thread m_thread_simulation;
         bool m_simulation_paused, m_end_simulation;
         double m_average_load;
@@ -116,8 +121,9 @@ class Physics{
          * @gravity: gravity direction, should be btVector(0.0, 0.0, 0.0) since we apply our own 
          * gravity.
          * @thread_monitor: thread monitor object used to synchronize ourselves with the main app.
+         * @m_app: pointer of the app
          */
-        Physics(const btVector3& gravity, thread_monitor* thread_monitor);
+        Physics(const btVector3& gravity, thread_monitor* thread_monitor, BaseApp* app);
         ~Physics();
 
         /*
@@ -211,7 +217,7 @@ class Physics{
          * method to fix this, but I have found nothing so far. I found someone with the same 
          * problem a while ago, but I can't find the page now.
          */
-        void startSimulation(btScalar time_step, int max_sub_steps);
+        void startSimulation(int max_sub_steps);
 
         /*
          * Wakes up the physics thread and tells it to stop, then the thread joins.

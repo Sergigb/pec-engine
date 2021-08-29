@@ -199,7 +199,7 @@ class BasePart : public Object{
          * should be the new origin of the part we are using to call this method.
          * @rotation: new rotation of the subtree.
          */
-        void updateSubTreeMotionState(std::vector<struct set_motion_state_msg>& command_buffer, const btVector3& disp, const btVector3& root_origin, const btQuaternion& rotation); // add root origin to rotate
+        void updateSubTreeMotionState(std::vector<struct set_motion_state_msg>& command_buffer, const btVector3& disp, const btVector3& root_origin, const btQuaternion& rotation);
 
         /*
          * When this part and its subtree are attached to a Vessel, m_vessel is be updated to the
@@ -232,6 +232,7 @@ class BasePart : public Object{
          * Returns true if the part has parent attachment point.
          */
         bool hasParentAttPoint() const;
+
         /*
          * Returns true if the part has free attachment point.
          */
@@ -297,17 +298,17 @@ class BasePart : public Object{
         /*
          * Returns all the attachment points of this part.
          */
-        const std::vector<struct attachment_point>* getAttachmentPoints() const;
+        const std::vector<struct attachment_point>& getAttachmentPoints() const;
 
         /*
          * Returns the parent attachment point of this part.
          */
-        const struct attachment_point* getParentAttachmentPoint() const;
+        const struct attachment_point& getParentAttachmentPoint() const;
 
         /*
          * Returns the free (radial) attachment point of this part.
          */
-        const struct attachment_point* getFreeAttachmentPoint() const;
+        const struct attachment_point& getFreeAttachmentPoint() const;
 
         /*
          * Returns the vessel this part belongs to, nullptr if it doesn't belong to any.
@@ -342,17 +343,17 @@ class BasePart : public Object{
         /*
          * Returns a vector with the childs of this part.
          */
-        std::vector<std::shared_ptr<BasePart>>* getChilds();
+        std::vector<std::shared_ptr<BasePart>>& getChilds();
 
         /*
          * const version of getChilds.
          */
-        const std::vector<std::shared_ptr<BasePart>>* getChilds() const;
+        const std::vector<std::shared_ptr<BasePart>>& getChilds() const;
 
         /*
          * Returns the radial clones of this part. To be used only in the editor.
          */
-        std::vector<BasePart*> getClones();
+        std::vector<BasePart*>& getClones();
 
         /*
          * Returns the part this part was radially cloned from, nullptr if none. To be used only
@@ -431,8 +432,7 @@ class BasePart : public Object{
          * DerivedPart* DerivedPart::clone() const{
          *     return new DerivedPart(*this);
          * }
-
-        */
+         */
         virtual BasePart* clone() const;
 
         btQuaternion m_user_rotation;

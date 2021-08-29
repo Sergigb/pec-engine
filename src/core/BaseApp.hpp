@@ -35,6 +35,7 @@ class BaseApp{
         friend class GameEditor;
         friend class AssetManager;
         friend class RenderContext;
+        friend class Physics;
 
         std::unique_ptr<Input> m_input;
         std::unique_ptr<Camera> m_camera;

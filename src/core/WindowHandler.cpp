@@ -64,7 +64,7 @@ void WindowHandler::initGlfw(){
                     vmode->width, vmode->height, "Extended GL Init", mon, NULL
 );*/
 
-    m_window = glfwCreateWindow(m_gl_width, m_gl_height, "The window with no name", NULL, NULL);
+    m_window = glfwCreateWindow(m_gl_width, m_gl_height, "pec-engine", NULL, NULL);
     if(!m_window){
         std::cerr << "ERROR: could not open window with GLFW3, check the log" << std::endl;
         log("ERROR: could not open window with GLFW3");

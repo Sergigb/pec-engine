@@ -173,18 +173,18 @@ void GameEditor::getClosestAtt(float& closest_dist, math::vec4& closest_att_poin
     mousey = ((mousey / h) * 2 - 1) * -1;
     mousex = (mousex / w) * 2 - 1;
 
-    std::vector<BasePart*>* vessel_parts = m_asset_manager->m_editor_vessel->getParts();
-    for(uint i=0; i<vessel_parts->size(); i++){ // get closest att point to the mouse cursor
-        if(part == vessel_parts->at(i)){
+    const std::vector<BasePart*>& vessel_parts = m_asset_manager->m_editor_vessel->getParts();
+    for(uint i=0; i<vessel_parts.size(); i++){ // get closest att point to the mouse cursor
+        if(part == vessel_parts.at(i)){
             continue;
         }
 
-        const std::vector<struct attachment_point>* att_points = vessel_parts->at(i)->getAttachmentPoints();
+        const std::vector<struct attachment_point>& att_points = vessel_parts.at(i)->getAttachmentPoints();
 
-        for(uint j=0; j<att_points->size(); j++){
-            const math::vec3 att_point = att_points->at(j).point;
+        for(uint j=0; j<att_points.size(); j++){
+            const math::vec3& att_point = att_points.at(j).point;
             math::mat4 att_transform = math::translate(math::identity_mat4(), att_point);
-            att_transform = vessel_parts->at(i)->getRigidBodyTransformSingle() * att_transform;
+            att_transform = vessel_parts.at(i)->getRigidBodyTransformSingle() * att_transform;
             math::vec4 att_point_loc_world = math::vec4(att_transform.m[12], att_transform.m[13], att_transform.m[14], 1.0);
             math::vec4 att_point_loc_screen;
 
@@ -197,7 +197,7 @@ void GameEditor::getClosestAtt(float& closest_dist, math::vec4& closest_att_poin
             if(distance < closest_dist){
                 closest_dist = distance;
                 closest_att_point_world = att_point_loc_world;
-                closest = vessel_parts->at(i);
+                closest = vessel_parts.at(i);
             }
         }
     }
@@ -382,9 +382,9 @@ void GameEditor::placeSubTree(float closest_dist, math::vec4& closest_att_point_
 
     if(closest_dist < 0.05 && !part->isRoot() && part->hasParentAttPoint()){ // magnet
         btTransform transform_final;
-        btVector3 btv3_child_att(part->getParentAttachmentPoint()->point.v[0],
-                                 part->getParentAttachmentPoint()->point.v[1],
-                                 part->getParentAttachmentPoint()->point.v[2]);
+        btVector3 btv3_child_att(part->getParentAttachmentPoint().point.v[0],
+                                 part->getParentAttachmentPoint().point.v[1],
+                                 part->getParentAttachmentPoint().point.v[2]);
         btVector3 btv3_closest_att_world(closest_att_point_world.v[0],
                                          closest_att_point_world.v[1],
                                          closest_att_point_world.v[2]);
@@ -476,9 +476,9 @@ void GameEditor::placeSubTree(float closest_dist, math::vec4& closest_att_point_
                 hitPointAlign(hit_point_world, hit_normal_world, p_transform);
             }
 
-            math::vec3 child_att = part->getFreeAttachmentPoint()->point;
+            const math::vec3& child_att = part->getFreeAttachmentPoint().point;
             math::vec3 child_att_orientation(0.0, 0.0, 0.0);
-            child_att_orientation = child_att_orientation - part->getFreeAttachmentPoint()->orientation;
+            child_att_orientation = child_att_orientation - part->getFreeAttachmentPoint().orientation;
 
             // Invert the normal's rotation according to the parent's rotation, this way arb_perpendicular doesn't act funny when it's rotated
             hit_normal_world = object_iR * hit_normal_world;
@@ -691,7 +691,8 @@ void GameEditor::processGUI(){
             std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(part, m_input);
             m_vessel_id = vessel->getId();
             m_asset_manager->m_editor_vessel = std::move(vessel);
-            part->setCollisionFilters(part->getCollisionFilters() | CG_RAY_EDITOR_RADIAL);
+            m_asset_manager->m_editor_vessel->getRoot()->setCollisionFilters(
+                m_asset_manager->m_editor_vessel->getRoot()->getCollisionFilters() | CG_RAY_EDITOR_RADIAL);
         }
         else{
             dmath::vec3 ray_start_world, ray_end_world;

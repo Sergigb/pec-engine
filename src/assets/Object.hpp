@@ -106,7 +106,7 @@ class Object : public std::enable_shared_from_this<Object>{
         std::uint32_t getBaseId() const;
 
         /*
-         * Returns a shared pointer to this object, inherited from std::enable_shared_from_this.
+         * Returns a shared pointer to this object.
          */
         std::shared_ptr<Object> getSharedPtr();
 

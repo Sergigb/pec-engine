@@ -120,7 +120,7 @@ math::mat4 Camera::getCenteredViewMatrix() const{
 }
 
 
-math::mat4 Camera::getProjMatrix() const{
+const math::mat4& Camera::getProjMatrix() const{
     return m_proj_mat;
 }
 
@@ -212,7 +212,7 @@ bool Camera::projChanged() const{
 }
 
 
-dmath::vec3 Camera::getCamPosition() const{
+const dmath::vec3& Camera::getCamPosition() const{
     return m_cam_pos;
 }
 

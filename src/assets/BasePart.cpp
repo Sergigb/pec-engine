@@ -76,8 +76,8 @@ void BasePart::setParentAttachmentPoint(const math::vec3& point, const math::vec
 }
 
 
-const std::vector<struct attachment_point>* BasePart::getAttachmentPoints() const{
-    return &m_attachment_points;
+const std::vector<struct attachment_point>& BasePart::getAttachmentPoints() const{
+    return m_attachment_points;
 }
 
 
@@ -99,8 +99,8 @@ void BasePart::removeParentConstraint(){
 }
 
 
-const struct attachment_point* BasePart::getParentAttachmentPoint() const{
-    return &m_parent_att_point;
+const struct attachment_point& BasePart::getParentAttachmentPoint() const{
+    return m_parent_att_point;
 }
 
 
@@ -143,11 +143,11 @@ void BasePart::updateSubTreeMotionState(std::vector<struct set_motion_state_msg>
                                         const btVector3& disp, const btVector3& root_origin, const btQuaternion& rotation){
     btTransform transform, trans, trans_r;
     btQuaternion rrotation;
-    btVector3 origin, dist_from_root;
+    btVector3 dist_from_root;
 
     m_body->getMotionState()->getWorldTransform(transform);
     rrotation = transform.getRotation();
-    origin = transform.getOrigin();
+    const btVector3& origin = transform.getOrigin();
 
     dist_from_root = origin - root_origin;
     trans = btTransform(rrotation, dist_from_root);
@@ -172,13 +172,13 @@ BasePart* BasePart::getParent(){
 }
 
 
-std::vector<std::shared_ptr<BasePart>>* BasePart::getChilds(){
-    return &m_childs;
+std::vector<std::shared_ptr<BasePart>>& BasePart::getChilds(){
+    return m_childs;
 }
 
 
-const std::vector<std::shared_ptr<BasePart>>* BasePart::getChilds() const{
-    return &m_childs;
+const std::vector<std::shared_ptr<BasePart>>& BasePart::getChilds() const{
+    return m_childs;
 }
 
 
@@ -260,8 +260,8 @@ void BasePart::setFreeAttachmentPoint(const math::vec3& point, const math::vec3&
 }
 
 
-const struct attachment_point* BasePart::getFreeAttachmentPoint() const{
-    return &m_free_att_point;
+const struct attachment_point& BasePart::getFreeAttachmentPoint() const{
+    return m_free_att_point;
 }
 
 
@@ -288,8 +288,7 @@ void BasePart::renderOther(){
         ImGui::ColorEdit3("Mesh color", m_mesh_color.v);
 
         for(uint i=0; i < m_resources.size(); i++){
-            std::string rname;
-            m_resources.at(i).resource->getFancyName(rname);
+            const std::string& rname = m_resources.at(i).resource->getFancyName();
             ImGui::Text(rname.c_str());
             ImGui::SliderFloat("kg", &m_resources.at(i).mass, 0.0f, m_resources.at(i).max_mass);
         }
@@ -306,8 +305,7 @@ void BasePart::renderOther(){
         ImGui::Begin((m_fancy_name + ss.str()).c_str(), &m_show_game_menu);
 
         for(uint i=0; i < m_resources.size(); i++){
-            std::string rname;
-            m_resources.at(i).resource->getFancyName(rname);
+            const std::string& rname = m_resources.at(i).resource->getFancyName();
             ImGui::Text(rname.c_str());
             ImGui::ProgressBar(m_resources.at(i).mass / m_resources.at(i).max_mass);
         }
@@ -370,7 +368,6 @@ void BasePart::decoupleChilds(){
 
 
 void BasePart::decoupleSelf(){
-    const Input* input = m_vessel->getInput();
     std::shared_ptr<BasePart> ourselves = m_vessel->removeChild(this);
 
     if(ourselves.get() == nullptr){
@@ -380,7 +377,7 @@ void BasePart::decoupleSelf(){
         return;
     }
 
-    std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(ourselves, input);
+    std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(ourselves, m_vessel->getInput());
     m_asset_manager->removePartConstraint(this);
     m_asset_manager->addVessel(vessel);
 }
@@ -544,7 +541,7 @@ void BasePart::buildSubTreeConstraints(const BasePart* parent){
 }
 
 
-std::vector<BasePart*> BasePart::getClones(){
+std::vector<BasePart*>& BasePart::getClones(){
     return m_clones;
 }
 
@@ -560,7 +557,7 @@ void BasePart::clearSubTreeCloneData(){
         m_clones.at(i)->m_cloned_from = nullptr;
     }
 
-    // find the pointer to self at the part that we cloned from and erase it
+    // find the pointer to self at the part that we were cloned from and erase it
     if(m_cloned_from){
         std::vector<BasePart*>& v = m_cloned_from->m_clones;
         for(uint i=0; v.size(); i++){
