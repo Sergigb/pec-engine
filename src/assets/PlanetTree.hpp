@@ -23,13 +23,13 @@
 #define ELEVATION_LOCATION 1
 
 
-
 /*
- * This file mostly deals with the surface tree, which is used to render the planet and, in the
- * future, it should also manage the terrain collision objects.
+ * Node object of the surface tree. Contains (for now) the necessary stuff to render the surface
+ * of the planet. At some point it will need to hold the necessary structures of the terrain
+ * collision. This is perhaps the most convoluted part of this project so far and I don't really
+ * remember what every variable of this struct does, but at some point it needs to be better
+ * documented.
  */
-
-
 struct surface_node{
     dmath::vec3 patch_translation;
     math::vec2 tex_shift, tex_shift_lod;
@@ -58,6 +58,20 @@ struct surface_node{
 };
 
 
+/*
+ * Struct with the surface tree of the planet. Each planet has one of these.
+ *
+ * @is_built: true if the tree is built.
+ * @surface_node: the first eight children of the tree. We have eight children because we use a
+ * quadrilateralized spherical cube to render the planet, so each node is one side of the cube.
+ * @max_levels: max depth of the tree, more levels = more detail, but more memory consumption.
+ * @planet_sea_level: sea level of the planet (in meters).
+ * @bound_nodes: a vector with the nodes that have bound textures. Used to free them upon
+ * destruction of the tree.
+ * @data_ready_nodes: a vector with the nodes that have loaded the textures but they have been
+ * not bound, used when we are loading the textures in a different thread and we need to bind them
+ * @data_ready_mtx: lock around data_ready_nodes.
+ */
 struct planet_surface{
     bool is_built;
     struct surface_node surface_tree[6];
@@ -76,7 +90,11 @@ class RenderContext;
 class Planet;
 
 
-class PlanetTree{
+/*
+ * Essentially holds the planet surface and has the necessary methods to build the tree, load the
+ * textures etc.
+ */
+ class PlanetTree{
     private:
         static std::unique_ptr<Model> m_base32;
         static std::unique_ptr<Model> m_base64;
@@ -94,11 +112,41 @@ class PlanetTree{
         GLuint m_relative_planet_location, m_texture_scale_location, m_tex_shift_location, m_planet_radius_location;
         GLuint m_planet_texture, m_elevation_texture;
 
+        /*
+         * Sets the local transform of the node.
+         *
+         * @node: the surface node.
+         * @parent: the parent of the previous node.
+         * @sign_side_1: Sign that is used to decide to shift left or right the node.
+         * @sign_side_2: idem but up and down.
+         */
         void setTransform(struct surface_node& node, const struct surface_node& parent, int sign_side_1, int sign_side_2);
+
+        /*
+         * Binds the texture of a node. The texture should have been loaded.
+         *
+         * @node: the node.
+         */
         void bindTexture(struct surface_node& node);
+
+        /*
+         * Binds the elevation texture of the node.
+         *
+         * @node: the node.
+         */
         void bindElevationTexture(struct surface_node& node);
+
+        /*
+         * Builds the children of a node. This method is called recursively to build each side of
+         * the cube.
+         * @node: parent node.
+         * @num_levels: depth of the tree thus far.
+         */
         void buildChilds(struct surface_node& node, int num_levels);
 
+        /*
+
+         */
         void bindLoadedTexture(struct surface_node& node);
         void asyncTextureLoad(struct surface_node* node, struct planet_surface* surface);
         void bindLoadedTextures();
