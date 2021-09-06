@@ -368,6 +368,7 @@ void BasePart::decoupleChilds(){
 
 
 void BasePart::decoupleSelf(){
+    const Input* input = m_vessel->getInput();
     std::shared_ptr<BasePart> ourselves = m_vessel->removeChild(this);
 
     if(ourselves.get() == nullptr){
@@ -377,7 +378,7 @@ void BasePart::decoupleSelf(){
         return;
     }
 
-    std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(ourselves, m_vessel->getInput());
+    std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(ourselves, input);
     m_asset_manager->removePartConstraint(this);
     m_asset_manager->addVessel(vessel);
 }
