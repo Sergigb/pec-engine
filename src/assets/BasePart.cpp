@@ -214,16 +214,12 @@ int BasePart::render(){
     else{
         m_model->setMeshColor(math::vec4(m_mesh_color, 0.5));
     }
-    
+
     return m_model->render(body_transform);
 }
 
 
-int BasePart::render(math::mat4 body_transform){
-    if(m_has_transform){
-        body_transform = body_transform * m_mesh_transform;
-    }
-
+int BasePart::render(const math::mat4& body_transform){
     if(m_vessel){
         m_model->setMeshColor(math::vec4(m_mesh_color, 1.0));
     }
@@ -231,7 +227,7 @@ int BasePart::render(math::mat4 body_transform){
         m_model->setMeshColor(math::vec4(m_mesh_color, 0.5));
     }
 
-    return m_model->render(body_transform);
+    return m_model->render(m_has_transform ? body_transform * m_mesh_transform : body_transform);
 }
 
 

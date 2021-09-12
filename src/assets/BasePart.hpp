@@ -381,7 +381,7 @@ class BasePart : public Object{
          * Renders this part given a transform matrix. Used by the RenderContext using the last 
          * saved transform. Inherited from Object.
          */
-        virtual int render(math::mat4 body_transform);
+        virtual int render(const math::mat4& body_transform);
 
         /*
          * Function called when the player right clicks this part on the editor. In this 
