@@ -161,6 +161,46 @@ void App::logic(){
 }
 
 
+
+void App::processKeyboardInput(){
+    if(!m_render_context->imGuiWantCaptureKeyboard()){
+        if(m_input->pressed_keys[GLFW_KEY_TAB] == INPUT_KEY_DOWN){
+            // here change game state to planetarium
+        }
+
+        if(m_input->pressed_keys[GLFW_KEY_F12] == INPUT_KEY_DOWN){
+            m_render_context->toggleDebugOverlay();
+        }
+
+        if(m_input->pressed_keys[GLFW_KEY_F11] == INPUT_KEY_DOWN){
+            m_render_context->toggleDebugDraw();
+        }
+
+        if(m_input->pressed_keys[GLFW_KEY_F10] == INPUT_KEY_DOWN){
+            m_render_context->reloadShaders();
+            m_render_context->setLightPosition(math::vec3(63000000000.0, 0.0, 0.0));
+        }
+
+        if(m_input->pressed_keys[GLFW_KEY_ESCAPE] == INPUT_KEY_DOWN){
+            m_quit = true;
+        }
+
+        // testing
+        if(m_input->pressed_keys[GLFW_KEY_F1] == INPUT_KEY_DOWN){
+            if(m_player->getVessel()){
+                m_player->getVessel()->printVessel();
+            }
+        }
+
+        if(m_input->pressed_keys[GLFW_KEY_F2] == INPUT_KEY_DOWN){
+            if(m_player->getVessel()){
+                m_player->getVessel()->printStaging();
+            }
+        }
+    }
+}
+
+
 void App::processInput(){
     double scx, scy;
     m_input->getScroll(scx, scy);
@@ -168,40 +208,11 @@ void App::processInput(){
         m_camera->incrementOrbitalCamDistance(-scy * 5.0); // we should check the camera mode
     }
 
-    if(m_input->pressed_keys[GLFW_KEY_F12] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
-        m_render_context->toggleDebugOverlay();
-    }
-
-    if(m_input->pressed_keys[GLFW_KEY_F11] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
-        m_render_context->toggleDebugDraw();
-    }
-
     if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2] & INPUT_MBUTTON_RELEASE &&
         !m_render_context->imGuiWantCaptureMouse() && m_camera->getPrevInputMode() != GLFW_CURSOR_DISABLED){
         onRightMouseButton();
     }
-
-    if(m_input->pressed_keys[GLFW_KEY_F10] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
-        m_render_context->reloadShaders();
-        m_render_context->setLightPosition(math::vec3(63000000000.0, 0.0, 0.0));
-    }
-
-    if(m_input->pressed_keys[GLFW_KEY_ESCAPE] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
-        m_quit = true;
-    }
-
-    // testing
-    if(m_input->pressed_keys[GLFW_KEY_F1] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
-        if(m_player->getVessel()){
-            m_player->getVessel()->printVessel();
-        }
-    }
-
-    if(m_input->pressed_keys[GLFW_KEY_F2] == INPUT_KEY_DOWN && !m_render_context->imGuiWantCaptureKeyboard()){
-        if(m_player->getVessel()){
-            m_player->getVessel()->printStaging();
-        }
-    }
+    processKeyboardInput();
 }
 
 

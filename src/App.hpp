@@ -30,6 +30,7 @@ class App : public BaseApp{
         void init();
         void logic();
         void processInput();
+        void processKeyboardInput();
         void onRightMouseButton();
         
         // state transition
