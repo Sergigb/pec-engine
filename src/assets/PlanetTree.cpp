@@ -369,7 +369,7 @@ void PlanetTree::loadBases(const Frustum* frustum, const RenderContext* render_c
 }
 
 
-void PlanetTree::renderSide(struct surface_node& node, math::mat4& planet_transform_world, int max_level, const dmath::vec3& cam_origin, double sea_level){
+void PlanetTree::renderSide(struct surface_node& node, const math::mat4& planet_transform_world, int max_level, const dmath::vec3& cam_origin, double sea_level){
     // PRECOMPUTE THIS VVVVV
     dmath::vec3 path_translation_normd = dmath::vec3(dmath::quat_to_mat4(node.base_rotation) * dmath::vec4(dmath::normalise(node.patch_translation), 1.0)) * sea_level;
     double distance = dmath::distance(path_translation_normd, cam_origin);
