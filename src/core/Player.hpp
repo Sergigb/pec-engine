@@ -11,6 +11,8 @@
 #define ORBITAL_CAM_MODE_SURFACE 0
 #define ORBITAL_CAM_MODE_ORBIT 1
 
+#define PLANETARIUM_DEF_SCALE_FACTOR 1e10
+
 class Vessel;
 class Camera;
 class AssetManager;

@@ -197,7 +197,9 @@ void Planetarium::updateSceneText(){
     for(it=planets.begin();it!=planets.end();it++){
         const Planet* current = it->second.get();
 
-        math::vec4 pos(current->getPosition().v[0] / 1e10, current->getPosition().v[1] / 1e10, current->getPosition().v[2] / 1e10, 1.0f);
+        math::vec4 pos(current->getPosition().v[0] / PLANETARIUM_DEF_SCALE_FACTOR,
+                       current->getPosition().v[1] / PLANETARIUM_DEF_SCALE_FACTOR,
+                       current->getPosition().v[2] / PLANETARIUM_DEF_SCALE_FACTOR, 1.0f);
         math::vec4 pos_screen = proj_mat * view_mat * pos;
         pos_screen = ((pos_screen / pos_screen.v[3]) + 1. ) / 2.; // there's something wrong here
 

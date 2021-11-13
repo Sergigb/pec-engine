@@ -30,7 +30,7 @@ Player::Player(Camera* camera, AssetManager* asset_manager, const Input* input){
     m_orbital_cam_mode = ORBITAL_CAM_MODE_ORBIT;
     m_selected_planet = 0;
     m_planetarium_freecam = true;
-    m_planetarium_scale_factor = 1e10;
+    m_planetarium_scale_factor = PLANETARIUM_DEF_SCALE_FACTOR;
 }
 
 
