@@ -172,7 +172,7 @@ void Text2D::updateBuffers(){
         acc += current_string->strlen;
     }
 
-    glBindVertexArray(m_vao);
+    m_render_context->bindVao(m_vao);
 
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo_vert);
     glBufferData(GL_ARRAY_BUFFER, 2 * m_num_vertices * sizeof(GLfloat), vertex_buffer.get(), GL_STATIC_DRAW);

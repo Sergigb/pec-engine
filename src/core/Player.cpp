@@ -129,6 +129,7 @@ void Player::setPlayerTarget(){
         else if(m_asset_manager->m_active_vessels.size()){
             VesselIterator it = m_asset_manager->m_active_vessels.begin();
             m_vessel = it->second.get(); // in the future we should pick the closest
+            m_vessel->setPlayer(this);
         }
     }
     else if(m_behaviour & PLAYER_BEHAVIOUR_PLANETARIUM){
