@@ -36,7 +36,6 @@ void Physics::init(const btVector3& gravity){
 
     m_simulation_paused = true;
     m_end_simulation = false;
-    m_average_load = 0.0;
     
     log("Physics: starting dynamics world");
     std::cout << "Physics: starting dynamics world" << std::endl;
@@ -171,6 +170,7 @@ void Physics::runSimulation(int max_sub_steps){
             m_app->m_asset_manager->m_planetary_system->updateOrbitalElements(cents_since_j2000);
             applyGravity();
             m_dynamics_world->stepSimulation(m_delta_t, max_sub_steps);
+
             m_secs_since_j2000 += m_delta_t;
         }
 
@@ -182,7 +182,6 @@ void Physics::runSimulation(int max_sub_steps){
 
         if(ticks_since_last_update == 60){
             ticks_since_last_update = 0;
-            m_average_load = accumulated_load_time / 60000.0;
             accumulated_load_time = 0.0;
         }
 
@@ -193,7 +192,7 @@ void Physics::runSimulation(int max_sub_steps){
 
 
 double Physics::getAverageLoadTime() const{
-    return m_average_load;
+    return 0.0;
 }
 
 
@@ -229,5 +228,10 @@ void Physics::applyGravity(){
             obj->applyCentralForce(f);            
         }
     }
+}
+
+
+double Physics::getCurrentTime() const{
+    return m_secs_since_j2000;
 }
 

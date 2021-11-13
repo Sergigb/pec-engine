@@ -17,6 +17,8 @@
 #include "Physics.hpp"
 #include "BaseApp.hpp"
 #include "utils/gl_utils.hpp"
+#include "AssetManager.hpp"
+#include "../assets/PlanetarySystem.hpp"
 #include "../assets/Planet.hpp"
 #include "../assets/BasePart.hpp"
 #include "../assets/Model.hpp"
@@ -105,6 +107,7 @@ void RenderContext::loadShaders(){
     log_programme_info(m_debug_shader);
     m_debug_view_mat = glGetUniformLocation(m_debug_shader, "view");
     m_debug_proj_mat = glGetUniformLocation(m_debug_shader, "proj");
+    m_debug_color_location = getUniformLocation(m_debug_shader, "line_color");
 
     m_planet_shader = create_programme_from_files("../shaders/planet_vs.glsl",
                                                   "../shaders/planet_fs.glsl");
@@ -331,6 +334,48 @@ void RenderContext::renderBulletDebug(const math::mat4* view_mat){
 }
 
 
+void RenderContext::renderPlanetarium(){
+    struct render_buffer* rbuf;
+
+    if(m_buffers->last_updated != none){
+        if(m_buffers->last_updated == buffer_1){
+            m_buffers->buffer_1.buffer_lock.lock();
+            rbuf = &m_buffers->buffer_1;
+        }
+        else{
+            m_buffers->buffer_2.buffer_lock.lock();
+            rbuf = &m_buffers->buffer_2;
+        }
+
+        m_app->m_asset_manager->m_planetary_system->updateRenderBuffers(m_app->m_physics->getCurrentTime());
+        renderPlanetariumOrbits(rbuf->planet_buffer, rbuf->view_mat);
+
+        rbuf->buffer_lock.unlock();
+    }
+}
+
+
+void RenderContext::renderPlanetariumOrbits(const std::vector<planet_transform>& buff, const math::mat4& view_mat){
+    useProgram(SHADER_DEBUG);
+    glUniformMatrix4fv(m_debug_view_mat, 1, GL_FALSE, view_mat.m);
+    glUniformMatrix4fv(m_debug_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
+
+    for(uint i=0; i < buff.size(); i++){
+        Planet* current = buff.at(i).planet_ptr;
+
+        // we dont't check yet which planet the player has selected
+        /*if(current == m_bodies.at(m_pick))
+            glUniform3f(color_location, 0.0, 1.0, 0.0);
+        else
+            glUniform3f(color_location, 1.0, 0.0, 0.0);*/
+
+        glUniform3f(m_debug_color_location, 1.0, 0.0, 0.0);
+
+        current->renderOrbit();
+    }
+}
+
+
 void RenderContext::render(){
     int num_rendered = 0;
 
@@ -380,6 +425,9 @@ void RenderContext::render(){
         case RENDER_UNIVERSE:
             num_rendered = renderSceneUniverse();
             break;
+        case RENDER_PLANETARIUM:
+            // this method hasn't been tested yet
+
         default:
             std::cerr << "RenderContext::render: Warning, invalid render state value (" << (int)m_app->getRenderState() << ")" << std::endl;
             log("RenderContext::render: Warning, invalid render state value (", (int)m_app->getRenderState(), ")");

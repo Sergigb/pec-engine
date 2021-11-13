@@ -73,6 +73,19 @@ struct iv_array{
     std::unique_ptr<int[]> indices;
 };
 
+/*
+ * Struct with the different average load times of the physics thread.
+ *
+ * @thread_load: average load time of the thread (the update method)
+ * @orbital_update: average load time of the orbital update
+ * @apply_gravity: average load time of applying gravity
+ * @step_bullet: average load time of bullet
+ */
+struct load_times{
+    double thread_load, orbital_update, apply_gravity, step_bullet;
+    double acc_thread_load, acc_orbital_update, acc_apply_gravity, acc_step_bullet;
+};
+
 
 /*
  * This class manages Bullet and applies gravity to the objects, among other things. The method
@@ -110,7 +123,6 @@ class Physics{
         double m_delta_t, m_secs_since_j2000; // m_delta_t in s
         std::thread m_thread_simulation;
         bool m_simulation_paused, m_end_simulation;
-        double m_average_load;
         struct thread_monitor* m_thread_monitor;
     public:
         Physics();
@@ -204,6 +216,12 @@ class Physics{
          */
         const btDiscreteDynamicsWorld* getDynamicsWorld() const;
         btDiscreteDynamicsWorld* getDynamicsWorld();
+
+        /*
+         * Returns how much time has passed since the reference epoch, on the solar system that
+         * should be J2000. The units is seconds.
+         */
+        double getCurrentTime() const;
 
         /*
          * Starts the simulation by launching a thread with the method runSimulation. To make the

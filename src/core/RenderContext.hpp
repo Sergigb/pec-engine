@@ -23,6 +23,7 @@ class Text2D;
 class BaseApp;
 
 struct object_transform;
+struct planet_transform;
 
 
 /* shader macros */
@@ -41,6 +42,7 @@ struct object_transform;
 #define RENDER_NOTHING 0
 #define RENDER_EDITOR 1
 #define RENDER_UNIVERSE 2
+#define RENDER_PLANETARIUM 3
 
 
 struct notification{
@@ -80,7 +82,7 @@ class RenderContext{
         GLuint m_planet_shader;
 
         GLuint m_debug_shader;
-        GLint m_debug_view_mat, m_debug_proj_mat;
+        GLint m_debug_view_mat, m_debug_proj_mat, m_debug_color_location;
         // shaders //
 
         GLuint m_bound_vao;
@@ -167,6 +169,8 @@ class RenderContext{
         int renderObjects(bool render_att_points, const std::vector<object_transform>* buff, const math::mat4* view_mat);
         void renderBulletDebug(const math::mat4* view_mat);
         void renderNotifications();
+        void renderPlanetarium();
+        void renderPlanetariumOrbits(const std::vector<planet_transform>& buff, const math::mat4& view_mat);
     public:
         /*
          * Constructor.
