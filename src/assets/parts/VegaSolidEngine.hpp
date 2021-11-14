@@ -32,7 +32,7 @@ class VegaSolidEngine : public BasePart{
         VegaSolidEngine* clone() const;
         void action(int action);
 
-        int render(math::mat4 body_transform);
+        int render(const math::mat4& body_transform);
         int render();
 
         void setFairingModel(Model* fairing_model);

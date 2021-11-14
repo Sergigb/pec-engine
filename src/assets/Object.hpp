@@ -203,7 +203,7 @@ class Object : public std::enable_shared_from_this<Object>{
          * Renders this part given a transform matrix. Used by the RenderContext using the last 
          * saved transform.
          */
-        virtual int render(math::mat4 body_transform);
+        virtual int render(const math::mat4& body_transform);
 
         /*
          * Renders anything that's not the vessel, such as Im-GUI panels.

@@ -200,7 +200,6 @@ void VegaSolidEngine::action(int action){
 
 int VegaSolidEngine::render(){
     math::mat4 body_transform = getRigidBodyTransformSingle();
- 
     if(m_has_transform){
         body_transform = body_transform * m_mesh_transform;
     }
@@ -226,11 +225,7 @@ int VegaSolidEngine::render(){
 }
 
 
-int VegaSolidEngine::render(math::mat4 body_transform){
-    if(m_has_transform){
-        body_transform = body_transform * m_mesh_transform;
-    }
-
+int VegaSolidEngine::render(const math::mat4& body_transform){
     if(m_vessel){
         m_model->setMeshColor(math::vec4(m_mesh_color, 1.0));
     }
@@ -248,7 +243,7 @@ int VegaSolidEngine::render(math::mat4 body_transform){
         m_fairing_model->render(body_transform);
     }
 
-    return m_model->render(body_transform);
+    return m_model->render(m_has_transform ? body_transform * m_mesh_transform : body_transform);
 }
 
 

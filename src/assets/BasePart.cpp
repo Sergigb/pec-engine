@@ -203,7 +203,6 @@ void BasePart::updateSubTreeVessel(Vessel* vessel){
 
 int BasePart::render(){
     math::mat4 body_transform = getRigidBodyTransformSingle();
- 
     if(m_has_transform){
         body_transform = body_transform * m_mesh_transform;
     }
