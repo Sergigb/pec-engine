@@ -269,7 +269,7 @@ void Planetarium::run(){
         m_input->update();
         m_window_handler->update();
         m_frustum->extractPlanes(m_camera->getCenteredViewMatrix(), m_camera->getProjMatrix(), false);
-        m_player->update();
+        m_player->updatePlanetarium();
 
         m_render_context->contextUpdatePlanetRenderer(); // works in here too :)
         glClearColor(0.f, 0.f, 0.f, 0.f); // loook at the todo list

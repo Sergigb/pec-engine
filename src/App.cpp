@@ -127,7 +127,7 @@ void App::run(){
 
         m_asset_manager->updateCoMs();
         m_asset_manager->updateKinematics();
-        m_player->update();
+        m_player->updateSimulation();
         m_asset_manager->updateBuffers();
         
         // load ends here
@@ -164,7 +164,7 @@ void App::logic(){
 
 void App::processKeyboardInput(){
     if(!m_render_context->imGuiWantCaptureKeyboard()){
-        if(m_input->pressed_keys[GLFW_KEY_TAB] == INPUT_KEY_DOWN){
+        if(m_input->pressed_keys[GLFW_KEY_M] == INPUT_KEY_DOWN){
             // here change game state to planetarium
         }
 

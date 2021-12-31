@@ -39,45 +39,75 @@ Player::~Player(){
 }
 
 
-void Player::update(){
-    updateCamera();
-    processInput();
-}
 
-
-void Player::updateCamera(){
-    if((m_behaviour & PLAYER_BEHAVIOUR_NONE) || ((m_behaviour & (PLAYER_BEHAVIOUR_EDITOR | PLAYER_BEHAVIOUR_SIMULATION))
-        && !m_vessel) || ((m_behaviour & PLAYER_BEHAVIOUR_PLANETARIUM) && (!m_selected_planet || m_planetarium_freecam))){
+void Player::updateEditor(){
+    // camera
+    if(!m_vessel){
         m_camera->freeCameraUpdate();
     }
-        
-    else if(m_behaviour & (PLAYER_BEHAVIOUR_SIMULATION | PLAYER_BEHAVIOUR_EDITOR) && m_vessel){
+    else{
         const btVector3& com = m_vessel->getCoM();
         m_camera->setCameraPosition(dmath::vec3(com.getX(), com.getY(), com.getZ()));
         setCamAxisRotation();
         m_camera->orbitalCameraUpdate();
     }
-    else if(m_behaviour & PLAYER_BEHAVIOUR_PLANETARIUM && m_selected_planet && !m_planetarium_freecam){
-        m_camera->setCameraPosition(m_asset_manager->m_planetary_system->getPlanets().at(m_selected_planet)->getPosition() / m_planetarium_scale_factor);
-        m_camera->setOrbitalInclination(0.0, dmath::vec3(0.0, 0.0, 0.0));
-        m_camera->orbitalCameraUpdate();
+
+    // input
+    if((m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT))
+       && (m_input->pressed_keys[GLFW_KEY_C] & INPUT_KEY_DOWN)){
+        setPlayerTarget();
     }
 }
 
 
-void Player::processInput(){
+void Player::updateSimulation(){
+    // camera
+    if(m_behaviour & PLAYER_BEHAVIOUR_NONE || !m_vessel){
+        m_camera->freeCameraUpdate();
+    }
+    else if(m_vessel){ // sanity check for vessel
+        const btVector3& com = m_vessel->getCoM();
+        m_camera->setCameraPosition(dmath::vec3(com.getX(), com.getY(), com.getZ()));
+        setCamAxisRotation();
+        m_camera->orbitalCameraUpdate();
+    }
+
+    // input
     if((m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)) 
-        && (m_input->pressed_keys[GLFW_KEY_C] & INPUT_KEY_DOWN))
+       && (m_input->pressed_keys[GLFW_KEY_C] & INPUT_KEY_DOWN)){
         setPlayerTarget();
-    else if(m_input->pressed_keys[GLFW_KEY_C] & INPUT_KEY_DOWN && PLAYER_BEHAVIOUR_SIMULATION){
+    }
+    else if(m_input->pressed_keys[GLFW_KEY_C] & INPUT_KEY_DOWN){
         m_orbital_cam_mode = m_orbital_cam_mode == ORBITAL_CAM_MODE_ORBIT ? 
                              ORBITAL_CAM_MODE_SURFACE : ORBITAL_CAM_MODE_ORBIT;
     }
 
     if(m_input->pressed_keys[GLFW_KEY_TAB] & INPUT_KEY_DOWN){
-        if(m_behaviour & PLAYER_BEHAVIOUR_SIMULATION && m_vessel)
-            switchVessel();
-//        else if(m_behaviour & PLAYER_BEHAVIOUR_PLANETARIUM)
+        switchVessel();
+    }
+}
+
+
+void Player::updatePlanetarium(){
+    // camera
+    if(!m_selected_planet || m_planetarium_freecam){
+        m_camera->freeCameraUpdate();
+    }
+    else if(m_selected_planet && !m_planetarium_freecam){
+        m_camera->setCameraPosition(
+            m_asset_manager->m_planetary_system->getPlanets().at(m_selected_planet)->getPosition()
+            / m_planetarium_scale_factor);
+        m_camera->setOrbitalInclination(0.0, dmath::vec3(0.0, 0.0, 0.0));
+        m_camera->orbitalCameraUpdate();
+    }
+
+    //input
+    if((m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)) 
+        && (m_input->pressed_keys[GLFW_KEY_C] & INPUT_KEY_DOWN)){
+        setPlayerTarget();
+    }
+
+    if(m_input->pressed_keys[GLFW_KEY_TAB] & INPUT_KEY_DOWN){
 //            switchPlanet();
     }
 }

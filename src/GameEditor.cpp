@@ -143,7 +143,7 @@ void GameEditor::start(){
             m_asset_manager->updateKinematics();
         }
 
-        m_player->update();
+        m_player->updateEditor();
         m_asset_manager->updateBuffers();
 
         // load ends here
