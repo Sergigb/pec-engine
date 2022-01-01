@@ -18,7 +18,6 @@
 
 
 typedef std::unordered_map<std::uint32_t, std::shared_ptr<Vessel>>::iterator VesselIterator;
-typedef std::unordered_map<std::uint32_t, std::unique_ptr<Planet>>::iterator planet_iterator;
 
 
 Player::Player(Camera* camera, AssetManager* asset_manager, const Input* input){
@@ -108,7 +107,7 @@ void Player::updatePlanetarium(){
     }
 
     if(m_input->pressed_keys[GLFW_KEY_TAB] & INPUT_KEY_DOWN){
-//            switchPlanet();
+            switchPlanet();
     }
 }
 
@@ -189,26 +188,29 @@ void Player::switchVessel(){
 }
 
 
-/*void Player::switchPlanet(){
-    planet_iterator it;
+void Player::switchPlanet(){
+    // this is just randomly sorted by unordered_map and its hashing, so a better system is needed
+    planet_map::const_iterator it;
+    const planet_map& planets = m_asset_manager->m_planetary_system->getPlanets();
 
     if(!m_selected_planet){
-        std::cerr << "Player::switchPlanet: warning, player has no target to switch from (m_selected_planet is 0)" << std::endl;
-        log("Player::switchPlanet: warning, player has no target to switch from (m_selected_planet is 0)");
+        it = planets.begin();
+        m_selected_planet = it->first;
         return;
     }
-
-    it = m_asset_manager->m_system->planets.find(m_selected_planet); // if this fails eh, bad luck
+    else{
+        it = planets.find(m_selected_planet);
+    }
 
     it++;
-    if(it != m_asset_manager->m_system->planets.end()){
+    if(it != planets.end()){
         m_selected_planet = it->first;
     }
     else{
-        it = m_asset_manager->m_system->planets.begin();
+        it = planets.begin();
         m_selected_planet = it->first;
     }
-}*/
+}
 
 
 void Player::onVesselDestroy(){
@@ -219,6 +221,10 @@ void Player::onVesselDestroy(){
 
 void Player::setBehaviour(short behaviour){
     m_behaviour = behaviour;
+
+    // todo here: change camera position and speed (recover the values depending what we are doing)
+//                    m_camera->setCameraPosition(dmath::vec3(500.0, 1000.0, 0.0));
+//                m_camera->setSpeed(50.0f);
 }
 
 
@@ -246,3 +252,12 @@ void Player::setPlanetariumScaleFactor(double factor){
     m_planetarium_scale_factor = factor;
 }
 
+
+short Player::getBehaviour() const{
+    return m_behaviour;
+}
+
+
+std::uint32_t Player::getPlanetariumSelectedPlanet() const{
+    return m_selected_planet;
+}

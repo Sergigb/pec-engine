@@ -206,6 +206,8 @@ void AssetManager::updateObjectBuffer(std::vector<object_transform>& buffer_, co
         case RENDER_UNIVERSE:
             updateObjectBufferUniverse(buffer_, btv_cam_origin);
             break;
+        case RENDER_PLANETARIUM:
+            break;
         default:
             std::cerr << "AssetManager::updateObjectBuffer: got an invalid render state value from BaseApp::getRenderState (" << m_app->getRenderState() << ")" << std::endl;
             log("AssetManager::updateObjectBuffer: got an invalid render state value from BaseApp::getRenderState (", m_app->getRenderState(), ")");
@@ -266,7 +268,7 @@ void AssetManager::addObjectBuffer(Object* obj, std::vector<object_transform>& b
     catch(std::bad_weak_ptr& e){
         std::string name;
         obj->getFancyName(name);
-        std::cout << "AssetManager::addObjectBuffer: Warning, weak ptr for object " << name << " with id " << obj->getBaseId() << '\n';
+        std::cerr << "AssetManager::addObjectBuffer: Warning, weak ptr for object " << name << " with id " << obj->getBaseId() << '\n';
     }
 }
 
@@ -279,6 +281,18 @@ void AssetManager::updatePlanetBuffer(std::vector<planet_transform>& buffer_){
 
     for(it=planets.begin(); it!=planets.end(); it++){
         buffer_.emplace_back(it->second.get(), it->second->getTransform());
+    }
+}
+
+
+void AssetManager::updateViewMat(struct render_buffer* rbuf) const{
+    short render_state = m_app->getRenderState();
+
+    if(render_state & (RENDER_NOTHING | RENDER_EDITOR | RENDER_UNIVERSE)){
+        rbuf->view_mat =  m_camera->getCenteredViewMatrix();
+    }
+    else if(render_state & RENDER_PLANETARIUM){
+        rbuf->view_mat =  m_camera->getViewMatrix();
     }
 }
 
@@ -314,7 +328,7 @@ void AssetManager::updateBuffers(){
         }
     }
 
-    rbuf->view_mat = m_camera->getCenteredViewMatrix();
+    updateViewMat(rbuf);
     updateObjectBuffer(rbuf->buffer, cam_origin);
     updatePlanetBuffer(rbuf->planet_buffer);
     rbuf->cam_origin = cam_origin;

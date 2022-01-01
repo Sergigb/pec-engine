@@ -70,6 +70,7 @@ class AssetManager{
         void updateObjectBufferEditor(std::vector<object_transform>& buffer_, const btVector3& btv_cam_origin);
         void updateObjectBufferUniverse(std::vector<object_transform>& buffer_, const btVector3& btv_cam_origin);
         void addObjectBuffer(Object* obj, std::vector<object_transform>& buffer_, const btVector3& btv_cam_origin);
+        void updateViewMat(struct render_buffer* rbuf) const;
     public:
         std::vector<std::unique_ptr<btCollisionShape>> m_collision_shapes;
         std::vector<std::unique_ptr<Model>> m_models;

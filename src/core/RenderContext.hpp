@@ -39,10 +39,10 @@ struct planet_transform;
 #define GUI_MODE_EDITOR 1
 
 /* renders states, ie what to render */
-#define RENDER_NOTHING 0
-#define RENDER_EDITOR 1
-#define RENDER_UNIVERSE 2
-#define RENDER_PLANETARIUM 3
+#define RENDER_NOTHING 0x0001
+#define RENDER_EDITOR 0x0002
+#define RENDER_UNIVERSE 0x0004
+#define RENDER_PLANETARIUM 0x0008
 
 
 struct notification{

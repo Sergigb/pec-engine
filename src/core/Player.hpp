@@ -45,7 +45,7 @@ class Player{
         void unsetVessel();
         void setPlayerTarget();
         void switchVessel();
-        //void switchPlanet(); see setSelectedPlanet
+        void switchPlanet();
         void setCamAxisRotation();
     public:
         Player(Camera* camera, AssetManager* asset_manager, const Input* input);
@@ -103,6 +103,17 @@ class Player{
          * Returns true if the player is using the free camera while on the planetarium view.
          */
         bool getPlanetariumFreecam() const;
+
+        /*
+         * Returns the behaviour of the player, the possible behaviours of the player are defined
+         * at the top of this file (macros starting with PLAYER_BEHAVIOUR_*).
+         */
+        short getBehaviour() const;
+
+        /*
+         * Returns the ID of the selected planet in the planetarium.
+         */
+        std::uint32_t getPlanetariumSelectedPlanet() const;
 };
 
 

@@ -18,6 +18,7 @@
 #include "BaseApp.hpp"
 #include "utils/gl_utils.hpp"
 #include "AssetManager.hpp"
+#include "Player.hpp"
 #include "../assets/PlanetarySystem.hpp"
 #include "../assets/Planet.hpp"
 #include "../assets/BasePart.hpp"
@@ -107,7 +108,7 @@ void RenderContext::loadShaders(){
     log_programme_info(m_debug_shader);
     m_debug_view_mat = glGetUniformLocation(m_debug_shader, "view");
     m_debug_proj_mat = glGetUniformLocation(m_debug_shader, "proj");
-    m_debug_color_location = getUniformLocation(m_debug_shader, "line_color");
+    m_debug_color_location = glGetUniformLocation(m_debug_shader, "line_color");
 
     m_planet_shader = create_programme_from_files("../shaders/planet_vs.glsl",
                                                   "../shaders/planet_fs.glsl");
@@ -360,16 +361,18 @@ void RenderContext::renderPlanetariumOrbits(const std::vector<planet_transform>&
     glUniformMatrix4fv(m_debug_view_mat, 1, GL_FALSE, view_mat.m);
     glUniformMatrix4fv(m_debug_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
 
+    glClearColor(0.f, 0.f, 0.f, 0.f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     for(uint i=0; i < buff.size(); i++){
         Planet* current = buff.at(i).planet_ptr;
 
-        // we dont't check yet which planet the player has selected
-        /*if(current == m_bodies.at(m_pick))
-            glUniform3f(color_location, 0.0, 1.0, 0.0);
-        else
-            glUniform3f(color_location, 1.0, 0.0, 0.0);*/
-
-        glUniform3f(m_debug_color_location, 1.0, 0.0, 0.0);
+        if(current->getId() == m_app->m_player->getPlanetariumSelectedPlanet()){
+            glUniform3f(m_debug_color_location, 0.0, 1.0, 0.0);
+        }
+        else{
+            glUniform3f(m_debug_color_location, 1.0, 0.0, 0.0);
+        }
 
         current->renderOrbit();
     }
@@ -426,8 +429,8 @@ void RenderContext::render(){
             num_rendered = renderSceneUniverse();
             break;
         case RENDER_PLANETARIUM:
-            // this method hasn't been tested yet
-
+            renderPlanetarium();
+            break;
         default:
             std::cerr << "RenderContext::render: Warning, invalid render state value (" << (int)m_app->getRenderState() << ")" << std::endl;
             log("RenderContext::render: Warning, invalid render state value (", (int)m_app->getRenderState(), ")");
