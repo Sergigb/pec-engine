@@ -24,6 +24,7 @@ PlanetTree::PlanetTree(){
 }
 
 
+bool warning_async_notified = false;
 PlanetTree::PlanetTree(RenderContext* render_context, Planet* planet){
     m_surface.max_levels = 6;
     m_surface.planet_sea_level = 6371000.f;
@@ -41,13 +42,16 @@ PlanetTree::PlanetTree(RenderContext* render_context, Planet* planet){
     m_planet_texture = m_render_context->getUniformLocation(SHADER_PLANET, "tex");
     m_elevation_texture = m_render_context->getUniformLocation(SHADER_PLANET, "elevation");
 
+    if(!warning_async_notified){
 #ifndef ASYNC_PLANET_TEXTURE_LOAD
-    std::cout << "PlanetTree::PlanetTree: Asynchronous planet texture loading is not enabled" << std::endl;
-    log("PlanetTree::PlanetTree: Asynchronous planet texture loading is not enabled");
+        std::cout << "PlanetTree::PlanetTree: Asynchronous planet texture loading is not enabled" << std::endl;
+        log("PlanetTree::PlanetTree: Asynchronous planet texture loading is not enabled");
 #else
-    std::cout << "PlanetTree::PlanetTree: Asynchronous planet texture loading is enabled" << std::endl;
-    log("PlanetTree::PlanetTree: Asynchronous planet texture loading is enabled");
+        std::cout << "PlanetTree::PlanetTree: Asynchronous planet texture loading is enabled" << std::endl;
+        log("PlanetTree::PlanetTree: Asynchronous planet texture loading is enabled");
 #endif
+        warning_async_notified = true;
+    }
 }
 
 
