@@ -28,8 +28,11 @@ Player::Player(Camera* camera, AssetManager* asset_manager, const Input* input){
     m_behaviour = PLAYER_BEHAVIOUR_NONE;
     m_orbital_cam_mode = ORBITAL_CAM_MODE_ORBIT;
     m_selected_planet = 0;
-    m_planetarium_freecam = true;
+    m_planetarium_freecam = false;
     m_planetarium_scale_factor = PLANETARIUM_DEF_SCALE_FACTOR;
+    m_camera->getCameraParams(m_planetarium_cam_params);
+    m_camera->getCameraParams(m_simulation_cam_params);
+    m_camera->getCameraParams(m_editor_cam_params);
 }
 
 
@@ -107,7 +110,7 @@ void Player::updatePlanetarium(){
     }
 
     if(m_input->pressed_keys[GLFW_KEY_TAB] & INPUT_KEY_DOWN){
-            switchPlanet();
+        switchPlanet();
     }
 }
 
@@ -220,11 +223,43 @@ void Player::onVesselDestroy(){
 
 
 void Player::setBehaviour(short behaviour){
-    m_behaviour = behaviour;
+    switch(m_behaviour){
+        case PLAYER_BEHAVIOUR_NONE:
+            break;
+        case PLAYER_BEHAVIOUR_EDITOR:
+            m_camera->getCameraParams(m_editor_cam_params);
+            break;
+        case PLAYER_BEHAVIOUR_SIMULATION:
+            m_camera->getCameraParams(m_simulation_cam_params);
+            break;
+        case PLAYER_BEHAVIOUR_PLANETARIUM:
+            m_camera->getCameraParams(m_planetarium_cam_params);
+            break;
+    }
 
-    // todo here: change camera position and speed (recover the values depending what we are doing)
-//                    m_camera->setCameraPosition(dmath::vec3(500.0, 1000.0, 0.0));
-//                m_camera->setSpeed(50.0f);
+    switch(behaviour){
+        case PLAYER_BEHAVIOUR_NONE:
+            break;
+        case PLAYER_BEHAVIOUR_EDITOR:
+            m_camera->recoverCameraParams(m_editor_cam_params);
+            break;
+        case PLAYER_BEHAVIOUR_SIMULATION:
+            m_camera->recoverCameraParams(m_simulation_cam_params);
+            break;
+        case PLAYER_BEHAVIOUR_PLANETARIUM:
+            m_camera->recoverCameraParams(m_planetarium_cam_params);
+            if(!m_selected_planet){
+                switchPlanet();
+            }
+            break;
+        default:
+            std::cerr << "Player::setBehaviour: invalid player behaviour value: " << behaviour
+                      << std::endl;
+            log("Player::setBehaviour: invalid player behaviour value: ", behaviour);
+            return;
+    }
+
+    m_behaviour = behaviour;
 }
 
 

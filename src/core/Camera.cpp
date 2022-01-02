@@ -468,3 +468,33 @@ float Camera::getSpeed() const{
     return m_cam_speed;
 }
 
+
+void Camera::getCameraParams(struct camera_params& params) const{
+    params.cam_speed = m_cam_speed;
+    params.cam_pos = m_cam_pos;
+    params.fwd = m_fwd;
+    params.rgt = m_rgt;
+    params.up = m_up;
+    params.cam_orientation = m_cam_orientation;
+    params.polar_angle = m_polar_angle;
+    params.azimuthal_angle = m_azimuthal_angle;
+    params.radial_distance = m_radial_distance;
+    params.inclination = m_inclination;
+    params.inclination_axis = m_inclination_axis;
+}
+
+
+void Camera::recoverCameraParams(const struct camera_params& params){
+    m_cam_speed = params.cam_speed;
+    m_cam_pos = params.cam_pos;
+    m_fwd = params.fwd;
+    m_rgt = params.rgt;
+    m_up = params.up;
+    m_cam_orientation = params.cam_orientation;
+    m_polar_angle = params.polar_angle;
+    m_azimuthal_angle = params.azimuthal_angle;
+    m_radial_distance = params.radial_distance;
+    m_inclination = params.inclination;
+    m_inclination_axis = params.inclination_axis;
+}
+

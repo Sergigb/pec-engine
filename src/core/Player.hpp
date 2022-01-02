@@ -1,6 +1,7 @@
 #ifndef PLAYER_HPP
 #define PLAYER_HPP
 
+#include "Camera.hpp"
 
 #define PLAYER_BEHAVIOUR_NONE 0x01
 #define PLAYER_BEHAVIOUR_EDITOR 0x02
@@ -40,6 +41,9 @@ class Player{
         std::uint32_t m_selected_planet;
         bool m_planetarium_freecam;
         double m_planetarium_scale_factor;
+        struct camera_params m_planetarium_cam_params;
+        struct camera_params m_simulation_cam_params;
+        struct camera_params m_editor_cam_params;
 
         void togglePlanetariumFreecam();
         void unsetVessel();

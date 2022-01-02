@@ -9,6 +9,21 @@ class Input;
 
 
 /*
+ * This struct holds some camera parameters (such as origin and orientation) to recover the camera
+ * position when we change the game state (for example, from planetarium to simulation). This 
+ * struct should be used with the getCameraParameters and recoverCameraParameters methods.
+ */
+struct camera_params{
+    float cam_speed;
+    dmath::vec3 cam_pos;
+    dmath::vec4 fwd, rgt, up;
+    dmath::versor cam_orientation;
+    double polar_angle, azimuthal_angle, radial_distance, inclination;
+    dmath::vec3 inclination_axis;
+};
+
+
+/*
  * Camera class for the main rendering, maybe it's not ideal for other cameras. In the future
  * maybe this class could be a simple class that doesn't deal with input or changes in the 
  * framebuffer size, and then extend in case we need it to deal with input or window size changes.
@@ -26,7 +41,7 @@ class Camera{
         bool m_proj_change, m_fb_callback;
         int m_cam_input_mode, m_prev_cam_input_mode;
 
-        /* oribital camera params */
+        /* orbital camera params */
         double m_polar_angle, m_azimuthal_angle, m_radial_distance, m_inclination;
         dmath::vec3 m_inclination_axis;
 
@@ -216,6 +231,21 @@ class Camera{
          * Updates the orbital camera, including the input.
          */
         void orbitalCameraUpdate();
+
+        /*
+         * Fills the params struct with the current parameters of the camera.
+         *
+         * @params: reference to a camera parameter struct where the parameters of the camera will 
+         * be stored.
+         */
+        void getCameraParams(struct camera_params& params) const;
+
+        /*
+         * Recovers the camera parameters from the given params canera_params struct.
+         *
+         * @params: constant reference to a camera parameters struct.
+         */
+        void recoverCameraParams(const struct camera_params& params);
 };
 
 
