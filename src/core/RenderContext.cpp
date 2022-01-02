@@ -61,6 +61,7 @@ RenderContext::RenderContext(BaseApp* app){
     m_update_projection = false;
 
     m_editor_gui = nullptr;
+    m_planetarium_gui = nullptr;
     m_default_atlas = nullptr;
 
     m_glfw_time = 0.0;
@@ -407,6 +408,9 @@ void RenderContext::render(){
             case GUI_MODE_EDITOR:
                 m_editor_gui->onFramebufferSizeUpdate();
                 break;
+            case GUI_MODE_PLANETARIUM:
+                m_editor_gui->onFramebufferSizeUpdate();
+                break;
         }
 
         m_update_projection = false;
@@ -446,9 +450,12 @@ void RenderContext::render(){
         case GUI_MODE_EDITOR:
             m_editor_gui->render();
             break;
+        case GUI_MODE_PLANETARIUM:
+            m_planetarium_gui->render();
+            break;
         default:
-            std::cerr << "RenderContext::render - Warning, invalid GUI mode (" << m_app->getGUIMode() << ")" << std::endl;
-            log("RenderContext::render - Warning, invalid GUI mode (", m_app->getGUIMode(), ")");
+            std::cerr << "RenderContext::render: Warning, invalid GUI mode (" << m_app->getGUIMode() << ")" << std::endl;
+            log("RenderContext::render: Warning, invalid GUI mode (", m_app->getGUIMode(), ")");
     }
     glEnable(GL_DEPTH_TEST);
 
@@ -657,8 +664,18 @@ void RenderContext::getDefaultFbSize(float& width, float& height) const{
 }
 
 
-void RenderContext::setEditorGUI(BaseGUI* editor_ptr){
-    m_editor_gui = editor_ptr;
+void RenderContext::setGUI(BaseGUI* gui_ptr, short gui){
+    switch(gui){
+        case GUI_MODE_EDITOR:
+            m_editor_gui = gui_ptr;
+            break;
+        case GUI_MODE_PLANETARIUM:
+            m_planetarium_gui = gui_ptr;
+            break;
+        default:
+            std::cerr << "RenderContext::setGUI: invalid GUI mode: " << gui;
+            log("RenderContext::setGUI: invalid GUI mode ", gui);
+    }
 }
 
 

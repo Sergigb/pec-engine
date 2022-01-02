@@ -34,9 +34,10 @@ struct planet_transform;
 #define SHADER_PLANET 5
 #define SHADER_DEBUG 6
 
-/* gui modes, only editor for now */
+/* gui modes */
 #define GUI_MODE_NONE 0
 #define GUI_MODE_EDITOR 1
+#define GUI_MODE_PLANETARIUM 2
 
 /* renders states, ie what to render */
 #define RENDER_NOTHING 0x0001
@@ -116,6 +117,7 @@ class RenderContext{
 
         // gui
         BaseGUI* m_editor_gui;
+        BaseGUI* m_planetarium_gui;
         // other ones...
         std::unique_ptr<Text2D> m_notification_text;
 
@@ -250,12 +252,14 @@ class RenderContext{
         void toggleDebugDraw();
 
         /*
-         * Sets the editor's gui. In the future, when we have more GUIs, we could just pass the 
-         * macro of the GUI and the pointer, for example setGUI(GUI_MODE_EDITOR, editor_gui_ptr)
+         * Sets a GUI given a pointer of type BaseGUI and a valid GUI value.
          *
-         * @editor_ptr: pointer to the editor GUI object.
+         * @gui_ptr: pointer to the GUI object, should be a derived class from derived from
+         * BaseGUI.
+         * @gui: GUI that we want to set, has to be one of the valid GUI modes defined above (
+         * macros GUI_MODE_*).
          */
-        void setEditorGUI(BaseGUI* editor_ptr);
+        void setGUI(BaseGUI* gui_ptr, short gui);
 
         /*
          * Reloads the shaders.
