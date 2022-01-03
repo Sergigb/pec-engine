@@ -409,7 +409,7 @@ void RenderContext::render(){
                 m_editor_gui->onFramebufferSizeUpdate();
                 break;
             case GUI_MODE_PLANETARIUM:
-                m_editor_gui->onFramebufferSizeUpdate();
+                m_planetarium_gui->onFramebufferSizeUpdate();
                 break;
         }
 

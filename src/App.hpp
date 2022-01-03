@@ -14,6 +14,7 @@
 class Object;
 class FontAtlas;
 class GameEditor;
+class PlanetariumGUI;
 
 
 class App : public BaseApp{
@@ -26,6 +27,9 @@ class App : public BaseApp{
         // game simulation state (temporary here)
         bool m_quit;
         std::chrono::duration<double, std::micro> m_elapsed_time;
+
+        // planetarium GUI object, also temporary
+        std::unique_ptr<PlanetariumGUI> m_planetarium_gui;
 
         void init();
         void logic();

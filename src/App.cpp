@@ -21,6 +21,7 @@
 #include "assets/Model.hpp"
 #include "assets/Kinematic.hpp"
 #include "assets/utils/planet_utils.hpp"
+#include "GUI/planetarium/PlanetariumGUI.hpp"
 
 
 App::App() : BaseApp(){
@@ -48,6 +49,10 @@ void App::init(){
 
     m_render_context->setDefaultFontAtlas(m_def_font_atlas.get());
     m_editor.reset(new GameEditor(this, m_def_font_atlas.get()));
+
+    // vv temp vv
+    m_planetarium_gui.reset(new PlanetariumGUI(m_def_font_atlas.get(), m_render_context.get()));
+    m_render_context->setGUI(m_planetarium_gui.get(), GUI_MODE_PLANETARIUM);
 }
 
 
@@ -173,14 +178,12 @@ void App::processKeyboardInput(){
         if(m_input->pressed_keys[GLFW_KEY_M] == INPUT_KEY_DOWN){
             if(m_player->getBehaviour() & PLAYER_BEHAVIOUR_SIMULATION){
                 m_render_state = RENDER_PLANETARIUM;
+                m_gui_mode = GUI_MODE_PLANETARIUM;
                 m_player->setBehaviour(PLAYER_BEHAVIOUR_PLANETARIUM);
-
-                // vvvvvvv this will move into player vvvvvvv
-                m_camera->setCameraPosition(dmath::vec3(500.0, 1000.0, 0.0));
-                m_camera->setSpeed(50.0f);
             }
             else{
                 m_render_state = RENDER_UNIVERSE;
+                m_gui_mode = GUI_MODE_NONE;
                 m_player->setBehaviour(PLAYER_BEHAVIOUR_SIMULATION);
             }
         }
