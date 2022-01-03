@@ -51,7 +51,10 @@ void App::init(){
     m_editor.reset(new GameEditor(this, m_def_font_atlas.get()));
 
     // vv temp vv
-    m_planetarium_gui.reset(new PlanetariumGUI(m_def_font_atlas.get(), m_render_context.get()));
+    m_planetarium_gui.reset(new PlanetariumGUI(m_def_font_atlas.get(), m_render_context.get(),
+                                               m_camera.get()));
+    m_planetarium_gui->setPlanetarySystem(m_asset_manager->m_planetary_system.get());
+
     m_render_context->setGUI(m_planetarium_gui.get(), GUI_MODE_PLANETARIUM);
 }
 
@@ -138,6 +141,7 @@ void App::run(){
         }
         else{
             m_player->updatePlanetarium();
+            m_planetarium_gui->update();
         }
         m_asset_manager->updateBuffers();
         
