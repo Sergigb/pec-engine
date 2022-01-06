@@ -29,6 +29,7 @@ class PlanetariumGUI : public BaseGUI{
 
         const PlanetarySystem* m_planetary_system;
         double m_delta_t;
+        std::uint32_t m_selected_planet;
 
         const FontAtlas* m_font_atlas;
         const RenderContext* m_render_context;
@@ -41,6 +42,7 @@ class PlanetariumGUI : public BaseGUI{
 
         void setPlanetarySystem(const PlanetarySystem* planetary_system);
         void setSimulationDeltaT(double delta_t);
+        void setSelectedPlanet(std::uint32_t planet_id);
 
         void onFramebufferSizeUpdate();
         void render();

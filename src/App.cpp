@@ -141,6 +141,7 @@ void App::run(){
         }
         else{
             m_player->updatePlanetarium();
+            m_planetarium_gui->setSelectedPlanet(m_player->getPlanetariumSelectedPlanet());
             m_planetarium_gui->update();
         }
         m_asset_manager->updateBuffers();

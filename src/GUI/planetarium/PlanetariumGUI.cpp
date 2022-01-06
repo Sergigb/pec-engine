@@ -6,6 +6,7 @@
 #include "../../core/RenderContext.hpp"
 #include "../../core/log.hpp"
 #include "../../core/Camera.hpp"
+#include "../../core/Physics.hpp"
 #include "../../assets/PlanetarySystem.hpp"
 
 
@@ -18,8 +19,9 @@ PlanetariumGUI::PlanetariumGUI(const FontAtlas* atlas, const RenderContext* rend
     m_fb_update = true;
     m_planetary_system = nullptr;
     m_delta_t = 1 / 60.;
+    m_selected_planet = 0;
 
-    m_main_text.reset(new Text2D(m_fb_width, m_fb_height, color{0.85, 0.85, 0.85},
+    m_main_text.reset(new Text2D(m_fb_width, m_fb_height, color{0.0, 1., 0.0},
                       m_font_atlas, render_context));
 
 }
@@ -63,46 +65,63 @@ void PlanetariumGUI::updateSceneText(){
     oss << "\nStar name: " << m_planetary_system->getStar().star_name;
     oss << "\nStar description: " << m_planetary_system->getStar().description;
 
-    //const orbital_data& data = m_bodies.at(m_pick)->getOrbitalData();
-    //double speed = dmath::length(data.pos - data.pos_prev) / m_delta_t;
-   // oss << "\n\nSelected object: " << m_bodies.at(m_pick)->getName();
-    mbstowcs(buff, oss.str().c_str(), 256);
+    if(m_selected_planet){
+        try{
+            const orbital_data& data = planets.at(m_selected_planet)->getOrbitalData();
+            oss << "\n\nSelected object: " << planets.at(m_selected_planet)->getName();
 
-    woss << buff << std::fixed << std::setprecision(2);
-    m_main_text->addString(woss.str().c_str(), 10, 15, 1.0f,
-                      STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
+            mbstowcs(buff, oss.str().c_str(), 256);
+            woss << buff << std::fixed << std::setprecision(2);
+            m_main_text->addString(woss.str().c_str(), 10, 15, 1.0f,
+                                   STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
 
-    /*woss.str(L"");
-    woss.clear();
+            woss.str(L"");
+            woss.clear();
 
-    woss << L"\nOrbital parameters (J2000 eliptic): ";
-    woss << L"\nOrbital speed: " << speed << L"m/s";
-    woss << L"\nEccentricity (e): " << data.eccentricity;
-    woss << L"\nSemi major axis (a): " << data.semi_major_axis << "AU";
-    woss << L"\nInclination (i): " << data.inclination * ONE_RAD_IN_DEG << L"º";
-    woss << L"\nLongitude of the asciending node (Ω): " << data.long_asc_node * ONE_RAD_IN_DEG<< L"º";
-    
-    // too many strings already...
-    m_main_text->addString(woss.str().c_str(), 10, 95, 1.0f,
-                           STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
+            double speed = dmath::length(data.pos - data.pos_prev) / m_delta_t;
+            woss << L"\nOrbital parameters (J2000 eliptic): ";
+            woss << L"\nOrbital speed: " << speed << L"m/s";
+            woss << L"\nEccentricity (e): " << data.eccentricity;
+            woss << L"\nSemi major axis (a): " << data.semi_major_axis << "AU";
+            woss << L"\nInclination (i): " << data.inclination * ONE_RAD_IN_DEG << L"º";
+            woss << L"\nLongitude of the asciending node (Ω): " 
+                 << data.long_asc_node * ONE_RAD_IN_DEG<< L"º";
+            
+            // too many strings already...
+            m_main_text->addString(woss.str().c_str(), 10, 95, 1.0f,
+                                   STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
 
-    woss.str(L"");
-    woss.clear();
+            woss.str(L"");
+            woss.clear();
 
-    woss << L"Argument of the periapsis (ω): " << data.arg_periapsis * ONE_RAD_IN_DEG << L"º"
-         << L" (ϖ: " << data.longitude_perigee << L"º)";    
-    woss << L"\nTrue anomaly (f): " << data.true_anomaly * ONE_RAD_IN_DEG << L"º"
-         << L" (M: " << data.mean_anomaly << L"º, L: " << data.mean_longitude << L"º)";
+            woss << L"Argument of the periapsis (ω): " << data.arg_periapsis * ONE_RAD_IN_DEG 
+                 << L"º" << L" (ϖ: " << data.longitude_perigee << L"º)";    
+            woss << L"\nTrue anomaly (f): " << data.true_anomaly * ONE_RAD_IN_DEG << L"º"
+                 << L" (M: " << data.mean_anomaly << L"º, L: " << data.mean_longitude << L"º)";
 
-    woss << L"\nPeriod: " << data.period * 36525 << L" days (" << data.period * 100. << L" years)";
-    woss << L"\nPerigee: " << (1 - data.eccentricity) * data.semi_major_axis * AU_TO_METERS / 1000.0 << L"km";
-    woss << L"\nApogee : " << (1 + data.eccentricity) * data.semi_major_axis * AU_TO_METERS / 1000.0 << L"km";
+            woss << L"\nPeriod: " << data.period * 36525 << L" days (" << data.period * 100.
+                 << L" years)";
+            woss << L"\nPerigee: " << (1 - data.eccentricity) * data.semi_major_axis
+                                       * AU_TO_METERS / 1000.0 << L"km";
+            woss << L"\nApogee : " << (1 + data.eccentricity) * data.semi_major_axis
+                                       * AU_TO_METERS / 1000.0 << L"km";
 
-    woss << L"\n\nPhysical properties: ";
-    woss << L"\nMass: " << std::scientific << data.mass << "kg";*/
+            woss << L"\n\nPhysical properties: ";
+            woss << L"\nMass: " << std::scientific << data.mass << "kg";
 
-    m_main_text->addString(woss.str().c_str(), 10, 235, 1.0f,
-                           STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);    
+            m_main_text->addString(woss.str().c_str(), 10, 235, 1.0f,
+                                   STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
+        }
+        catch (const std::out_of_range& oor) {
+            std::cerr << "PlanetariumGUI::updateSceneText: wrong id value for selected planet: " 
+                      << m_selected_planet << " (what: " << oor.what() << ")" << std::endl;
+            log("PlanetariumGUI::updateSceneText: wrong id value for selected planet: ",
+                m_selected_planet, " (what: ", oor.what(), ")");
+        }
+    }
+    else{
+
+    }
 }
 
 
@@ -132,4 +151,9 @@ void PlanetariumGUI::setPlanetarySystem(const PlanetarySystem* planetary_system)
 
 void PlanetariumGUI::setSimulationDeltaT(double delta_t){
     m_delta_t = delta_t;
+}
+
+
+void PlanetariumGUI::setSelectedPlanet(std::uint32_t planet_id){
+    m_selected_planet = planet_id;
 }
