@@ -110,53 +110,46 @@ void Planet::initBuffers(){
 
 
 void Planet::updateOrbitalElements(const double cent_since_j2000){
-    m_orbital_data.semi_major_axis = m_orbital_data.semi_major_axis_0 +
-                                     m_orbital_data.semi_major_axis_d * cent_since_j2000;
-    m_orbital_data.eccentricity = m_orbital_data.eccentricity_0 +
-                                  m_orbital_data.eccentricity_d * cent_since_j2000;
-    m_orbital_data.inclination = m_orbital_data.inclination_0 +
-                                 m_orbital_data.inclination_d * cent_since_j2000;
-    m_orbital_data.mean_longitude = m_orbital_data.mean_longitude_0 +
-                                    m_orbital_data.mean_longitude_d * cent_since_j2000;
-    m_orbital_data.longitude_perigee = m_orbital_data.longitude_perigee_0 +
-                                       m_orbital_data.longitude_perigee_d * cent_since_j2000;
-    m_orbital_data.long_asc_node = m_orbital_data.long_asc_node_0 +
-                                   m_orbital_data.long_asc_node_d * cent_since_j2000;
+    m_orbital_data.a = m_orbital_data.a_0 + m_orbital_data.a_d * cent_since_j2000;
+    m_orbital_data.e = m_orbital_data.e_0 + m_orbital_data.e_d * cent_since_j2000;
+    m_orbital_data.i = m_orbital_data.i_0 + m_orbital_data.i_d * cent_since_j2000;
+    m_orbital_data.L = m_orbital_data.L_0 + m_orbital_data.L_d * cent_since_j2000;
+    m_orbital_data.p = m_orbital_data.p_0 + m_orbital_data.p_d * cent_since_j2000;
+    m_orbital_data.W = m_orbital_data.W_0 + m_orbital_data.W_d * cent_since_j2000;
 
-    m_orbital_data.mean_anomaly = m_orbital_data.mean_longitude - m_orbital_data.longitude_perigee;
-    m_orbital_data.arg_periapsis = m_orbital_data.longitude_perigee - m_orbital_data.long_asc_node;
+    m_orbital_data.M = m_orbital_data.L - m_orbital_data.p;
+    m_orbital_data.w = m_orbital_data.p - m_orbital_data.W;
 
-    m_orbital_data.eccentric_anomaly = m_orbital_data.mean_anomaly;
+    m_orbital_data.E = m_orbital_data.M;
     double ecc_d = 10.8008135;
     int iter = 0;
     while(std::abs(ecc_d) > 1e-6 && iter < MAX_SOLVER_ITER){
-        ecc_d = (m_orbital_data.eccentric_anomaly - m_orbital_data.eccentricity *
-                 std::sin(m_orbital_data.eccentric_anomaly) - m_orbital_data.mean_anomaly) / 
-                 (1 - m_orbital_data.eccentricity * std::cos(m_orbital_data.eccentric_anomaly));
-        m_orbital_data.eccentric_anomaly -= ecc_d;
+        ecc_d = (m_orbital_data.E - m_orbital_data.e * std::sin(m_orbital_data.E) - 
+                 m_orbital_data.M) / (1 - m_orbital_data.e * std::cos(m_orbital_data.E));
+        m_orbital_data.E -= ecc_d;
         iter++;
     }
+
+    m_orbital_data.v = 2 * std::atan(std::sqrt((1 + m_orbital_data.e) / (1 - m_orbital_data.e))
+                       * std::tan(m_orbital_data.E / 2));
 
     m_orbital_data.pos_prev = m_orbital_data.pos;
 
     // results in a singularity as e -> 1
-    double true_anomaly = 2 * std::atan(std::sqrt((1 + m_orbital_data.eccentricity)/
-                                                   (1 - m_orbital_data.eccentricity)) * 
-                                        std::tan(m_orbital_data.eccentric_anomaly / 2));
+    double v = 2 * std::atan(std::sqrt((1 + m_orbital_data.e) / (1 - m_orbital_data.e))
+                                        * std::tan(m_orbital_data.E / 2));
 
-    double rad = m_orbital_data.semi_major_axis * (1 - m_orbital_data.eccentricity * 
-                                            std::cos(m_orbital_data.eccentric_anomaly)) * AU_TO_METERS;
+    double rad = m_orbital_data.a * (1 - m_orbital_data.e * std::cos(m_orbital_data.E))
+                                     * AU_TO_METERS;
 
-    m_orbital_data.pos.v[0] = rad * (std::cos(m_orbital_data.long_asc_node) * std::cos(m_orbital_data.arg_periapsis +
-                              true_anomaly) - std::sin(m_orbital_data.long_asc_node) * std::sin(
-                              m_orbital_data.arg_periapsis + true_anomaly) * std::cos(m_orbital_data.inclination));
+    m_orbital_data.pos.v[0] = rad * (std::cos(m_orbital_data.W) * std::cos(m_orbital_data.w + v)
+                                     - std::sin(m_orbital_data.W) * std::sin(m_orbital_data.w + v)
+                                     * std::cos(m_orbital_data.i));
+    m_orbital_data.pos.v[1] = rad * (std::sin(m_orbital_data.i) * std::sin(m_orbital_data.w + v));
+    m_orbital_data.pos.v[2] = rad * (std::sin(m_orbital_data.W) * std::cos(m_orbital_data.w + v) +
+                                     std::cos(m_orbital_data.W) * std::sin(m_orbital_data.w + v)
+                                     * std::cos(m_orbital_data.i));
 
-    m_orbital_data.pos.v[1] = rad * (std::sin(m_orbital_data.inclination) * std::sin(m_orbital_data.arg_periapsis+
-                              true_anomaly));
-
-    m_orbital_data.pos.v[2] = rad * (std::sin(m_orbital_data.long_asc_node) * std::cos(m_orbital_data.arg_periapsis +
-                              true_anomaly) +std::cos(m_orbital_data.long_asc_node) * std::sin(
-                              m_orbital_data.arg_periapsis + true_anomaly) * std::cos(m_orbital_data.inclination));
 }
 
 
@@ -166,25 +159,25 @@ alternative computation method, maybe we should benchmark it :^)
 
 m_orbital_data.pos_prev = m_orbital_data.pos;
 
-double P = AU_TO_METERS * m_orbital_data.semi_major_axis * (std::cos(m_orbital_data.eccentric_anomaly) -
-                   m_orbital_data.eccentricity);
-double Q = AU_TO_METERS * m_orbital_data.semi_major_axis * std::sin(m_orbital_data.eccentric_anomaly) *
-           std::sqrt(1 - m_orbital_data.eccentricity * m_orbital_data.eccentricity);
+double P = AU_TO_METERS * m_orbital_data.a * (std::cos(m_orbital_data.E) -
+                   m_orbital_data.e);
+double Q = AU_TO_METERS * m_orbital_data.a * std::sin(m_orbital_data.E) *
+           std::sqrt(1 - m_orbital_data.e * m_orbital_data.e);
 
 
-m_orbital_data.pos.v[0] = std::cos(m_orbital_data.arg_periapsis) * P - 
-                   std::sin(m_orbital_data.arg_periapsis) * Q;
-m_orbital_data.pos.v[1] = std::sin(m_orbital_data.arg_periapsis) * P +
-                   std::cos(m_orbital_data.arg_periapsis) * Q;
+m_orbital_data.pos.v[0] = std::cos(m_orbital_data.w) * P - 
+                   std::sin(m_orbital_data.w) * Q;
+m_orbital_data.pos.v[1] = std::sin(m_orbital_data.w) * P +
+                   std::cos(m_orbital_data.w) * Q;
 
-m_orbital_data.pos.v[2] = std::sin(m_orbital_data.inclination) * m_orbital_data.test.v[1];
-m_orbital_data.pos.v[1] = std::cos(m_orbital_data.inclination) * m_orbital_data.test.v[1];
+m_orbital_data.pos.v[2] = std::sin(m_orbital_data.i) * m_orbital_data.test.v[1];
+m_orbital_data.pos.v[1] = std::cos(m_orbital_data.i) * m_orbital_data.test.v[1];
 
 double xtemp = m_orbital_data.test.v[0];
-m_orbital_data.pos.v[0] = std::cos(m_orbital_data.long_asc_node) * xtemp - 
-                   std::sin(m_orbital_data.long_asc_node) * m_orbital_data.test.v[1];
-m_orbital_data.pos.v[1] = std::sin(m_orbital_data.long_asc_node) * xtemp + 
-                   std::cos(m_orbital_data.long_asc_node) * m_orbital_data.test.v[1];
+m_orbital_data.pos.v[0] = std::cos(m_orbital_data.W) * xtemp - 
+                   std::sin(m_orbital_data.W) * m_orbital_data.test.v[1];
+m_orbital_data.pos.v[1] = std::sin(m_orbital_data.W) * xtemp + 
+                   std::cos(m_orbital_data.W) * m_orbital_data.test.v[1];
 
 */
 
@@ -198,47 +191,38 @@ void Planet::updateRenderBuffers(double current_time){
 
     m_render_context->bindVao(m_vao);
 
-    double eccentricity, long_asc_node, arg_periapsis, inclination, semi_major_axis,
-           mean_longitude, longitude_perigee, mean_anomaly;
+    double e, W, w, inc, a, L, p, M, v;
     double time = current_time;
     for(uint i=0; i < NUM_VERTICES; i++){
         time += m_orbital_data.period / NUM_VERTICES;
 
-        semi_major_axis = m_orbital_data.semi_major_axis_0 + m_orbital_data.semi_major_axis_d * time;
-        eccentricity = m_orbital_data.eccentricity_0 + m_orbital_data.eccentricity_d * time;
-        inclination = m_orbital_data.inclination_0 + m_orbital_data.inclination_d * time;
-        mean_longitude = m_orbital_data.mean_longitude_0 + m_orbital_data.mean_longitude_d * time;
-        longitude_perigee = m_orbital_data.longitude_perigee_0 + m_orbital_data.longitude_perigee_d * time;
-        long_asc_node = m_orbital_data.long_asc_node_0 + m_orbital_data.long_asc_node_d * time;
+        a = m_orbital_data.a_0 + m_orbital_data.a_d * time;
+        e = m_orbital_data.e_0 + m_orbital_data.e_d * time;
+        inc = m_orbital_data.i_0 + m_orbital_data.i_d * time;
+        L = m_orbital_data.L_0 + m_orbital_data.L_d * time;
+        p = m_orbital_data.p_0 + m_orbital_data.p_d * time;
+        W = m_orbital_data.W_0 + m_orbital_data.W_d * time;
 
-        mean_anomaly = mean_longitude - longitude_perigee;
-        arg_periapsis = longitude_perigee - long_asc_node;
+        M = L - p;
+        w = p - W;
 
-        double eccentric_anomaly = mean_anomaly;
+        double E = M;
         double ecc_d = 10.8008135;
         int iter = 0;
         while(std::abs(ecc_d) > 1e-6 && iter < MAX_SOLVER_ITER){
-            ecc_d = (eccentric_anomaly - eccentricity *
-                     std::sin(eccentric_anomaly) - mean_anomaly) / 
-                     (1 - eccentricity * std::cos(eccentric_anomaly));
-            eccentric_anomaly -= ecc_d;
+            ecc_d = (E - e * std::sin(E) - M) / (1 - e * std::cos(E));
+            E -= ecc_d;
         }
 
-        m_orbital_data.true_anomaly = 2 * std::atan(std::sqrt((1 + eccentricity)/
-                                                       (1 - eccentricity)) * 
-                                             std::tan(eccentric_anomaly / 2));
+        v = 2 * std::atan(std::sqrt((1 + e) / (1 - e)) * std::tan(E / 2));
 
-        double rad = semi_major_axis * (1 - eccentricity * std::cos(eccentric_anomaly)) * (AU_TO_METERS / 1e10);
+        double rad = a * (1 - e * std::cos(E)) * (AU_TO_METERS / 1e10);
 
-        vertex_buffer[i * 3] = rad * (std::cos(long_asc_node) * std::cos(arg_periapsis + m_orbital_data.true_anomaly) -
-                               std::sin(long_asc_node) * std::sin(arg_periapsis + m_orbital_data.true_anomaly) *
-                               std::cos(inclination));
-
-        vertex_buffer[i * 3 + 1] = rad * (std::sin(inclination) * std::sin(arg_periapsis + m_orbital_data.true_anomaly));
-
-        vertex_buffer[i * 3 + 2] = rad * (std::sin(long_asc_node) * std::cos(arg_periapsis + m_orbital_data.true_anomaly) +
-                                   std::cos(long_asc_node) * std::sin(arg_periapsis + m_orbital_data.true_anomaly) *
-                                   std::cos(inclination));
+        vertex_buffer[i * 3] = rad * (std::cos(W) * std::cos(w + v) -
+                               std::sin(W) * std::sin(w + v) * std::cos(inc));
+        vertex_buffer[i * 3 + 1] = rad * (std::sin(inc) * std::sin(w + v));
+        vertex_buffer[i * 3 + 2] = rad * (std::sin(W) * std::cos(w + v) +
+                                   std::cos(W) * std::sin(w + v) *std::cos(inc));
 
         index_buffer[i * 2] = i;
         index_buffer[i * 2 + 1] = i + 1;

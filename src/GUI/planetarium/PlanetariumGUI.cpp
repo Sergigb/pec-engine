@@ -83,11 +83,11 @@ void PlanetariumGUI::updateSceneText(){
             double speed = dmath::length(data.pos - data.pos_prev) / m_delta_t;
             woss << L"\nOrbital parameters (J2000 eliptic): ";
             woss << L"\nOrbital speed: " << speed << L"m/s";
-            woss << L"\nEccentricity (e): " << data.eccentricity;
-            woss << L"\nSemi major axis (a): " << data.semi_major_axis << "AU";
-            woss << L"\nInclination (i): " << data.inclination * ONE_RAD_IN_DEG << L"º";
+            woss << L"\nEccentricity (e): " << data.e;
+            woss << L"\nSemi major axis (a): " << data.a << "AU";
+            woss << L"\nInclination (i): " << data.i * ONE_RAD_IN_DEG << L"º";
             woss << L"\nLongitude of the asciending node (Ω): " 
-                 << data.long_asc_node * ONE_RAD_IN_DEG<< L"º";
+                 << data.W * ONE_RAD_IN_DEG<< L"º";
             
             // too many strings already...
             m_main_text->addString(woss.str().c_str(), 10, 95, 1.0f,
@@ -96,20 +96,20 @@ void PlanetariumGUI::updateSceneText(){
             woss.str(L"");
             woss.clear();
 
-            woss << L"Argument of the periapsis (ω): " << data.arg_periapsis * ONE_RAD_IN_DEG 
-                 << L"º" << L" (ϖ: " << data.longitude_perigee << L"º)";    
-            woss << L"\nTrue anomaly (f): " << data.true_anomaly * ONE_RAD_IN_DEG << L"º"
-                 << L" (M: " << data.mean_anomaly << L"º, L: " << data.mean_longitude << L"º)";
+            woss << L"Argument of the periapsis (ω): " << data.w * ONE_RAD_IN_DEG 
+                 << L"º" << L" (ϖ: " << data.p << L"º)";    
+            woss << L"\nTrue anomaly (f): " << data.v * ONE_RAD_IN_DEG << L"º"
+                 << L" (M: " << data.M << L"º, L: " << data.L << L"º)";
 
             woss << L"\nPeriod: " << data.period * 36525 << L" days (" << data.period * 100.
                  << L" years)";
-            woss << L"\nPerigee: " << (1 - data.eccentricity) * data.semi_major_axis
+            woss << L"\nPerigee: " << (1 - data.e) * data.a
                                        * AU_TO_METERS / 1000.0 << L"km";
-            woss << L"\nApogee : " << (1 + data.eccentricity) * data.semi_major_axis
+            woss << L"\nApogee : " << (1 + data.e) * data.a
                                        * AU_TO_METERS / 1000.0 << L"km";
 
             woss << L"\n\nPhysical properties: ";
-            woss << L"\nMass: " << std::scientific << data.mass << "kg";
+            woss << L"\nMass: " << std::scientific << data.m << "kg";
 
             m_main_text->addString(woss.str().c_str(), 10, 235, 1.0f,
                                    STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);

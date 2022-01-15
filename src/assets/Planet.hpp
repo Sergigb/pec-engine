@@ -14,17 +14,49 @@ class RenderContext;
 #define MAX_SOLVER_ITER 10
 
 
-/* Everything in this struct is too verbose and it bothers me... */
+/* 
+ * Struct with orbital data of a celestial body. These parameters are used to solve the two-body 
+ * problem. Since we don't suppot moons yet, we solve the two-body problems between the planets and
+ * the sun. For parameter that are continuously updated we have theur value in the current timestep
+ * the initial value (at the start of the epoch), and its derivative.
+ *
+ * @m: mass of the body, in kgs.
+ * @r: mean radius of the body. In meters.
+ * @a: value of the semi-major axis. In AU.
+ * @a_0: initial value of the semi-major axis. In AU.
+ * @a_d: derivative of the semi-major axis. In AU/century.
+ * @e: eccentricity of the orbit.
+ * @e_0: initial value of the eccentricity of the orbit.
+ * @e_d: derivative of the eccentricity.
+ * @i: inclination of the orbit, in rads.
+ * @i_0: initial value of the inclination of the orbit, in rads.
+ * @i_d: derivative of the inclination, in rads/century.
+ * @L: mean longitude of the orbit, L = w + M. In rads.
+ * @L_0: initial value of the  mean longitude of the orbit. In rads.
+ * @L_d: derivative of the mean longitude. In rads/century.
+ * @p: longitude of the periapsis. In rads.
+ * @p_0: initial value of the longitude of the periapsis. In rads.
+ * @p_d: derivative of the longitude of the periapsis. In rads/century.
+ * @W: longitude of the ascending node, in rads.
+ * @W_0: initial value of the longitude of the ascending node, in rads.
+ * @W_d: derivative of the ascending node, in rads/century.
+ * @M: mean anomaly. In rads.
+ * @w: argument of the periapsis, in rads.
+ * @E: eccentric anomaly, in rads.
+ * @v: true anomaly, in rads.
+ * @period: period of the orbit, in centuries.
+ * @pos: current position of the body.
+ * @pos_prev: position of the body in the previous tick.
+ */
 
 struct orbital_data{
     // initially read from file
-    double mass, radius, semi_major_axis_0, semi_major_axis_d, eccentricity_0, eccentricity_d,
-           inclination_0, inclination_d, mean_longitude_0, mean_longitude_d, longitude_perigee_0,
-           longitude_perigee_d, long_asc_node_0, long_asc_node_d;
+    double m, r, a_0, a_d, e_0, e_d, i_0, i_d, L_0, L_d, p_0, p_d, W_0, W_d;
+
     // updated at each time step
-    double semi_major_axis, eccentricity, inclination, mean_longitude, longitude_perigee, long_asc_node;
+    double a, e, i, L, p, W;
     // derivated
-    double mean_anomaly, arg_periapsis, eccentric_anomaly, true_anomaly, period;
+    double M, w, E, v, period;
 
     dmath::vec3 pos, pos_prev;
 };

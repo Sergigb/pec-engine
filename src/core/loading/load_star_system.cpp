@@ -47,77 +47,75 @@ int load_planets(const tinyxml2::XMLElement* planets_element, planet_map& planet
             name = "unk";
         current_planet->setName(name);
 
-        if(get_double(planet_element, "mass", data.mass) == EXIT_FAILURE)
-            data.mass = 0.0;
-        if(get_double(planet_element, "radius", data.radius) == EXIT_FAILURE)
-            data.radius = 0.0;
+        if(get_double(planet_element, "mass", data.m) == EXIT_FAILURE)
+            data.m = 0.0;
+        if(get_double(planet_element, "radius", data.r) == EXIT_FAILURE)
+            data.r = 0.0;
 
         param_element = get_element(planet_element, "semi_major_axis");
         if(!param_element)
             return EXIT_FAILURE;
-        if(get_double(param_element, "value", data.semi_major_axis_0) == EXIT_FAILURE)
-            data.semi_major_axis_0 = 0.0;
+        if(get_double(param_element, "value", data.a_0) == EXIT_FAILURE)
+            data.a_0 = 0.0;
         if(get_double(param_element, "derivative", 
-                      data.semi_major_axis_d) == EXIT_FAILURE)
-            data.semi_major_axis_d = 0.0;
+                      data.a_d) == EXIT_FAILURE)
+            data.a_d = 0.0;
 
         param_element = get_element(planet_element, "eccentricity");
         if(!param_element)
             return EXIT_FAILURE;
-        if(get_double(param_element, "value", data.eccentricity_0) == EXIT_FAILURE)
-            data.eccentricity_0 = 0.0;
-        if(get_double(param_element, "derivative", data.eccentricity_d) == EXIT_FAILURE)
-            data.eccentricity_d = 0.0;
+        if(get_double(param_element, "value", data.e_0) == EXIT_FAILURE)
+            data.e_0 = 0.0;
+        if(get_double(param_element, "derivative", data.e_d) == EXIT_FAILURE)
+            data.e_d = 0.0;
 
         param_element = get_element(planet_element, "inclination");
         if(!param_element)
             return EXIT_FAILURE;
-        if(get_double(param_element, "value", data.inclination_0) == EXIT_FAILURE)
-            data.inclination_0 = 0.0;
-        if(get_double(param_element, "derivative", data.inclination_d) == EXIT_FAILURE)
-            data.inclination_d = 0.0;
+        if(get_double(param_element, "value", data.i_0) == EXIT_FAILURE)
+            data.i_0 = 0.0;
+        if(get_double(param_element, "derivative", data.i_d) == EXIT_FAILURE)
+            data.i_d = 0.0;
 
         param_element = get_element(planet_element, "mean_longitude");
         if(!param_element)
             return EXIT_FAILURE;
-        if(get_double(param_element, "value", data.mean_longitude_0) == EXIT_FAILURE)
-            data.mean_longitude_0 = 0.0;
-        if(get_double(param_element, "derivative",
-                      data.mean_longitude_d) == EXIT_FAILURE)
-            data.mean_longitude_d = 0.0;
+        if(get_double(param_element, "value", data.L_0) == EXIT_FAILURE)
+            data.L_0 = 0.0;
+        if(get_double(param_element, "derivative", data.L_d) == EXIT_FAILURE)
+            data.L_d = 0.0;
 
         param_element = get_element(planet_element, "longitude_perigee");
         if(!param_element)
             return EXIT_FAILURE;
-        if(get_double(param_element, "value", data.longitude_perigee_0) == EXIT_FAILURE)
-            data.longitude_perigee_0 = 0.0;
-        if(get_double(param_element, "derivative", 
-                      data.longitude_perigee_d) == EXIT_FAILURE)
-            data.longitude_perigee_d = 0.0;
+        if(get_double(param_element, "value", data.p_0) == EXIT_FAILURE)
+            data.p_0 = 0.0;
+        if(get_double(param_element, "derivative", data.p_d) == EXIT_FAILURE)
+            data.p_d = 0.0;
 
         param_element = get_element(planet_element, "long_asc_node");
         if(!param_element)
             return EXIT_FAILURE;
-        if(get_double(param_element, "value", data.long_asc_node_0) == EXIT_FAILURE)
-            data.long_asc_node_0 = 0.0;
-        if(get_double(param_element, "derivative", data.long_asc_node_d) == EXIT_FAILURE)
-            data.long_asc_node_d = 0.0;
+        if(get_double(param_element, "value", data.W_0) == EXIT_FAILURE)
+            data.W_0 = 0.0;
+        if(get_double(param_element, "derivative", data.W_d) == EXIT_FAILURE)
+            data.W_d = 0.0;
 
-        data.inclination_0 *= ONE_DEG_IN_RAD;
-        data.inclination_d *= ONE_DEG_IN_RAD;
-        data.mean_longitude_0 *= ONE_DEG_IN_RAD;
-        data.mean_longitude_d *= ONE_DEG_IN_RAD;
-        data.longitude_perigee_0 *= ONE_DEG_IN_RAD;
-        data.longitude_perigee_d *= ONE_DEG_IN_RAD;
-        data.long_asc_node_0 *= ONE_DEG_IN_RAD;
-        data.long_asc_node_d *= ONE_DEG_IN_RAD;
+        data.i_0 *= ONE_DEG_IN_RAD;
+        data.i_d *= ONE_DEG_IN_RAD;
+        data.L_0 *= ONE_DEG_IN_RAD;
+        data.L_d *= ONE_DEG_IN_RAD;
+        data.p_0 *= ONE_DEG_IN_RAD;
+        data.p_d *= ONE_DEG_IN_RAD;
+        data.W_0 *= ONE_DEG_IN_RAD;
+        data.W_d *= ONE_DEG_IN_RAD;
         // avoids valgrind reporting uninitialised values
         data.pos = dmath::vec3(0.0, 0.0, 0.0);
         data.pos_prev = dmath::vec3(0.0, 0.0, 0.0);
-        data.true_anomaly = 0.0;
-        double mean_anomaly_d = data.mean_longitude_d - data.longitude_perigee_d;
-        double period = ((2 * M_PI) / mean_anomaly_d);
-        data.period = period;
+        data.v = 0.0;
+        double mean_anomaly_d = data.L_d - data.p;
+
+        data.period = ((2 * M_PI) / mean_anomaly_d);
 
         current_planet->setID(str_hash(name));
         res = planets.insert({current_planet->getId(), std::move(current_planet)});
