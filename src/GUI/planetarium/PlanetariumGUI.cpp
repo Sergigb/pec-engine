@@ -11,9 +11,11 @@
 
 
 
-PlanetariumGUI::PlanetariumGUI(const FontAtlas* atlas, const RenderContext* render_context, const Camera* camera){
+PlanetariumGUI::PlanetariumGUI(const FontAtlas* atlas, const RenderContext* render_context,
+                               const Camera* camera, const Physics* physics){
     m_font_atlas = atlas;
     m_render_context = render_context;
+    m_physics = physics;
     m_render_context->getDefaultFbSize(m_fb_width, m_fb_height);
     m_camera = camera;
     m_fb_update = true;
@@ -119,9 +121,18 @@ void PlanetariumGUI::updateSceneText(){
                 m_selected_planet, " (what: ", oor.what(), ")");
         }
     }
-    else{
 
-    }
+    woss.str(L"");
+    woss.clear();
+    time_t current_time = (time_t)m_physics->getCurrentTime() + SECS_FROM_UNIX_TO_J2000;
+    mbstowcs(buff, ctime(&current_time), 256);
+    m_main_text->addString(buff, 25, 50, 1.0f,
+                           STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_RIGHT);
+
+    woss << L"delta_t: " << m_delta_t << L"ms (" << m_delta_t / 36000.0
+         << L" hours, x" << long(m_delta_t / (1. / 60.)) << L")";
+    m_main_text->addString(woss.str().c_str(), 25, 35, 1.0f,
+                           STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_RIGHT);
 }
 
 

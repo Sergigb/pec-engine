@@ -15,6 +15,7 @@ class RenderContext;
 class Text2D;
 class PlanetarySystem;
 class Camera;
+class Physics;
 
 
 /* Planetarium GUI class, more docs incoming maybe... */
@@ -34,10 +35,12 @@ class PlanetariumGUI : public BaseGUI{
         const FontAtlas* m_font_atlas;
         const RenderContext* m_render_context;
         const Camera* m_camera;
+        const Physics* m_physics;
 
         void updateSceneText();
     public:
-        PlanetariumGUI(const FontAtlas* atlas, const RenderContext* render_context, const Camera* camera);
+        PlanetariumGUI(const FontAtlas* atlas, const RenderContext* render_context,
+                       const Camera* camera, const Physics* physics);
         ~PlanetariumGUI();
 
         void setPlanetarySystem(const PlanetarySystem* planetary_system);

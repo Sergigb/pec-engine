@@ -52,7 +52,7 @@ void App::init(){
 
     // vv temp vv
     m_planetarium_gui.reset(new PlanetariumGUI(m_def_font_atlas.get(), m_render_context.get(),
-                                               m_camera.get()));
+                                               m_camera.get(), m_physics.get()));
     m_planetarium_gui->setPlanetarySystem(m_asset_manager->m_planetary_system.get());
 
     m_render_context->setGUI(m_planetarium_gui.get(), GUI_MODE_PLANETARIUM);
@@ -179,48 +179,50 @@ void App::logic(){
 
 
 void App::processKeyboardInput(){
-    if(!m_render_context->imGuiWantCaptureKeyboard()){
-        if(m_input->pressed_keys[GLFW_KEY_M] == INPUT_KEY_DOWN){
-            if(m_player->getBehaviour() & PLAYER_BEHAVIOUR_SIMULATION){
-                m_render_state = RENDER_PLANETARIUM;
-                m_gui_mode = GUI_MODE_PLANETARIUM;
-                m_player->setBehaviour(PLAYER_BEHAVIOUR_PLANETARIUM);
-            }
-            else{
-                m_render_state = RENDER_UNIVERSE;
-                m_gui_mode = GUI_MODE_NONE;
-                m_player->setBehaviour(PLAYER_BEHAVIOUR_SIMULATION);
-            }
-        }
+    if(m_render_context->imGuiWantCaptureKeyboard()){
+        return;
+    }
 
-        if(m_input->pressed_keys[GLFW_KEY_F12] == INPUT_KEY_DOWN){
-            m_render_context->toggleDebugOverlay();
+    if(m_input->pressed_keys[GLFW_KEY_M] == INPUT_KEY_DOWN){
+        if(m_player->getBehaviour() & PLAYER_BEHAVIOUR_SIMULATION){
+            m_render_state = RENDER_PLANETARIUM;
+            m_gui_mode = GUI_MODE_PLANETARIUM;
+            m_player->setBehaviour(PLAYER_BEHAVIOUR_PLANETARIUM);
         }
-
-        if(m_input->pressed_keys[GLFW_KEY_F11] == INPUT_KEY_DOWN){
-            m_render_context->toggleDebugDraw();
+        else{
+            m_render_state = RENDER_UNIVERSE;
+            m_gui_mode = GUI_MODE_NONE;
+            m_player->setBehaviour(PLAYER_BEHAVIOUR_SIMULATION);
         }
+    }
 
-        if(m_input->pressed_keys[GLFW_KEY_F10] == INPUT_KEY_DOWN){
-            m_render_context->reloadShaders();
-            m_render_context->setLightPosition(math::vec3(63000000000.0, 0.0, 0.0));
+    if(m_input->pressed_keys[GLFW_KEY_F12] == INPUT_KEY_DOWN){
+        m_render_context->toggleDebugOverlay();
+    }
+
+    if(m_input->pressed_keys[GLFW_KEY_F11] == INPUT_KEY_DOWN){
+        m_render_context->toggleDebugDraw();
+    }
+
+    if(m_input->pressed_keys[GLFW_KEY_F10] == INPUT_KEY_DOWN){
+        m_render_context->reloadShaders();
+        m_render_context->setLightPosition(math::vec3(63000000000.0, 0.0, 0.0));
+    }
+
+    if(m_input->pressed_keys[GLFW_KEY_ESCAPE] == INPUT_KEY_DOWN){
+        m_quit = true;
+    }
+
+    // testing
+    if(m_input->pressed_keys[GLFW_KEY_F1] == INPUT_KEY_DOWN){
+        if(m_player->getVessel()){
+            m_player->getVessel()->printVessel();
         }
+    }
 
-        if(m_input->pressed_keys[GLFW_KEY_ESCAPE] == INPUT_KEY_DOWN){
-            m_quit = true;
-        }
-
-        // testing
-        if(m_input->pressed_keys[GLFW_KEY_F1] == INPUT_KEY_DOWN){
-            if(m_player->getVessel()){
-                m_player->getVessel()->printVessel();
-            }
-        }
-
-        if(m_input->pressed_keys[GLFW_KEY_F2] == INPUT_KEY_DOWN){
-            if(m_player->getVessel()){
-                m_player->getVessel()->printStaging();
-            }
+    if(m_input->pressed_keys[GLFW_KEY_F2] == INPUT_KEY_DOWN){
+        if(m_player->getVessel()){
+            m_player->getVessel()->printStaging();
         }
     }
 }
