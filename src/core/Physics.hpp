@@ -117,6 +117,7 @@ class Physics{
          * Applies gravity, should be a n-body simulation in the future when we have more planets.
          */
         void applyGravity();
+        void applyGravityStar(double star_mass, btRigidBody* rbody, const btVector3& rbody_origin);
 
         BaseApp* m_app;
 

@@ -10,6 +10,9 @@
 #include "multithreading.hpp"
 #include "../assets/Object.hpp"
 #include "../assets/PlanetarySystem.hpp"
+#include "../assets/Planet.hpp"
+#include "../assets/Vessel.hpp"
+#include "../assets/BasePart.hpp"
 
 
 Physics::Physics(){
@@ -113,6 +116,10 @@ void Physics::updateCollisionWorldSingleAABB(btRigidBody* body){
 
 
 void Physics::startSimulation(int max_sub_steps){
+    // initialize orbital elements
+    double cents_since_j2000 = m_secs_since_j2000 / SECONDS_IN_A_CENTURY;
+    m_app->m_asset_manager->m_planetary_system->updateOrbitalElements(cents_since_j2000);
+
     m_thread_simulation = std::thread(&Physics::runSimulation, this, max_sub_steps);
     log("Physics: starting simulation, thread launched");
 }
@@ -206,26 +213,80 @@ btDiscreteDynamicsWorld* Physics::getDynamicsWorld(){
 }
 
 
-// assuming that we only have 1 planet, and that's earth, this calculates the force applied by its gravity field
-// this should be easy to optimize in the future, calculate gravity with the com of the vessel, and then apply f
-// to individual objects 
-#define EARTH_MASS 5973600000000000000000000.0
+void Physics::applyGravityStar(double star_mass, btRigidBody* rbody, 
+                               const btVector3& rbody_origin){
+    double Rh = rbody_origin.norm(); // star is in the center of the space
+    double acceleration = GRAVITATIONAL_CONSTANT * (star_mass / (Rh*Rh));
+    btVector3 f = (1 / rbody->getInvMass()) * (-rbody_origin).normalize() * acceleration;
+    rbody->applyCentralForce(f);
+}
+
+
+/*
+    First steps towards a n-body simulation, this has much work to do:
+     - when we are not time-warping (which is always because it's not implented) bullet integrates the forces and uses, apparently, symplectic Euler. I have no idea
+       if sympletic Euler is better than Runge-Kutta methods for classical mechanics, or if other sympletic methods are better than symplectic Euler, I don't know because
+       all this stuff sounds like fucking nonsense when I read it, so I'll have to dig more into this. This question is interesting:
+
+        https://scicomp.stackexchange.com/questions/29149/what-does-symplectic-mean-in-reference-to-numerical-integrators-and-does-scip
+
+    - this method might be critical to optimize, so much work can be done here
+    - one possible optimization can be to calculate the total force applied to the vessel by using the CoM + total vessel mass. Then we can propotionally apply the force
+    using the part's mass.
+    - the planet's origin is stored as dmath::vec3, should be btVector3 to avoid conversions.
+    - the gravity of the star is applied separately, which is weird but ok for single starts.
+
+    I've verified that when the vessel is close to the earth the acceleration is 1.2, which is not 1 but close enough, this is because the earth is moving while our
+    object starts stationary. 1.2 is close enough though. The next steps will be to verify that the simulation works more or less, also I'll try to implement orbital
+    predictions. The first thing is to show the vessel's name on the Planetarium view's GUI.
+ */
+typedef std::unordered_map<std::uint32_t, std::shared_ptr<Vessel>> vessel_map; // this could be defined in the AssetManager
 void Physics::applyGravity(){
-    double acceleration;
-    btCollisionObjectArray& col_object_array = m_dynamics_world->getCollisionObjectArray();
+    AssetManager* asset_manager = m_app->m_asset_manager.get();
+    const planet_map& planets = asset_manager->m_planetary_system->getPlanets();
+    planet_map::const_iterator it;
+    vessel_map::iterator it2;
+    double star_mass = asset_manager->m_planetary_system->getStar().mass;
 
-    // in the future this class should be able to acces the memory structures where the objects are saved, in order to avoid casts
-    for(int i=0; i < col_object_array.size(); i++){
-        btRigidBody* obj = static_cast<btRigidBody*>(col_object_array.at(i));
-        const btVector3& object_origin = obj->getWorldTransform().getOrigin();
-        double Rh = object_origin.norm(); // assuming earth's center of gravity is at the origin
+    // objects...
+    for(uint i=0; i < asset_manager->m_objects.size(); i++){
+        btRigidBody* body = asset_manager->m_objects.at(i)->m_body.get();
+        const btVector3& object_origin = body->getWorldTransform().getOrigin();
 
-        acceleration = GRAVITATIONAL_CONSTANT * (EARTH_MASS / (Rh*Rh));
+        applyGravityStar(star_mass, body, object_origin);
 
-        if(!(obj->getCollisionFlags() & (btCollisionObject::CF_KINEMATIC_OBJECT | btCollisionObject::CF_STATIC_OBJECT))){
-            // we should keep the mass in the object
-            btVector3 f = ((1 / obj->getInvMass()) * (-object_origin).normalize() * acceleration);
-            obj->applyCentralForce(f);            
+        for(it = planets.begin(); it != planets.end(); it++){
+            const orbital_data& data =  it->second->getOrbitalData();
+            btVector3 pos_planet(data.pos.v[0], data.pos.v[1], data.pos.v[2]); // stupid conversion from dmath::vec3 to btVector3, just store pos as a btVector3 god damn it...
+            double Rh = pos_planet.distance(object_origin);
+
+            double acceleration = GRAVITATIONAL_CONSTANT * (data.m / (Rh*Rh));
+            btVector3 f = (1 / body->getInvMass()) * (pos_planet - object_origin).normalize()
+                          * acceleration;
+            body->applyCentralForce(f);
+        }
+    }
+
+    for(it2 = asset_manager->m_active_vessels.begin(); it2 != asset_manager->m_active_vessels.end(); it2++){
+        std::vector<BasePart*>& parts = it2->second->getParts();
+
+        for(uint i=0; i < parts.size(); i++){
+            btRigidBody* body = parts.at(i)->m_body.get();
+            const btVector3& object_origin = body->getWorldTransform().getOrigin();
+
+            applyGravityStar(star_mass, body, object_origin);
+
+            for(it = planets.begin(); it != planets.end(); it++){
+                const orbital_data& data =  it->second->getOrbitalData();
+                btVector3 pos_planet(data.pos.v[0], data.pos.v[1], data.pos.v[2]);
+                double Rh = pos_planet.distance(object_origin);
+
+                double acceleration = GRAVITATIONAL_CONSTANT * (data.m / (Rh*Rh));
+                btVector3 f = (1 / body->getInvMass()) * (pos_planet - object_origin).normalize()
+                               * acceleration;
+                body->applyCentralForce(f);
+
+            }
         }
     }
 }
