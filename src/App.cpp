@@ -52,8 +52,8 @@ void App::init(){
 
     // vv temp vv
     m_planetarium_gui.reset(new PlanetariumGUI(m_def_font_atlas.get(), m_render_context.get(),
-                                               m_camera.get(), m_physics.get()));
-    m_planetarium_gui->setPlanetarySystem(m_asset_manager->m_planetary_system.get());
+                                               m_camera.get(), m_physics.get(),
+                                               m_asset_manager.get()));
 
     m_render_context->setGUI(m_planetarium_gui.get(), GUI_MODE_PLANETARIUM);
 }
@@ -281,7 +281,9 @@ void App::editorToSimulation(){
         BasePart* root = vsl->getRoot();
         
         // translate to lat/long 0.0-0.0, this function doesn't work well when lat or long != 0, for some reason
-        btVector3 to = reference_ellipse_to_xyz(btRadians(0.0), btRadians(0.0), 6371025.0 - vsl->getLowerBound());
+        //btVector3 to = reference_ellipse_to_xyz(btRadians(0.0), btRadians(0.0), 6371025.0 - vsl->getLowerBound());
+        btVector3 to(-2.6505e+10, -38663.6, 1.44693e+11);
+        to += reference_ellipse_to_xyz(btRadians(0.0), btRadians(0.0), 6371025.0 - vsl->getLowerBound());
         btVector3 disp;
         btTransform transform;
 

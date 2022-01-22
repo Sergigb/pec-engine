@@ -24,9 +24,9 @@
 #include "../assets/PlanetarySystem.hpp"
 
 
-typedef std::unordered_map<std::uint32_t, std::shared_ptr<BasePart>>::iterator SubTreeIterator;
-typedef std::unordered_map<std::uint32_t, std::shared_ptr<Vessel>>::iterator VesselIterator;
-typedef std::unordered_map<std::uint32_t, std::unique_ptr<Resource>>::iterator ResourceIterator;
+typedef SubTreesMap::iterator SubTreeIterator;
+typedef VesselsMap::iterator VesselIterator;
+typedef ResourcesMap::iterator ResourceIterator;
 
 
 AssetManager::AssetManager(BaseApp* app) : m_asset_manager_interface(AssetManagerInterface(this)){

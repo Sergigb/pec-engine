@@ -16,6 +16,11 @@ class Text2D;
 class PlanetarySystem;
 class Camera;
 class Physics;
+class AssetManager;
+
+namespace math{
+    struct mat4;
+}
 
 
 /* Planetarium GUI class, more docs incoming maybe... */
@@ -28,7 +33,6 @@ class PlanetariumGUI : public BaseGUI{
 
         std::unique_ptr<Text2D> m_main_text;
 
-        const PlanetarySystem* m_planetary_system;
         double m_delta_t;
         std::uint32_t m_selected_planet;
 
@@ -36,14 +40,19 @@ class PlanetariumGUI : public BaseGUI{
         const RenderContext* m_render_context;
         const Camera* m_camera;
         const Physics* m_physics;
+        const AssetManager* m_asset_manager;
 
         void updateSceneText();
+        void updateVesselsText(const math::mat4& proj_mat, const math::mat4& view_mat);
+        void updatePlanetsText(const math::mat4& proj_mat, const math::mat4& view_mat);
     public:
+        // the constructor has too many arguments, maybe it's better to make the base objects available
+        // from BaseApp
         PlanetariumGUI(const FontAtlas* atlas, const RenderContext* render_context,
-                       const Camera* camera, const Physics* physics);
+                       const Camera* camera, const Physics* physics,
+                       const AssetManager* asset_manager);
         ~PlanetariumGUI();
 
-        void setPlanetarySystem(const PlanetarySystem* planetary_system);
         void setSimulationDeltaT(double delta_t);
         void setSelectedPlanet(std::uint32_t planet_id);
 

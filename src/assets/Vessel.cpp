@@ -30,6 +30,7 @@ Vessel::Vessel(std::shared_ptr<BasePart>& vessel_root, const Input* input) : m_v
     m_input = input;
     m_yaw = 0.0f;
     m_pitch = 0.0f;
+    m_vessel_name = "unnamed vessel";
 
     updateNodes();
     updateMass();

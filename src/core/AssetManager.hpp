@@ -31,6 +31,12 @@ class Planet;
 class PlanetarySystem;
 
 
+typedef std::unordered_map<std::uint32_t, std::shared_ptr<BasePart>> SubTreesMap;
+typedef std::unordered_map<std::uint32_t, std::shared_ptr<Vessel>> VesselsMap;
+typedef std::unordered_map<std::uint32_t, std::unique_ptr<Resource>> ResourcesMap;
+typedef std::unordered_map<std::uint32_t, std::unique_ptr<BasePart>> BasePartMap;
+
+
 /*
  * Class used to manage assets (planets/parts/resources etc) and buffers, performs basic tasks such
  * as updating render and command buffers (required for multithreading) or deleting/updating assets. 
@@ -74,8 +80,8 @@ class AssetManager{
     public:
         std::vector<std::unique_ptr<btCollisionShape>> m_collision_shapes;
         std::vector<std::unique_ptr<Model>> m_models;
-        std::unordered_map<std::uint32_t, std::unique_ptr<BasePart>> m_master_parts;
-        std::unordered_map<std::uint32_t, std::unique_ptr<Resource>> m_resources;
+        BasePartMap m_master_parts;
+        ResourcesMap m_resources;
 
         /* command buffers */
         std::vector<struct set_motion_state_msg> m_set_motion_state_buffer;
@@ -89,7 +95,7 @@ class AssetManager{
         std::vector<BasePart*> m_build_constraint_subtree_buffer;
 
         /* editor objects */
-        std::unordered_map<std::uint32_t, std::shared_ptr<BasePart>> m_editor_subtrees;
+        SubTreesMap m_editor_subtrees;
         std::shared_ptr<Vessel> m_editor_vessel;
         std::vector<std::shared_ptr<BasePart>> m_symmetry_subtrees;
 
@@ -97,7 +103,7 @@ class AssetManager{
         std::vector<std::shared_ptr<Object>> m_objects;
         std::vector<std::shared_ptr<Kinematic>> m_kinematics;
         std::unique_ptr<PlanetarySystem> m_planetary_system;
-        std::unordered_map<std::uint32_t, std::shared_ptr<Vessel>> m_active_vessels;
+        VesselsMap m_active_vessels;
 
         AssetManager(BaseApp* app);
         ~AssetManager();

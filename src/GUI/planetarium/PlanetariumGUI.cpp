@@ -7,21 +7,24 @@
 #include "../../core/log.hpp"
 #include "../../core/Camera.hpp"
 #include "../../core/Physics.hpp"
+#include "../../core/AssetManager.hpp"
 #include "../../assets/PlanetarySystem.hpp"
+#include "../../assets/Vessel.hpp"
 
 
 
 PlanetariumGUI::PlanetariumGUI(const FontAtlas* atlas, const RenderContext* render_context,
-                               const Camera* camera, const Physics* physics){
+                               const Camera* camera, const Physics* physics,
+                               const AssetManager* asset_manager){
     m_font_atlas = atlas;
     m_render_context = render_context;
     m_physics = physics;
     m_render_context->getDefaultFbSize(m_fb_width, m_fb_height);
     m_camera = camera;
     m_fb_update = true;
-    m_planetary_system = nullptr;
     m_delta_t = 1 / 60.;
     m_selected_planet = 0;
+    m_asset_manager = asset_manager;
 
     m_main_text.reset(new Text2D(m_fb_width, m_fb_height, color{0.0, 1., 0.0},
                       m_font_atlas, render_context));
@@ -37,35 +40,78 @@ void PlanetariumGUI::onFramebufferSizeUpdate(){
 }
 
 
-void PlanetariumGUI::updateSceneText(){
+void PlanetariumGUI::updateVesselsText(const math::mat4& proj_mat, const math::mat4& view_mat){
+    const VesselsMap& active_vessels = m_asset_manager->m_active_vessels;
+    VesselsMap::const_iterator it;
+    wchar_t buff[256];
+
+    for(it=active_vessels.begin(); it!=active_vessels.end(); it++){
+        const btVector3& com = it->second->getCoM();
+        std::cout << it->second->getVesselName() << " " << com.getX() << " " << com.getY() << " " << com.getZ() << std::endl;
+        
+        math::vec4 pos(com.getX() / 1e10,
+                       com.getY() / 1e10,
+                       com.getZ() / 1e10, 1.0f);
+        math::vec4 pos_screen = proj_mat * view_mat * pos;
+
+        if(pos_screen.v[2] > 0.0){
+            pos_screen = ((pos_screen / pos_screen.v[3]) + 1. ) / 2.;
+
+            mbstowcs(buff, it->second->getVesselName().c_str(), 256);
+            m_main_text->addString(buff, pos_screen.v[0] * m_fb_width, 
+                                   pos_screen.v[1] * m_fb_height + 5, 1.0f,
+                                   STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_CENTER_XY);
+        }
+
+    }
+}
+
+
+void PlanetariumGUI::updatePlanetsText(const math::mat4& proj_mat, const math::mat4& view_mat){
+    const PlanetarySystem* planetary_system = m_asset_manager->m_planetary_system.get();
+    const planet_map& planets = planetary_system->getPlanets();
     planet_map::const_iterator it;
-    const planet_map& planets = m_planetary_system->getPlanets();
+    wchar_t buff[256];
+
+    for(it=planets.begin();it!=planets.end();it++){
+        const Planet* current = it->second.get();
+        const dmath::vec3& current_pos = current->getPosition();
+
+        math::vec4 pos(current_pos.v[0] / 1e10,
+                       current_pos.v[1] / 1e10,
+                       current_pos.v[2] / 1e10, 1.0f);
+        math::vec4 pos_screen = proj_mat * view_mat * pos;
+
+        if(pos_screen.v[2] > 0.0){
+            pos_screen = ((pos_screen / pos_screen.v[3]) + 1. ) / 2.;
+
+            mbstowcs(buff, current->getName().c_str(), 256);
+            m_main_text->addString(buff, pos_screen.v[0] * m_fb_width, 
+                                   pos_screen.v[1] * m_fb_height + 5, 1.0f,
+                                   STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_CENTER_XY);
+        }
+    }
+}
+
+
+void PlanetariumGUI::updateSceneText(){
+    const PlanetarySystem* planetary_system = m_asset_manager->m_planetary_system.get();
+    const planet_map& planets = planetary_system->getPlanets();
     const math::mat4& proj_mat = m_camera->getProjMatrix();
     const math::mat4 view_mat = m_camera->getViewMatrix();
+
     std::wostringstream woss;
     std::ostringstream oss;
     wchar_t buff[256];
 
     m_main_text->clearStrings();
 
-    for(it=planets.begin();it!=planets.end();it++){
-        const Planet* current = it->second.get();
+    updateVesselsText(proj_mat, view_mat);
+    updatePlanetsText(proj_mat, view_mat);
 
-        math::vec4 pos(current->getPosition().v[0] / 1e10,
-                       current->getPosition().v[1] / 1e10,
-                       current->getPosition().v[2] / 1e10, 1.0f);
-        math::vec4 pos_screen = proj_mat * view_mat * pos;
-        pos_screen = ((pos_screen / pos_screen.v[3]) + 1. ) / 2.; // there's something wrong here
-
-        mbstowcs(buff, current->getName().c_str(), 256);
-        m_main_text->addString(buff, pos_screen.v[0] * m_fb_width, 
-                               pos_screen.v[1] * m_fb_height + 5, 1.0f,
-                               STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_CENTER_XY);
-    }
-
-    oss << "System name: " << m_planetary_system->getSystemName();
-    oss << "\nStar name: " << m_planetary_system->getStar().star_name;
-    oss << "\nStar description: " << m_planetary_system->getStar().description;
+    oss << "System name: " << planetary_system->getSystemName();
+    oss << "\nStar name: " << planetary_system->getStar().star_name;
+    oss << "\nStar description: " << planetary_system->getStar().description;
 
     if(m_selected_planet){
         try{
@@ -152,11 +198,6 @@ void PlanetariumGUI::render(){
 
 int PlanetariumGUI::update(){
     return PLANETARIUM_ACTION_NONE;
-}
-
-
-void PlanetariumGUI::setPlanetarySystem(const PlanetarySystem* planetary_system){
-    m_planetary_system = planetary_system;
 }
 
 
