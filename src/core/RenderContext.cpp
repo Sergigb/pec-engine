@@ -349,7 +349,7 @@ void RenderContext::renderPlanetarium(){
             rbuf = &m_buffers->buffer_2;
         }
 
-        m_app->m_asset_manager->m_planetary_system->updateRenderBuffers(m_app->m_physics->getCurrentTime());
+        m_app->m_asset_manager->m_planetary_system->updateRenderBuffers(m_app->m_physics->getCurrentTime() / SECONDS_IN_A_CENTURY);
         renderPlanetariumOrbits(rbuf->planet_buffer, rbuf->view_mat);
 
         rbuf->buffer_lock.unlock();
