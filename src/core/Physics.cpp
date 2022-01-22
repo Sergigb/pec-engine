@@ -16,20 +16,17 @@
 
 
 Physics::Physics(){
-    init(btVector3(0.0, -9.81, 0.0));
 }
 
-Physics::Physics(const btVector3& gravity, thread_monitor* thread_monitor, BaseApp* app){
+Physics::Physics(thread_monitor* thread_monitor, BaseApp* app){
     m_thread_monitor = thread_monitor;
     m_app = app;
     m_delta_t = REAL_TIME_S;
     m_secs_since_j2000 = 0.0;
-
-    init(gravity);
 }
 
 
-void Physics::init(const btVector3& gravity){
+void Physics::initDynamicsWorld(const btVector3& gravity){
     m_collision_configuration.reset(new btDefaultCollisionConfiguration());
     m_dispatcher.reset(new btCollisionDispatcher(m_collision_configuration.get()));
     m_overlapping_pair_cache.reset(new btDbvtBroadphase());
@@ -40,8 +37,8 @@ void Physics::init(const btVector3& gravity){
     m_simulation_paused = true;
     m_end_simulation = false;
     
-    log("Physics: starting dynamics world");
-    std::cout << "Physics: starting dynamics world" << std::endl;
+    log("Physics::initDynamicsWorld: starting dynamics world");
+    std::cout << "Physics::initDynamicsWorld: starting dynamics world" << std::endl;
 
     //btOverlapFilterCallback*filtercbk=new myFilterCallback();
     //m_dynamics_world->getPairCache()->setOverlapFilterCallback(filtercbk);

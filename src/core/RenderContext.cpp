@@ -83,8 +83,8 @@ RenderContext::RenderContext(BaseApp* app){
 }
 
 
-void RenderContext::setDebugDrawer(Physics* physics){
-    m_physics = physics;
+void RenderContext::setDebugDrawer(){
+    m_physics = m_app->m_physics.get();
     m_debug_drawer.reset(new DebugDrawer(this));
     btDiscreteDynamicsWorld* d_world = m_physics->getDynamicsWorld();
     d_world->setDebugDrawer(m_debug_drawer.get());

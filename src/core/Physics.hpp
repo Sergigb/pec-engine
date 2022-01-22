@@ -101,11 +101,6 @@ class Physics{
         std::unique_ptr<btDiscreteDynamicsWorld> m_dynamics_world;
 
         /*
-         * Starts Bullet.
-         */
-        void init(const btVector3& gravity);
-
-        /*
          * Runs the simulation, is launched as a separate thead through startSimulation, uses the
          * thread monitor to synchronize itself with the main thead.
          */
@@ -131,12 +126,10 @@ class Physics{
         /*
          * Constructor
          *
-         * @gravity: gravity direction, should be btVector(0.0, 0.0, 0.0) since we apply our own 
-         * gravity.
          * @thread_monitor: thread monitor object used to synchronize ourselves with the main app.
          * @m_app: pointer of the app
          */
-        Physics(const btVector3& gravity, thread_monitor* thread_monitor, BaseApp* app);
+        Physics(thread_monitor* thread_monitor, BaseApp* app);
         ~Physics();
 
         /*
@@ -250,6 +243,15 @@ class Physics{
          * @stop_simulation: if true, the simulation is paused.
          */
         void pauseSimulation(bool stop_simulation);
+
+        /*
+         * Starts the bullet dynamics world. This should be ideally called at the start of the 
+         * application.
+         *
+         * @gravity: gravity of the environment, defaults to 0 because we usually will apply our
+         * own gravity.
+         */
+        void initDynamicsWorld(const btVector3& gravity = btVector3(0.0, 0.0, 0.0));
 };
 
 

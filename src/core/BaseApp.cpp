@@ -120,8 +120,7 @@ void BaseApp::init(int gl_width, int gl_height){
     m_render_context.reset(new RenderContext(this));
     m_window_handler->setRenderContext(m_render_context.get());
     displayLoadingScreen();
-    m_physics.reset(new Physics(btVector3(0, 0, 0), &m_thread_monitor, this));
-    m_render_context->setDebugDrawer(m_physics.get());
+    m_physics.reset(new Physics(&m_thread_monitor, this));
     m_asset_manager.reset(new AssetManager(this));
     m_player.reset(new Player(m_camera.get(), m_asset_manager.get(), m_input.get()));
 

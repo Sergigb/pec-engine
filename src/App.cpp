@@ -34,6 +34,9 @@ App::App(int gl_width, int gl_height) : BaseApp(gl_width, gl_height){
 void App::init(){
     m_quit = false;
 
+    m_physics->initDynamicsWorld();
+    m_render_context->setDebugDrawer();
+
     m_asset_manager->loadResources();
     m_asset_manager->loadParts();
     m_asset_manager->loadStarSystem();

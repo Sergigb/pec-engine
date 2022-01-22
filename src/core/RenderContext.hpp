@@ -267,12 +267,9 @@ class RenderContext{
         void reloadShaders();
 
         /*
-         * Sets the debug drawer, we pass the physics pointer because we are fucking crazy here.
-         * Also because it holds the pointer to the DebugDrawer object.
-         *
-         * @physics: pointer to the physics object.
+         * Sets the debug drawer in Physics, the dynamics world needs to have been initialized.
          */
-        void setDebugDrawer(Physics* physics);
+        void setDebugDrawer();
 
         /*
          * Adds a notification that will be rendered at the center of the screen, in bright green
