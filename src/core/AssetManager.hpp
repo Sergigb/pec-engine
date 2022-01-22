@@ -31,9 +31,9 @@ class Planet;
 class PlanetarySystem;
 
 
-typedef std::unordered_map<std::uint32_t, std::shared_ptr<BasePart>> SubTreesMap;
-typedef std::unordered_map<std::uint32_t, std::shared_ptr<Vessel>> VesselsMap;
-typedef std::unordered_map<std::uint32_t, std::unique_ptr<Resource>> ResourcesMap;
+typedef std::unordered_map<std::uint32_t, std::shared_ptr<BasePart>> SubTreeMap;
+typedef std::unordered_map<std::uint32_t, std::shared_ptr<Vessel>> VesselMap;
+typedef std::unordered_map<std::uint32_t, std::unique_ptr<Resource>> ResourceMap;
 typedef std::unordered_map<std::uint32_t, std::unique_ptr<BasePart>> BasePartMap;
 
 
@@ -81,7 +81,7 @@ class AssetManager{
         std::vector<std::unique_ptr<btCollisionShape>> m_collision_shapes;
         std::vector<std::unique_ptr<Model>> m_models;
         BasePartMap m_master_parts;
-        ResourcesMap m_resources;
+        ResourceMap m_resources;
 
         /* command buffers */
         std::vector<struct set_motion_state_msg> m_set_motion_state_buffer;
@@ -95,7 +95,7 @@ class AssetManager{
         std::vector<BasePart*> m_build_constraint_subtree_buffer;
 
         /* editor objects */
-        SubTreesMap m_editor_subtrees;
+        SubTreeMap m_editor_subtrees;
         std::shared_ptr<Vessel> m_editor_vessel;
         std::vector<std::shared_ptr<BasePart>> m_symmetry_subtrees;
 
@@ -103,7 +103,7 @@ class AssetManager{
         std::vector<std::shared_ptr<Object>> m_objects;
         std::vector<std::shared_ptr<Kinematic>> m_kinematics;
         std::unique_ptr<PlanetarySystem> m_planetary_system;
-        VesselsMap m_active_vessels;
+        VesselMap m_active_vessels;
 
         AssetManager(BaseApp* app);
         ~AssetManager();

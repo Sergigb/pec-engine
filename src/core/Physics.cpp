@@ -240,12 +240,11 @@ void Physics::applyGravityStar(double star_mass, btRigidBody* rbody,
     object starts stationary. 1.2 is close enough though. The next steps will be to verify that the simulation works more or less, also I'll try to implement orbital
     predictions. The first thing is to show the vessel's name on the Planetarium view's GUI.
  */
-typedef std::unordered_map<std::uint32_t, std::shared_ptr<Vessel>> vessel_map; // this could be defined in the AssetManager
 void Physics::applyGravity(){
     AssetManager* asset_manager = m_app->m_asset_manager.get();
     const planet_map& planets = asset_manager->m_planetary_system->getPlanets();
     planet_map::const_iterator it;
-    vessel_map::iterator it2;
+    VesselMap::iterator it2;
     double star_mass = asset_manager->m_planetary_system->getStar().mass;
 
     // objects...

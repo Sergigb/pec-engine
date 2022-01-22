@@ -41,14 +41,13 @@ void PlanetariumGUI::onFramebufferSizeUpdate(){
 
 
 void PlanetariumGUI::updateVesselsText(const math::mat4& proj_mat, const math::mat4& view_mat){
-    const VesselsMap& active_vessels = m_asset_manager->m_active_vessels;
-    VesselsMap::const_iterator it;
+    const VesselMap& active_vessels = m_asset_manager->m_active_vessels;
+    VesselMap::const_iterator it;
     wchar_t buff[256];
 
     for(it=active_vessels.begin(); it!=active_vessels.end(); it++){
         const btVector3& com = it->second->getCoM();
-        std::cout << it->second->getVesselName() << " " << com.getX() << " " << com.getY() << " " << com.getZ() << std::endl;
-        
+
         math::vec4 pos(com.getX() / 1e10,
                        com.getY() / 1e10,
                        com.getZ() / 1e10, 1.0f);

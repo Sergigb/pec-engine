@@ -8,9 +8,6 @@
 #include "core/Physics.hpp"
 #include "core/WindowHandler.hpp"
 
-// delete later most likely when the simulation is moved somewhere else
-#include <unordered_map>
-
 #include "core/Input.hpp"
 #include "core/Camera.hpp"
 #include "core/Frustum.hpp"
@@ -267,8 +264,8 @@ void App::onRightMouseButton(){
 
 #define ed_subtrees m_asset_manager->m_editor_subtrees
 void App::editorToSimulation(){
-    std::unordered_map<std::uint32_t, std::shared_ptr<BasePart>>::iterator it;
-    std::unordered_map<std::uint32_t, std::shared_ptr<Vessel>>::iterator it2;
+    SubTreeMap::iterator it;
+    VesselMap::iterator it2;
 
     for(it=ed_subtrees.begin(); it != ed_subtrees.end(); it++){
         it->second->removeBodiesSubtree();

@@ -24,9 +24,9 @@
 #include "../assets/PlanetarySystem.hpp"
 
 
-typedef SubTreesMap::iterator SubTreeIterator;
-typedef VesselsMap::iterator VesselIterator;
-typedef ResourcesMap::iterator ResourceIterator;
+typedef SubTreeMap::iterator SubTreeIterator;
+typedef VesselMap::iterator VesselIterator;
+typedef ResourceMap::iterator ResourceIterator;
 
 
 AssetManager::AssetManager(BaseApp* app) : m_asset_manager_interface(AssetManagerInterface(this)){

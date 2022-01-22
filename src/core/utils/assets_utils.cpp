@@ -16,7 +16,7 @@
 void load_parts(AssetManager& asset_manager){
     btQuaternion quat;
     quat.setEuler(0, 0, 0);
-    typedef std::unordered_map<std::uint32_t, std::unique_ptr<BasePart>>::iterator map_iterator;
+    typedef BasePartMap::iterator map_iterator;
     std::pair<map_iterator, bool> res;
     std::hash<std::string> str_hash;
 

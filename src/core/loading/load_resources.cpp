@@ -10,13 +10,12 @@
 #include "../../assets/Resource.hpp"
 
 
-typedef std::unordered_map<std::uint32_t, std::unique_ptr<Resource>>::iterator ResourceIterator;
+typedef ResourceMap::iterator ResourceIterator;
 
 const char* current_file; // not thread safe
 
 
-int create_resource(std::unordered_map<std::uint32_t, std::unique_ptr<Resource>>& resource_map,
-                     const tinyxml2::XMLElement* resource){
+int create_resource(ResourceMap& resource_map, const tinyxml2::XMLElement* resource){
     std::pair<ResourceIterator, bool> res;
     std::unique_ptr<Resource> resource_uptr;
     std::hash<std::string> str_hash; // size_t = 64bit?? change???
@@ -55,8 +54,7 @@ int create_resource(std::unordered_map<std::uint32_t, std::unique_ptr<Resource>>
 }
 
 
-void load_resources(std::unordered_map<std::uint32_t, std::unique_ptr<Resource>>& resource_map,
-                    const char* path){
+void load_resources(ResourceMap& resource_map, const char* path){
     current_file = path;
     tinyxml2::XMLDocument doc;
     tinyxml2::XMLElement* root;

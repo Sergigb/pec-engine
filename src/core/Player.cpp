@@ -17,7 +17,7 @@
 #include "../assets/PlanetarySystem.hpp"
 
 
-typedef std::unordered_map<std::uint32_t, std::shared_ptr<Vessel>>::iterator VesselIterator;
+typedef VesselMap::iterator VesselIterator;
 
 
 Player::Player(Camera* camera, AssetManager* asset_manager, const Input* input){
