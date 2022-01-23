@@ -19,6 +19,7 @@
 #include "core/AssetManager.hpp"
 #include "GUI/FontAtlas.hpp"
 #include "GUI/Text2D.hpp"
+#include "GUI/planetarium/PlanetariumGUI.hpp"
 #include "assets/PlanetarySystem.hpp"
 #include "assets/Planet.hpp"
 
@@ -72,6 +73,10 @@ void Planetarium::init(){
                             m_def_font_atlas.get(), m_render_context.get()));
     m_text2.reset(new Text2D(fb_width, fb_height, {0.f, 1.f, 0.f}, 
                             m_def_font_atlas.get(), m_render_context.get()));
+
+    m_planetarium_gui.reset(new PlanetariumGUI(m_def_font_atlas.get(), m_render_context.get(),
+                                               m_camera.get(), m_physics.get(),
+                                               m_asset_manager.get()));
 }
 
 
@@ -147,111 +152,21 @@ void Planetarium::processInput(){
 
 void Planetarium::logic(){
     double centuries_since_j2000 = 0.0;
-    time_t current_time;
-    wchar_t buff[256];
-    std::wostringstream woss;
 
     processInput();
 
     centuries_since_j2000 = m_seconds_since_j2000 / SECONDS_IN_A_CENTURY;
     m_asset_manager->m_planetary_system->updateOrbitalElements(centuries_since_j2000);
-    updateSceneText();
 
-    m_text2->clearStrings();
-
-    current_time = (time_t)m_seconds_since_j2000 + SECS_FROM_UNIX_TO_J2000;
-    mbstowcs(buff, ctime(&current_time), 256);
-    m_text2->addString(buff, 25, 50, 1.0f,
-                      STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_RIGHT);
-
-    woss << L"delta_t: " << m_delta_t << L"ms (" << m_delta_t / 36000.0
-         << L" hours, x" << long(m_delta_t / (1. / 60.)) << L")";
-    m_text2->addString(woss.str().c_str(), 25, 35, 1.0f,
-                      STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_RIGHT);
+    m_planetarium_gui->setSelectedPlanet(m_bodies.at(m_pick)->getId());
+    m_planetarium_gui->onFramebufferSizeUpdate(); // it's nasty to do this evey frame...
+    m_planetarium_gui->update();
 
     m_seconds_since_j2000 += m_delta_t;
 
     m_asset_manager->m_planetary_system->updateRenderBuffers(centuries_since_j2000);
     renderOrbits();
-
-    m_text->render();
-    m_text2->render();
-}
-
-
-void Planetarium::updateSceneText(){
-    planet_map::const_iterator it;
-    const planet_map& planets = m_asset_manager->m_planetary_system->getPlanets();
-    const math::mat4& proj_mat = m_camera->getProjMatrix();
-    const math::mat4 view_mat = m_camera->getViewMatrix();
-    int w, h;
-    std::wostringstream woss;
-    std::ostringstream oss;
-    wchar_t buff[256];
-
-    m_window_handler->getFramebufferSize(w, h);
-
-    m_text->clearStrings();
-    m_text->onFramebufferSizeUpdate(w, h);  // this is not updated or notified by anyone in RenderContext so we do it here
-
-    for(it=planets.begin();it!=planets.end();it++){
-        const Planet* current = it->second.get();
-
-        math::vec4 pos(current->getPosition().v[0] / PLANETARIUM_DEF_SCALE_FACTOR,
-                       current->getPosition().v[1] / PLANETARIUM_DEF_SCALE_FACTOR,
-                       current->getPosition().v[2] / PLANETARIUM_DEF_SCALE_FACTOR, 1.0f);
-        math::vec4 pos_screen = proj_mat * view_mat * pos;
-        pos_screen = ((pos_screen / pos_screen.v[3]) + 1. ) / 2.; // there's something wrong here
-
-        mbstowcs(buff, current->getName().c_str(), 256);
-        m_text->addString(buff, pos_screen.v[0] * w, pos_screen.v[1] * h + 5, 1.0f,
-                          STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_CENTER_XY);
-    }
-
-    oss << "System name: " << m_asset_manager->m_planetary_system->getSystemName();
-    oss << "\nStar name: " << m_asset_manager->m_planetary_system->getStar().star_name;
-    oss << "\nStar description: " << m_asset_manager->m_planetary_system->getStar().description;
-
-    const orbital_data& data = m_bodies.at(m_pick)->getOrbitalData();
-    double speed = dmath::length(data.pos - data.pos_prev) / m_delta_t;
-    oss << "\n\nSelected object: " << m_bodies.at(m_pick)->getName();
-    mbstowcs(buff, oss.str().c_str(), 256);
-
-    woss << buff << std::fixed << std::setprecision(2);
-    m_text->addString(woss.str().c_str(), 10, 15, 1.0f,
-                      STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
-
-    woss.str(L"");
-    woss.clear();
-
-    woss << L"\nOrbital parameters (J2000 eliptic): ";
-    woss << L"\nOrbital speed: " << speed << L"m/s";
-    woss << L"\nEccentricity (e): " << data.e;
-    woss << L"\nSemi major axis (a): " << data.a << "AU";
-    woss << L"\nInclination (i): " << data.i * ONE_RAD_IN_DEG << L"º";
-    woss << L"\nLongitude of the asciending node (Ω): " << data.W * ONE_RAD_IN_DEG<< L"º";
-    
-    // too many strings already...
-    m_text->addString(woss.str().c_str(), 10, 95, 1.0f,
-                      STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
-
-    woss.str(L"");
-    woss.clear();
-
-    woss << L"Argument of the periapsis (ω): " << data.w * ONE_RAD_IN_DEG << L"º"
-         << L" (ϖ: " << data.p << L"º)";    
-    woss << L"\nTrue anomaly (f): " << data.v * ONE_RAD_IN_DEG << L"º"
-         << L" (M: " << data.M << L"º, L: " << data.L << L"º)";
-
-    woss << L"\nPeriod: " << data.period * 36525 << L" days (" << data.period * 100. << L" years)";
-    woss << L"\nPerigee: " << (1 - data.e) * data.a * AU_TO_METERS / 1000.0 << L"km";
-    woss << L"\nApogee : " << (1 + data.e) * data.a * AU_TO_METERS / 1000.0 << L"km";
-
-    woss << L"\n\nPhysical properties: ";
-    woss << L"\nMass: " << std::scientific << data.m << "kg";
-
-    m_text->addString(woss.str().c_str(), 10, 235, 1.0f,
-                      STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);    
+    m_planetarium_gui->render();
 }
 
 

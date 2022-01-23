@@ -11,6 +11,7 @@
 class FontAtlas;
 class Text2D;
 class Planet;
+class PlanetariumGUI;
 
 
 #define MAX_ITER 10
@@ -23,6 +24,8 @@ class Planetarium : public BaseApp{
 
         std::vector<const Planet*> m_bodies;
         uint m_pick;
+
+        std::unique_ptr<PlanetariumGUI> m_planetarium_gui;
 
         void init();
         void logic();
