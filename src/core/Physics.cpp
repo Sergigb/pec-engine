@@ -292,3 +292,9 @@ double Physics::getCurrentTime() const{
     return m_secs_since_j2000;
 }
 
+
+void Physics::setCurrentTime(double time){
+    m_secs_since_j2000 = time;
+}
+
+

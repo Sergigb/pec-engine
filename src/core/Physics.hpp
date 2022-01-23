@@ -218,6 +218,14 @@ class Physics{
         double getCurrentTime() const;
 
         /*
+         * Sets the current time (time passed since the reference epoch, the units is seconds. This
+         * value should not be set in the middle of the simulation.
+         *
+         * @time: time since the reference epoch.
+         */
+        void setCurrentTime(double time);
+
+        /*
          * Starts the simulation by launching a thread with the method runSimulation. To make the
          * simulation step use the thread monitor.
          *

@@ -5,6 +5,10 @@
 #include <iomanip>
 #include <algorithm>
 
+#include <imgui.h>
+#include <imgui_impl_opengl3.h>
+#include <imgui_impl_glfw.h>
+
 #include "Planetarium.hpp"
 #include "core/log.hpp"
 #include "core/utils/utils.hpp"
@@ -45,7 +49,8 @@ void Planetarium::init(){
 
     m_asset_manager->loadStarSystem();
 
-    m_delta_t = (1000. / 60.0) / 1000.0;  // in ms
+    m_delta_t = REAL_TIME_DT;  // in ms
+    m_dt_multiplier = 1.0;
 
     planet_map::const_iterator it;
     const planet_map& planets = m_asset_manager->m_planetary_system->getPlanets();
@@ -105,9 +110,9 @@ void Planetarium::renderOrbits(){
         Planet* current = it->second.get();
 
         if(current == m_bodies.at(m_pick))
-            glUniform3f(color_location, 0.0, 1.0, 0.0);
-        else
             glUniform3f(color_location, 1.0, 0.0, 0.0);
+        else
+            glUniform3f(color_location, 0.1, .75, 0.25);
 
         current->renderOrbit();
     }
@@ -116,17 +121,19 @@ void Planetarium::renderOrbits(){
 
 void Planetarium::processInput(){
     double scx, scy;
+    
+    ImGuiIO& io = ImGui::GetIO();
+    if(io.WantCaptureMouse){
+        return;
+    }
+
     m_input->getScroll(scx, scy);
 
-    if(m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] & INPUT_KEY_REPEAT)
-        m_delta_t *= scy == 0.f ? 1.f : (scy < 0.f ? .1f : 10.f);
-    
-    else{
-        if(m_player->getPlanetariumFreecam())
-            m_camera->setSpeed(m_camera->getSpeed() * (scy == 0.f ? 1.f : (scy < 0.f ? .1f : 10.f)));
-        else
-            m_camera->incrementOrbitalCamDistance(-scy * 5.0);
-    }
+    if(m_player->getPlanetariumFreecam())
+        m_camera->setSpeed(m_camera->getSpeed() * (scy == 0.f ? 1.f : (scy < 0.f ? .1f : 10.f)));
+    else
+        m_camera->incrementOrbitalCamDistance(-scy * 5.0);
+
 
     if(m_input->pressed_keys[GLFW_KEY_R] & INPUT_KEY_RELEASE){
         m_render_context->reloadShaders();
@@ -150,6 +157,42 @@ void Planetarium::processInput(){
 }
 
 
+void Planetarium::render(){
+    renderOrbits();
+    m_planetarium_gui->render();
+
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+
+    
+    ImGui::Begin("Planetarium settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+
+    ImGui::InputDouble("Delta T multiplier", &m_dt_multiplier, 1.0, 10.0);
+    m_delta_t = REAL_TIME_DT * m_dt_multiplier;
+
+    ImGui::Text("Selected body");
+    if(ImGui::BeginCombo("##selected_body", m_bodies.at(m_pick)->getName().c_str(), 0)){
+        for(uint i=0; i < m_bodies.size(); i++){
+            bool is_selected = m_pick == i;
+            if(ImGui::Selectable(m_bodies.at(i)->getName().c_str(), is_selected)){
+                m_pick = i;
+                m_player->setSelectedPlanet(m_bodies.at(m_pick)->getId());
+            }
+            if(is_selected){
+                ImGui::SetItemDefaultFocus();
+            }
+        }
+        ImGui::EndCombo();
+    }
+
+    ImGui::End();
+
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+
 void Planetarium::logic(){
     double centuries_since_j2000 = 0.0;
 
@@ -157,16 +200,16 @@ void Planetarium::logic(){
 
     centuries_since_j2000 = m_seconds_since_j2000 / SECONDS_IN_A_CENTURY;
     m_asset_manager->m_planetary_system->updateOrbitalElements(centuries_since_j2000);
+    m_asset_manager->m_planetary_system->updateRenderBuffers(centuries_since_j2000);
 
     m_planetarium_gui->setSelectedPlanet(m_bodies.at(m_pick)->getId());
+    m_planetarium_gui->setSimulationDeltaT(m_delta_t);
     m_planetarium_gui->onFramebufferSizeUpdate(); // it's nasty to do this evey frame...
+    m_physics->setCurrentTime(m_seconds_since_j2000);
     m_planetarium_gui->update();
 
     m_seconds_since_j2000 += m_delta_t;
-
-    m_asset_manager->m_planetary_system->updateRenderBuffers(centuries_since_j2000);
-    renderOrbits();
-    m_planetarium_gui->render();
+    render();
 }
 
 
