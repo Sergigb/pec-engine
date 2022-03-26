@@ -113,6 +113,7 @@ int load_planets(const tinyxml2::XMLElement* planets_element, planet_map& planet
         data.pos = dmath::vec3(0.0, 0.0, 0.0);
         data.pos_prev = dmath::vec3(0.0, 0.0, 0.0);
         data.v = 0.0;
+        data.p = data.p_0 + data.p_d * 0.0;
         double mean_anomaly_d = data.L_d - data.p;
 
         data.period = ((2 * M_PI) / mean_anomaly_d);
