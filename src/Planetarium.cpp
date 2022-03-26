@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <iomanip>
 #include <algorithm>
+#include <cmath>
 
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
@@ -236,7 +237,7 @@ void Planetarium::updatePredictionBuffer(){
             const orbital_data& data = it->second->getOrbitalData();
 
             a = data.a_0 + data.a_d * time;
-            e = data.e_0 + data.e_d * a<a;
+            e = data.e_0 + data.e_d * time;
             inc = data.i_0 + data.i_d * time;
             L = data.L_0 + data.L_d * time;
             p = data.p_0 + data.p_d * time;
@@ -275,7 +276,7 @@ void Planetarium::updatePredictionBuffer(){
         // star
         double Rh = dmath::length(selected_particle.origin);
         double acceleration = GRAVITATIONAL_CONSTANT * (star_mass / (Rh*Rh));
-        dmath::vec3 f = dmath::normalise(dmath::vec3(-selected_particle.origin.v[0], // seriously why is the - operator not working here?
+        dmath::vec3 f = dmath::normalise(dmath::vec3(-selected_particle.origin.v[0],
                                                      -selected_particle.origin.v[1],
                                                      -selected_particle.origin.v[2])) * acceleration * selected_particle.mass;
         selected_particle.total_force += f;
@@ -324,8 +325,8 @@ void Planetarium::render(){
     
     ImGui::Begin("Planetarium settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
-    ImGui::InputDouble("Delta T multiplier", &m_dt_multiplier, m_dt_multiplier * 10.0, 1.0);
-    m_delta_t = REAL_TIME_DT * m_dt_multiplier;
+    ImGui::InputDouble("Delta T exp. multiplier", &m_dt_multiplier, 1.0, 1.0);
+    m_delta_t = REAL_TIME_DT * std::pow(10, m_dt_multiplier);
 
     if(m_dt_multiplier < 0){
         m_dt_multiplier = 1.0;
@@ -417,7 +418,7 @@ void Planetarium::applyGravity(){
 
         double Rh = dmath::length(object_origin);
         double acceleration = GRAVITATIONAL_CONSTANT * (star_mass / (Rh*Rh));
-        dmath::vec3 f = dmath::normalise(dmath::vec3(-object_origin.v[0], // seriously why is the - operator not working here?
+        dmath::vec3 f = dmath::normalise(dmath::vec3(-object_origin.v[0],
                                                      -object_origin.v[1],
                                                      -object_origin.v[2])) * acceleration * m_particles.at(i).mass;
         m_particles.at(i).total_force += f;
