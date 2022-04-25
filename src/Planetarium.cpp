@@ -215,6 +215,7 @@ void Planetarium::updatePredictionBuffer(){
     planet_map::const_iterator it;
     const planet_map& planets = m_asset_manager->m_planetary_system->getPlanets();
     double star_mass = m_asset_manager->m_planetary_system->getStar().mass;
+    dmath::vec3 planet_origin;
 
     std::unique_ptr<GLfloat[]> vertex_buffer;
     std::unique_ptr<GLuint[]> index_buffer;
@@ -227,43 +228,61 @@ void Planetarium::updatePredictionBuffer(){
     particle selected_particle = m_particles.at(which_particle);
 
     double e, W, w, inc, a, L, p, M, v;
-    double time = m_seconds_since_j2000;
+    double time = m_seconds_since_j2000 / SECONDS_IN_A_CENTURY;
     double predictor_delta_t_secs = (m_predictor_period * 24 * 60 * 60) / m_predictor_steps;
     double predictor_delta_t_cent = predictor_delta_t_secs / SECONDS_IN_A_CENTURY;
 
+    // only once per prediction, probably doesn't affect too much the precision
+    for(it=planets.begin();it!=planets.end();it++){
+        const orbital_data& data = it->second->getOrbitalData();
+        a = data.a_0 + data.a_d * time;
+        e = data.e_0 + data.e_d * time;
+        inc = data.i_0 + data.i_d * time;
+        L = data.L_0 + data.L_d * time;
+        p = data.p_0 + data.p_d * time;
+        W = data.W_0 + data.W_d * time;
+
+
+        M = L - p;
+        w = p - W;
+
+        double E = M;
+        double ecc_d = 10.8008135;
+        int iter = 0;
+        while(std::abs(ecc_d) > 1e-6 && iter < MAX_SOLVER_ITER){
+            ecc_d = (E - e * std::sin(E) - M) / (1 - e * std::cos(E));
+            E -= ecc_d;
+            iter++;
+        }
+
+        v = 2 * std::atan(std::sqrt((1 + e) / (1 - e)) * std::tan(E / 2));
+
+        double rad = a * (1 - e * std::cos(E)) * AU_TO_METERS;
+
+        planet_origin.v[0] = rad * (std::cos(W) * std::cos(w + v) -
+                             std::sin(W) * std::sin(w + v) * std::cos(inc));
+        planet_origin.v[1] = rad * (std::sin(inc) * std::sin(w + v));
+        planet_origin.v[2] = rad * (std::sin(W) * std::cos(w + v) +
+                             std::cos(W) * std::sin(w + v) *std::cos(inc));
+    }
+
     for(int i=0; i < m_predictor_steps; i++){
+        vertex_buffer[i * 3] = selected_particle.origin.v[0] / 1e10;
+        vertex_buffer[i * 3 + 1] = selected_particle.origin.v[1] / 1e10;
+        vertex_buffer[i * 3 + 2] = selected_particle.origin.v[2] / 1e10;
+
+        // relative
+        //vertex_buffer[i * 3] = (selected_particle.origin.v[0] - m_bodies.at(2)->getOrbitalData().pos.v[0]) / 1e10;
+        //vertex_buffer[i * 3 + 1] = (selected_particle.origin.v[1] - m_bodies.at(2)->getOrbitalData().pos.v[1]) / 1e10;
+        //vertex_buffer[i * 3 + 2] = (selected_particle.origin.v[2] - m_bodies.at(2)->getOrbitalData().pos.v[2]) / 1e10;
+
+        index_buffer[i * 2] = i;
+        index_buffer[i * 2 + 1] = i + 1;
+
+        time += predictor_delta_t_cent;
+
         for(it=planets.begin();it!=planets.end();it++){
-            dmath::vec3 planet_origin;
             const orbital_data& data = it->second->getOrbitalData();
-
-            a = data.a_0 + data.a_d * time;
-            e = data.e_0 + data.e_d * time;
-            inc = data.i_0 + data.i_d * time;
-            L = data.L_0 + data.L_d * time;
-            p = data.p_0 + data.p_d * time;
-            W = data.W_0 + data.W_d * time;
-
-            M = L - p;
-            w = p - W;
-
-            double E = M;
-            double ecc_d = 10.8008135;
-            int iter = 0;
-            while(std::abs(ecc_d) > 1e-6 && iter < MAX_SOLVER_ITER){
-                ecc_d = (E - e * std::sin(E) - M) / (1 - e * std::cos(E));
-                E -= ecc_d;
-                iter++;
-            }
-
-            v = 2 * std::atan(std::sqrt((1 + e) / (1 - e)) * std::tan(E / 2));
-
-            double rad = a * (1 - e * std::cos(E)) * AU_TO_METERS;
-
-            planet_origin.v[0] = rad * (std::cos(W) * std::cos(w + v) -
-                                 std::sin(W) * std::sin(w + v) * std::cos(inc));
-            planet_origin.v[1] = rad * (std::sin(inc) * std::sin(w + v));
-            planet_origin.v[2] = rad * (std::sin(W) * std::cos(w + v) +
-                                 std::cos(W) * std::sin(w + v) *std::cos(inc));
 
             // apply gravity
             double Rh = dmath::distance(planet_origin, selected_particle.origin);
@@ -283,20 +302,6 @@ void Planetarium::updatePredictionBuffer(){
 
         // solve
         solverSymplecticEuler(selected_particle, predictor_delta_t_secs);
-
-        vertex_buffer[i * 3] = selected_particle.origin.v[0] / 1e10;
-        vertex_buffer[i * 3 + 1] = selected_particle.origin.v[1] / 1e10;
-        vertex_buffer[i * 3 + 2] = selected_particle.origin.v[2] / 1e10;
-
-        // relative
-        //vertex_buffer[i * 3] = (selected_particle.origin.v[0] - m_bodies.at(2)->getOrbitalData().pos.v[0]) / 1e10;
-        //vertex_buffer[i * 3 + 1] = (selected_particle.origin.v[1] - m_bodies.at(2)->getOrbitalData().pos.v[1]) / 1e10;
-        //vertex_buffer[i * 3 + 2] = (selected_particle.origin.v[2] - m_bodies.at(2)->getOrbitalData().pos.v[2]) / 1e10;
-
-        index_buffer[i * 2] = i;
-        index_buffer[i * 2 + 1] = i + 1;
-
-        time += predictor_delta_t_cent;
     }
     index_buffer[(2 * m_predictor_steps) - 1] = m_predictor_steps - 1;
 
