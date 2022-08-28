@@ -139,10 +139,6 @@ void GameEditor::start(){
             m_thread_monitor->worker_ended = false;
         }
 
-        if(!m_physics_pause){
-            m_asset_manager->updateKinematics();
-        }
-
         m_player->updateEditor();
         m_asset_manager->updateBuffers();
 

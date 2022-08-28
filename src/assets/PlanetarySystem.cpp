@@ -1,4 +1,5 @@
 #include "PlanetarySystem.hpp"
+#include "../core/AssetManagerInterface.hpp"
 
 
 
@@ -56,7 +57,7 @@ void PlanetarySystem::updateOrbitalElements(const double cent_since_j2000){
 }
 
 
-void PlanetarySystem::updateRenderBuffers(double current_time){
+void PlanetarySystem::updateRenderBuffers(const double current_time){
     planet_map::iterator it;
 
     for(it=m_planets->begin();it!=m_planets->end();it++){
@@ -72,3 +73,13 @@ void PlanetarySystem::renderOrbits() const{
         it->second->renderOrbit();
     }
 }
+
+
+void PlanetarySystem::updateKinematics(){
+    planet_map::iterator it;
+
+    for(it=m_planets->begin();it!=m_planets->end();it++){
+        it->second->updateKinematics();
+    }
+}
+

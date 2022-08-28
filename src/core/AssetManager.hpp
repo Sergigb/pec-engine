@@ -150,12 +150,6 @@ class AssetManager{
         void updateVessels();
 
         /*
-         * Old testing function for kinematics, but will probably not be used, as kinematics will
-         * be updated from the Planet class
-         */
-        void updateKinematics();
-
-        /*
          * Updates the center of mass of all the active vessels, should be called when the physics
          * thread is stopped to avoid data races while retrieving the position of the objects.
          */

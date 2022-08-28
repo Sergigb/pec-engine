@@ -7,17 +7,18 @@
 #include "GameEditor.hpp"
 #include "core/Physics.hpp"
 #include "core/WindowHandler.hpp"
-
 #include "core/Input.hpp"
 #include "core/Camera.hpp"
 #include "core/Frustum.hpp"
 #include "core/Player.hpp"
 #include "core/log.hpp"
+#include "assets/Planet.hpp"
 #include "assets/BasePart.hpp"
 #include "assets/Vessel.hpp"
 #include "assets/Model.hpp"
 #include "assets/Kinematic.hpp"
 #include "assets/utils/planet_utils.hpp"
+#include "assets/PlanetarySystem.hpp"
 #include "GUI/planetarium/PlanetariumGUI.hpp"
 
 
@@ -134,7 +135,6 @@ void App::run(){
         }
 
         m_asset_manager->updateCoMs();
-        m_asset_manager->updateKinematics();
 
         if(m_player->getBehaviour() & PLAYER_BEHAVIOUR_SIMULATION){
             m_player->updateSimulation();
@@ -282,8 +282,9 @@ void App::editorToSimulation(){
         
         // translate to lat/long 0.0-0.0, this function doesn't work well when lat or long != 0, for some reason
         //btVector3 to = reference_ellipse_to_xyz(btRadians(0.0), btRadians(0.0), 6371025.0 - vsl->getLowerBound());
-        btVector3 to(-2.6505e+10, -38663.6, 1.44693e+11);
-        to += reference_ellipse_to_xyz(btRadians(0.0), btRadians(0.0), 6371025.0 - vsl->getLowerBound());
+        //btVector3 to(-2.6505e+10, -38663.6, 1.44693e+11);
+        btVector3 to(-26504446806.42, -38663.47, 144693255800.63);
+        to += reference_ellipse_to_xyz(btRadians(0.0), btRadians(0.0), 6371055.0 - vsl->getLowerBound());
         btVector3 disp;
         btTransform transform;
 
@@ -296,8 +297,7 @@ void App::editorToSimulation(){
         vsl->getRoot()->updateSubTreeMotionState(m_asset_manager->m_set_motion_state_buffer,
                                                  disp, from, btQuaternion(0.0, 0.0, -M_PI / 2.0));
 
-        //vsl->setVesselVelocity(btVector3(0.0, 7788.54, 0.0));
-        vsl->setVesselVelocity(btVector3(0.0, 0.0, 0.0));
+        vsl->setVesselVelocity(btVector3(-29786.6, -0.00889649, -5478.81));
 
         m_asset_manager->m_active_vessels.insert({vsl->getId(), vsl});
     }
@@ -309,15 +309,26 @@ void App::initLaunchBase(){
                                    m_frustum.get(), m_render_context.get(), math::vec3(0.75, 0.75, 0.75)));
     std::unique_ptr<btCollisionShape> sphere_shape(new btBoxShape(btVector3(25.0, 25.0, 25.0)));
 
-    btVector3 origin = reference_ellipse_to_xyz(btRadians(0.0), btRadians(0.0), 6371000.0);
     btQuaternion quat(0.0, 0.0, 0.0);
     std::shared_ptr<Kinematic> ground = std::make_shared<Kinematic>(bigcube.get(), m_physics.get(), 
                                                                     sphere_shape.get(), btScalar(0.0), 1);
+
+    btVector3 origin(-26504446806.42, -38663.47, 144693255800.63);
+    btVector3 local_origin = reference_ellipse_to_xyz(btRadians(0.0), btRadians(0.0), 6371025.0);
+
     ground->setCollisionGroup(CG_DEFAULT | CG_KINEMATIC);
     ground->setCollisionFilters(~CG_RAY_EDITOR_RADIAL & ~CG_RAY_EDITOR_SELECT);
-    ground->addBody(origin, btVector3(0.0, 0.0, 0.0), quat);
+    ground->addBody(local_origin + origin, btVector3(0.0, 0.0, 0.0), quat);
+    ground->setTransform(local_origin, quat);
 
     m_asset_manager->m_kinematics.emplace_back(ground);
     m_asset_manager->m_models.push_back(std::move(bigcube));
     m_asset_manager->m_collision_shapes.push_back(std::move(sphere_shape));
+
+    // let's register the kinematic on the earth
+    std::hash<std::string> str_hash;
+    uint32_t planet_id = str_hash("Earth"); // we want to find the earth :)
+    planet_map& planets = m_asset_manager->m_planetary_system->getPlanets();
+    Planet* planet = planets.at(planet_id).get();
+    planet->registerKinematic(ground.get());
 }

@@ -1,12 +1,15 @@
 #ifndef PLANET_HPP
 #define PLANET_HPP
 
+#include <vector>
+
 
 #include "../core/maths_funcs.hpp"
 #include "PlanetTree.hpp"
 
 
 class RenderContext;
+class Kinematic;
 
 
 #define NUM_VERTICES 300
@@ -17,8 +20,8 @@ class RenderContext;
 /* 
  * Struct with orbital data of a celestial body. These parameters are used to solve the two-body 
  * problem. Since we don't suppot moons yet, we solve the two-body problems between the planets and
- * the sun. For parameter that are continuously updated we have theur value in the current timestep
- * the initial value (at the start of the epoch), and its derivative.
+ * the sun. For parameters that are continuously updated we have their value in the current 
+ * timestep the initial value (at the start of the epoch), and its derivative.
  *
  * @m: mass of the body, in kgs.
  * @r: mean radius of the body. In meters.
@@ -78,6 +81,8 @@ class Planet{
         RenderContext* m_render_context;
 
         PlanetTree m_planet_tree;
+
+        std::vector<Kinematic*> m_kinematics;
 
         void initBuffers();
     public:
@@ -156,6 +161,17 @@ class Planet{
         void setName(const char* name);
 
         /*
+         * Registers a kinematic on this planet. The kinematic will be transformed relative to the
+         * planet. Planets do not currently have the ability to add or remove kinematics, such
+         * feature would be useful to remove bodies that are far away from the player in order to
+         * improve efficiency. In such case, it would be better to keep the kinematics of the 
+         * AssetManager in a map.
+         * 
+         * @kinematic: raw pointer to the kinematic, so it's not owned by the planet.
+         */
+        void registerKinematic(Kinematic* kinematic);
+
+        /*
          * Returns the position of the planet.
          */
         const dmath::vec3& getPosition() const;
@@ -184,7 +200,7 @@ class Planet{
         orbital_data& getOrbitalData();
 
         /*
-         * Returns a reference to the transform of the planet.
+         * Returns the transform of the planet in double precision.
          */
         const dmath::mat4 getTransform() const;
 
@@ -192,6 +208,11 @@ class Planet{
          * Returns the ID of the planet.
          */
         std::uint32_t getId() const;
+
+        /*
+         * Updates the kinematic objects of the planet.
+         */
+        void updateKinematics();
 };
 
 

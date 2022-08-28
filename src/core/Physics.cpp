@@ -170,8 +170,14 @@ void Physics::runSimulation(int max_sub_steps){
 
         if(!m_simulation_paused){
             /* updating the orbital elements could be done in a different thread while the thigs
-               below are updating, a buffering system could be used */
+               below are updating, a buffering system could be used 
+
+               and the same for the kinematics :)
+               */
+
+            // WARNING! THE ORDER OF THESE UPDATES IS IMPORTANT, WE NEED TO REVISE THEM
             m_app->m_asset_manager->m_planetary_system->updateOrbitalElements(cents_since_j2000);
+            m_app->m_asset_manager->m_planetary_system->updateKinematics();
             applyGravity();
             m_dynamics_world->stepSimulation(m_delta_t, max_sub_steps);
 

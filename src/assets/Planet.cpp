@@ -1,7 +1,11 @@
 #include <stb/stb_image.h>
 #include <thread>
 
+#define BT_USE_DOUBLE_PRECISION
+#include <bullet/btBulletDynamicsCommon.h>
+
 #include "Planet.hpp"
+#include "Kinematic.hpp"
 #include "../core/common.hpp"
 #include "../core/RenderContext.hpp"
 #include "../core/log.hpp"
@@ -240,4 +244,16 @@ void Planet::updateRenderBuffers(double current_time){
 void Planet::renderOrbit() const{
     m_render_context->bindVao(m_vao);
     glDrawElements(GL_LINES, NUM_VERTICES * 2, GL_UNSIGNED_SHORT, NULL);
+}
+
+void Planet::registerKinematic(Kinematic* kinematic){
+    m_kinematics.emplace_back(kinematic);
+}
+
+
+void Planet::updateKinematics(){
+    btVector3 origin(m_orbital_data.pos.v[0], m_orbital_data.pos.v[1], m_orbital_data.pos.v[2]);
+    for(uint i=0; i < m_kinematics.size(); i++){
+        m_kinematics.at(i)->update(origin, btQuaternion::getIdentity());
+    }
 }

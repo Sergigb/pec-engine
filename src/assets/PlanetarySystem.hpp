@@ -13,6 +13,7 @@
 
 
 class RenderContext;
+class AssetManagerInterface;
 
 typedef std::unordered_map<std::uint32_t, std::unique_ptr<Planet>> planet_map;
 
@@ -32,6 +33,7 @@ class PlanetarySystem{
         struct star m_system_star;
 
         RenderContext* m_render_context;
+        AssetManagerInterface* m_asset_manager;
     public:
         PlanetarySystem(RenderContext* render_context);
         ~PlanetarySystem();
@@ -40,8 +42,9 @@ class PlanetarySystem{
         void setSystemName(const char* name);
         void setStar(star& system_star);
 
-        void updateRenderBuffers(double current_time);
+        void updateRenderBuffers(const double current_time);
         void updateOrbitalElements(const double cent_since_j2000);
+        void updateKinematics();
 
         void renderOrbits() const;
 

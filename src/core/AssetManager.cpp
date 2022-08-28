@@ -379,13 +379,6 @@ void AssetManager::cleanup(){
 }
 
 
-void AssetManager::updateKinematics(){
-    for(uint i=0; i < m_kinematics.size(); i++){
-        m_kinematics.at(i)->update();
-    }
-}
-
-
 void AssetManager::updateCoMs(){
     VesselIterator it;
 
