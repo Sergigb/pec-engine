@@ -50,6 +50,14 @@ list of stuff i have to do/fix
 - I don't like the friend classes in BaseApp
 - maybe the camera could keep the app pointer and ask for the window handler and input pointer whenever it needs them.
 - render context, setAttPointModel shouldnt take a raw pointer to shared pointer
+- in render context, in the draw objects, why are we passing pointers?
+- planetarium freecam should be changed to an override flag
+- possible optimization: avoid branches in the frustum
+- it doesn't really make sense to pass a pointer to unique pointer to the GUI
+- I've added typedefs in the AssetManager class that could be used for the other classes (PartsMap, VesselsMap, etc)
+- stuff like pointers to Physics should be made static in classes? Essentially pointers to stuff that is never supposed to change, specifically core classes. This way we don't have to pass it every time to the constructors and we save memory
+- object / base part should not have access to physics?
+- planets should have the ability to add/remove planets. In order to make this easier, the kinematics should be stored in a map (in the AssetManager).
 
 Interesting links:
 - things about planets:
@@ -74,7 +82,19 @@ Interesting links:
     - http://hhoppe.com/geomclipmap.pdf
     - http://hhoppe.com/gpugcm.pdf
 
-about IDS:
-    To manage parts, parts instances and vessels we will have a system of ids. For parts instances and vessels I'll have a file with functions that will manage the creation and deletion of the ids. It won't be a class, it will have a static variable pointing to the memory structure with the necessary fields. When something requests a new id, the file should create a random integer which will be added to a unordered set (that contains the rest of the ids), if there's a collision it will generate a new int until it finds a unique one. It should be possible to request adding a specific id (useful for loading stuff), but if a collision occurs (unlikely) something should be done about it... We should have a set for every id list (2 for now)
 
-    For the parts it should be easier. I'm still thinking about how to generate them. We could preassign ids like we do now, but the main problem is mods in the future. I think a good way to avoid collisions is to make a hash out of the name of the part.
+- numerical integration:
+    - https://en.wikipedia.org/wiki/Symplectic_integrator
+    - https://en.wikipedia.org/wiki/Backward_Euler_method               implicit Euler
+    - https://en.wikipedia.org/wiki/Semi-implicit_Euler_method          (first order)
+    - https://en.wikipedia.org/wiki/Verlet_integration                  (second order)
+    - https://en.wikipedia.org/wiki/Multisymplectic_integrator          ???
+    - https://gamedev.stackexchange.com/questions/105970/orbits-combine-the-pros-of-rk4-symplectic-euler-and-verlet-velocity-integrato      prob not very useful
+    - https://stackoverflow.com/questions/3680136/help-with-symplectic-integrators      - cool links
+    - https://github.com/Mathieu-R/celestial-mechanics                  cool implementation of integrators in python
+    - https://box2d.org/publications/                                   guy who created box2d
+        - https://box2d.org/files/ErinCatto_NumericalIntegration_GDC2009.pdf
+    - https://scicomp.stackexchange.com/questions/29149/what-does-symplectic-mean-in-reference-to-numerical-integrators-and-does-scip
+    - https://tutorials.sciml.ai/html/models/05-kepler_problem.html     more interesting stuff with code
+
+
