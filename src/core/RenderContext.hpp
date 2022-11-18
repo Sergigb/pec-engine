@@ -84,6 +84,9 @@ class RenderContext{
 
         GLuint m_debug_shader;
         GLint m_debug_view_mat, m_debug_proj_mat, m_debug_color_location;
+
+        GLint m_sprite_proj_mat;
+        GLuint m_sprite_shader;
         // shaders //
 
         GLuint m_bound_vao;
