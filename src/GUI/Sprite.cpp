@@ -26,9 +26,7 @@ Sprite::Sprite(const RenderContext* render_context, const math::vec2& pos, short
     m_render_context = render_context;
     m_render_context->getDefaultFbSize(m_fb_width, m_fb_height);
 
-    check_gl_errors(true, "Sprite before init");
     initgl(path);
-    check_gl_errors(true, "Sprite after init");
 }
 
         
@@ -57,8 +55,6 @@ void Sprite::initgl(const char* path){
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     }
     stbi_image_free(image_data);
-
-    std::cout << "successfully loaded sprite with path " << path << std::endl;
 
     glGenVertexArrays(1, &m_vao);
     m_render_context->bindVao(m_vao);
@@ -91,14 +87,12 @@ void Sprite::updateVertexArray(){
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo_vert);
     float pos_x = m_positioning == SPRITE_DRAW_ABSOLUTE ? m_pos.v[0] : m_pos.v[0] * m_fb_width;
     float pos_y = m_positioning == SPRITE_DRAW_ABSOLUTE ? m_pos.v[1] : m_pos.v[1] * m_fb_height;
-    std::cout << pos_x << " " << pos_y << std::endl;
     GLfloat vertices[2 * 6] = {pos_x - m_size / 2, pos_y + m_size / 2,
                                pos_x - m_size / 2, pos_y - m_size / 2,
                                pos_x + m_size / 2, pos_y + m_size / 2,
                                pos_x + m_size / 2, pos_y + m_size / 2,
                                pos_x - m_size / 2, pos_y - m_size / 2,
                                pos_x + m_size / 2, pos_y - m_size / 2};
-    std::cout << std::endl;
     glBufferData(GL_ARRAY_BUFFER, 2 * 6 * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
 }
 
@@ -115,6 +109,9 @@ void Sprite::updateSize(const float size){
 
 void Sprite::onFramebufferSizeUpdate(){
     m_render_context->getDefaultFbSize(m_fb_width, m_fb_height);
+    if(m_positioning == SPRITE_DRAW_RELATIVE){
+        updateVertexArray();
+    }
 }
 
 

@@ -407,6 +407,8 @@ void RenderContext::render(){
         glUniformMatrix4fv(m_text_proj_mat, 1, GL_FALSE, projection.m);
         glUseProgram(m_gui_shader);
         glUniformMatrix4fv(m_gui_proj_mat, 1, GL_FALSE, projection.m);
+        glUseProgram(m_sprite_shader);
+        glUniformMatrix4fv(m_sprite_proj_mat, 1, GL_FALSE, projection.m);
 
         m_debug_overlay->onFramebufferSizeUpdate(m_fb_width, m_fb_height);
 
