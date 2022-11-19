@@ -33,6 +33,7 @@ struct planet_transform;
 #define SHADER_GUI 4
 #define SHADER_PLANET 5
 #define SHADER_DEBUG 6
+#define SHADER_SPRITE 7
 
 /* gui modes */
 #define GUI_MODE_NONE 0

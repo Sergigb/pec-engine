@@ -17,6 +17,7 @@ class Input;
 class PartsPanelGUI;
 class Text2D;
 class StagingPanelGUI;
+class Sprite;
 
 
 // not sure if it's a good idea to hardcode this
@@ -91,6 +92,7 @@ class EditorGUI : public BaseGUI{
         math::mat4 m_projection;
 
         std::unique_ptr<Text2D> m_main_text;
+        std::unique_ptr<Sprite> m_test_sprite;
 
         const FontAtlas* m_font_atlas;
         const RenderContext* m_render_context;

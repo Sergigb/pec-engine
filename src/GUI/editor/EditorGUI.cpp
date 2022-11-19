@@ -5,6 +5,7 @@
 #include "PartsPanelGUI.hpp"
 #include "StagingPanelGUI.hpp"
 #include "EditorGUI.hpp"
+#include "../Sprite.hpp"
 #include "../FontAtlas.hpp"
 #include "../Text2D.hpp"
 #include "../../core/RenderContext.hpp"
@@ -41,6 +42,11 @@ EditorGUI::EditorGUI(const FontAtlas* atlas, const RenderContext* render_context
     m_staging_panel.reset(new StagingPanelGUI(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2,
                                               m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2 - EDITOR_GUI_PP_LOW_MARGIN - TAB_HEIGTH,
                                               m_font_atlas, m_render_context, m_input));
+    //m_test_sprite.reset(new Sprite(render_context, math::vec2(350.0f, 350.0f), SPRITE_DRAW_RELATIVE,
+    //                               "../data/test_texture.png", 50.0f));
+    m_test_sprite.reset(new Sprite(render_context, math::vec2(.5f, .5f), SPRITE_DRAW_RELATIVE,
+                                   "../data/test_texture.png", 50.0f));
+
 
     m_disp_location = m_render_context->getUniformLocation(SHADER_GUI, "disp");
 
@@ -487,6 +493,7 @@ void EditorGUI::render(){
                                                m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2 - EDITOR_GUI_PP_LOW_MARGIN - TAB_HEIGTH);
         m_staging_panel->onFramebufferSizeUpdate(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2, 
                                                m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2 - EDITOR_GUI_PP_LOW_MARGIN - TAB_HEIGTH);
+        m_test_sprite->onFramebufferSizeUpdate();
 
         updateBuffers();
         m_fb_update = false;
@@ -514,6 +521,7 @@ void EditorGUI::render(){
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
     m_main_text->render();
+    m_test_sprite->render();
 }
 
 

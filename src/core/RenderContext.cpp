@@ -539,6 +539,9 @@ void RenderContext::useProgram(int shader) const{
         case SHADER_DEBUG:
             glUseProgram(m_debug_shader);
             break;
+        case SHADER_SPRITE:
+            glUseProgram(m_sprite_shader);
+            break;
         default:
             std::cerr << "RenderContext::useProgram - wrong shader value " << shader << std::endl;
             log("RenderContext::useProgram - wrong shader value ", shader);
@@ -561,6 +564,8 @@ GLuint RenderContext::getUniformLocation(int shader, const char* location) const
             return glGetUniformLocation(m_planet_shader, location);
         case SHADER_DEBUG:
             return glGetUniformLocation(m_debug_shader, location);
+        case SHADER_SPRITE:
+            return glGetUniformLocation(m_sprite_shader, location);
         default:
             std::cerr << "RenderContext::getUniformLocation - wrong shader value " << shader << std::endl;
             log("RenderContext::getUniformLocation - wrong shader value ", shader);
@@ -740,6 +745,8 @@ void RenderContext::contextUpdatePlanetRenderer(){
         glUniformMatrix4fv(m_text_proj_mat, 1, GL_FALSE, projection.m);
         glUseProgram(m_gui_shader);
         glUniformMatrix4fv(m_gui_proj_mat, 1, GL_FALSE, projection.m);
+        glUseProgram(m_sprite_shader);
+        glUniformMatrix4fv(m_sprite_proj_mat, 1, GL_FALSE, projection.m);
 
         m_debug_overlay->onFramebufferSizeUpdate(m_fb_width, m_fb_height);
 
