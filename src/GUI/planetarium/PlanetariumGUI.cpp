@@ -11,6 +11,7 @@
 #include "../../assets/PlanetarySystem.hpp"
 #include "../../assets/Vessel.hpp"
 
+#include "../Sprite.hpp"
 
 
 PlanetariumGUI::PlanetariumGUI(const FontAtlas* atlas, const RenderContext* render_context,
@@ -26,7 +27,7 @@ PlanetariumGUI::PlanetariumGUI(const FontAtlas* atlas, const RenderContext* rend
     m_selected_planet = 0;
     m_asset_manager = asset_manager;
 
-    m_main_text.reset(new Text2D(m_fb_width, m_fb_height, color{0.0, 1., 0.0},
+    m_main_text.reset(new Text2D(m_fb_width, m_fb_height, color{0.85, 0.85, 0.85},
                       m_font_atlas, render_context));
 
 }
@@ -86,8 +87,10 @@ void PlanetariumGUI::updatePlanetsText(const math::mat4& proj_mat, const math::m
 
             mbstowcs(buff, current->getName().c_str(), 256);
             m_main_text->addString(buff, pos_screen.v[0] * m_fb_width, 
-                                   pos_screen.v[1] * m_fb_height + 5, 1.0f,
+                                   pos_screen.v[1] * m_fb_height - 15, 1.0f,
                                    STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_CENTER_XY);
+            current->m_planet_thumbnail->render(math::vec2(pos_screen.v[0] * m_fb_width, 
+                                                           pos_screen.v[1] * m_fb_height));
         }
     }
 }

@@ -106,7 +106,30 @@ void Sprite::onFramebufferSizeUpdate(){
 }
 
 
-void Sprite::render(){
+void Sprite::render() const{
+    m_render_context->useProgram(SHADER_SPRITE);
+    float disp[] = {0.0f, 0.0f};
+    glUniform2fv(m_disp_location, 1.0f, disp);
+
+    m_render_context->bindVao(m_vao);
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, m_sprite);
+    glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+
+
+void Sprite::render(const math::vec2& pos) const{
+    glBindBuffer(GL_ARRAY_BUFFER, m_vbo_vert);
+    float pos_x = m_positioning == SPRITE_DRAW_ABSOLUTE ? pos.v[0] : pos.v[0] * m_fb_width;
+    float pos_y = m_positioning == SPRITE_DRAW_ABSOLUTE ? pos.v[1] : pos.v[1] * m_fb_height;
+    GLfloat vertices[2 * 6] = {pos_x - m_size / 2, pos_y + m_size / 2,
+                               pos_x - m_size / 2, pos_y - m_size / 2,
+                               pos_x + m_size / 2, pos_y + m_size / 2,
+                               pos_x + m_size / 2, pos_y + m_size / 2,
+                               pos_x - m_size / 2, pos_y - m_size / 2,
+                               pos_x + m_size / 2, pos_y - m_size / 2};
+    glBufferData(GL_ARRAY_BUFFER, 2 * 6 * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+    
     m_render_context->useProgram(SHADER_SPRITE);
     float disp[] = {0.0f, 0.0f};
     glUniform2fv(m_disp_location, 1.0f, disp);

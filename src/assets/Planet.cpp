@@ -10,6 +10,7 @@
 #include "../core/RenderContext.hpp"
 #include "../core/log.hpp"
 #include "../core/Physics.hpp"
+#include "../GUI/Sprite.hpp"
 
 
 #define TEXTURE_LOCATION 0
@@ -246,6 +247,7 @@ void Planet::renderOrbit() const{
     glDrawElements(GL_LINES, NUM_VERTICES * 2, GL_UNSIGNED_SHORT, NULL);
 }
 
+
 void Planet::registerKinematic(Kinematic* kinematic){
     m_kinematics.emplace_back(kinematic);
 }
@@ -256,4 +258,9 @@ void Planet::updateKinematics(){
     for(uint i=0; i < m_kinematics.size(); i++){
         m_kinematics.at(i)->update(origin, btQuaternion::getIdentity());
     }
+}
+
+void Planet::loadThumbnail(const char* path){
+    m_planet_thumbnail.reset(new Sprite(m_render_context, math::vec2(.0f, .0f), SPRITE_DRAW_ABSOLUTE,
+                                        path, 24.0f));
 }

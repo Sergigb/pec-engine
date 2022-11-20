@@ -31,7 +31,7 @@ void load_star(const tinyxml2::XMLElement* star_element, struct star& system_sta
 
 int load_planets(const tinyxml2::XMLElement* planets_element, planet_map& planets, RenderContext* render_context){
     const tinyxml2::XMLElement* planet_element = planets_element->FirstChildElement("planet");
-    const char* name;
+    const char* name, *path;
     std::pair<planet_map::iterator, bool> res;
     std::hash<std::string> str_hash;
 
@@ -46,6 +46,9 @@ int load_planets(const tinyxml2::XMLElement* planets_element, planet_map& planet
         if(get_attribute(planet_element, "name", &name) == EXIT_FAILURE)
             name = "unk";
         current_planet->setName(name);
+        if(get_attribute(planet_element, "thumbnail", &path) == EXIT_FAILURE)
+            path = "../data/planet_thumbnails/Default.png";
+        current_planet->loadThumbnail(path);
 
         if(get_double(planet_element, "mass", data.m) == EXIT_FAILURE)
             data.m = 0.0;

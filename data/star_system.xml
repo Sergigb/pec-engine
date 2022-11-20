@@ -7,7 +7,7 @@
         <!-- other physical characteristics will go here-->
 
         <planets>
-            <planet name="Mercury">
+            <planet name="Mercury" thumbnail="../data/planet_thumbnails/Mercury.png">
                 <mass>3.3011e23</mass>
                 <radius>0.0</radius>
                 <semi_major_axis>
@@ -36,7 +36,7 @@
                 </long_asc_node>
             </planet>
 
-            <planet name="Venus">
+            <planet name="Venus" thumbnail="../data/planet_thumbnails/Venus.png">
                 <mass>4.8675e24</mass>
                 <radius>0.0</radius>
                 <semi_major_axis>
@@ -65,7 +65,7 @@
                 </long_asc_node>
             </planet>
 
-            <planet name="Earth">
+            <planet name="Earth" thumbnail="../data/planet_thumbnails/Earth.png">
                 <mass>5.97237e24</mass>
                 <radius>0.0</radius>
                 <semi_major_axis>
@@ -94,7 +94,7 @@
                 </long_asc_node>
             </planet>
 
-            <planet name="Mars">
+            <planet name="Mars" thumbnail="../data/planet_thumbnails/Mars.png">
                 <mass>6.4171e23</mass>
                 <radius>0.0</radius>
                 <semi_major_axis>
@@ -123,7 +123,7 @@
                 </long_asc_node>
             </planet>
 
-            <planet name="Jupiter">
+            <planet name="Jupiter" thumbnail="../data/planet_thumbnails/Jupiter.png">
                 <mass>1.8982e27</mass>
                 <radius>0.0</radius>
                 <semi_major_axis>
@@ -152,7 +152,7 @@
                 </long_asc_node>
             </planet>
 
-            <planet name="Saturn">
+            <planet name="Saturn" thumbnail="../data/planet_thumbnails/Saturn.png">
                 <mass>5.6834e26</mass>
                 <radius>0.0</radius>
                 <semi_major_axis>
@@ -181,7 +181,7 @@
                 </long_asc_node>
             </planet>
 
-            <planet name="Uranus">
+            <planet name="Uranus" thumbnail="../data/planet_thumbnails/Uranus.png">
                 <mass>8.6810e25</mass>
                 <radius>0.0</radius>
                 <semi_major_axis>
@@ -210,7 +210,7 @@
                 </long_asc_node>
             </planet>
 
-            <planet name="Neptune">
+            <planet name="Neptune" thumbnail="../data/planet_thumbnails/Neptune.png">
                 <mass>1.02413e26</mass>
                 <radius>0.0</radius>
                 <semi_major_axis>
@@ -239,7 +239,7 @@
                 </long_asc_node>
             </planet>
 
-            <planet name="Pluto">
+            <planet name="Pluto" thumbnail="../data/planet_thumbnails/Neptune.png">
                 <mass>1.303e22</mass>
                 <radius>0.0</radius>
                 <semi_major_axis>

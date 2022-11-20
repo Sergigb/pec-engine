@@ -72,7 +72,16 @@ class Sprite{
         /*
          * Render method.
          */
-        void render();
+        void render() const;
+
+        /*
+         * Render method given the position. This is a hacky way to render the sprite when the
+         * caller has a constant pointer to the planet. Maybe the sprites should be managed by the
+         * PlanetariumGUI.
+         *
+         * @pos: position of the sprite.
+         */
+        void render(const math::vec2& pos) const;
 };
 
 

@@ -2,6 +2,7 @@
 #define PLANET_HPP
 
 #include <vector>
+#include <memory>
 
 
 #include "../core/maths_funcs.hpp"
@@ -10,6 +11,7 @@
 
 class RenderContext;
 class Kinematic;
+class Sprite;
 
 
 #define NUM_VERTICES 300
@@ -77,7 +79,6 @@ class Planet{
 
         /* orbit render buffers */
         GLuint m_vao, m_vbo_vert, m_vbo_ind;
-
         RenderContext* m_render_context;
 
         PlanetTree m_planet_tree;
@@ -86,6 +87,8 @@ class Planet{
 
         void initBuffers();
     public:
+        std::unique_ptr<Sprite> m_planet_thumbnail;
+        
         /*
          * Constructor
          *
@@ -170,6 +173,13 @@ class Planet{
          * @kinematic: raw pointer to the kinematic, so it's not owned by the planet.
          */
         void registerKinematic(Kinematic* kinematic);
+
+        /*
+         * Loads the thumbnail of the planet and creates a 2D sprite.
+         *
+         * @path: pointer to the string path;
+         */
+        void loadThumbnail(const char* path);
 
         /*
          * Returns the position of the planet.
