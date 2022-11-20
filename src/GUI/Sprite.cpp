@@ -8,15 +8,6 @@
 #include "../core/RenderContext.hpp"
 
 
-
-
-
-#include "../core/utils/gl_utils.hpp"
-
-
-
-
-
 Sprite::Sprite(const RenderContext* render_context, const math::vec2& pos, short positioning,
                const char* path, float size) : m_pos(pos){
     assert(path);
