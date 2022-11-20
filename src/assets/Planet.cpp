@@ -232,7 +232,7 @@ void Planet::updateRenderBuffers(double current_time){
         index_buffer[i * 2] = i;
         index_buffer[i * 2 + 1] = i + 1;
     }
-    index_buffer[(2 * NUM_VERTICES) - 1] = 0;
+    index_buffer[(2 * NUM_VERTICES) - 1] = NUM_VERTICES - 1;
 
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo_vert);
     glBufferData(GL_ARRAY_BUFFER, 3 * NUM_VERTICES * sizeof(GLfloat), vertex_buffer.get(), GL_STATIC_DRAW);
