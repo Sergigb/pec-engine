@@ -33,6 +33,7 @@ class BaseApp{
         void init(int gl_width, int gl_height);
     protected:
         friend class GameEditor;
+        friend class GamePlanetarium;
         friend class AssetManager;
         friend class RenderContext;
         friend class Physics;
