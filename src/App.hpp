@@ -15,11 +15,13 @@ class Object;
 class FontAtlas;
 class GameEditor;
 class PlanetariumGUI;
+class GamePlanetarium;
 
 
 class App : public BaseApp{
     private:
         std::unique_ptr<GameEditor> m_editor;
+        std::unique_ptr<GamePlanetarium> m_planetarium;
 
         // application default font atlas
         std::unique_ptr<FontAtlas> m_def_font_atlas;
@@ -27,9 +29,6 @@ class App : public BaseApp{
         // game simulation state (temporary here)
         bool m_quit;
         std::chrono::duration<double, std::micro> m_elapsed_time;
-
-        // planetarium GUI object, also temporary
-        std::unique_ptr<PlanetariumGUI> m_planetarium_gui;
 
         void init();
         void logic();

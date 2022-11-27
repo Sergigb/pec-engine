@@ -5,6 +5,7 @@
 #include "core/RenderContext.hpp"
 #include "core/AssetManager.hpp"
 #include "GameEditor.hpp"
+#include "GamePlanetarium.hpp"
 #include "core/Physics.hpp"
 #include "core/WindowHandler.hpp"
 #include "core/Input.hpp"
@@ -49,14 +50,9 @@ void App::init(){
     m_def_font_atlas->createAtlas(false);
 
     m_render_context->setDefaultFontAtlas(m_def_font_atlas.get());
+
     m_editor.reset(new GameEditor(this, m_def_font_atlas.get()));
-
-    // vv temp vv
-    m_planetarium_gui.reset(new PlanetariumGUI(m_def_font_atlas.get(), m_render_context.get(),
-                                               m_camera.get(), m_physics.get(),
-                                               m_asset_manager.get()));
-
-    m_render_context->setGUI(m_planetarium_gui.get(), GUI_MODE_PLANETARIUM);
+    m_planetarium.reset(new GamePlanetarium(this, m_def_font_atlas.get()));
 }
 
 
@@ -65,7 +61,7 @@ App::~App(){
 
 
 void App::run(){
-    m_physics->startSimulation(0);
+    m_physics->startSimulation(10);
     m_render_context->start();
 
     m_editor->start();
@@ -120,9 +116,6 @@ void App::run(){
             average_sleep = accumulated_sleep / 60000.0;
             accumulated_load = 0;
             accumulated_sleep = 0;
-            /*std::cout << std::setfill('0') << std::setw(2) << int(m_elapsed_time.count() / 1e12) / 60*60 << ":" 
-                      << std::setfill('0') << std::setw(2) << (int(m_elapsed_time.count() / 1e6) / 60) % 60 << ":" 
-                      << std::setfill('0') << std::setw(2) << int(m_elapsed_time.count() / 1e6) % 60 << std::endl;*/
         }
         ticks_since_last_update++;
 
@@ -140,17 +133,9 @@ void App::run(){
             m_player->updateSimulation();
         }
         else{
-            m_player->updatePlanetarium();
-            m_planetarium_gui->setSelectedPlanet(m_player->getPlanetariumSelectedPlanet());
-            m_planetarium_gui->update();
+            m_planetarium->update();
         }
         m_asset_manager->updateBuffers();
-        
-        // load ends here
-
-    //const dmath::vec3& pos = m_camera->getCamPosition();
-    //std::cout << pos.v[0] << " " << pos.v[1] << " " << pos.v[2] << std::endl;
-
 
         loop_end_load = std::chrono::steady_clock::now();
         std::chrono::duration<double, std::micro> load_time = loop_end_load - loop_start_load;
@@ -298,6 +283,7 @@ void App::editorToSimulation(){
                                                  disp, from, btQuaternion(0.0, 0.0, -M_PI / 2.0));
 
         vsl->setVesselVelocity(btVector3(-29786.6, -0.00889649, -5478.81));
+        //vsl->setVesselVelocity(btVector3(0.0, 0.0, 0.0));
 
         m_asset_manager->m_active_vessels.insert({vsl->getId(), vsl});
     }
