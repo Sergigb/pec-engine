@@ -89,8 +89,6 @@ void PlanetariumGUI::updatePlanetsText(const math::mat4& proj_mat, const math::m
             m_main_text->addString(buff, pos_screen.v[0] * m_fb_width, 
                                    pos_screen.v[1] * m_fb_height - 15, 1.0f,
                                    STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_CENTER_XY);
-            current->m_planet_thumbnail->render(math::vec2(pos_screen.v[0] * m_fb_width, 
-                                                           pos_screen.v[1] * m_fb_height));
         }
     }
 }

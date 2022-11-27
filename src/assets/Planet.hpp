@@ -80,6 +80,7 @@ class Planet{
         /* orbit render buffers */
         GLuint m_vao, m_vbo_vert, m_vbo_ind;
         RenderContext* m_render_context;
+        std::string m_thumbnail_path;
 
         PlanetTree m_planet_tree;
 
@@ -87,8 +88,6 @@ class Planet{
 
         void initBuffers();
     public:
-        std::unique_ptr<Sprite> m_planet_thumbnail;
-        
         /*
          * Constructor
          *
@@ -175,11 +174,16 @@ class Planet{
         void registerKinematic(Kinematic* kinematic);
 
         /*
-         * Loads the thumbnail of the planet and creates a 2D sprite.
+         * Sets the path to the planet thumbnail.
          *
-         * @path: pointer to the string path;
+         * @path: path to the thumbnail file.
          */
-        void loadThumbnail(const char* path);
+        void setThumbnailPath(const char* path);
+
+        /*
+         * Returns the path to the planet thumbnail.
+         */
+        const char* getThumbnailPath() const;
 
         /*
          * Returns the position of the planet.

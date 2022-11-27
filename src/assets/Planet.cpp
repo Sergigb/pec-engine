@@ -260,7 +260,12 @@ void Planet::updateKinematics(){
     }
 }
 
-void Planet::loadThumbnail(const char* path){
-    m_planet_thumbnail.reset(new Sprite(m_render_context, math::vec2(.0f, .0f), SPRITE_DRAW_ABSOLUTE,
-                                        path, 24.0f));
+
+void Planet::setThumbnailPath(const char* path){
+    m_thumbnail_path = path;
+}
+
+
+const char* Planet::getThumbnailPath() const{
+    return m_thumbnail_path.c_str();
 }

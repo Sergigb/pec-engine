@@ -48,7 +48,7 @@ int load_planets(const tinyxml2::XMLElement* planets_element, planet_map& planet
         current_planet->setName(name);
         if(get_attribute(planet_element, "thumbnail", &path) == EXIT_FAILURE)
             path = "../data/planet_thumbnails/Default.png";
-        current_planet->loadThumbnail(path);
+        current_planet->setThumbnailPath(path);
 
         if(get_double(planet_element, "mass", data.m) == EXIT_FAILURE)
             data.m = 0.0;
