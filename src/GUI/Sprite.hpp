@@ -24,7 +24,6 @@ class Sprite{
         GLuint m_vao, m_vbo_vert, m_vbo_tex;
         GLuint m_sprite;
         GLuint m_disp_location;
-        bool m_update_buffer, m_init;
         float m_fb_width, m_fb_height;
         math::vec2 m_pos;
         short m_positioning;
@@ -35,6 +34,7 @@ class Sprite{
         void initgl(const char* path);
         void updateVertexArray();
     public:
+        Sprite();
         /*
          * Constructor.
          *
@@ -44,10 +44,11 @@ class Sprite{
          * @positioning: indicates if the coordinates have to be interpreted relative to the 
          * framebuffer size (SPRITE_DRAW_RELATIVE) or absolute (SPRITE_DRAW_ABSOLUTE).
          * @path: path to the image sprite.
-         * @size: size of the sprite (in coordinates).
+         * @size: size of the sprite (in pixels).
          */
         Sprite(const RenderContext* render_context, const math::vec2& pos, short positioning,
                const char* path, const float size);
+        Sprite(const Sprite& sprite);
         ~Sprite();
 
         /*
