@@ -155,7 +155,7 @@ class BasePart : public Object{
          *
          * @constraint_uptr: unique pointer to the constraint object.
          */
-        void setParentConstraint(std::unique_ptr<btTypedConstraint>& constraint_uptr);
+        void setParentConstraint(std::unique_ptr<btTypedConstraint>&& constraint_uptr);
 
         /*
          * Removes the Bullet constraint between this part and its parent. This method is not 
@@ -174,9 +174,9 @@ class BasePart : public Object{
          * Adds a child (and its subtree) to this part. This part will (semantically) take 
          * ownership of the pointer. This method is thread safe.
          *
-         * @child: child to be attached.
+         * @child: rvalue reference to the shared ptr of the child to be attached.
          */
-        bool addChild(std::shared_ptr<BasePart>& child);
+        bool addChild(std::shared_ptr<BasePart>&& child);
 
         /*
          * Removes a child (and its subtree) from this part. We need to pass the pointer of the

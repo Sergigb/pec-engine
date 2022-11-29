@@ -22,8 +22,8 @@ AssetManagerInterface::~AssetManagerInterface(){
 }
 
 
-void AssetManagerInterface::addVessel(std::shared_ptr<Vessel>& vessel){
-    m_asset_manager->m_add_vessel_buffer.emplace_back(vessel);
+void AssetManagerInterface::addVessel(std::shared_ptr<Vessel>&& vessel){
+    m_asset_manager->m_add_vessel_buffer.emplace_back(std::move(vessel));
 }
 
 
@@ -47,8 +47,8 @@ void AssetManagerInterface::addBody(BasePart* ptr, const btVector3& orig, const 
 }
 
 
-void AssetManagerInterface::addConstraint(BasePart* ptr, std::unique_ptr<btTypedConstraint>& c_uptr){
-    m_asset_manager->m_add_constraint_buffer.emplace_back(ptr, c_uptr);
+void AssetManagerInterface::addConstraint(BasePart* ptr, std::unique_ptr<btTypedConstraint>&& c_uptr){
+    m_asset_manager->m_add_constraint_buffer.emplace_back(ptr, std::move(c_uptr));
 }
 
 

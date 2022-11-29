@@ -21,7 +21,7 @@ Vessel::Vessel() : m_com(btVector3(0.0, 0.0, 0.0)){
 }
 
 
-Vessel::Vessel(std::shared_ptr<BasePart>& vessel_root, const Input* input) : m_vessel_root(std::move(vessel_root)), 
+Vessel::Vessel(std::shared_ptr<BasePart>&& vessel_root, const Input* input) : m_vessel_root(std::move(vessel_root)), 
                m_com(btVector3(0.0, 0.0, 0.0)){
     m_vessel_root->setRoot(true);
     m_vessel_root->updateSubTreeVessel(this);
@@ -226,13 +226,13 @@ void Vessel::printStaging() const{
 }
 
 
-bool Vessel::addChildById(std::shared_ptr<BasePart>& child, std::uint32_t parent_id){
+bool Vessel::addChildById(std::shared_ptr<BasePart>&& child, std::uint32_t parent_id){
     try{
         BasePart* parent = m_node_map_by_id.at(parent_id);
         child->setParent(parent);
         child->updateSubTreeVessel(this);
         child->setCollisionMaskSubTree(child->m_body->getBroadphaseProxy()->m_collisionFilterMask | CG_RAY_EDITOR_RADIAL);
-        parent->addChild(child);
+        parent->addChild(std::move(child));
         onTreeUpdate();
 
         return true;
@@ -261,7 +261,7 @@ bool Vessel::addChild(BasePart* child, BasePart* parent){
     child->setParent(parent);
     child->updateSubTreeVessel(this);
     child->setCollisionMaskSubTree(child->m_body->getBroadphaseProxy()->m_collisionFilterMask | CG_RAY_EDITOR_RADIAL);
-    parent->addChild(child_sptr);
+    parent->addChild(std::move(child_sptr));
     onTreeUpdate();
 
     return true;
@@ -413,7 +413,7 @@ void Vessel::updateCoM(){
         if(!m_node_list.at(i)->m_body.get()) continue;
 
         btTransform trans;
-        m_node_list.at(i)->m_body->getMotionState()->getWorldTransform(trans);
+        trans = m_node_list.at(i)->m_body->getWorldTransform();
         const btVector3& origin = trans.getOrigin();
 
         com += (m_node_list.at(i)->getMass() / m_total_mass) * origin;

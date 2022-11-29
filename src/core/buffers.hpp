@@ -35,12 +35,12 @@ struct object_transform{
     /*
      * Constructor
      * 
-     * @ptr: constant reference to the shared pointer of the object, we use std::move to make it 
-     * go fast as shit.
+     * @ptr: rvalue reference to the shared pointer of the object, we use std::move to make it go
+     * fast as shit. It takes ownership of the passed pointer.
      * @t: constant reference to a single-precision transform matrix, needs to be relative to the
      * centered camera or it will lose precision.
      */
-    object_transform(const std::shared_ptr<Object>& ptr, const math::mat4& t){
+    object_transform(std::shared_ptr<Object>&& ptr, const math::mat4& t){
         object_ptr = std::move(ptr);
         transform = t;
     }
@@ -157,10 +157,10 @@ struct add_contraint_msg{
     /* Constructor.
      *
      * @ptr: raw pointer to the object.
-     * @c_uptr: reference to the unique pointer of the constraint, this message will take ownership
-     * of the object.
+     * @c_uptr: rvalue reference to the unique pointer of the constraint, this message will take 
+     * ownership of the object.
      */
-    add_contraint_msg(BasePart* ptr, std::unique_ptr<btTypedConstraint>& c_uptr){
+    add_contraint_msg(BasePart* ptr, std::unique_ptr<btTypedConstraint>&& c_uptr){
         part = ptr;
         constraint_uptr = std::move(c_uptr);
     }

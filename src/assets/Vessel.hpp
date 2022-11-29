@@ -85,7 +85,7 @@ class Vessel{
          * @vessel_root: root of the vessel, the vessel will take ownership of this pointer.
          * @input: pointer to the input object.
          */
-        Vessel(std::shared_ptr<BasePart>& vessel_root, const Input* input);
+        Vessel(std::shared_ptr<BasePart>&& vessel_root, const Input* input);
 
         ~Vessel();
 
@@ -120,10 +120,11 @@ class Vessel{
          * Attaches a child to a parent node using its ID. Returns false if the parent ID is not
          * found in the tree.
          *
-         * @child: shared pointer of the child, the parent will take ownership of this pointer.
+         * @child: rvalue reference to the shared pointer of the child, the parent will take 
+         * ownership of this pointer.
          * @parent_id: id of the parent we want to attach the child to.
          */
-        bool addChildById(std::shared_ptr<BasePart>& child, std::uint32_t parent_id);
+        bool addChildById(std::shared_ptr<BasePart>&& child, std::uint32_t parent_id);
 
         /*
          * Nasty method that attaches a child to the referred parent pointer. I don't think this is

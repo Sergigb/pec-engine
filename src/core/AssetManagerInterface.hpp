@@ -31,9 +31,10 @@ class AssetManagerInterface{
          * only reason I can think of is that we might be iterating over m_active_vessels when we
          * add the new vessel, but I still think it doesn't matter.
          * 
-         * @vessel: unique ptr of the vessel, the buffer will take ownership of this pointer.
+         * @vessel: lvalue reference to the unique ptr of the vessel, the buffer will take 
+         * ownership of this pointer.
          */
-        void addVessel(std::shared_ptr<Vessel>& vessel);
+        void addVessel(std::shared_ptr<Vessel>&& vessel);
 
         /*
          * Removes the constraint of the part. Note that constraints are owned by the childs, so
@@ -78,9 +79,10 @@ class AssetManagerInterface{
          * passed to the part.
          *
          * @ptr: pointer to the part we want to add the constraint to.
-         * @c_uptr: unique pointer to constraint.
+         * @c_uptr: rvalue reference to the unique pointer to the constraint. The buffer message 
+         * takes ownership of the pointer.
          */
-        void addConstraint(BasePart* ptr, std::unique_ptr<btTypedConstraint>& c_uptr);
+        void addConstraint(BasePart* ptr, std::unique_ptr<btTypedConstraint>&& c_uptr);
 
         /* 
          * Adds parts to the m_build_constraint_subtree_buffer. All the parts in this buffer will

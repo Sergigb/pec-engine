@@ -186,7 +186,7 @@ void load_star_system(PlanetarySystem* system, RenderContext* render_context, co
         log("load_star_system::load_star_system: failed to load star system from file ", path);
     }
 
-    system->setPlanetMap(planets);
+    system->setPlanetMap(std::move(planets));
     system->setSystemName(system_name);
     system->setStar(system_star);
 }

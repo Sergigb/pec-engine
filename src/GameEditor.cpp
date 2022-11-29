@@ -259,7 +259,7 @@ void GameEditor::createConstraint(BasePart* part, BasePart* parent, btTransform 
 
     std::unique_ptr<btTypedConstraint> constraint_sptr(constraint);
 
-    m_asset_manager->m_add_constraint_buffer.emplace_back(part, constraint_sptr);
+    m_asset_manager->m_add_constraint_buffer.emplace_back(part, std::move(constraint_sptr));
 }
 
 
@@ -350,7 +350,7 @@ void GameEditor::placeClonedSubtreesOnClones(BasePart* closest, btTransform& tra
 
             if(lmb_focused_press){
                 createConstraint(current.get(), current_parent, transform_final_current.inverse() * transform_parent);
-                m_asset_manager->m_editor_vessel->addChildById(current, current_parent->getUniqueId());
+                m_asset_manager->m_editor_vessel->addChildById(std::move(current), current_parent->getUniqueId());
             }
         }
     }
@@ -400,8 +400,8 @@ void GameEditor::placeSubTree(float closest_dist, math::vec4& closest_att_point_
         if(lmb_focused_press){
             createConstraint(part, closest, transform_final.inverse() * parent_transform);
 
-            std::shared_ptr<BasePart> part_sptr = std::dynamic_pointer_cast<BasePart>(part->getSharedPtr());
-            m_asset_manager->m_editor_vessel->addChildById(part_sptr, closest->getUniqueId());
+            m_asset_manager->m_editor_vessel->addChildById(std::dynamic_pointer_cast<BasePart>(part->getSharedPtr()),
+                                                           closest->getUniqueId());
             m_asset_manager->m_editor_subtrees.erase(part->getUniqueId());
         }
 
@@ -512,8 +512,8 @@ void GameEditor::placeSubTree(float closest_dist, math::vec4& closest_att_point_
             if(lmb_focused_press){
                 createConstraint(part, parent, transform_final.inverse() * p_transform);
 
-                std::shared_ptr<BasePart> part_sptr = std::dynamic_pointer_cast<BasePart>(part->getSharedPtr());
-                m_asset_manager->m_editor_vessel->addChildById(part_sptr, parent->getUniqueId());
+                m_asset_manager->m_editor_vessel->addChildById(std::dynamic_pointer_cast<BasePart>(part->getSharedPtr()),
+                                                               parent->getUniqueId());
                 m_asset_manager->m_editor_subtrees.erase(part->getUniqueId());
             }
 
@@ -578,8 +578,8 @@ void GameEditor::placeSubTree(float closest_dist, math::vec4& closest_att_point_
                         if(lmb_focused_press){
                             createConstraint(current, parent, transform_final.inverse() * p_transform);
 
-                            std::shared_ptr<BasePart> part_sptr = std::dynamic_pointer_cast<BasePart>(current->getSharedPtr());
-                            m_asset_manager->m_editor_vessel->addChildById(part_sptr, parent->getUniqueId());
+                            m_asset_manager->m_editor_vessel->addChildById(std::dynamic_pointer_cast<BasePart>(current->getSharedPtr()),
+                                                                           parent->getUniqueId());
                         }
                     }
                 }
@@ -684,7 +684,7 @@ void GameEditor::processGUI(){
             m_asset_manager->m_add_body_buffer.emplace_back(part.get(), btVector3(0.0, 60.0, 0.0),
                                                             btVector3(0.0, 0.0, 0.0), btQuaternion::getIdentity());
 
-            std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(part, m_input);
+            std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(std::move(part), m_input);
             m_vessel_id = vessel->getId();
             m_asset_manager->m_editor_vessel = std::move(vessel);
             m_asset_manager->m_editor_vessel->getRoot()->setCollisionFilters(

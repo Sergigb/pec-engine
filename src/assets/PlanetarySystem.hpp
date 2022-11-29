@@ -38,7 +38,7 @@ class PlanetarySystem{
         PlanetarySystem(RenderContext* render_context);
         ~PlanetarySystem();
 
-        void setPlanetMap(std::unique_ptr<planet_map>& map);
+        void setPlanetMap(std::unique_ptr<planet_map>&& map);
         void setSystemName(const char* name);
         void setStar(star& system_star);
 

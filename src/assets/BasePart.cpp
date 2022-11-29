@@ -81,7 +81,7 @@ const std::vector<struct attachment_point>& BasePart::getAttachmentPoints() cons
 }
 
 
-void BasePart::setParentConstraint(std::unique_ptr<btTypedConstraint>& constraint_uptr){
+void BasePart::setParentConstraint(std::unique_ptr<btTypedConstraint>&& constraint_uptr){
     if(m_parent_constraint.get() != nullptr){
         m_physics->removeConstraint(m_parent_constraint.get());
     }
@@ -109,7 +109,7 @@ void BasePart::setParent(BasePart* parent){
 }
 
 
-bool BasePart::addChild(std::shared_ptr<BasePart>& child){
+bool BasePart::addChild(std::shared_ptr<BasePart>&& child){
     for(uint i=0; i < m_childs.size(); i++){
         if(m_childs.at(i).get() == child.get()){
             log("BasePart::addChild - tried to add child part with value ", child.get(), " but it's already in the list");
@@ -354,8 +354,9 @@ void BasePart::decoupleChilds(){
         m_childs.at(i)->setParent(nullptr);
         m_childs.at(i)->updateSubTreeVessel(nullptr);
 
-        std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(m_childs.at(i), m_vessel->getInput());
-        m_asset_manager->addVessel(vessel);
+        std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(std::move(m_childs.at(i)),
+                                                                  m_vessel->getInput());
+        m_asset_manager->addVessel(std::move(vessel));
     }
     m_childs.clear();
     m_vessel->onTreeUpdate();
@@ -373,9 +374,9 @@ void BasePart::decoupleSelf(){
         return;
     }
 
-    std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(ourselves, input);
+    std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(std::move(ourselves), input);
     m_asset_manager->removePartConstraint(this);
-    m_asset_manager->addVessel(vessel);
+    m_asset_manager->addVessel(std::move(vessel));
 }
 
 
@@ -479,7 +480,7 @@ void BasePart::cloneSubTree(std::shared_ptr<BasePart>& current, bool is_subtree_
         m_childs.at(i)->cloneSubTree(cloned_child, false, m_radial_clone);
         cloned_child->setParent(current.get());
 
-        current->addChild(cloned_child);
+        current->addChild(std::move(cloned_child));
     }
 
     if(is_subtree_root){
@@ -528,7 +529,7 @@ void BasePart::buildSubTreeConstraints(const BasePart* parent){
 
         std::unique_ptr<btTypedConstraint> constraint_sptr(constraint);
 
-        m_asset_manager->addConstraint(this, constraint_sptr);
+        m_asset_manager->addConstraint(this, std::move(constraint_sptr));
     }
 
     for(uint i=0; i < m_childs.size(); i++){
@@ -601,7 +602,7 @@ void BasePart::addSubTreeToRenderBuffer(std::vector<object_transform>& buffer, c
             b_transform[14] -= btv_cam_origin.getZ();
             std::copy(b_transform, b_transform + 16, mat.m);
 
-            buffer.emplace_back(std::move(shared_from_this()), mat);
+            buffer.emplace_back(shared_from_this(), mat);
         }
     }
     catch(std::bad_weak_ptr& e){

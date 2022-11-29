@@ -32,7 +32,7 @@ const std::string& PlanetarySystem::getSystemName() const{
 }
 
 
-void PlanetarySystem::setPlanetMap(std::unique_ptr<planet_map>& map){
+void PlanetarySystem::setPlanetMap(std::unique_ptr<planet_map>&& map){
     m_planets = std::move(map);
 }
 

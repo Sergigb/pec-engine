@@ -119,7 +119,7 @@ void AssetManager::processCommandBuffers(bool physics_pause){
 
     for(uint i=0; i < m_add_constraint_buffer.size(); i++){
         struct add_contraint_msg& msg = m_add_constraint_buffer.at(i);
-        msg.part->setParentConstraint(msg.constraint_uptr);
+        msg.part->setParentConstraint(std::move(msg.constraint_uptr));
     }
     m_add_constraint_buffer.clear();
 
@@ -263,7 +263,7 @@ void AssetManager::addObjectBuffer(Object* obj, std::vector<object_transform>& b
         b_transform[14] -= btv_cam_origin.getZ();
         std::copy(b_transform, b_transform + 16, mat.m);
 
-        buffer_.emplace_back(std::move(obj->getSharedPtr()), mat);
+        buffer_.emplace_back(obj->getSharedPtr(), mat);
     }
     catch(std::bad_weak_ptr& e){
         std::string name;
