@@ -39,6 +39,21 @@ Sprite::Sprite(const Sprite& sprite) : m_pos(sprite.m_pos){
         m_render_context = sprite.m_render_context;
 }
 
+
+Sprite& Sprite::operator=(const Sprite& sprite){
+    m_vao = sprite.m_vao;
+    m_vbo_vert = sprite.m_vbo_vert;
+    m_vbo_tex = sprite.m_vbo_tex;
+    m_sprite = sprite.m_sprite;
+    m_disp_location = sprite.m_disp_location;
+    m_fb_width = sprite.m_fb_width;
+    m_fb_height = sprite.m_fb_height;
+    m_pos = sprite.m_pos;
+    m_positioning = sprite.m_positioning;
+    m_size = sprite.m_size;
+    return *this;
+}
+
         
 Sprite::~Sprite(){
     // WARNING!!! FREEING TEXTURES AND VBO/VAO MISSING!!!

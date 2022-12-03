@@ -49,6 +49,7 @@ class Sprite{
         Sprite(const RenderContext* render_context, const math::vec2& pos, short positioning,
                const char* path, const float size);
         Sprite(const Sprite& sprite);
+        Sprite& operator=(const Sprite& sprite);
         ~Sprite();
 
         /*
