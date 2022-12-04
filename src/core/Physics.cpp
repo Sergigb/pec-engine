@@ -20,7 +20,6 @@ Physics::Physics(){
 
 Physics::Physics(BaseApp* app){
     m_thread_monitor = app->getThreadMonitor();
-    m_asset_manager = app->getAssetManager();
     m_app = app;
     m_delta_t = REAL_TIME_S;
     m_secs_since_j2000 = 0.0;
@@ -116,7 +115,7 @@ void Physics::updateCollisionWorldSingleAABB(btRigidBody* body){
 void Physics::startSimulation(int max_sub_steps){
     // initialize orbital elements
     double cents_since_j2000 = m_secs_since_j2000 / SECONDS_IN_A_CENTURY;
-    m_asset_manager->m_planetary_system->updateOrbitalElements(cents_since_j2000);
+    m_app->getAssetManager()->m_planetary_system->updateOrbitalElements(cents_since_j2000);
 
     m_thread_simulation = std::thread(&Physics::runSimulation, this, max_sub_steps);
     log("Physics: starting simulation, thread launched");
@@ -177,8 +176,8 @@ void Physics::runSimulation(int max_sub_steps){
                */
 
             // WARNING! THE ORDER OF THESE UPDATES IS IMPORTANT, WE NEED TO REVISE THEM
-            m_asset_manager->m_planetary_system->updateOrbitalElements(cents_since_j2000);
-            m_asset_manager->m_planetary_system->updateKinematics();
+            m_app->getAssetManager()->m_planetary_system->updateOrbitalElements(cents_since_j2000);
+            m_app->getAssetManager()->m_planetary_system->updateKinematics();
             applyGravity();
             m_dynamics_world->stepSimulation(m_delta_t, max_sub_steps);
 
@@ -245,14 +244,15 @@ void Physics::applyGravityStar(double star_mass, btRigidBody* rbody,
     predictions. The first thing is to show the vessel's name on the Planetarium view's GUI.
  */
 void Physics::applyGravity(){
-    const planet_map& planets = m_asset_manager->m_planetary_system->getPlanets();
+    AssetManager* asset_manager = m_app->getAssetManager();
+    const planet_map& planets = asset_manager->m_planetary_system->getPlanets();
     planet_map::const_iterator it;
     VesselMap::iterator it2;
-    double star_mass = m_asset_manager->m_planetary_system->getStar().mass;
+    double star_mass = asset_manager->m_planetary_system->getStar().mass;
 
     // objects...
-    for(uint i=0; i < m_asset_manager->m_objects.size(); i++){
-        btRigidBody* body = m_asset_manager->m_objects.at(i)->m_body.get();
+    for(uint i=0; i < asset_manager->m_objects.size(); i++){
+        btRigidBody* body = asset_manager->m_objects.at(i)->m_body.get();
         const btVector3& object_origin = body->getWorldTransform().getOrigin();
 
         applyGravityStar(star_mass, body, object_origin);
@@ -269,7 +269,7 @@ void Physics::applyGravity(){
         }
     }
 
-    for(it2 = m_asset_manager->m_active_vessels.begin(); it2 != m_asset_manager->m_active_vessels.end(); it2++){
+    for(it2 = asset_manager->m_active_vessels.begin(); it2 != asset_manager->m_active_vessels.end(); it2++){
         std::vector<BasePart*>& parts = it2->second->getParts();
 
         for(uint i=0; i < parts.size(); i++){
