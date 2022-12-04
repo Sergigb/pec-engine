@@ -22,6 +22,7 @@ class Camera;
 class Physics;
 class AssetManager;
 class Planet;
+class BaseApp;
 
 namespace math{
     struct mat4;
@@ -83,11 +84,7 @@ class PlanetariumGUI : public BaseGUI{
         void updateVesselsText(const math::mat4& proj_mat, const math::mat4& view_mat);
         void renderPlanets(const math::mat4& proj_mat, const math::mat4& view_mat);
     public:
-        // the constructor has too many arguments, maybe it's better to make the base objects available
-        // from BaseApp
-        PlanetariumGUI(const FontAtlas* atlas, const RenderContext* render_context,
-                       const Camera* camera, const Physics* physics, 
-                       const AssetManager* asset_manager);
+        PlanetariumGUI(const FontAtlas* atlas, const BaseApp* app);
         ~PlanetariumGUI();
 
         void setSimulationDeltaT(double delta_t);

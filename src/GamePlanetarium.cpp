@@ -27,9 +27,7 @@ GamePlanetarium::GamePlanetarium(BaseApp* app, const FontAtlas* font_atlas){
     m_camera = m_app->m_camera.get();
 
 
-    m_gui.reset(new PlanetariumGUI(font_atlas, m_app->m_render_context.get(),
-                                   m_app->m_camera.get(), m_app->m_physics.get(),
-                                   m_app->m_asset_manager.get()));
+    m_gui.reset(new PlanetariumGUI(font_atlas, m_app));
     m_app->m_render_context->setGUI(m_gui.get(), GUI_MODE_PLANETARIUM);
     m_gui->setSelectedPlanet(0);
 

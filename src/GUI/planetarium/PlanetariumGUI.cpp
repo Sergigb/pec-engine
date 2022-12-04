@@ -8,28 +8,27 @@
 #include "../../core/Camera.hpp"
 #include "../../core/Physics.hpp"
 #include "../../core/AssetManager.hpp"
+#include "../../core/BaseApp.hpp"
 #include "../../assets/PlanetarySystem.hpp"
 #include "../../assets/Vessel.hpp"
 
 
-PlanetariumGUI::PlanetariumGUI(const FontAtlas* atlas, const RenderContext* render_context,
-                               const Camera* camera, const Physics* physics, 
-                               const AssetManager* asset_manager){
+PlanetariumGUI::PlanetariumGUI(const FontAtlas* atlas, const BaseApp* app){
     m_font_atlas = atlas;
-    m_render_context = render_context;
-    m_physics = physics;
+    m_render_context = app->getRenderContext();
+    m_physics = app->getPhysics();;
     m_render_context->getDefaultFbSize(m_fb_width, m_fb_height);
-    m_camera = camera;
+    m_camera = app->getCamera();
     m_fb_update = true;
     m_delta_t = 1 / 60.;
     m_selected_planet = 0;
-    m_asset_manager = asset_manager;
+    m_asset_manager = app->getAssetManager();
     m_freecam = false;
 
     buildSystemGUIData();
 
     m_main_text.reset(new Text2D(m_fb_width, m_fb_height, color{0.85, 0.85, 0.85},
-                      m_font_atlas, render_context));
+                      m_font_atlas, m_render_context));
 
 }
 
