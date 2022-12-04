@@ -153,3 +153,82 @@ short BaseApp::getRenderState() const{
     return m_render_state;
 }
 
+
+const Input* BaseApp::getInput() const{
+    return m_input.get();
+}
+
+
+Input* BaseApp::getInput(){
+    return m_input.get();   
+}
+
+
+const Camera* BaseApp::getCamera() const{
+    return m_camera.get();
+}
+
+
+Camera* BaseApp::getCamera(){
+    return m_camera.get();
+}
+
+
+const WindowHandler* BaseApp::getWindowHandler() const{
+    return m_window_handler.get();
+}
+
+
+WindowHandler* BaseApp::getWindowHandler(){
+    return m_window_handler.get();
+}
+
+
+const Frustum* BaseApp::getFrustum() const{
+    return m_frustum.get();
+}
+
+
+Frustum* BaseApp::getFrustum(){
+    return m_frustum.get();
+}
+
+
+const RenderContext* BaseApp::getRenderContext() const{
+    return m_render_context.get();
+}
+
+
+RenderContext* BaseApp::getRenderContext(){
+    return m_render_context.get();
+}
+
+
+const Physics* BaseApp::getPhysics() const{
+    return m_physics.get();
+}
+
+
+Physics* BaseApp::getPhysics(){
+    return m_physics.get();
+}
+
+
+const AssetManager* BaseApp::getAssetManager() const{
+    return m_asset_manager.get();
+}
+
+
+AssetManager* BaseApp::getAssetManager(){
+    return m_asset_manager.get();
+}
+
+
+const Player* BaseApp::getPlayer() const{
+    return m_player.get();
+}
+
+
+Player* BaseApp::getPlayer(){
+    return m_player.get();
+}

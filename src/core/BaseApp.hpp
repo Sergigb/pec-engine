@@ -70,6 +70,86 @@ class BaseApp{
          * defined in RenderContext (RENDER_*).
          */
         short getRenderState() const;
+
+        /*
+         * Returns a constant pointer to the Input object of the app.
+         */
+        const Input* getInput() const;
+
+        /*
+         * Returns a pointer to the app Input object.
+         */
+        Input* getInput();
+
+        /*
+         * Returns a constant pointer to the Camera object of the app.
+         */
+        const Camera* getCamera() const;
+
+        /*
+         * Returns a pointer to the Camera object of the app.
+         */
+        Camera* getCamera();
+
+        /*
+         * Returns a constant pointer to the WindowHandler object of the app.
+         */
+        const WindowHandler* getWindowHandler() const;
+
+        /*
+         * Returns a pointer to the WindowHandler object of the app.
+         */
+        WindowHandler* getWindowHandler();
+
+        /*
+         * Returns a constant pointer to the Frustum object of the app.
+         */
+        const Frustum* getFrustum() const;
+
+        /*
+         * Returns a pointer to the Frustum object of the app.
+         */
+        Frustum* getFrustum();
+
+        /*
+         * Returns a constant pointer to the RenderContext object of the app.
+         */
+        const RenderContext* getRenderContext() const;
+
+        /*
+         * Returns a pointer to the RenderContext object of the app.
+         */
+        RenderContext* getRenderContext();
+
+        /*
+         * Returns a constant pointer to the Physics object of the app.
+         */
+        const Physics* getPhysics() const;
+
+        /*
+         * Returns a pointer to the Physics object of the app.
+         */
+        Physics* getPhysics();
+
+        /*
+         * Returns a constant pointer to the AssetManager object of the app.
+         */
+        const AssetManager* getAssetManager() const;
+
+        /*
+         * Returns a pointer to the AssetManager object of the app.
+         */
+        AssetManager* getAssetManager();
+
+        /*
+         * Returns a constant pointer to the Player object of the app.
+         */
+        const Player* getPlayer() const;
+
+        /*
+         * Returns a pointer to the Player object of the app.
+         */
+        Player* getPlayer();
 };
 
 
