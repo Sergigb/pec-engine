@@ -2,10 +2,15 @@
 #define GAME_PLANETARIUM_HPP
 
 #include <memory>
+#include <vector>
 
 class BaseApp;
 class PlanetariumGUI;
 class FontAtlas;
+class Planet;
+class Input;
+class AssetManager;
+class Camera;
 
 
 #define PLANETARIUM_SCALE_FACTOR 1e10
@@ -15,9 +20,14 @@ class GamePlanetarium{
     private:
         std::unique_ptr<PlanetariumGUI> m_gui;
         std::uint32_t m_selected_planet;
+        uint m_selected_planet_idx;
         bool m_freecam;
+        std::vector<const Planet*> m_ordered_planets;
 
         BaseApp* m_app;
+        const Input* m_input;
+        const AssetManager* m_asset_manager;
+        Camera* m_camera;
 
         void updateInput();
         void updateCamera();
