@@ -12,7 +12,6 @@
 #define ORBITAL_CAM_MODE_SURFACE 0
 #define ORBITAL_CAM_MODE_ORBIT 1
 
-#define PLANETARIUM_DEF_SCALE_FACTOR 1e10
 
 class Vessel;
 class Camera;
@@ -39,8 +38,6 @@ class Player{
         const BaseApp* m_app;
         short m_behaviour, m_orbital_cam_mode;
         std::uint32_t m_selected_planet;
-        bool m_planetarium_freecam;
-        double m_planetarium_scale_factor;
         struct camera_params m_planetarium_cam_params;
         struct camera_params m_simulation_cam_params;
         struct camera_params m_editor_cam_params;
@@ -49,7 +46,6 @@ class Player{
         void unsetVessel();
         void setPlayerTarget();
         void switchVessel();
-        void switchPlanet();
         void setCamAxisRotation();
     public:
         Player(Camera* camera, AssetManager* asset_manager, const Input* input);
@@ -64,11 +60,6 @@ class Player{
          * Update method for the simulation (main game).
          */
         void updateSimulation();
-
-        /*
-         * Update method for the planetariun.
-         */
-        void updatePlanetarium();
 
         /*
          * This method should only be called by the player controlled vessel in case it gets
@@ -90,23 +81,9 @@ class Player{
         void setSelectedPlanet(std::uint32_t planet_id);
 
         /*
-         * Sets the scale of the planetarium, rendering of the planetarium uses a smaller scale
-         * because big numbers break everything (text/orbits), we need this scale factor for the
-         * camera. The default value is 1e10, you probably don't need to change this value.
-         *
-         * @factor: scale factor.
-         */
-        void setPlanetariumScaleFactor(double factor);
-
-        /*
          * Returns a raw pointer to the user controlled vessel.
          */
         Vessel* getVessel() const;
-
-        /*
-         * Returns true if the player is using the free camera while on the planetarium view.
-         */
-        bool getPlanetariumFreecam() const;
 
         /*
          * Returns the behaviour of the player, the possible behaviours of the player are defined

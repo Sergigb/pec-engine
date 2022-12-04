@@ -3,9 +3,11 @@
 
 #include <memory>
 #include <vector>
+#include <unordered_map>
 
 #include "../BaseGUI.hpp"
 #include "../Sprite.hpp"
+#include "../../assets/Planet.hpp"
 
 
 /* Planetarium actions */
@@ -43,7 +45,15 @@ struct planet_gui_data{
 struct system_gui_data{
     std::vector<struct planet_gui_data> m_planets_data;
     const PlanetarySystem* m_planetary_system;
+    std::unordered_map<std::uint32_t, uint> m_id_to_index;
 
+    void update_id_map(){
+        m_id_to_index.clear();
+        for(uint i=0; i < m_planets_data.size(); i++){
+            std::uint32_t id = m_planets_data.at(i).m_planet_data->getId();
+            m_id_to_index.insert({id, i});
+        }
+    }
 };
 
 
@@ -60,6 +70,7 @@ class PlanetariumGUI : public BaseGUI{
         double m_delta_t;
         std::uint32_t m_selected_planet;
         struct system_gui_data m_system_gui_data;
+        bool m_freecam;
 
         const FontAtlas* m_font_atlas;
         const RenderContext* m_render_context;
@@ -81,6 +92,7 @@ class PlanetariumGUI : public BaseGUI{
 
         void setSimulationDeltaT(double delta_t);
         void setSelectedPlanet(std::uint32_t planet_id);
+        void setFreecam(bool freecam);
 
         void onFramebufferSizeUpdate();
         void render();

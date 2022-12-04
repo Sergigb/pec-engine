@@ -24,6 +24,7 @@ PlanetariumGUI::PlanetariumGUI(const FontAtlas* atlas, const RenderContext* rend
     m_delta_t = 1 / 60.;
     m_selected_planet = 0;
     m_asset_manager = asset_manager;
+    m_freecam = false;
 
     buildSystemGUIData();
 
@@ -96,6 +97,7 @@ void PlanetariumGUI::renderPlanets(const math::mat4& proj_mat, const math::mat4&
     }
 
     std::sort(planets.begin(), planets.end(), comparator);
+    m_system_gui_data.update_id_map();
 
     for(uint i=0; i < planets.size(); i++){
         const Planet* current = planets.at(i).m_planet_data;
@@ -127,7 +129,7 @@ void PlanetariumGUI::renderPlanets(const math::mat4& proj_mat, const math::mat4&
 void PlanetariumGUI::updateSceneText(const math::mat4& proj_mat, const math::mat4& view_mat){
     const PlanetarySystem* planetary_system = m_system_gui_data.m_planetary_system;
     const std::vector<struct planet_gui_data>& planets = m_system_gui_data.m_planets_data;
-
+    uint selected_planet_idx;
     std::wostringstream woss;
     std::ostringstream oss;
     wchar_t buff[256];
@@ -140,10 +142,24 @@ void PlanetariumGUI::updateSceneText(const math::mat4& proj_mat, const math::mat
     oss << "\nStar name: " << planetary_system->getStar().star_name;
     oss << "\nStar description: " << planetary_system->getStar().description;
 
-    if(m_selected_planet and 0){
+    // selected it to index
+    try{
+        if(m_selected_planet)
+            selected_planet_idx = m_system_gui_data.m_id_to_index.at(m_selected_planet);
+        else
+            selected_planet_idx = 0;
+    }
+    catch(const std::out_of_range& oor){
+        std::cerr << "PlanetariumGUI::updateSceneText: wrong id value for selected planet: "
+                  << m_selected_planet << " (what: " << oor.what() << ")" << std::endl;
+        log("PlanetariumGUI::updateSceneText: wrong id value for selected planet: ",
+            m_selected_planet, " (what: ", oor.what(), ")");
+    }
+
+    if(m_selected_planet && !m_freecam){
         try{
-            const orbital_data& data = planets.at(m_selected_planet).m_planet_data->getOrbitalData();
-            oss << "\n\nSelected object: " << planets.at(m_selected_planet).m_planet_data->getName();
+            const orbital_data& data = planets.at(selected_planet_idx).m_planet_data->getOrbitalData();
+            oss << "\n\nSelected object: " << planets.at(selected_planet_idx).m_planet_data->getName();
 
             mbstowcs(buff, oss.str().c_str(), 256);
             woss << buff << std::fixed << std::setprecision(2);
@@ -187,11 +203,11 @@ void PlanetariumGUI::updateSceneText(const math::mat4& proj_mat, const math::mat
             m_main_text->addString(woss.str().c_str(), 10, 235, 1.0f,
                                    STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
         }
-        catch (const std::out_of_range& oor) {
-            std::cerr << "PlanetariumGUI::updateSceneText: wrong id value for selected planet: " 
-                      << m_selected_planet << " (what: " << oor.what() << ")" << std::endl;
-            log("PlanetariumGUI::updateSceneText: wrong id value for selected planet: ",
-                m_selected_planet, " (what: ", oor.what(), ")");
+        catch(const std::out_of_range& oor){
+            std::cerr << "PlanetariumGUI::updateSceneText: wrong index value for selected planet: "
+                      << selected_planet_idx << " (what: " << oor.what() << ")" << std::endl;
+            log("PlanetariumGUI::updateSceneText: wrong index value for selected planet: ",
+                selected_planet_idx, " (what: ", oor.what(), ")");
         }
     }
 
@@ -254,4 +270,10 @@ void PlanetariumGUI::buildSystemGUIData(){
                       current->getThumbnailPath(), 24.0f);
         m_system_gui_data.m_planets_data.emplace_back(std::move(current), sprite);
     }
+    m_system_gui_data.update_id_map();
+}
+
+
+void PlanetariumGUI::setFreecam(bool freecam){
+    m_freecam = freecam;
 }

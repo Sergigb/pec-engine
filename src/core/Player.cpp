@@ -28,8 +28,6 @@ Player::Player(Camera* camera, AssetManager* asset_manager, const Input* input){
     m_behaviour = PLAYER_BEHAVIOUR_NONE;
     m_orbital_cam_mode = ORBITAL_CAM_MODE_ORBIT;
     m_selected_planet = 0;
-    m_planetarium_freecam = false;
-    m_planetarium_scale_factor = PLANETARIUM_DEF_SCALE_FACTOR;
     m_camera->getCameraParams(m_planetarium_cam_params);
     m_camera->getCameraParams(m_simulation_cam_params);
     m_camera->getCameraParams(m_editor_cam_params);
@@ -90,31 +88,6 @@ void Player::updateSimulation(){
 }
 
 
-void Player::updatePlanetarium(){
-    // camera
-    if(!m_selected_planet || m_planetarium_freecam){
-        m_camera->freeCameraUpdate();
-    }
-    else if(m_selected_planet && !m_planetarium_freecam){
-        m_camera->setCameraPosition(
-            m_asset_manager->m_planetary_system->getPlanets().at(m_selected_planet)->getPosition()
-            / m_planetarium_scale_factor);
-        m_camera->setOrbitalInclination(0.0, dmath::vec3(0.0, 0.0, 0.0));
-        m_camera->orbitalCameraUpdate();
-    }
-
-    //input
-    if((m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)) 
-        && (m_input->pressed_keys[GLFW_KEY_C] & INPUT_KEY_DOWN)){
-        setPlayerTarget();
-    }
-
-    if(m_input->pressed_keys[GLFW_KEY_TAB] & INPUT_KEY_DOWN){
-        switchPlanet();
-    }
-}
-
-
 void Player::setCamAxisRotation(){
     if(m_orbital_cam_mode == ORBITAL_CAM_MODE_ORBIT){
         m_camera->setOrbitalInclination(0.0, dmath::vec3(0.0, 0.0, 0.0));
@@ -164,9 +137,6 @@ void Player::setPlayerTarget(){
             m_vessel->setPlayer(this);
         }
     }
-    else if(m_behaviour & PLAYER_BEHAVIOUR_PLANETARIUM){
-        togglePlanetariumFreecam();
-    }
 }
 
 
@@ -187,31 +157,6 @@ void Player::switchVessel(){
     else{
         it = m_asset_manager->m_active_vessels.begin();
         m_vessel = it->second.get();
-    }
-}
-
-
-void Player::switchPlanet(){
-    // this is just randomly sorted by unordered_map and its hashing, so a better system is needed
-    planet_map::const_iterator it;
-    const planet_map& planets = m_asset_manager->m_planetary_system->getPlanets();
-
-    if(!m_selected_planet){
-        it = planets.begin();
-        m_selected_planet = it->first;
-        return;
-    }
-    else{
-        it = planets.find(m_selected_planet);
-    }
-
-    it++;
-    if(it != planets.end()){
-        m_selected_planet = it->first;
-    }
-    else{
-        it = planets.begin();
-        m_selected_planet = it->first;
     }
 }
 
@@ -248,9 +193,6 @@ void Player::setBehaviour(short behaviour){
             break;
         case PLAYER_BEHAVIOUR_PLANETARIUM:
             m_camera->recoverCameraParams(m_planetarium_cam_params);
-            if(!m_selected_planet){
-                switchPlanet();
-            }
             break;
         default:
             std::cerr << "Player::setBehaviour: invalid player behaviour value: " << behaviour
@@ -268,23 +210,8 @@ Vessel* Player::getVessel() const{
 }
 
 
-void Player::togglePlanetariumFreecam(){
-    m_planetarium_freecam = !m_planetarium_freecam;
-}
-
-
 void Player::setSelectedPlanet(std::uint32_t planet_id){
     m_selected_planet = planet_id;
-}
-
-
-bool Player::getPlanetariumFreecam() const{
-    return m_planetarium_freecam;
-}
-
-
-void Player::setPlanetariumScaleFactor(double factor){
-    m_planetarium_scale_factor = factor;
 }
 
 
