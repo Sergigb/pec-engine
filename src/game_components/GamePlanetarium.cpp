@@ -1,14 +1,14 @@
 #include <algorithm>
 
 #include "GamePlanetarium.hpp"
-#include "core/BaseApp.hpp"
-#include "core/Player.hpp"
-#include "core/RenderContext.hpp"
-#include "core/AssetManager.hpp"
-#include "core/Camera.hpp"
-#include "core/Input.hpp"
-#include "assets/PlanetarySystem.hpp"
-#include "GUI/planetarium/PlanetariumGUI.hpp"
+#include "../core/BaseApp.hpp"
+#include "../core/Player.hpp"
+#include "../core/RenderContext.hpp"
+#include "../core/AssetManager.hpp"
+#include "../core/Camera.hpp"
+#include "../core/Input.hpp"
+#include "../assets/PlanetarySystem.hpp"
+#include "../GUI/planetarium/PlanetariumGUI.hpp"
 
 
 bool comparator(const Planet* a, const Planet* b){
