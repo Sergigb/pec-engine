@@ -9,6 +9,7 @@
 #include "../core/Input.hpp"
 #include "../assets/PlanetarySystem.hpp"
 #include "../GUI/planetarium/PlanetariumGUI.hpp"
+#include "../renderers/PlanetariumRenderer.hpp"
 
 
 bool comparator(const Planet* a, const Planet* b){
@@ -26,11 +27,14 @@ GamePlanetarium::GamePlanetarium(BaseApp* app, const FontAtlas* font_atlas){
     m_asset_manager = m_app->getAssetManager();
     m_camera = m_app->getCamera();
 
-
     m_gui.reset(new PlanetariumGUI(font_atlas, m_app));
     m_app->getRenderContext()->setGUI(m_gui.get(), GUI_MODE_PLANETARIUM);
     m_gui->setSelectedPlanet(0);
 
+    m_renderer.reset(new PlanetariumRenderer(m_app));
+    m_app->getRenderContext()->setRenderer(m_renderer.get(), RENDER_PLANETARIUM);
+
+    // ordered planet vector init
     const planet_map& planets = m_asset_manager->m_planetary_system.get()->getPlanets();
     planet_map::const_iterator it;
 

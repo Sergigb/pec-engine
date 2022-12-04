@@ -17,8 +17,9 @@ endif
 CORESRCS := $(shell find core/ -name "*.cpp")
 ASSETSSRCS := $(shell find assets/ -name "*.cpp")
 GUISRCS := $(shell find GUI/ -name "*.cpp")
+RENDERERSRCS := $(shell find renderers/ -name "*.cpp")
 
-BASESRCS := $(CORESRCS) $(ASSETSSRCS) $(GUISRCS)
+BASESRCS := $(CORESRCS) $(ASSETSSRCS) $(GUISRCS) $(RENDERERSRCS)
 BASEOBJS := $(foreach source, $(BASESRCS), $(OBJPATH)/$(source:.cpp=.o))
 
 DEPENDS_BASE = ${BASEOBJS:.o=.d}

@@ -11,6 +11,7 @@ class Planet;
 class Input;
 class AssetManager;
 class Camera;
+class PlanetariumRenderer;
 
 
 #define PLANETARIUM_SCALE_FACTOR 1e10
@@ -19,6 +20,8 @@ class Camera;
 class GamePlanetarium{
     private:
         std::unique_ptr<PlanetariumGUI> m_gui;
+        std::unique_ptr<PlanetariumRenderer> m_renderer;
+
         std::uint32_t m_selected_planet;
         uint m_selected_planet_idx;
         bool m_freecam;

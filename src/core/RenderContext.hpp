@@ -21,6 +21,7 @@ class DebugDrawer;
 class FontAtlas;
 class Text2D;
 class BaseApp;
+class BaseRenderer;
 
 struct object_transform;
 struct planet_transform;
@@ -122,6 +123,10 @@ class RenderContext{
         // gui
         BaseGUI* m_editor_gui;
         BaseGUI* m_planetarium_gui;
+
+        // renderers
+        BaseRenderer* m_planetarium_renderer;
+
         // other ones...
         std::unique_ptr<Text2D> m_notification_text;
 
@@ -170,13 +175,11 @@ class RenderContext{
         /*
          * Different methods that can be called to render different stuff.
          */
-        int renderSceneEditor();
-        int renderSceneUniverse();
+        int renderSceneEditor(struct render_buffer* rbuf);
+        int renderSceneUniverse(struct render_buffer* rbuf);
         int renderObjects(bool render_att_points, const std::vector<object_transform>* buff, const math::mat4* view_mat);
         void renderBulletDebug(const math::mat4* view_mat);
         void renderNotifications();
-        void renderPlanetarium();
-        void renderPlanetariumOrbits(const std::vector<planet_transform>& buff, const math::mat4& view_mat);
     public:
         /*
          * Constructor.
@@ -258,12 +261,20 @@ class RenderContext{
         /*
          * Sets a GUI given a pointer of type BaseGUI and a valid GUI value.
          *
-         * @gui_ptr: pointer to the GUI object, should be a derived class from derived from
-         * BaseGUI.
+         * @gui_ptr: pointer to the GUI object, should be a derived class from BaseGUI.
          * @gui: GUI that we want to set, has to be one of the valid GUI modes defined above (
          * macros GUI_MODE_*).
          */
         void setGUI(BaseGUI* gui_ptr, short gui);
+
+        /*
+         * Sets a renderer given a pointer of type BaseRenderer and a valid render state.
+         *
+         * @rend_ptr: pointer to the renderer object, should be a derived class from BaseRenderer.
+         * @render_state: renderer that we want to set, has to be one of the valid render states
+         * defined above (* macros RENDER_*).
+         */
+        void setRenderer(BaseRenderer* rend_ptr, short render_state);
 
         /*
          * Reloads the shaders.

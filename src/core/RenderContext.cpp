@@ -26,6 +26,7 @@
 #include "../GUI/Text2D.hpp"
 #include "../GUI/BaseGUI.hpp"
 #include "../GUI/DebugOverlay.hpp"
+#include "../renderers/BaseRenderer.hpp"
 
 
 RenderContext::RenderContext(BaseApp* app){
@@ -63,6 +64,8 @@ RenderContext::RenderContext(BaseApp* app){
     m_editor_gui = nullptr;
     m_planetarium_gui = nullptr;
     m_default_atlas = nullptr;
+
+    m_planetarium_gui = nullptr;
 
     m_glfw_time = 0.0;
 
@@ -250,49 +253,27 @@ void RenderContext::renderAttPoints(const BasePart* part, const math::mat4& body
 }
 
 
-int RenderContext::renderSceneEditor(){
+int RenderContext::renderSceneEditor(struct render_buffer* rbuf){
     int num_rendered = 0;
-    struct render_buffer* rbuf;
 
-    if(m_buffers->last_updated != none){
-        if(m_buffers->last_updated == buffer_1){
-            m_buffers->buffer_1.buffer_lock.lock();
-            rbuf = &m_buffers->buffer_1;
-        }
-        else{
-            m_buffers->buffer_2.buffer_lock.lock();
-            rbuf = &m_buffers->buffer_2;
-        }
-        num_rendered = renderObjects(true, &rbuf->buffer, &rbuf->view_mat);
-        rbuf->buffer_lock.unlock();
-    }
+    num_rendered = renderObjects(true, &rbuf->buffer, &rbuf->view_mat);
+    rbuf->buffer_lock.unlock();
 
     return num_rendered;
 }
 
 
-int RenderContext::renderSceneUniverse(){
+int RenderContext::renderSceneUniverse(struct render_buffer* rbuf){
     int num_rendered = 0;
-    struct render_buffer* rbuf;
 
-    if(m_buffers->last_updated != none){
-        if(m_buffers->last_updated == buffer_1){
-            m_buffers->buffer_1.buffer_lock.lock();
-            rbuf = &m_buffers->buffer_1;
-        }
-        else{
-            m_buffers->buffer_2.buffer_lock.lock();
-            rbuf = &m_buffers->buffer_2;
-        }
-        num_rendered = renderObjects(false, &rbuf->buffer, &rbuf->view_mat);
+    num_rendered = renderObjects(false, &rbuf->buffer, &rbuf->view_mat);
 
-        for(uint i=0; i < rbuf->planet_buffer.size(); i++){
-            planet_transform& tr = rbuf->planet_buffer.at(i);
-            tr.planet_ptr->render(rbuf->cam_origin, tr.transform);
-        }
-
-        rbuf->buffer_lock.unlock();
+    for(uint i=0; i < rbuf->planet_buffer.size(); i++){
+        planet_transform& tr = rbuf->planet_buffer.at(i);
+        tr.planet_ptr->render(rbuf->cam_origin, tr.transform);
     }
+
+    rbuf->buffer_lock.unlock();
 
     return num_rendered;
 }
@@ -343,50 +324,6 @@ void RenderContext::renderBulletDebug(const math::mat4* view_mat){
 }
 
 
-void RenderContext::renderPlanetarium(){
-    struct render_buffer* rbuf;
-
-    if(m_buffers->last_updated != none){
-        if(m_buffers->last_updated == buffer_1){
-            m_buffers->buffer_1.buffer_lock.lock();
-            rbuf = &m_buffers->buffer_1;
-        }
-        else{
-            m_buffers->buffer_2.buffer_lock.lock();
-            rbuf = &m_buffers->buffer_2;
-        }
-
-        m_app->getAssetManager()->m_planetary_system->updateRenderBuffers(m_app->getPhysics()->getCurrentTime() / SECONDS_IN_A_CENTURY);
-        renderPlanetariumOrbits(rbuf->planet_buffer, rbuf->view_mat);
-
-        rbuf->buffer_lock.unlock();
-    }
-}
-
-
-void RenderContext::renderPlanetariumOrbits(const std::vector<planet_transform>& buff, const math::mat4& view_mat){
-    useProgram(SHADER_DEBUG);
-    glUniformMatrix4fv(m_debug_view_mat, 1, GL_FALSE, view_mat.m);
-    glUniformMatrix4fv(m_debug_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
-
-    glClearColor(0.f, 0.f, 0.f, 0.f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    for(uint i=0; i < buff.size(); i++){
-        Planet* current = buff.at(i).planet_ptr;
-
-        if(current->getId() == m_app->getPlayer()->getPlanetariumSelectedPlanet()){
-            glUniform3f(m_debug_color_location, 0.0, 1.0, 0.0);
-        }
-        else{
-            glUniform3f(m_debug_color_location, 1.0, 0.0, 0.0);
-        }
-
-        current->renderOrbit();
-    }
-}
-
-
 void RenderContext::render(){
     int num_rendered = 0;
 
@@ -432,23 +369,35 @@ void RenderContext::render(){
 
     setLightPositionRender();
 
-    switch(m_app->getRenderState()){
-        case RENDER_NOTHING:
-            break;
-        case RENDER_EDITOR:
-            num_rendered = renderSceneEditor();
-            break;
-        case RENDER_UNIVERSE:
-            num_rendered = renderSceneUniverse();
-            break;
-        case RENDER_PLANETARIUM:
-            renderPlanetarium();
-            break;
-        default:
-            std::cerr << "RenderContext::render: Warning, invalid render state value (" << (int)m_app->getRenderState() << ")" << std::endl;
-            log("RenderContext::render: Warning, invalid render state value (", (int)m_app->getRenderState(), ")");
+    // scene render, should we make a separate function?
+    if(m_buffers->last_updated != none){
+        struct render_buffer* rbuf;
+        if(m_buffers->last_updated == buffer_1){
+            m_buffers->buffer_1.buffer_lock.lock();
+            rbuf = &m_buffers->buffer_1;
+        }
+        else{
+            m_buffers->buffer_2.buffer_lock.lock();
+            rbuf = &m_buffers->buffer_2;
+        }
+        switch(m_app->getRenderState()){
+            case RENDER_NOTHING:
+                break;
+            case RENDER_EDITOR:
+                num_rendered = renderSceneEditor(rbuf); // PENDING TO MOVE CODE
+                break;
+            case RENDER_UNIVERSE:
+                num_rendered = renderSceneUniverse(rbuf); // PENDING TO MOVE CODE
+                break;
+            case RENDER_PLANETARIUM:
+                m_planetarium_renderer->render(rbuf);
+                break;
+            default:
+                std::cerr << "RenderContext::render: Warning, invalid render state value (" << (int)m_app->getRenderState() << ")" << std::endl;
+                log("RenderContext::render: Warning, invalid render state value (", (int)m_app->getRenderState(), ")");
+        }
+        rbuf->buffer_lock.unlock();
     }
-    
 
     end_scene_start_gui = std::chrono::steady_clock::now();
 
@@ -687,8 +636,21 @@ void RenderContext::setGUI(BaseGUI* gui_ptr, short gui){
             m_planetarium_gui = gui_ptr;
             break;
         default:
-            std::cerr << "RenderContext::setGUI: invalid GUI mode: " << gui;
+            std::cerr << "RenderContext::setGUI: invalid GUI mode: " << gui << std::endl;
             log("RenderContext::setGUI: invalid GUI mode ", gui);
+    }
+}
+
+
+void RenderContext::setRenderer(BaseRenderer* rend_ptr, short render_state){
+    switch(render_state){
+        case RENDER_PLANETARIUM:
+            m_planetarium_renderer = rend_ptr;
+            break;  
+        default:
+            std::cerr << "RenderContext::setRenderer: invalid render state: " 
+                      << render_state << std::endl;
+            log("RenderContext::setRenderer: invalid render state ", render_state);
     }
 }
 
