@@ -28,16 +28,16 @@ bool lmb_focused_press = false;
 
 
 GameEditor::GameEditor(BaseApp* app, FontAtlas* font_atlas){
-    m_input = app->m_input.get();
-    m_camera = app->m_camera.get();
-    m_window_handler = app->m_window_handler.get();
-    m_frustum = app->m_frustum.get();
-    m_render_context = app->m_render_context.get();
-    m_physics = app->m_physics.get();
-    m_asset_manager = app->m_asset_manager.get();
-    m_player = app->m_player.get();
+    m_input = app->getInput();
+    m_camera = app->getCamera();
+    m_window_handler = app->getWindowHandler();
+    m_frustum = app->getFrustum();
+    m_render_context = app->getRenderContext();
+    m_physics = app->getPhysics();
+    m_asset_manager = app->getAssetManager();
+    m_player = app->getPlayer();
 
-    m_thread_monitor= &app->m_thread_monitor;
+    m_thread_monitor= app->getThreadMonitor();
 
     m_def_font_atlas = font_atlas;
 
@@ -75,9 +75,9 @@ void GameEditor::start(){
     double delta_t = (1. / 60.) * 1000000., accumulated_load = 0.0, accumulated_sleep = 0.0, average_load = 0.0, average_sleep = 0.0;
     int ticks_since_last_update = 0;
 
-    m_app->m_gui_mode = GUI_MODE_EDITOR;
-    m_app->m_render_state = RENDER_EDITOR;
-    m_app->m_player->setBehaviour(PLAYER_BEHAVIOUR_EDITOR);
+    m_app->setGUIMode(GUI_MODE_EDITOR);
+    m_app->setRenderState(RENDER_EDITOR);
+    m_player->setBehaviour(PLAYER_BEHAVIOUR_EDITOR);
 
     while(!m_exit_editor){
         loop_start_load = std::chrono::steady_clock::now();

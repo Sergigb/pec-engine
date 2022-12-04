@@ -31,6 +31,7 @@
 
 class Object;
 class BaseApp;
+class AssetManager;
 
 struct thread_monitor;
 
@@ -115,6 +116,7 @@ class Physics{
         void applyGravityStar(double star_mass, btRigidBody* rbody, const btVector3& rbody_origin);
 
         BaseApp* m_app;
+        AssetManager* m_asset_manager;
 
         double m_delta_t, m_secs_since_j2000; // m_delta_t in s
         std::thread m_thread_simulation;
@@ -126,10 +128,9 @@ class Physics{
         /*
          * Constructor
          *
-         * @thread_monitor: thread monitor object used to synchronize ourselves with the main app.
          * @m_app: pointer of the app
          */
-        Physics(thread_monitor* thread_monitor, BaseApp* app);
+        Physics(BaseApp* app);
         ~Physics();
 
         /*

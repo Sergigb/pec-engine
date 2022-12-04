@@ -30,11 +30,11 @@ typedef ResourceMap::iterator ResourceIterator;
 
 
 AssetManager::AssetManager(BaseApp* app) : m_asset_manager_interface(AssetManagerInterface(this)){
-    m_render_context = app->m_render_context.get();
-    m_frustum = app->m_frustum.get();
-    m_physics = app->m_physics.get();
-    m_buffers = &app->m_buffers;
-    m_camera = app->m_camera.get();
+    m_render_context = app->getRenderContext();
+    m_frustum = app->getFrustum();
+    m_physics = app->getPhysics();
+    m_buffers = app->getRenderBuffers();
+    m_camera = app->getCamera();
     m_app = app;
 
     objectsInit();

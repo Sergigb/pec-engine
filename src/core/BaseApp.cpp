@@ -123,7 +123,7 @@ void BaseApp::init(int gl_width, int gl_height){
     m_render_context.reset(new RenderContext(this));
     m_window_handler->setRenderContext(m_render_context.get());
     displayLoadingScreen();
-    m_physics.reset(new Physics(&m_thread_monitor, this));
+    m_physics.reset(new Physics(this));
     m_asset_manager.reset(new AssetManager(this));
     m_player.reset(new Player(m_camera.get(), m_asset_manager.get(), m_input.get()));
 
@@ -156,6 +156,16 @@ short BaseApp::getGUIMode() const{
 
 short BaseApp::getRenderState() const{
     return m_render_state;
+}
+
+
+void BaseApp::setRenderState(short state){
+    m_render_state = state;
+}
+
+
+void BaseApp::setGUIMode(short mode){
+    m_gui_mode = mode;
 }
 
 
@@ -236,4 +246,14 @@ const Player* BaseApp::getPlayer() const{
 
 Player* BaseApp::getPlayer(){
     return m_player.get();
+}
+
+
+struct render_buffers* BaseApp::getRenderBuffers(){
+    return &m_buffers;
+}
+
+
+struct thread_monitor* BaseApp::getThreadMonitor(){
+    return &m_thread_monitor;
 }

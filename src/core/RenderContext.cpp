@@ -29,9 +29,9 @@
 
 
 RenderContext::RenderContext(BaseApp* app){
-    m_camera = app->m_camera.get();
-    m_window_handler = app->m_window_handler.get();
-    m_buffers = &app->m_buffers;
+    m_camera = app->getCamera();
+    m_window_handler = app->getWindowHandler();
+    m_buffers = app->getRenderBuffers();
     m_app = app;
     m_draw_overlay = false;
     m_debug_draw = false;
@@ -84,7 +84,7 @@ RenderContext::RenderContext(BaseApp* app){
 
 
 void RenderContext::setDebugDrawer(){
-    m_physics = m_app->m_physics.get();
+    m_physics = m_app->getPhysics();
     m_debug_drawer.reset(new DebugDrawer(this));
     btDiscreteDynamicsWorld* d_world = m_physics->getDynamicsWorld();
     d_world->setDebugDrawer(m_debug_drawer.get());
@@ -356,7 +356,7 @@ void RenderContext::renderPlanetarium(){
             rbuf = &m_buffers->buffer_2;
         }
 
-        m_app->m_asset_manager->m_planetary_system->updateRenderBuffers(m_app->m_physics->getCurrentTime() / SECONDS_IN_A_CENTURY);
+        m_app->getAssetManager()->m_planetary_system->updateRenderBuffers(m_app->getPhysics()->getCurrentTime() / SECONDS_IN_A_CENTURY);
         renderPlanetariumOrbits(rbuf->planet_buffer, rbuf->view_mat);
 
         rbuf->buffer_lock.unlock();
@@ -375,7 +375,7 @@ void RenderContext::renderPlanetariumOrbits(const std::vector<planet_transform>&
     for(uint i=0; i < buff.size(); i++){
         Planet* current = buff.at(i).planet_ptr;
 
-        if(current->getId() == m_app->m_player->getPlanetariumSelectedPlanet()){
+        if(current->getId() == m_app->getPlayer()->getPlanetariumSelectedPlanet()){
             glUniform3f(m_debug_color_location, 0.0, 1.0, 0.0);
         }
         else{

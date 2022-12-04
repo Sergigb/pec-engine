@@ -20,7 +20,6 @@
 #include "assets/Kinematic.hpp"
 #include "assets/utils/planet_utils.hpp"
 #include "assets/PlanetarySystem.hpp"
-#include "GUI/planetarium/PlanetariumGUI.hpp"
 
 
 App::App() : BaseApp(){

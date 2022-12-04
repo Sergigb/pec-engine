@@ -32,12 +32,6 @@ class BaseApp{
 
         void init(int gl_width, int gl_height);
     protected:
-        friend class GameEditor;
-        friend class GamePlanetarium;
-        friend class AssetManager;
-        friend class RenderContext;
-        friend class Physics;
-
         std::unique_ptr<Input> m_input;
         std::unique_ptr<Camera> m_camera;
         std::unique_ptr<WindowHandler> m_window_handler;
@@ -70,6 +64,28 @@ class BaseApp{
          * defined in RenderContext (RENDER_*).
          */
         short getRenderState() const;
+
+        /*
+         * Sets the render state of the application (editor, simulation, etc), the values are 
+         * defined in the RenderContext (RENDER_*).
+         */
+        void setRenderState(short state);
+
+        /*
+         * Sets the GUI mode of the application, used by RenderContext to know which GUI it
+         * should be rendering. The values are defined in that class (GUI_MODE_*).
+         */
+        void setGUIMode(short mode);
+
+        /*
+         * Returns a pointer to the render buffers of the app.
+         */
+        struct render_buffers* getRenderBuffers();
+
+        /*
+         * Returns a pointer to the thread monitor of the app.
+         */
+        struct thread_monitor* getThreadMonitor();
 
         /*
          * Returns a constant pointer to the Input object of the app.

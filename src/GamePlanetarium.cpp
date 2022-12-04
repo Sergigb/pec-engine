@@ -22,13 +22,13 @@ GamePlanetarium::GamePlanetarium(BaseApp* app, const FontAtlas* font_atlas){
     m_selected_planet = 0;
     m_selected_planet_idx = 0;
 
-    m_input = m_app->m_input.get();
-    m_asset_manager = m_app->m_asset_manager.get();
-    m_camera = m_app->m_camera.get();
+    m_input = m_app->getInput();
+    m_asset_manager = m_app->getAssetManager();
+    m_camera = m_app->getCamera();
 
 
     m_gui.reset(new PlanetariumGUI(font_atlas, m_app));
-    m_app->m_render_context->setGUI(m_gui.get(), GUI_MODE_PLANETARIUM);
+    m_app->getRenderContext()->setGUI(m_gui.get(), GUI_MODE_PLANETARIUM);
     m_gui->setSelectedPlanet(0);
 
     const planet_map& planets = m_asset_manager->m_planetary_system.get()->getPlanets();
@@ -97,7 +97,7 @@ void GamePlanetarium::update(){
     updateCamera();
     updateInput();
 
-    m_app->m_player->setSelectedPlanet(m_selected_planet);
+    m_app->getPlayer()->setSelectedPlanet(m_selected_planet);
     m_gui->setSelectedPlanet(m_selected_planet);
     m_gui->setFreecam(m_freecam);
     m_gui->update();
