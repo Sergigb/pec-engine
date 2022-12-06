@@ -14,6 +14,13 @@
 
 PlanetariumRenderer::PlanetariumRenderer(BaseApp* app){
     m_app = app;
+
+    RenderContext* render_context = m_app->getRenderContext();
+
+    render_context->useProgram(SHADER_DEBUG);
+    m_debug_view_mat = render_context->getUniformLocation(SHADER_DEBUG, "view");
+    m_debug_proj_mat = render_context->getUniformLocation(SHADER_DEBUG, "proj");
+    m_debug_color_location = render_context->getUniformLocation(SHADER_DEBUG, "line_color");
 }
 
 
@@ -23,31 +30,16 @@ PlanetariumRenderer::~PlanetariumRenderer(){
 
 
 void PlanetariumRenderer::render(struct render_buffer* rbuf){
-    glClearColor(1.0f, 0.0f, 0.0f, 0.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
     m_app->getAssetManager()->m_planetary_system->updateRenderBuffers(
         m_app->getPhysics()->getCurrentTime() / SECONDS_IN_A_CENTURY);
     renderPlanetariumOrbits(rbuf->planet_buffer, rbuf->view_mat);
 }
 
 
-/*
-
-
-TODO: CLEANUP THIS AND SAVE THE UNIFORM LOCATIONS BEFOREHAND
-
-
-*/
 void PlanetariumRenderer::renderPlanetariumOrbits(const std::vector<planet_transform>& buff, const math::mat4& view_mat){
-    GLint m_debug_view_mat, m_debug_proj_mat, m_debug_color_location;
     RenderContext* render_context = m_app->getRenderContext();
 
     render_context->useProgram(SHADER_DEBUG);
-    m_debug_view_mat = render_context->getUniformLocation(SHADER_DEBUG, "view");
-    m_debug_proj_mat = render_context->getUniformLocation(SHADER_DEBUG, "proj");
-    m_debug_color_location = render_context->getUniformLocation(SHADER_DEBUG, "line_color");
 
     glUniformMatrix4fv(m_debug_view_mat, 1, GL_FALSE, view_mat.m);
     glUniformMatrix4fv(m_debug_proj_mat, 1, GL_FALSE, m_app->getCamera()->getProjMatrix().m);
@@ -64,7 +56,6 @@ void PlanetariumRenderer::renderPlanetariumOrbits(const std::vector<planet_trans
         else{
             glUniform3f(m_debug_color_location, 1.0, 0.0, 0.0);
         }
-
         current->renderOrbit();
     }
 }
