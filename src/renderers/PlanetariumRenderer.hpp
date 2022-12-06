@@ -24,7 +24,7 @@ class PlanetariumRenderer : public BaseRenderer{
         PlanetariumRenderer(BaseApp* app);
         ~PlanetariumRenderer();
 
-        void render(struct render_buffer* rbuf);
+        int render(struct render_buffer* rbuf);
 };
 
 

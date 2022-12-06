@@ -126,6 +126,7 @@ class RenderContext{
 
         // renderers
         BaseRenderer* m_planetarium_renderer;
+        BaseRenderer* m_simulation_renderer;
 
         // other ones...
         std::unique_ptr<Text2D> m_notification_text;
@@ -176,9 +177,8 @@ class RenderContext{
          * Different methods that can be called to render different stuff.
          */
         int renderSceneEditor(struct render_buffer* rbuf);
-        int renderSceneUniverse(struct render_buffer* rbuf);
         int renderObjects(bool render_att_points, const std::vector<object_transform>* buff, const math::mat4* view_mat);
-        void renderBulletDebug(const math::mat4* view_mat);
+        void renderBulletDebug(const math::mat4& view_mat);
         void renderNotifications();
     public:
         /*

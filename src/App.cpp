@@ -20,6 +20,7 @@
 #include "assets/Kinematic.hpp"
 #include "assets/utils/planet_utils.hpp"
 #include "assets/PlanetarySystem.hpp"
+#include "renderers/SimulationRenderer.hpp"
 
 
 App::App() : BaseApp(){
@@ -52,6 +53,9 @@ void App::init(){
 
     m_editor.reset(new GameEditor(this, m_def_font_atlas.get()));
     m_planetarium.reset(new GamePlanetarium(this, m_def_font_atlas.get()));
+
+    m_renderer.reset(new SimulationRenderer(this));
+    m_render_context->setRenderer(m_renderer.get(), RENDER_UNIVERSE);
 }
 
 

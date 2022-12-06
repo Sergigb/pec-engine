@@ -65,7 +65,8 @@ RenderContext::RenderContext(BaseApp* app){
     m_planetarium_gui = nullptr;
     m_default_atlas = nullptr;
 
-    m_planetarium_gui = nullptr;
+    m_planetarium_renderer = nullptr;
+    m_simulation_renderer = nullptr;
 
     m_glfw_time = 0.0;
 
@@ -263,22 +264,6 @@ int RenderContext::renderSceneEditor(struct render_buffer* rbuf){
 }
 
 
-int RenderContext::renderSceneUniverse(struct render_buffer* rbuf){
-    int num_rendered = 0;
-
-    num_rendered = renderObjects(false, &rbuf->buffer, &rbuf->view_mat);
-
-    for(uint i=0; i < rbuf->planet_buffer.size(); i++){
-        planet_transform& tr = rbuf->planet_buffer.at(i);
-        tr.planet_ptr->render(rbuf->cam_origin, tr.transform);
-    }
-
-    rbuf->buffer_lock.unlock();
-
-    return num_rendered;
-}
-
-
 int RenderContext::renderObjects(bool render_att_points, const std::vector<object_transform>* buff, const math::mat4* view_mat){
     int num_rendered = 0;
 
@@ -304,17 +289,13 @@ int RenderContext::renderObjects(bool render_att_points, const std::vector<objec
         num_rendered += buff->at(i).object_ptr->render(buff->at(i).transform);
     }
 
-    if(m_debug_draw){
-        renderBulletDebug(view_mat);
-    }
-
     return num_rendered;
 }
 
 
-void RenderContext::renderBulletDebug(const math::mat4* view_mat){
+void RenderContext::renderBulletDebug(const math::mat4& view_mat){
     glUseProgram(m_debug_shader);
-    glUniformMatrix4fv(m_debug_view_mat, 1, GL_FALSE, view_mat->m);
+    glUniformMatrix4fv(m_debug_view_mat, 1, GL_FALSE, view_mat.m);
     glUniformMatrix4fv(m_debug_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
 
     const dmath::vec3& cam_position = m_camera->getCamPosition();
@@ -387,7 +368,7 @@ void RenderContext::render(){
                 num_rendered = renderSceneEditor(rbuf); // PENDING TO MOVE CODE
                 break;
             case RENDER_UNIVERSE:
-                num_rendered = renderSceneUniverse(rbuf); // PENDING TO MOVE CODE
+                num_rendered = m_simulation_renderer->render(rbuf);
                 break;
             case RENDER_PLANETARIUM:
                 m_planetarium_renderer->render(rbuf);
@@ -396,6 +377,9 @@ void RenderContext::render(){
                 std::cerr << "RenderContext::render: Warning, invalid render state value (" << (int)m_app->getRenderState() << ")" << std::endl;
                 log("RenderContext::render: Warning, invalid render state value (", (int)m_app->getRenderState(), ")");
         }
+        if(m_debug_draw && (RENDER_EDITOR | RENDER_UNIVERSE))
+            renderBulletDebug(rbuf->view_mat);
+
         rbuf->buffer_lock.unlock();
     }
 
@@ -644,6 +628,9 @@ void RenderContext::setGUI(BaseGUI* gui_ptr, short gui){
 
 void RenderContext::setRenderer(BaseRenderer* rend_ptr, short render_state){
     switch(render_state){
+        case RENDER_UNIVERSE:
+            m_simulation_renderer = rend_ptr;
+            break;
         case RENDER_PLANETARIUM:
             m_planetarium_renderer = rend_ptr;
             break;  

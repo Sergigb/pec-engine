@@ -29,10 +29,12 @@ PlanetariumRenderer::~PlanetariumRenderer(){
 }
 
 
-void PlanetariumRenderer::render(struct render_buffer* rbuf){
+int PlanetariumRenderer::render(struct render_buffer* rbuf){
     m_app->getAssetManager()->m_planetary_system->updateRenderBuffers(
         m_app->getPhysics()->getCurrentTime() / SECONDS_IN_A_CENTURY);
     renderPlanetariumOrbits(rbuf->planet_buffer, rbuf->view_mat);
+
+    return 0;
 }
 
 

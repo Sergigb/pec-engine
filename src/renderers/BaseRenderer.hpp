@@ -12,7 +12,7 @@ class BaseRenderer{
         BaseRenderer(){};
         virtual ~BaseRenderer(){};
 
-        virtual void render(struct render_buffer* rbuf) = 0;
+        virtual int render(struct render_buffer* rbuf) = 0;
 };
 
 
