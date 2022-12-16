@@ -5,6 +5,9 @@
 #include <mutex>
 #include <memory>
 
+#define BT_USE_DOUBLE_PRECISION
+#include <bullet/btBulletDynamicsCommon.h>
+
 #include "maths_funcs.hpp"
 
 class Object;
@@ -123,10 +126,7 @@ struct render_buffers{
 /* AssetManagerInterface or AssetManager.                                                        */
 /*************************************************************************************************/
 
-class btVector3;
-class btQuaternion;
 class BasePart;
-class btTypedConstraint;
 
 
 /* Message used in m_set_motion_state_buffer, can't be accessed via AssetManagerInterface */
