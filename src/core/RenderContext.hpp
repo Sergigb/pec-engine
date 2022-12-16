@@ -44,7 +44,7 @@ struct planet_transform;
 /* renders states, ie what to render */
 #define RENDER_NOTHING 0x0001
 #define RENDER_EDITOR 0x0002
-#define RENDER_UNIVERSE 0x0004
+#define RENDER_SIMULATION 0x0004
 #define RENDER_PLANETARIUM 0x0008
 
 

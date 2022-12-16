@@ -367,7 +367,7 @@ void RenderContext::render(){
             case RENDER_EDITOR:
                 num_rendered = renderSceneEditor(rbuf); // PENDING TO MOVE CODE
                 break;
-            case RENDER_UNIVERSE:
+            case RENDER_SIMULATION:
                 num_rendered = m_simulation_renderer->render(rbuf);
                 break;
             case RENDER_PLANETARIUM:
@@ -377,7 +377,7 @@ void RenderContext::render(){
                 std::cerr << "RenderContext::render: Warning, invalid render state value (" << (int)m_app->getRenderState() << ")" << std::endl;
                 log("RenderContext::render: Warning, invalid render state value (", (int)m_app->getRenderState(), ")");
         }
-        if(m_debug_draw && (RENDER_EDITOR | RENDER_UNIVERSE))
+        if(m_debug_draw && (RENDER_EDITOR | RENDER_SIMULATION))
             renderBulletDebug(rbuf->view_mat);
 
         rbuf->buffer_lock.unlock();
@@ -628,7 +628,7 @@ void RenderContext::setGUI(BaseGUI* gui_ptr, short gui){
 
 void RenderContext::setRenderer(BaseRenderer* rend_ptr, short render_state){
     switch(render_state){
-        case RENDER_UNIVERSE:
+        case RENDER_SIMULATION:
             m_simulation_renderer = rend_ptr;
             break;
         case RENDER_PLANETARIUM:

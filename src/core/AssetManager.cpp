@@ -203,7 +203,7 @@ void AssetManager::updateObjectBuffer(std::vector<object_transform>& buffer_, co
         case RENDER_EDITOR:
             updateObjectBufferEditor(buffer_, btv_cam_origin);
             break;
-        case RENDER_UNIVERSE:
+        case RENDER_SIMULATION:
             updateObjectBufferUniverse(buffer_, btv_cam_origin);
             break;
         case RENDER_PLANETARIUM:
@@ -288,7 +288,7 @@ void AssetManager::updatePlanetBuffer(std::vector<planet_transform>& buffer_){
 void AssetManager::updateViewMat(struct render_buffer* rbuf) const{
     short render_state = m_app->getRenderState();
 
-    if(render_state & (RENDER_NOTHING | RENDER_EDITOR | RENDER_UNIVERSE)){
+    if(render_state & (RENDER_NOTHING | RENDER_EDITOR | RENDER_SIMULATION)){
         rbuf->view_mat =  m_camera->getCenteredViewMatrix();
     }
     else if(render_state & RENDER_PLANETARIUM){

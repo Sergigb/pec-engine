@@ -55,7 +55,7 @@ void App::init(){
     m_planetarium.reset(new GamePlanetarium(this, m_def_font_atlas.get()));
 
     m_renderer.reset(new SimulationRenderer(this));
-    m_render_context->setRenderer(m_renderer.get(), RENDER_UNIVERSE);
+    m_render_context->setRenderer(m_renderer.get(), RENDER_SIMULATION);
 }
 
 
@@ -84,7 +84,7 @@ void App::run(){
 
     m_physics->pauseSimulation(false);
     m_gui_mode = GUI_MODE_NONE;
-    m_render_state = RENDER_UNIVERSE;
+    m_render_state = RENDER_SIMULATION;
     m_player->setBehaviour(PLAYER_BEHAVIOUR_SIMULATION);
     m_camera->setCameraPosition(dmath::vec3(9300000.0, 0.0, 0.0));
     m_camera->setSpeed(630000.0f);
@@ -178,7 +178,7 @@ void App::processKeyboardInput(){
             m_player->setBehaviour(PLAYER_BEHAVIOUR_PLANETARIUM);
         }
         else{
-            m_render_state = RENDER_UNIVERSE;
+            m_render_state = RENDER_SIMULATION;
             m_gui_mode = GUI_MODE_NONE;
             m_player->setBehaviour(PLAYER_BEHAVIOUR_SIMULATION);
         }
