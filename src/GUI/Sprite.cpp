@@ -26,17 +26,17 @@ Sprite::Sprite(const RenderContext* render_context, const math::vec2& pos, short
 }
 
 Sprite::Sprite(const Sprite& sprite) : m_pos(sprite.m_pos){
-        m_vao = sprite.m_vao;
-        m_vbo_vert = sprite.m_vbo_vert;
-        m_vbo_tex = sprite.m_vbo_tex;
-        m_sprite = sprite.m_sprite;
-        m_disp_location = sprite.m_disp_location;
-        m_fb_width = sprite.m_fb_width;
-        m_fb_height = sprite.m_fb_height;
-        m_pos = sprite.m_pos;
-        m_positioning = sprite.m_positioning;
-        m_size = sprite.m_size;
-        m_render_context = sprite.m_render_context;
+    m_vao = sprite.m_vao;
+    m_vbo_vert = sprite.m_vbo_vert;
+    m_vbo_tex = sprite.m_vbo_tex;
+    m_sprite = sprite.m_sprite;
+    m_disp_location = sprite.m_disp_location;
+    m_fb_width = sprite.m_fb_width;
+    m_fb_height = sprite.m_fb_height;
+    m_pos = sprite.m_pos;
+    m_positioning = sprite.m_positioning;
+    m_size = sprite.m_size;
+    m_render_context = sprite.m_render_context;
 }
 
 

@@ -179,16 +179,16 @@ void RenderContext::loadShaders(){
 
 
 void RenderContext::initGl(){
-    log("Starting GLEW");
+    log("RenderContext::initGl: Starting GLEW");
     glewExperimental = GL_TRUE;
     glewInit();
 
     // get version info
     const GLubyte* renderer = glGetString(GL_RENDERER);
     const GLubyte* version = glGetString(GL_VERSION);
-    std::cout << "Renderer: " << renderer << std::endl;
-    std::cout << "OpenGL version supported: " << version << std::endl;
-    log("Renderer: ", renderer, ", using OpenGL version: ", version);
+    std::cout << "RenderContext::initGl: Renderer: " << renderer << std::endl;
+    std::cout << "RenderContext::initGl: OpenGL version supported: " << version << std::endl;
+    log("RenderContext::initGl: Renderer: ", renderer, ", using OpenGL version: ", version);
 
     // general gl setup
     glEnable(GL_MULTISAMPLE);
@@ -204,9 +204,9 @@ void RenderContext::initGl(){
     int samples;
     glGetIntegerv(GL_SAMPLES, &samples);
     if (samples)
-        log("MSAA is available with ", samples, " samples");
+        log("RenderContext::initGl: MSAA is available with ", samples, " samples");
     else
-        log("MSAA is unavailable");
+        log("RenderContext::initGl: MSAA is unavailable");
 
     check_gl_errors(true, "RenderContext::initGl");
 }
@@ -315,8 +315,8 @@ void RenderContext::render(){
     if(m_update_shaders){
         m_update_shaders = false;
         loadShaders();
-        log("RenderContext::render - shaders reloaded");
-        std::cout << "shaders reloaded" << std::endl;
+        log("RenderContext::render: shaders reloaded");
+        std::cout << "RenderContext::initGl: shaders reloaded" << std::endl;
     }
 
     if(m_update_projection){

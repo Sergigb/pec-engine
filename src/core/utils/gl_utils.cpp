@@ -16,7 +16,7 @@ void log_shader_info(GLuint shader_index){
     char message[LOG_GL_MAX_LENGTH];
     glGetShaderInfoLog(shader_index, LOG_GL_MAX_LENGTH, &actual_length, message);
     //std::cout << "Shader info log for shader with index " << shader_index << ": " << message << std::endl;
-    log("Shader info log for shader with index ", shader_index, ": ", message);
+    log("log_shader_info: Shader info log for shader with index ", shader_index, ": ", message);
 }
 
 
@@ -25,7 +25,8 @@ void log_programme_info(GLuint program_index){
     char message[LOG_GL_MAX_LENGTH];
     glGetProgramInfoLog(program_index, LOG_GL_MAX_LENGTH, &actual_length, message);
     //std::cout << "Program info log for program with index index " << program_index << ": " << message << std::endl;
-    log("Program info log for program with index index ", program_index, ": ", message);
+    log("log_programme_info: Program info log for program with index index ",
+        program_index, ": ", message);
 }
 
 
@@ -34,11 +35,12 @@ int log_validate_programme(GLuint program_index){
     glValidateProgram(program_index);
     glGetProgramiv(program_index, GL_VALIDATE_STATUS, &params);
     if(GL_TRUE != params){
-        log("Program ", program_index, " GL_VALIDATE_STATUS = GL_FALSE, check the log");
+        log("log_validate_programme: Program ", program_index, 
+            " GL_VALIDATE_STATUS = GL_FALSE, check the log");
         log_programme_info(program_index);
         return EXIT_FAILURE;
     }
-    log("Program ", program_index, " GL_VALIDATE_STATUS = GL_TRUE");
+    log("log_validate_programme: Program ", program_index, " GL_VALIDATE_STATUS = GL_TRUE");
     return EXIT_SUCCESS;
 }
 
@@ -48,7 +50,7 @@ int create_shader(const char* filename, GLuint &shader, GLenum type){
     const GLchar* p;
     int params = -1;
 
-    log("Creating shader from file ", filename);
+    log("create_shader: Creating shader from file ", filename);
 
     file_to_str(filename, shader_string);
     shader = glCreateShader(type);
@@ -59,12 +61,14 @@ int create_shader(const char* filename, GLuint &shader, GLenum type){
     // check for compile errors
     glGetShaderiv(shader, GL_COMPILE_STATUS, &params);
     if(params != GL_TRUE){
-        log("ERROR: GL shader index ", shader, " did not compile (file ", filename, ")");
-        std::cerr << "ERROR: GL shader index " << shader << " did not compile (file " << filename << ")" << std::endl;
+        log("create_shader: ERROR: GL shader index ", shader,
+            " did not compile (file ", filename, ")");
+        std::cerr << "create_shader: ERROR: GL shader index " << shader
+                  << " did not compile (file " << filename << ")" << std::endl;
         log_shader_info(shader);
         return EXIT_FAILURE;
     }
-    log("Shader with index ", shader, " compiled (file ", filename, ")");
+    log("create_shader: Shader with index ", shader, " compiled (file ", filename, ")");
     return EXIT_SUCCESS;
 }
 
@@ -73,15 +77,17 @@ int create_programme(GLuint vert, GLuint frag, GLuint &programme_index){
     GLint params = -1;
 
     programme_index = glCreateProgram();
-    log("Created programme ", programme_index, ", attaching shaders ", vert, " and ", frag);
+    log("create_programme: Created programme ", programme_index,
+        ", attaching shaders ", vert, " and ", frag);
     glAttachShader(programme_index, vert);
     glAttachShader(programme_index, frag);
     glLinkProgram(programme_index);
     
     glGetProgramiv(programme_index, GL_LINK_STATUS, &params);
     if(GL_TRUE != params){
-        log("ERROR: could not link shader programme GL index ", programme_index);
-        std::cerr << "ERROR: GL programme index " << programme_index << " did not compile" << std::endl;
+        log("create_programme: ERROR: could not link shader programme GL index ", programme_index);
+        std::cerr << "create_programme: ERROR: GL programme index " << programme_index
+                  << " did not compile" << std::endl;
         log_programme_info(programme_index);
         return EXIT_FAILURE;
     }
@@ -114,8 +120,9 @@ int load_scene(const std::string pFile, GLuint& vao, int& point_count, float& cs
     const aiScene* scene = importer.ReadFile(pFile, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices); // check for more flags
 
     if(!scene){
-        log("Could not open file ", pFile, " (", importer.GetErrorString(), ")");
-        std::cerr << "Could not open file " << pFile << " (" << importer.GetErrorString() << ")" << std::endl;
+        log("load_scene: Could not open file ", pFile, " (", importer.GetErrorString(), ")");
+        std::cerr << "load_scene: Could not open file " << pFile << " (" 
+                  << importer.GetErrorString() << ")" << std::endl;
         return EXIT_FAILURE;
     }
 

@@ -202,8 +202,8 @@ void print_tree_member(BasePart *node, std::string tail, bool last_child){
 
 void Vessel::printVessel() const{
     if(m_vessel_root == nullptr){
-        std::cerr << "Ship::printTree - ship has no part tree" << std::endl;
-        log("Ship::printTree - ship has no part tree");
+        std::cerr << "Vessel::printTree - ship has no part tree" << std::endl;
+        log("Vessel::printTree - ship has no part tree");
         return;
     }
     std::string tail = "";

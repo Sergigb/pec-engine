@@ -316,10 +316,10 @@ void GameEditor::placeClonedSubtreesOnClones(BasePart* closest, btTransform& tra
     btTransform closest_transform;
 
     if(m_asset_manager->m_symmetry_subtrees.size() != clone_to.size()){
-        std::cerr << "The number of symmetric subtrees (" << m_asset_manager->m_symmetry_subtrees.size()
+        std::cerr << "GameEditor::placeClonedSubtreesOnClones: The number of symmetric subtrees (" << m_asset_manager->m_symmetry_subtrees.size()
                   << ") does not match the number of parts to clone to (" << clone_to.size() << ")" << std::endl;
 
-        log("App::placeClonedSubtreesOnClones: The number of symmetric subtrees (", m_asset_manager->m_symmetry_subtrees.size(),
+        log("GameEditor::placeClonedSubtreesOnClones: The number of symmetric subtrees (", m_asset_manager->m_symmetry_subtrees.size(),
             ") does not match the number of parts to clone to (", clone_to.size(), ")");
         return;
     }

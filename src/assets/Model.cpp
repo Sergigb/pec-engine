@@ -80,8 +80,8 @@ int Model::loadScene(const std::string& pFile){
     const aiScene* scene = importer.ReadFile(pFile, aiProcess_Triangulate | aiProcess_JoinIdenticalVertices); // check for more flags
 
     if(!scene){
-        log("Could not open file ", pFile, " (", importer.GetErrorString(), ")");
-        std::cerr << "Could not open file " << pFile << " (" << importer.GetErrorString() << ")" << std::endl;
+        log("Model::loadScene: Could not open file ", pFile, " (", importer.GetErrorString(), ")");
+        std::cerr << "Model::loadScene: Could not open file " << pFile << " (" << importer.GetErrorString() << ")" << std::endl;
         return EXIT_FAILURE;
     }
 

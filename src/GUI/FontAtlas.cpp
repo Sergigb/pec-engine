@@ -11,8 +11,9 @@
 
 FontAtlas::FontAtlas(){
     if (FT_Init_FreeType(&ft)){
-        std::cerr << "Freetype error: could not initialize the FreeType" << std::endl;
-        log("Freetype error: could not initialize the FreeType");
+        std::cerr << "FontAtlas::FontAtlas: Freetype error: could not initialize the FreeType" 
+                  << std::endl;
+        log("FontAtlas::FontAtlas:Freetype error: could not initialize the FreeType");
     }
     m_atlas_size = 512;
     m_atlas.reset(nullptr);
@@ -21,8 +22,9 @@ FontAtlas::FontAtlas(){
 
 FontAtlas::FontAtlas(uint atlas_size){
     if (FT_Init_FreeType(&ft)){
-        std::cerr << "Freetype error: could not initialize FreeType" << std::endl;
-        log("Freetype error: could not initialize FreeType");
+        std::cerr << "FontAtlas::FontAtlas:Freetype error: could not initialize FreeType" 
+                  << std::endl;
+        log("FontAtlas::FontAtlas:Freetype error: could not initialize FreeType");
     }
     m_atlas_size = atlas_size;
     m_atlas.reset(nullptr);
@@ -37,8 +39,9 @@ FontAtlas::~FontAtlas(){
 
 int FontAtlas::loadFont(const char* path, int size){
     if (FT_New_Face(ft, path, 0, &face)){
-        std::cout << "Freetype error: failed to load font " << path << std::endl;
-        log("Freetype error: failed to load font ", path);
+        std::cout << "FontAtlas::loadFont: Freetype error: failed to load font " << path
+                  << std::endl;
+        log("FontAtlas::loadFont: Freetype error: failed to load font ", path);
         return EXIT_FAILURE;
     }
     FT_Set_Pixel_Sizes(face, 0, size);
@@ -120,8 +123,10 @@ void FontAtlas::createAtlas(bool save_png){ // check error codes
             max_heigth_row = m_characters_vec[i].height;
             pen_x = 0; // should this be one?
             if(pen_y + max_heigth_row + 2 > m_atlas_size){
-                std::cerr << "Font atlas: no space left (" << m_characters_vec.size() - i << " characters left)" << std::endl;
-                log("Font atlas: no space left (", m_characters_vec.size() - i, " characters left)");
+                std::cerr << "FontAtlas::createAtlas: Font atlas: no space left ("
+                          << m_characters_vec.size() - i << " characters left)" << std::endl;
+                log("FontAtlas::createAtlas: Font atlas: no space left (",
+                    m_characters_vec.size() - i, " characters left)");
                 break;
             } // if there's no space left for the next row we quit. naive, but ill work for now        
         }

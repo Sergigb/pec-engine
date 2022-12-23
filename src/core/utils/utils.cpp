@@ -19,12 +19,13 @@ int change_cwd_to_selfpath(){
         buff[i] = '\0';
     }
     else{
-        std::cerr << "Could not retrieve path to executable (errno " << errno << ")" << std::endl;
+        std::cerr << "change_cwd_to_selfpath: Could not retrieve path to executable (errno "
+                  << errno << ")" << std::endl;
         return EXIT_FAILURE;
     }
     if(chdir(buff) != 0){
-        std::cerr << "Could not change the cwd to executable path (errno " << errno << "). Path: "  \
-                  << buff << std::endl;
+        std::cerr << "change_cwd_to_selfpath: Could not change the cwd to executable path (errno "
+                  << errno << "). Path: " << buff << std::endl;
         return EXIT_FAILURE;
     }
 
@@ -44,8 +45,9 @@ int file_to_str(const std::string& filename, std::string& content){
         content = buffer.str();
     }
     catch(std::ifstream::failure &e){
-        std::cerr << "Exception opening/reading/closing file" << filename << "(" << e.what() << ")" << "\n";
-        log("Exception opening/reading/closing file ", filename, " (", e.what(), ")");
+        std::cerr << "file_to_str: Exception opening/reading/closing file" << filename 
+                  << "(" << e.what() << ")" << "\n";
+        log("file_to_str: Exception opening/reading/closing file ", filename, " (", e.what(), ")");
         return EXIT_FAILURE;
     }
 
@@ -65,8 +67,9 @@ int file_to_str(const char* filename, std::string& content){
         content = buffer.str();
     }
     catch(std::ifstream::failure &e){
-        std::cerr << "Exception opening/reading/closing file " << filename << " (" << e.what() << ")" << "\n";
-        log("Exception opening/reading/closing file ", filename, " (", e.what(), ")");
+        std::cerr << "file_to_str: Exception opening/reading/closing file " << filename << " (" 
+                  << e.what() << ")" << "\n";
+        log("file_to_str: Exception opening/reading/closing file ", filename, " (", e.what(), ")");
         return EXIT_FAILURE;
     }
 

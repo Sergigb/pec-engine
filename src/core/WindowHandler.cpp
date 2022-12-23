@@ -37,18 +37,20 @@ void WindowHandler::setRenderContext(RenderContext* render_context){
 
 
 void glfw_error_callback(int error, const char* description){
-    std::cout << "GLFW error " << error << "(" << description << ")" << std::endl;
-    log("GLFW error number ", error, " (", description, ")");
+    std::cout << "glfw_error_callback: GLFW error " << error << "(" 
+              << description << ")" << std::endl;
+    log("glfw_error_callback: GLFW error number ", error, " (", description, ")");
 }
 
 
 void WindowHandler::initGlfw(){
-    log("Starting GLFW ", glfwGetVersionString());
+    log("WindowHandler::initGlfw: Starting GLFW ", glfwGetVersionString());
 
     glfwSetErrorCallback(glfw_error_callback);
     if(!glfwInit()){
-        std::cerr << "ERROR: could not start GLFW3, check the log" << std::endl;
-        log("ERROR: could not start GLFW3");
+        std::cerr << "WindowHandler::initGlfw: could not start GLFW3, check the log" 
+                  << std::endl;
+        log("WindowHandler::initGlfw: could not start GLFW3");
     }
 
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -66,8 +68,9 @@ void WindowHandler::initGlfw(){
 
     m_window = glfwCreateWindow(m_gl_width, m_gl_height, "pec-engine", NULL, NULL);
     if(!m_window){
-        std::cerr << "ERROR: could not open window with GLFW3, check the log" << std::endl;
-        log("ERROR: could not open window with GLFW3");
+        std::cerr << "WindowHandler::initGlfw: could not open window with GLFW3, check the log"
+                  << std::endl;
+        log("WindowHandler::initGlfw: could not open window with GLFW3");
         glfwTerminate();
     }
 
@@ -90,7 +93,8 @@ void WindowHandler::handleKeyboardInput(int key, int scancode, int action, int m
 void WindowHandler::handleFramebufferSizeUpdate(int width, int height){
     m_gl_width = width;
     m_gl_height = height;
-    log("Screen resolution set to ", width, 'x', height);
+    log("WindowHandler::handleFramebufferSizeUpdate: screen resolution set to ",
+        width, 'x', height);
     m_render_context->onFramebufferSizeUpdate(m_gl_width, m_gl_height);
     m_camera->onFramebufferSizeUpdate(m_gl_width, m_gl_height);
 }
@@ -167,8 +171,8 @@ void WindowHandler::glfwScrollCallback(GLFWwindow* window, double xoffset, doubl
 
 
 void WindowHandler::terminate(){
-    log("Terminating GLFW and exiting");
-    std::cout << "Terminating GLFW and exiting" << std::endl;
+    log("WindowHandler::terminate: terminating GLFW and exiting");
+    std::cout << "WindowHandler::terminate: terminating GLFW and exiting" << std::endl;
     glfwTerminate();
 }
 
