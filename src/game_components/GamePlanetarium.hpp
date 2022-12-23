@@ -12,6 +12,7 @@ class Input;
 class AssetManager;
 class Camera;
 class PlanetariumRenderer;
+class RenderContext;
 
 
 #define PLANETARIUM_SCALE_FACTOR 1e10
@@ -31,6 +32,7 @@ class GamePlanetarium{
         const Input* m_input;
         const AssetManager* m_asset_manager;
         Camera* m_camera;
+        RenderContext* m_render_context;
 
         void updateInput();
         void updateCamera();

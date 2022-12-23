@@ -25,7 +25,7 @@ BASEOBJS := $(foreach source, $(BASESRCS), $(OBJPATH)/$(source:.cpp=.o))
 DEPENDS_BASE = ${BASEOBJS:.o=.d}
 
 #main game objects
-MAIN_APP_SCRS := main.cpp App.cpp game_components/GameEditor.cpp game_components/GamePlanetarium.cpp
+MAIN_APP_SCRS := main.cpp App.cpp game_components/GameEditor.cpp game_components/GamePlanetarium.cpp game_components/GameSimulation.cpp
 MAIN_APP_OBJS := $(foreach source, $(MAIN_APP_SCRS), $(OBJPATH)/$(source:.cpp=.o))
 
 #planet renderer objects

@@ -7,6 +7,7 @@
 #include "../core/AssetManager.hpp"
 #include "../core/Camera.hpp"
 #include "../core/Input.hpp"
+#include "../core/RenderContext.hpp"
 #include "../assets/PlanetarySystem.hpp"
 #include "../GUI/planetarium/PlanetariumGUI.hpp"
 #include "../renderers/PlanetariumRenderer.hpp"
@@ -26,13 +27,14 @@ GamePlanetarium::GamePlanetarium(BaseApp* app, const FontAtlas* font_atlas){
     m_input = m_app->getInput();
     m_asset_manager = m_app->getAssetManager();
     m_camera = m_app->getCamera();
+    m_render_context = m_app->getRenderContext();
 
     m_gui.reset(new PlanetariumGUI(font_atlas, m_app));
-    m_app->getRenderContext()->setGUI(m_gui.get(), GUI_MODE_PLANETARIUM);
+    m_render_context->setGUI(m_gui.get(), GUI_MODE_PLANETARIUM);
     m_gui->setSelectedPlanet(0);
 
     m_renderer.reset(new PlanetariumRenderer(m_app));
-    m_app->getRenderContext()->setRenderer(m_renderer.get(), RENDER_PLANETARIUM);
+    m_render_context->setRenderer(m_renderer.get(), RENDER_PLANETARIUM);
 
     // ordered planet vector init
     const planet_map& planets = m_asset_manager->m_planetary_system.get()->getPlanets();
@@ -64,6 +66,12 @@ void GamePlanetarium::updateInput(){
 
     if(m_input->pressed_keys[GLFW_KEY_TAB] & INPUT_KEY_DOWN && !m_freecam){
         switchPlanet();
+    }
+
+    double scx, scy;
+    m_input->getScroll(scx, scy);
+    if((scy) && !m_render_context->imGuiWantCaptureMouse()){
+        m_camera->incrementOrbitalCamDistance(-scy * 5.0); // we should check the camera mode
     }
 }
 
