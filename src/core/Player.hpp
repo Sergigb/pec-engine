@@ -43,10 +43,8 @@ class Player{
         struct camera_params m_editor_cam_params;
 
         void togglePlanetariumFreecam();
-        void unsetVessel();
         void setPlayerTarget();
         void switchVessel();
-        void setCamAxisRotation();
     public:
         Player(Camera* camera, AssetManager* asset_manager, const Input* input);
         ~Player();
@@ -55,11 +53,6 @@ class Player{
          * Update method for the editor.
          */
         void updateEditor();
-
-        /*
-         * Update method for the simulation (main game).
-         */
-        void updateSimulation();
 
         /*
          * This method should only be called by the player controlled vessel in case it gets
@@ -95,6 +88,16 @@ class Player{
          * Returns the ID of the selected planet in the planetarium.
          */
         std::uint32_t getPlanetariumSelectedPlanet() const;
+
+        /*
+         * Unsets the player vessel and notifies the controlled vessel.
+         */
+        void unsetVessel();
+
+        /*
+         * Sets the player controlled vessel and notifies the vessel.
+         */
+        void setVessel(Vessel* vessel);
 };
 
 

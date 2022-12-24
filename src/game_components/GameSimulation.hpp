@@ -41,12 +41,15 @@ class GameSimulation{
         void onRightMouseButton();
         void editorToSimulation();
         void initLaunchBase();
+        void setPlayerTarget();
+        void switchVessel();
     public:
         GameSimulation(BaseApp* app, const FontAtlas* font_atlas);
         ~GameSimulation();
 
         void onStateChange();
         void update();
+        void updateCamera();
 };
 
 

@@ -102,6 +102,13 @@ void App::run(){
             m_thread_monitor.cv_start.notify_all();
         }
 
+        if(m_player->getBehaviour() & PLAYER_BEHAVIOUR_SIMULATION){
+            m_simulation->update();
+        }
+        else{
+            m_planetarium->update();
+        }
+        processInput();
         m_asset_manager->updateVessels();
 
         m_render_context->setDebugOverlayTimes(m_physics->getAverageLoadTime(), average_load, average_sleep);
@@ -127,15 +134,7 @@ void App::run(){
         }
 
         m_asset_manager->updateCoMs();
-
-        if(m_player->getBehaviour() & PLAYER_BEHAVIOUR_SIMULATION){
-            m_player->updateSimulation();
-            m_simulation->update();
-        }
-        else{
-            m_planetarium->update();
-        }
-        processInput();
+        m_simulation->updateCamera();
         m_asset_manager->updateBuffers();
 
         loop_end_load = std::chrono::steady_clock::now();

@@ -1,6 +1,8 @@
 #include <memory>
+#include <iostream>
 
 #include "GameSimulation.hpp"
+#include "../core/log.hpp"
 #include "../core/common.hpp"
 #include "../core/BaseApp.hpp"
 #include "../core/RenderContext.hpp"
@@ -19,6 +21,9 @@
 #include "../assets/Model.hpp"
 #include "../assets/PlanetarySystem.hpp"
 #include "../renderers/SimulationRenderer.hpp"
+
+
+typedef VesselMap::iterator VesselIterator;
 
 
 GameSimulation::GameSimulation(BaseApp* app, const FontAtlas* font_atlas){
@@ -45,6 +50,50 @@ void GameSimulation::update(){
     processInput();
 }
 
+void GameSimulation::updateCamera(){
+    const Vessel* vessel = m_player->getVessel();
+    if(!vessel){
+        m_camera->freeCameraUpdate();
+    }
+    else if(vessel){ // sanity check for vessel
+        const btVector3& com = vessel->getCoM();
+        m_camera->setCameraPosition(dmath::vec3(com.getX(), com.getY(), com.getZ()));
+        // setCamAxisRotation(); // inherited from Player, should set the up vector of the camera
+                                 // and change its inclination. It is not implemented 
+        m_camera->orbitalCameraUpdate();
+    }
+}
+
+void GameSimulation::switchVessel(){
+    VesselIterator it = m_asset_manager->m_active_vessels.find(m_player->getVessel()->getId());
+
+    if(it == m_asset_manager->m_active_vessels.end()){
+        std::cerr << "GameSimulation::switchVessel: can't iterate to the next vessel because the "
+                     "current vessel's id can't be found in m_active_vessels" << std::endl;
+        log("GameSimulation::switchVessel: can't iterate to the next vessel because the " \
+            "current vessel's id can't be found in m_active_vessels");
+        return;
+    }
+    it++;
+    if(it != m_asset_manager->m_active_vessels.end()){
+        m_player->setVessel(it->second.get());
+    }
+    else{
+        it = m_asset_manager->m_active_vessels.begin();
+        m_player->setVessel(it->second.get());
+    }
+}
+
+
+void GameSimulation::setPlayerTarget(){
+    if(m_player->getVessel())
+        m_player->unsetVessel();
+    else if(m_asset_manager->m_active_vessels.size()){
+        VesselIterator it = m_asset_manager->m_active_vessels.begin();
+        m_player->setVessel(it->second.get()); // in the future we should pick the closest
+    }
+}
+
 
 void GameSimulation::processKeyboardInput(){
     if(m_render_context->imGuiWantCaptureKeyboard()){
@@ -62,6 +111,15 @@ void GameSimulation::processKeyboardInput(){
         if(m_player->getVessel()){
             m_player->getVessel()->printStaging();
         }
+    }
+
+    if((m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)) 
+       && (m_input->pressed_keys[GLFW_KEY_C] & INPUT_KEY_DOWN)){
+        setPlayerTarget();
+    }
+
+    if(m_input->pressed_keys[GLFW_KEY_TAB] & INPUT_KEY_DOWN && m_player->getVessel()){
+        switchVessel();
     }
 }
 

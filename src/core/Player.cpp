@@ -17,8 +17,6 @@
 #include "../assets/PlanetarySystem.hpp"
 
 
-typedef VesselMap::iterator VesselIterator;
-
 
 Player::Player(Camera* camera, AssetManager* asset_manager, const Input* input){
     m_camera = camera;
@@ -48,7 +46,7 @@ void Player::updateEditor(){
     else{
         const btVector3& com = m_vessel->getCoM();
         m_camera->setCameraPosition(dmath::vec3(com.getX(), com.getY(), com.getZ()));
-        setCamAxisRotation();
+        //setCamAxisRotation();
         m_camera->orbitalCameraUpdate();
     }
 
@@ -60,61 +58,16 @@ void Player::updateEditor(){
 }
 
 
-void Player::updateSimulation(){
-    // camera
-    if(m_behaviour & PLAYER_BEHAVIOUR_NONE || !m_vessel){
-        m_camera->freeCameraUpdate();
-    }
-    else if(m_vessel){ // sanity check for vessel
-        const btVector3& com = m_vessel->getCoM();
-        m_camera->setCameraPosition(dmath::vec3(com.getX(), com.getY(), com.getZ()));
-        setCamAxisRotation();
-        m_camera->orbitalCameraUpdate();
-    }
-
-    // input
-    if((m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)) 
-       && (m_input->pressed_keys[GLFW_KEY_C] & INPUT_KEY_DOWN)){
-        setPlayerTarget();
-    }
-    else if(m_input->pressed_keys[GLFW_KEY_C] & INPUT_KEY_DOWN){
-        m_orbital_cam_mode = m_orbital_cam_mode == ORBITAL_CAM_MODE_ORBIT ? 
-                             ORBITAL_CAM_MODE_SURFACE : ORBITAL_CAM_MODE_ORBIT;
-    }
-
-    if(m_input->pressed_keys[GLFW_KEY_TAB] & INPUT_KEY_DOWN){
-        switchVessel();
-    }
-}
-
-
-void Player::setCamAxisRotation(){
-    if(m_orbital_cam_mode == ORBITAL_CAM_MODE_ORBIT){
-        m_camera->setOrbitalInclination(0.0, dmath::vec3(0.0, 0.0, 0.0));
-    }
-    else{
-        btVector3 com = m_vessel->getCoM();
-        dmath::vec3 com_d(com.getX(), com.getY(), com.getZ()), planet_normal, axis, up = dmath::vec3(0.0, 1.0, 0.0);
-
-        // In the future, the asset manager (or someone else) should return the center of the planet
-        // that the vessel is currently inside of (inside the SOI), it should also be an interface to access
-        // general information about the system and the planets (such as atmospheres). For now we
-        // assume that the 0.0, 0.0, 0.0 is the center of the current planet, the earth
-        dmath::vec3 planet_center(0.0, 0.0, 0.0);
-
-        planet_normal = dmath::normalise(planet_center - com_d);
-        double theta = acos(dmath::dot(planet_normal, up) / dmath::length(planet_normal));
-        axis = dmath::normalise(dmath::cross(planet_normal, up)); // right vector
-
-        m_camera->setOrbitalInclination(theta, axis);
-    }
-}
-
-
 void Player::unsetVessel(){
     m_vessel->setPlayer(nullptr);
     m_vessel = nullptr;
     m_camera->restoreCamOrientation();
+}
+
+
+void Player::setVessel(Vessel* vessel){
+    m_vessel = vessel;
+    m_vessel->setPlayer(this);
 }
 
 
@@ -127,36 +80,6 @@ void Player::setPlayerTarget(){
             m_vessel = m_asset_manager->m_editor_vessel.get();
             m_vessel->setPlayer(this);
         }
-    }
-    else if(m_behaviour & PLAYER_BEHAVIOUR_SIMULATION){
-        if(m_vessel)
-            unsetVessel();
-        else if(m_asset_manager->m_active_vessels.size()){
-            VesselIterator it = m_asset_manager->m_active_vessels.begin();
-            m_vessel = it->second.get(); // in the future we should pick the closest
-            m_vessel->setPlayer(this);
-        }
-    }
-}
-
-
-void Player::switchVessel(){
-    VesselIterator it = m_asset_manager->m_active_vessels.find(m_vessel->getId());
-
-    if(it == m_asset_manager->m_active_vessels.end()){
-        std::cerr << "Player::switchVessel: can't iterate to the next vessel because the current vessel's \
-                      id can't be found in m_active_vessels" << std::endl;
-        log("Player::switchVessel: can't iterate to the next vessel because the current vessel's \
-                      id can't be found in m_active_vessels");
-        return;
-    }
-    it++;
-    if(it != m_asset_manager->m_active_vessels.end()){
-        m_vessel = it->second.get();
-    }
-    else{
-        it = m_asset_manager->m_active_vessels.begin();
-        m_vessel = it->second.get();
     }
 }
 
