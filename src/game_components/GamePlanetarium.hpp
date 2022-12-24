@@ -35,13 +35,13 @@ class GamePlanetarium{
         RenderContext* m_render_context;
 
         void updateInput();
-        void updateCamera();
         void switchPlanet();
     public:
         GamePlanetarium(BaseApp* app, const FontAtlas* font_atlas);
         ~GamePlanetarium();
 
         void update();
+        void updateCamera();
 
         const PlanetariumGUI* getPlanetariumGUI() const;
 };

@@ -62,23 +62,23 @@ void App::init(){
 App::~App(){
 }
 
+void App::wakePhysics(){
+    std::unique_lock<std::mutex> lck2(m_thread_monitor.mtx_start);
+    m_thread_monitor.worker_start = true;
+    m_thread_monitor.cv_start.notify_all();
+}
 
-void App::run(){
-    m_physics->startSimulation(10);
-    m_render_context->start();
 
-    m_editor->start();
+void App::waitPhysics(){
+    std::unique_lock<std::mutex> lck(m_thread_monitor.mtx_end);
+    while(!m_thread_monitor.worker_ended){
+        m_thread_monitor.cv_end.wait(lck);
+    }
+    m_thread_monitor.worker_ended = false;
+}
 
-    m_simulation->onStateChange();
 
-    /* Simple version of the simulator */
-
-    std::chrono::steady_clock::time_point loop_start_load;
-    std::chrono::steady_clock::time_point previous_loop_start_load = std::chrono::steady_clock::now();;
-    std::chrono::steady_clock::time_point loop_end_load;
-    double delta_t = (1. / 60.) * 1000000., accumulated_load = 0.0, accumulated_sleep = 0.0, average_load = 0.0, average_sleep = 0.0;
-    int ticks_since_last_update = 0;
-
+void App::setUpSimulation(){
     m_physics->pauseSimulation(false);
     m_gui_mode = GUI_MODE_NONE;
     m_render_state = RENDER_SIMULATION;
@@ -86,30 +86,68 @@ void App::run(){
     m_camera->setCameraPosition(dmath::vec3(9300000.0, 0.0, 0.0));
     m_camera->setSpeed(630000.0f);
     m_render_context->setLightPosition(math::vec3(63000000000.0, 0.0, 0.0));
+}
+
+
+void App::logic(){
+    if(m_player->getBehaviour() & PLAYER_BEHAVIOUR_SIMULATION)
+        m_simulation->update();
+    else
+        m_planetarium->update();
+    processInput();
+    m_asset_manager->updateVessels();
+}
+
+
+void App::terminate(){
+    m_window_handler->setWindowShouldClose();
+    m_asset_manager->cleanup();
+    m_physics->stopSimulation();
+    m_render_context->stop();
+    m_window_handler->terminate();
+}
+
+
+void App::synchPreStep(){
+    m_asset_manager->processCommandBuffers(false);
+    m_input->update();
+    m_window_handler->update();
+    m_frustum->extractPlanes(m_camera->getCenteredViewMatrix(), m_camera->getProjMatrix(), false);
+}
+
+
+void App::synchPostStep(){
+    m_asset_manager->updateCoMs();
+    // camera updates need synch calls
+    if(m_player->getBehaviour() & PLAYER_BEHAVIOUR_SIMULATION)
+        m_planetarium->updateCamera();
+    else
+        m_simulation->updateCamera();
+    m_asset_manager->updateBuffers();
+}
+
+
+void App::run(){
+    m_physics->startSimulation(10);
+    m_render_context->start();
+
+    m_editor->start();
+    m_simulation->onStateChange();
+
+    std::chrono::steady_clock::time_point loop_start_load;
+    std::chrono::steady_clock::time_point previous_loop_start_load = std::chrono::steady_clock::now();;
+    std::chrono::steady_clock::time_point loop_end_load;
+    double delta_t = (1. / 60.) * 1000000., accumulated_load = 0.0, accumulated_sleep = 0.0, average_load = 0.0, average_sleep = 0.0;
+    int ticks_since_last_update = 0;
+
+    setUpSimulation();
 
     while(!m_quit){
         loop_start_load = std::chrono::steady_clock::now();
 
-        m_asset_manager->processCommandBuffers(false);
-
-        m_input->update();
-        m_window_handler->update();
-        m_frustum->extractPlanes(m_camera->getCenteredViewMatrix(), m_camera->getProjMatrix(), false);
-
-        {  //wake up physics thread
-            std::unique_lock<std::mutex> lck2(m_thread_monitor.mtx_start);
-            m_thread_monitor.worker_start = true;
-            m_thread_monitor.cv_start.notify_all();
-        }
-
-        if(m_player->getBehaviour() & PLAYER_BEHAVIOUR_SIMULATION){
-            m_simulation->update();
-        }
-        else{
-            m_planetarium->update();
-        }
-        processInput();
-        m_asset_manager->updateVessels();
+        synchPreStep();
+        wakePhysics();
+        logic();
 
         m_render_context->setDebugOverlayTimes(m_physics->getAverageLoadTime(), average_load, average_sleep);
         
@@ -125,17 +163,8 @@ void App::run(){
         }
         ticks_since_last_update++;
 
-        { // wait for physics thread
-            std::unique_lock<std::mutex> lck(m_thread_monitor.mtx_end);
-            while(!m_thread_monitor.worker_ended){
-                m_thread_monitor.cv_end.wait(lck);
-            }
-            m_thread_monitor.worker_ended = false;
-        }
-
-        m_asset_manager->updateCoMs();
-        m_simulation->updateCamera();
-        m_asset_manager->updateBuffers();
+        waitPhysics();
+        synchPostStep();
 
         loop_end_load = std::chrono::steady_clock::now();
         std::chrono::duration<double, std::micro> load_time = loop_end_load - loop_start_load;
@@ -148,12 +177,7 @@ void App::run(){
         }
     }
 
-    m_window_handler->setWindowShouldClose();
-
-    m_asset_manager->cleanup();
-    m_physics->stopSimulation();
-    m_render_context->stop();
-    m_window_handler->terminate();
+    terminate();
 }
 
 
