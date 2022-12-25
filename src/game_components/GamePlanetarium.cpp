@@ -106,7 +106,6 @@ void GamePlanetarium::switchPlanet(){
 
 
 void GamePlanetarium::update(){
-    updateCamera();
     updateInput();
 
     m_app->getPlayer()->setSelectedPlanet(m_selected_planet);

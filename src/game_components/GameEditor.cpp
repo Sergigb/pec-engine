@@ -72,7 +72,7 @@ void GameEditor::start(){
     std::chrono::steady_clock::time_point loop_start_load;
     std::chrono::steady_clock::time_point previous_loop_start_load = std::chrono::steady_clock::now();;
     std::chrono::steady_clock::time_point loop_end_load;
-    double delta_t = (1. / 60.) * 1000000., accumulated_load = 0.0, accumulated_sleep = 0.0, average_load = 0.0, average_sleep = 0.0;
+    double delta_t = (1. / 60.) * 1000000., accumulated_load = 0.0, accumulated_sleep = 0.0; //, average_load = 0.0, average_sleep = 0.0;
     int ticks_since_last_update = 0;
 
     m_app->setGUIMode(GUI_MODE_EDITOR);
@@ -114,17 +114,17 @@ void GameEditor::start(){
 
         logic();
 
-        m_render_context->setDebugOverlayTimes(m_physics->getAverageLoadTime(), average_load, average_sleep);
+        //m_render_context->setDebugOverlayTimes(m_physics->getAverageLoadTime(), average_load, average_sleep);
         
         m_elapsed_time += loop_start_load - previous_loop_start_load;
         previous_loop_start_load = loop_start_load;
         
         if(ticks_since_last_update == 60){
             ticks_since_last_update = 0;
-            average_load = accumulated_load / 60000.0;
-            average_sleep = accumulated_sleep / 60000.0;
-            accumulated_load = 0;
-            accumulated_sleep = 0;
+            //average_load = accumulated_load / 60000.0;
+            //average_sleep = accumulated_sleep / 60000.0;
+            //accumulated_load = 0;
+            //accumulated_sleep = 0;
             /*std::cout << std::setfill('0') << std::setw(2) << int(m_elapsed_time.count() / 1e12) / 60*60 << ":" 
                       << std::setfill('0') << std::setw(2) << (int(m_elapsed_time.count() / 1e6) / 60) % 60 << ":" 
                       << std::setfill('0') << std::setw(2) << int(m_elapsed_time.count() / 1e6) % 60 << std::endl;*/

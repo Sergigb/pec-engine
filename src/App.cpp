@@ -2,6 +2,7 @@
 
 #include "App.hpp"
 #include "GUI/FontAtlas.hpp"
+#include "GUI/DebugOverlay.hpp"
 #include "core/RenderContext.hpp"
 #include "core/AssetManager.hpp"
 #include "game_components/GameEditor.hpp"
@@ -14,13 +15,7 @@
 #include "core/Frustum.hpp"
 #include "core/Player.hpp"
 #include "core/log.hpp"
-#include "assets/Planet.hpp"
-#include "assets/BasePart.hpp"
-#include "assets/Vessel.hpp"
-#include "assets/Model.hpp"
-#include "assets/Kinematic.hpp"
-#include "assets/utils/planet_utils.hpp"
-#include "assets/PlanetarySystem.hpp"
+#include "core/timing.hpp"
 #include "renderers/SimulationRenderer.hpp"
 
 
@@ -120,27 +115,26 @@ void App::synchPostStep(){
     m_asset_manager->updateCoMs();
     // camera updates need synch calls
     if(m_player->getBehaviour() & PLAYER_BEHAVIOUR_SIMULATION)
-        m_planetarium->updateCamera();
-    else
         m_simulation->updateCamera();
+    else
+        m_planetarium->updateCamera();
     m_asset_manager->updateBuffers();
 }
 
 
 void App::run(){
+    std::chrono::steady_clock::time_point loop_start_load, previous_loop_start_load, loop_end_load;
+    double delta_t = (1. / 60.) * 1000000.;
+    logic_timing timing;
+
     m_physics->startSimulation(10);
     m_render_context->start();
 
     m_editor->start();
     m_simulation->onStateChange();
 
-    std::chrono::steady_clock::time_point loop_start_load;
-    std::chrono::steady_clock::time_point previous_loop_start_load = std::chrono::steady_clock::now();;
-    std::chrono::steady_clock::time_point loop_end_load;
-    double delta_t = (1. / 60.) * 1000000., accumulated_load = 0.0, accumulated_sleep = 0.0, average_load = 0.0, average_sleep = 0.0;
-    int ticks_since_last_update = 0;
-
     setUpSimulation();
+    previous_loop_start_load = std::chrono::steady_clock::now();
 
     while(!m_quit){
         loop_start_load = std::chrono::steady_clock::now();
@@ -149,27 +143,18 @@ void App::run(){
         wakePhysics();
         logic();
 
-        m_render_context->setDebugOverlayTimes(m_physics->getAverageLoadTime(), average_load, average_sleep);
+        //m_render_context->setDebugOverlayTimes(m_physics->getAverageLoadTime(), average_load, average_sleep);
+        m_render_context->getDebugOverlay()->setLogicTimes(timing);
         
         m_elapsed_time += loop_start_load - previous_loop_start_load;
         previous_loop_start_load = loop_start_load;
-        
-        if(ticks_since_last_update == 60){
-            ticks_since_last_update = 0;
-            average_load = accumulated_load / 60000.0;
-            average_sleep = accumulated_sleep / 60000.0;
-            accumulated_load = 0;
-            accumulated_sleep = 0;
-        }
-        ticks_since_last_update++;
 
         waitPhysics();
         synchPostStep();
 
         loop_end_load = std::chrono::steady_clock::now();
         std::chrono::duration<double, std::micro> load_time = loop_end_load - loop_start_load;
-        accumulated_load += load_time.count();
-        accumulated_sleep += delta_t - load_time.count();
+        timing.update(load_time.count(), delta_t - load_time.count());
 
         if(load_time.count() < delta_t){
             std::chrono::duration<double, std::micro> delta_ms(delta_t - load_time.count());

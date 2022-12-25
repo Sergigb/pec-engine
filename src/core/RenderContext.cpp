@@ -441,8 +441,8 @@ void RenderContext::setLightPositionRender(){
 }
 
 
-void RenderContext::setDebugOverlayTimes(double physics_load_time, double logic_load_time, double logic_sleep_time){
-    m_debug_overlay->setTimes(physics_load_time, logic_load_time, logic_sleep_time);
+DebugOverlay* RenderContext::getDebugOverlay(){
+    return m_debug_overlay.get();
 }
 
 

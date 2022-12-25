@@ -208,13 +208,9 @@ class RenderContext{
         void setLightPosition(const math::vec3& pos);
 
         /*
-         * Sets the average times for the debug overlay. The times are in milliseconds.
-         *
-         * physics_load_time: average load time of the physics.
-         * logic_load_time: average load time of the logic.
-         * logic_sleep_time: average sleep time of the logic.
+         * Returns a raw pointer to the debug overlay object.
          */
-        void setDebugOverlayTimes(double physics_load_time, double logic_load_time, double logic_sleep_time);
+        DebugOverlay* getDebugOverlay();
 
         /*
          * Sets the model for the attachment points in the editor. This are the small attachment

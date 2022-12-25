@@ -9,6 +9,7 @@
 #include "../core/RenderContext.hpp"
 #include "../core/utils/utils.hpp"
 #include "../core/utils/gl_utils.hpp"
+#include "../core/timing.hpp"
 
 
 DebugOverlay::DebugOverlay(int fb_width, int fb_height, const RenderContext* render_context){
@@ -49,10 +50,14 @@ void DebugOverlay::onFramebufferSizeUpdate(int fb_width, int fb_height){
 }
 
 
-void DebugOverlay::setTimes(double physics_load_time, double logic_load_time, double logic_sleep_time){
+/*void DebugOverlay::setTimes(double physics_load_time, double logic_load_time, double logic_sleep_time){
     m_physics_load_time = physics_load_time;
     m_logic_load_time = logic_load_time;
     m_logic_sleep_time = logic_sleep_time;
+}*/
+void DebugOverlay::setLogicTimes(const logic_timing& times){
+    m_logic_load_time = times.avg_logic_load;
+    m_logic_sleep_time = times.avg_logic_sleep;
 }
 
 

@@ -8,6 +8,8 @@ class RenderContext;
 class Text2D;
 class FontAtlas;
 
+struct logic_timing;
+
 
 class DebugOverlay{
     private:
@@ -22,7 +24,7 @@ class DebugOverlay{
         ~DebugOverlay();
 
         void setRenderedObjects(int n);
-        void setTimes(double physics_load_time, double logic_load_time, double logic_sleep_time);
+        void setLogicTimes(const logic_timing& times);
         void setRenderTimes(double render_load_time, double rscene_load_time, double rgui_load_time, double rimgui_load_time);
         void onFramebufferSizeUpdate(int fb_width, int fb_height);
 
