@@ -26,12 +26,6 @@ DebugOverlay::DebugOverlay(int fb_width, int fb_height, const RenderContext* ren
     m_text_debug.reset(text_debug);
 
     m_rendered_obj = 0;
-    m_physics_load_time = 0.0;
-    m_logic_load_time = 0.0;
-    m_logic_sleep_time = 0.0;
-    m_render_load_time = 0.0;
-    m_rscene_load_time = 0.0;
-    m_rgui_load_time = 0.0;
 }
 
 
@@ -50,14 +44,26 @@ void DebugOverlay::onFramebufferSizeUpdate(int fb_width, int fb_height){
 }
 
 
-/*void DebugOverlay::setTimes(double physics_load_time, double logic_load_time, double logic_sleep_time){
-    m_physics_load_time = physics_load_time;
-    m_logic_load_time = logic_load_time;
-    m_logic_sleep_time = logic_sleep_time;
-}*/
 void DebugOverlay::setLogicTimes(const logic_timing& times){
-    m_logic_load_time = times.avg_logic_load;
-    m_logic_sleep_time = times.avg_logic_sleep;
+    m_times_logic.load_time = times.avg_logic_load;
+    m_times_logic.sleep_time = times.avg_logic_sleep;
+}
+
+
+void DebugOverlay::setPhysicsTimes(const physics_timing& times){
+    m_times_physics.load_time = times.avg_phys_load;
+    m_times_physics.kinematics_load = times.avg_kinematic;
+    m_times_physics.orbital_load = times.avg_orbital;
+    m_times_physics.gravity_load = times.avg_gravity;
+    m_times_physics.bullet_load = times.avg_bullet;
+}
+
+
+void DebugOverlay::setRenderTimes(const render_timing& times){
+    m_times_render.load_time = times.avg_rend_load;
+    m_times_render.rscene_load_time = times.avg_scene;
+    m_times_render.rgui_load_time = times.avg_gui;
+    m_times_render.rimgui_load_time = times.avg_imgui;
 }
 
 
@@ -73,25 +79,37 @@ void DebugOverlay::render(){
     oss2.str("");
     oss2.clear();
     oss2 << "Num rendered objects: " << m_rendered_obj;
-    mbstowcs(buffer, oss2.str().c_str(), 64);
+    mbstowcs(buffer, oss2.str().c_str(), 128);
     m_text_dynamic_text->addString(buffer, 15, 15, 1, STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_RIGHT);
 
     oss2.str("");
     oss2.clear();
-    oss2 << "Physics load: " << std::setprecision(3) << m_physics_load_time 
-         << "ms - Logic load: " << std::setprecision(3) << m_logic_load_time
-         << "ms - Logic sleep: " << std::setprecision(3) << m_logic_sleep_time << "ms";
+    oss2 << "Physics load: " << std::setprecision(3) << m_times_physics.load_time
+         << "ms - Kinem. update: " << std::setprecision(3) << m_times_physics.kinematics_load
+         << "ms - Orbit. update: " << std::setprecision(3) << m_times_physics.orbital_load
+         << "ms - Grav. update: " << std::setprecision(3) << m_times_physics.gravity_load
+         << "ms - Bullet update: " << std::setprecision(3) << m_times_physics.bullet_load << "ms";
     mbstowcs(buffer2, oss2.str().c_str(), 128);
-    m_text_dynamic_text->addString(buffer2, 15, 125, 1, STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
+    m_text_dynamic_text->addString(buffer2, 15, 125, 1, 
+                                   STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
+
+    oss2.str("");
+    oss2 << "Logic load: " << std::setprecision(3) << m_times_logic.load_time
+         << "ms - Logic sleep: " << std::setprecision(3) << m_times_logic.sleep_time << "ms";
+    mbstowcs(buffer2, oss2.str().c_str(), 128);
+    m_text_dynamic_text->addString(buffer2, 15, 145, 1, 
+                                   STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);    
 
     oss2.str("");
     oss2.clear();
-    oss2 << "Render time: " << std::setprecision(3) << m_render_load_time 
-         << "ms - Scene render: " << std::setprecision(3) << m_rscene_load_time
-         << "ms - GUI render: " << std::setprecision(3) << m_rgui_load_time
-         << "ms - ImGui render: " << std::setprecision(3) << m_rimgui_load_time << "ms";
+    oss2 << "Render time: " << std::setprecision(3) << m_times_render.load_time 
+         << "ms - Scene render: " << std::setprecision(3) << m_times_render.rscene_load_time
+         << "ms - GUI render: " << std::setprecision(3) << m_times_render.rgui_load_time
+         << "ms - ImGui render: " << std::setprecision(3) 
+         << m_times_render.rimgui_load_time << "ms";
     mbstowcs(buffer2, oss2.str().c_str(), 128);
-    m_text_dynamic_text->addString(buffer2, 15, 145, 1, STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
+    m_text_dynamic_text->addString(buffer2, 15, 165, 1, 
+                                   STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
 
     m_text_dynamic_text->render();
 
@@ -140,12 +158,3 @@ void debug_info_box(Text2D** t, int fb_width, int fb_height, const FontAtlas* fo
     mbstowcs(totalmemory_w, oss.str().c_str(), 64);
     (*t)->addString(totalmemory_w, 15, 105, 1, STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
 }
-
-
-void DebugOverlay::setRenderTimes(double render_load_time, double rscene_load_time, double rgui_load_time, double rimgui_load_time){
-    m_render_load_time = render_load_time;
-    m_rscene_load_time = rscene_load_time;
-    m_rgui_load_time = rgui_load_time;
-    m_rimgui_load_time = rimgui_load_time;
-}
-

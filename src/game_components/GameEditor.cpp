@@ -14,10 +14,12 @@
 #include "../core/log.hpp"
 #include "../core/multithreading.hpp"
 #include "../core/BaseApp.hpp"
+#include "../core/timing.hpp"
 #include "../assets/Vessel.hpp"
 #include "../assets/BasePart.hpp"
 #include "../GUI/FontAtlas.hpp"
 #include "../GUI/editor/EditorGUI.hpp"
+#include "../GUI/DebugOverlay.hpp"
 
 
 #define MAX_SYMMETRY_SIDES 8
@@ -68,90 +70,72 @@ GameEditor::~GameEditor(){
 }
 
 
+void GameEditor::synchPreStep(){
+    m_asset_manager->processCommandBuffers(m_physics_pause);
+    if(m_asset_manager->m_editor_vessel.get())
+        m_asset_manager->m_editor_vessel->updateCoM();
+
+    if(m_clear_scene){
+        clearScene();
+    }
+    if(m_delete_current){
+        deleteCurrent();
+    }
+
+    m_input->update();
+    m_window_handler->update();
+    m_frustum->extractPlanes(m_camera->getCenteredViewMatrix(), m_camera->getProjMatrix(), false);
+}
+
+
+void GameEditor::synchPostStep(){
+    m_player->updateEditor();
+    m_asset_manager->updateBuffers();
+}
+
+
+void GameEditor::wakePhysics(){
+    std::unique_lock<std::mutex> lck2(m_thread_monitor->mtx_start);
+    m_thread_monitor->worker_start = true;
+    m_thread_monitor->cv_start.notify_all();
+}
+
+
+void GameEditor::waitPhysics(){
+    std::unique_lock<std::mutex> lck(m_thread_monitor->mtx_end);
+    while(!m_thread_monitor->worker_ended){
+        m_thread_monitor->cv_end.wait(lck);
+    }
+    m_thread_monitor->worker_ended = false;
+}
+
+
 void GameEditor::start(){
-    std::chrono::steady_clock::time_point loop_start_load;
-    std::chrono::steady_clock::time_point previous_loop_start_load = std::chrono::steady_clock::now();;
-    std::chrono::steady_clock::time_point loop_end_load;
-    double delta_t = (1. / 60.) * 1000000., accumulated_load = 0.0, accumulated_sleep = 0.0; //, average_load = 0.0, average_sleep = 0.0;
-    int ticks_since_last_update = 0;
+    double delta_t_ms = (1. / 60.) * 1000000.;
+    logic_timing timing;
+    timing.delta_t = delta_t_ms;
 
     m_app->setGUIMode(GUI_MODE_EDITOR);
     m_app->setRenderState(RENDER_EDITOR);
     m_player->setBehaviour(PLAYER_BEHAVIOUR_EDITOR);
 
     while(!m_exit_editor){
-        loop_start_load = std::chrono::steady_clock::now();
+        timing.register_tp(TP_LOGIC_START);
 
-        m_asset_manager->processCommandBuffers(m_physics_pause);
-        if(m_asset_manager->m_editor_vessel.get())
-            m_asset_manager->m_editor_vessel->updateCoM();
-
-        if(m_clear_scene){
-            clearScene();
-        }
-        if(m_delete_current){
-            deleteCurrent();
-        }
-
-        m_input->update();
-        m_window_handler->update();
-        m_frustum->extractPlanes(m_camera->getCenteredViewMatrix(), m_camera->getProjMatrix(), false);
-
-        {  //wake up physics thread
-            std::unique_lock<std::mutex> lck2(m_thread_monitor->mtx_start);
-            m_thread_monitor->worker_start = true;
-            m_thread_monitor->cv_start.notify_all();
-        }
-
-        m_gui_action = m_editor_gui->update();
-
-        if(!m_physics_pause){ /* Update vessels and parts */
-            clearSymmetrySubtrees();
-            if(m_asset_manager->m_editor_vessel.get()){
-                m_asset_manager->m_editor_vessel->update();
-            }            
-        }
-
+        synchPreStep();
+        wakePhysics();
         logic();
 
-        //m_render_context->setDebugOverlayTimes(m_physics->getAverageLoadTime(), average_load, average_sleep);
-        
-        m_elapsed_time += loop_start_load - previous_loop_start_load;
-        previous_loop_start_load = loop_start_load;
-        
-        if(ticks_since_last_update == 60){
-            ticks_since_last_update = 0;
-            //average_load = accumulated_load / 60000.0;
-            //average_sleep = accumulated_sleep / 60000.0;
-            //accumulated_load = 0;
-            //accumulated_sleep = 0;
-            /*std::cout << std::setfill('0') << std::setw(2) << int(m_elapsed_time.count() / 1e12) / 60*60 << ":" 
-                      << std::setfill('0') << std::setw(2) << (int(m_elapsed_time.count() / 1e6) / 60) % 60 << ":" 
-                      << std::setfill('0') << std::setw(2) << int(m_elapsed_time.count() / 1e6) % 60 << std::endl;*/
-        }
-        ticks_since_last_update++;
+        m_render_context->getDebugOverlay()->setLogicTimes(timing);
 
-        { // wait for physics thread
-            std::unique_lock<std::mutex> lck(m_thread_monitor->mtx_end);
-            while(!m_thread_monitor->worker_ended){
-                m_thread_monitor->cv_end.wait(lck);
-            }
-            m_thread_monitor->worker_ended = false;
-        }
+        waitPhysics();
+        synchPostStep();
 
-        m_player->updateEditor();
-        m_asset_manager->updateBuffers();
+        timing.register_tp(TP_LOGIC_END);
+        timing.update();
 
-        // load ends here
-
-        loop_end_load = std::chrono::steady_clock::now();
-        std::chrono::duration<double, std::micro> load_time = loop_end_load - loop_start_load;
-        accumulated_load += load_time.count();
-        accumulated_sleep += delta_t - load_time.count();
-
-        if(load_time.count() < delta_t){
-            std::chrono::duration<double, std::micro> delta_ms(delta_t - load_time.count());
-            std::this_thread::sleep_for(delta_ms);
+        if(timing.current_sleep > 0.0){
+            std::this_thread::sleep_for(duration(timing.current_sleep));
         }
     }
     clearSymmetrySubtrees();
@@ -796,6 +780,15 @@ void GameEditor::processInput(){
 
 
 void GameEditor::logic(){
+    m_gui_action = m_editor_gui->update();
+
+    if(!m_physics_pause){ /* Update vessels and parts */
+        clearSymmetrySubtrees();
+        if(m_asset_manager->m_editor_vessel.get()){
+            m_asset_manager->m_editor_vessel->update();
+        }
+    }
+
     if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_1] & INPUT_MBUTTON_PRESS &&
       !m_render_context->imGuiWantCaptureMouse()){
         lmb_focused_press = true;

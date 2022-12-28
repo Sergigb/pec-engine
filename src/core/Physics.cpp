@@ -8,6 +8,9 @@
 #include "AssetManager.hpp"
 #include "log.hpp"
 #include "multithreading.hpp"
+#include "timing.hpp"
+#include "RenderContext.hpp"
+#include "../GUI/DebugOverlay.hpp"
 #include "../assets/Object.hpp"
 #include "../assets/PlanetarySystem.hpp"
 #include "../assets/Planet.hpp"
@@ -118,7 +121,7 @@ void Physics::startSimulation(int max_sub_steps){
     m_app->getAssetManager()->m_planetary_system->updateOrbitalElements(cents_since_j2000);
 
     m_thread_simulation = std::thread(&Physics::runSimulation, this, max_sub_steps);
-    log("Physics: starting simulation, thread launched");
+    log("Physics::startSimulation: starting simulation, thread launched");
 }
 
 
@@ -130,7 +133,7 @@ void Physics::stopSimulation(){
         m_thread_monitor->cv_start.notify_all();
     }
     m_thread_simulation.join();
-    log("Physics: simulation stopped, thread joined");
+    log("Physics::stopSimulation: simulation stopped, thread joined");
 }
 
 
@@ -158,14 +161,14 @@ void Physics::waitLogic(){
 
 
 void Physics::runSimulation(int max_sub_steps){
-    std::chrono::steady_clock::time_point loop_start_load, loop_end_load;
-    double accumulated_load_time = 0.0;
-    int ticks_since_last_update = 0;
+    physics_timing timing;
     double cents_since_j2000;
+    DebugOverlay* debug_overlay = m_app->getRenderContext()->getDebugOverlay();
+    PlanetarySystem* planetary_system = m_app->getAssetManager()->m_planetary_system.get();
 
     waitLogic();
     while(!m_end_simulation){
-        loop_start_load = std::chrono::steady_clock::now();
+        timing.register_tp(TP_PHYSICS_START);
         cents_since_j2000 = m_secs_since_j2000 / SECONDS_IN_A_CENTURY;
 
         if(!m_simulation_paused){
@@ -176,24 +179,20 @@ void Physics::runSimulation(int max_sub_steps){
                */
 
             // WARNING! THE ORDER OF THESE UPDATES IS IMPORTANT, WE NEED TO REVISE THEM
-            m_app->getAssetManager()->m_planetary_system->updateOrbitalElements(cents_since_j2000);
-            m_app->getAssetManager()->m_planetary_system->updateKinematics();
+            planetary_system->updateOrbitalElements(cents_since_j2000);
+            timing.register_tp(TP_ORBIT_END);
+            planetary_system->updateKinematics();
+            timing.register_tp(TP_KINEM_END);
             applyGravity();
+            timing.register_tp(TP_GRAV_END);
             m_dynamics_world->stepSimulation(m_delta_t, max_sub_steps);
 
             m_secs_since_j2000 += m_delta_t;
         }
 
-        loop_end_load = std::chrono::steady_clock::now();
-
-        std::chrono::duration<double, std::micro> load_time = loop_end_load - loop_start_load;
-        accumulated_load_time += load_time.count();
-        ticks_since_last_update++;
-
-        if(ticks_since_last_update == 60){
-            ticks_since_last_update = 0;
-            accumulated_load_time = 0.0;
-        }
+        timing.register_tp(TP_PHYSICS_END);
+        timing.update(m_simulation_paused);
+        debug_overlay->setPhysicsTimes(timing);
 
         noticeLogic();
         waitLogic();

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "maths_funcs.hpp"
+#include "timing.hpp"
 
 
 class Camera;
@@ -115,7 +116,7 @@ class RenderContext{
         bool m_update_fb, m_update_projection;
 
         bool m_debug_draw, m_draw_overlay, m_update_shaders;
-        double m_rscene_acc_load_time, m_rgui_acc_load_time, m_rimgui_acc_load_time;
+        render_timing m_timing;
 
         // synchronization
         struct render_buffers* m_buffers;

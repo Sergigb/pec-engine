@@ -31,8 +31,6 @@ class GameSimulation{
         WindowHandler* m_window_handler;
         Frustum* m_frustum;
 
-        std::chrono::duration<double, std::micro> m_elapsed_time;
-
         std::unique_ptr<SimulationRenderer> m_renderer;
 
         void logic();

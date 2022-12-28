@@ -30,7 +30,6 @@ class App : public BaseApp{
         std::unique_ptr<FontAtlas> m_def_font_atlas;
 
         bool m_quit;
-        std::chrono::duration<double, std::micro> m_elapsed_time;
 
         void init();
         void processInput();

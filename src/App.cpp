@@ -123,9 +123,9 @@ void App::synchPostStep(){
 
 
 void App::run(){
-    std::chrono::steady_clock::time_point loop_start_load, previous_loop_start_load, loop_end_load;
-    double delta_t = (1. / 60.) * 1000000.;
+    double delta_t_ms = (1. / 60.) * 1000000.;
     logic_timing timing;
+    timing.delta_t = delta_t_ms;
 
     m_physics->startSimulation(10);
     m_render_context->start();
@@ -134,31 +134,24 @@ void App::run(){
     m_simulation->onStateChange();
 
     setUpSimulation();
-    previous_loop_start_load = std::chrono::steady_clock::now();
 
     while(!m_quit){
-        loop_start_load = std::chrono::steady_clock::now();
+        timing.register_tp(TP_LOGIC_START);
 
         synchPreStep();
         wakePhysics();
         logic();
 
-        //m_render_context->setDebugOverlayTimes(m_physics->getAverageLoadTime(), average_load, average_sleep);
         m_render_context->getDebugOverlay()->setLogicTimes(timing);
-        
-        m_elapsed_time += loop_start_load - previous_loop_start_load;
-        previous_loop_start_load = loop_start_load;
 
         waitPhysics();
         synchPostStep();
 
-        loop_end_load = std::chrono::steady_clock::now();
-        std::chrono::duration<double, std::micro> load_time = loop_end_load - loop_start_load;
-        timing.update(load_time.count(), delta_t - load_time.count());
+        timing.register_tp(TP_LOGIC_END);
+        timing.update();
 
-        if(load_time.count() < delta_t){
-            std::chrono::duration<double, std::micro> delta_ms(delta_t - load_time.count());
-            std::this_thread::sleep_for(delta_ms);
+        if(timing.current_sleep > 0.0){
+            std::this_thread::sleep_for(duration(timing.current_sleep));
         }
     }
 

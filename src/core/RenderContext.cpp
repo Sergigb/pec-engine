@@ -1,4 +1,3 @@
-#include <chrono>
 #include <mutex>
 #include <iostream>
 
@@ -8,6 +7,7 @@
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/BulletCollision/Gimpact/btGImpactCollisionAlgorithm.h>
 
+#include "utils/gl_utils.hpp"
 #include "RenderContext.hpp"
 #include "Camera.hpp"
 #include "WindowHandler.hpp"
@@ -16,9 +16,9 @@
 #include "DebugDrawer.hpp"
 #include "Physics.hpp"
 #include "BaseApp.hpp"
-#include "utils/gl_utils.hpp"
 #include "AssetManager.hpp"
 #include "Player.hpp"
+#include "timing.hpp"
 #include "../assets/PlanetarySystem.hpp"
 #include "../assets/Planet.hpp"
 #include "../assets/BasePart.hpp"
@@ -79,9 +79,6 @@ RenderContext::RenderContext(BaseApp* app){
     m_color_clear = math::vec4(0.428, 0.706f, 0.751f, 1.0f);
 
     glClearColor(m_color_clear.v[0], m_color_clear.v[1], m_color_clear.v[2], m_color_clear.v[3]);
-
-    m_rscene_acc_load_time = 0.0;
-    m_rgui_acc_load_time = 0.0;
 
     check_gl_errors(true, "RenderContext::RenderContext");
 }
@@ -308,8 +305,6 @@ void RenderContext::renderBulletDebug(const math::mat4& view_mat){
 void RenderContext::render(){
     int num_rendered = 0;
 
-    std::chrono::steady_clock::time_point start_scene, end_scene_start_gui, end_gui_start_imgui, end_imgui;
-
     //clean up this shit
 
     if(m_update_shaders){
@@ -346,7 +341,7 @@ void RenderContext::render(){
     glClearColor(m_color_clear.v[0], m_color_clear.v[1], m_color_clear.v[2], m_color_clear.v[3]);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    start_scene = std::chrono::steady_clock::now();
+    m_timing.register_tp(TP_RENDER_START);
 
     setLightPositionRender();
 
@@ -383,7 +378,7 @@ void RenderContext::render(){
         rbuf->buffer_lock.unlock();
     }
 
-    end_scene_start_gui = std::chrono::steady_clock::now();
+    m_timing.register_tp(TP_SCENE_END);
 
     glDisable(GL_DEPTH_TEST);
     switch(m_app->getGUIMode()){
@@ -401,19 +396,12 @@ void RenderContext::render(){
     }
     glEnable(GL_DEPTH_TEST);
 
-    end_gui_start_imgui = std::chrono::steady_clock::now();
+    m_timing.register_tp(TP_GUI_END);
 
     renderImGui();
     renderNotifications();
 
-    end_imgui = std::chrono::steady_clock::now();
-
-    std::chrono::duration<double, std::micro> load_time_scene = end_scene_start_gui - start_scene;
-    std::chrono::duration<double, std::micro> load_time_gui = end_gui_start_imgui - end_scene_start_gui;
-    std::chrono::duration<double, std::micro> load_time_imgui = end_imgui - end_gui_start_imgui;
-    m_rscene_acc_load_time += load_time_scene.count();
-    m_rgui_acc_load_time += load_time_gui.count();
-    m_rimgui_acc_load_time += load_time_imgui.count();
+    m_timing.register_tp(TP_RENDER_END);
 
     if(m_draw_overlay){
         glDisable(GL_DEPTH_TEST);
@@ -530,15 +518,10 @@ void RenderContext::start(){
 
 
 void RenderContext::run(){
-    std::chrono::steady_clock::time_point start, end;
-    double accumulated_load = 0.0, render_load_time, scene_render_time, gui_render_time, imgui_render_time;
-    int ticks_since_last_update = 0;
-
     // this should be enough to transfer the opengl context to the current thread
     glfwMakeContextCurrent(m_window_handler->getWindow());
 
     while(!m_stop){
-        start = std::chrono::steady_clock::now();
         if(m_update_fb){
             m_update_fb = false;
             m_update_projection = true;
@@ -546,25 +529,8 @@ void RenderContext::run(){
         }
 
         render();
-
-        end = std::chrono::steady_clock::now();
-        std::chrono::duration<double, std::micro> load_time = end - start;
-        accumulated_load += load_time.count();
-        if(ticks_since_last_update == 60){
-            render_load_time = accumulated_load / 60000.0;
-            scene_render_time = m_rscene_acc_load_time / 60000.0;
-            gui_render_time = m_rgui_acc_load_time / 60000.0;
-            imgui_render_time = m_rimgui_acc_load_time / 60000.0;
-            m_debug_overlay->setRenderTimes(render_load_time, scene_render_time, gui_render_time, imgui_render_time);
-            accumulated_load = 0.0;
-            m_rscene_acc_load_time = 0.0;
-            m_rgui_acc_load_time = 0.0;
-            m_rimgui_acc_load_time = 0.0;
-            ticks_since_last_update = 0;
-        }
-        else{
-            ticks_since_last_update++;
-        }
+        m_timing.update();
+        m_debug_overlay->setRenderTimes(m_timing);
 
         glfwSwapBuffers(m_window_handler->getWindow());
     }

@@ -37,9 +37,6 @@ class GameEditor{
         uint m_symmetry_sides;
         bool m_radial_align;
 
-        // time
-        std::chrono::duration<double, std::micro> m_elapsed_time;
-
         // GUI
         int m_gui_action;
         std::unique_ptr<EditorGUI> m_editor_gui;
@@ -61,6 +58,12 @@ class GameEditor{
         Player* m_player;
 
         struct thread_monitor* m_thread_monitor;
+
+        // main loop
+        void synchPreStep();
+        void synchPostStep();
+        void wakePhysics();
+        void waitPhysics();
 
         //void placeClonedSubtreesRadial(BasePart* parent);
         void processInput();
