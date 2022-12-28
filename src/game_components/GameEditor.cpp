@@ -20,6 +20,7 @@
 #include "../GUI/FontAtlas.hpp"
 #include "../GUI/editor/EditorGUI.hpp"
 #include "../GUI/DebugOverlay.hpp"
+#include "../renderers/EditorRenderer.hpp"
 
 
 #define MAX_SYMMETRY_SIDES 8
@@ -46,6 +47,8 @@ GameEditor::GameEditor(BaseApp* app, FontAtlas* font_atlas){
     m_editor_gui.reset(new EditorGUI(m_def_font_atlas, m_render_context, m_input));
     m_editor_gui->setMasterPartList(&m_asset_manager->m_master_parts);
     m_render_context->setGUI(m_editor_gui.get(), GUI_MODE_EDITOR);
+    m_renderer.reset(new EditorRenderer(app));
+    app->getRenderContext()->setRenderer(m_renderer.get(), RENDER_EDITOR);
 
     m_app = app;
     init();

@@ -24,6 +24,7 @@ class Camera;
 class Physics;
 class Player;
 class EditorGUI;
+class EditorRenderer;
 
 struct thread_monitor;
 
@@ -40,6 +41,9 @@ class GameEditor{
         // GUI
         int m_gui_action;
         std::unique_ptr<EditorGUI> m_editor_gui;
+
+        // Editor renderer
+        std::unique_ptr<EditorRenderer> m_renderer;
 
         // application default font atlas
         const FontAtlas* m_def_font_atlas;

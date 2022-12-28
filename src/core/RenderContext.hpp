@@ -105,8 +105,6 @@ class RenderContext{
         const FontAtlas* m_default_atlas;
         BaseApp *m_app;
 
-        std::unique_ptr<Model> m_att_point_model;
-        math::mat4 m_att_point_scale;
         math::vec3 m_light_position;
 
         std::thread m_render_thread;
@@ -128,6 +126,7 @@ class RenderContext{
         // renderers
         BaseRenderer* m_planetarium_renderer;
         BaseRenderer* m_simulation_renderer;
+        BaseRenderer* m_editor_renderer;
 
         // other ones...
         std::unique_ptr<Text2D> m_notification_text;
@@ -156,8 +155,6 @@ class RenderContext{
          */
         void render();
 
-        void renderAttPoints(const BasePart* part, const math::mat4& body_transform);
-
         /*
          * Renders Dear-ImGUI.
          */
@@ -174,11 +171,6 @@ class RenderContext{
          */
         void setLightPositionRender();
 
-        /*
-         * Different methods that can be called to render different stuff.
-         */
-        int renderSceneEditor(struct render_buffer* rbuf);
-        int renderObjects(bool render_att_points, const std::vector<object_transform>* buff, const math::mat4* view_mat);
         void renderBulletDebug(const math::mat4& view_mat);
         void renderNotifications();
     public:
@@ -212,15 +204,6 @@ class RenderContext{
          * Returns a raw pointer to the debug overlay object.
          */
         DebugOverlay* getDebugOverlay();
-
-        /*
-         * Sets the model for the attachment points in the editor. This are the small attachment
-         * thingies that are rendered on the parts.
-         *
-         * @att_point_model: raw pointer... to unique pointer... of the model. It will probably
-         * change to something less stupid at some point.
-         */
-        void setAttPointModel(std::unique_ptr<Model>* att_point_model);
 
         /*
          * Binds a program (shader), you should pass one of the shader macros defined at the top of

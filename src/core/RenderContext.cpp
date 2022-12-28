@@ -48,11 +48,6 @@ RenderContext::RenderContext(BaseApp* app){
     log_gl_params();
     initImgui();
 
-    m_att_point_scale = math::identity_mat4();
-    m_att_point_scale.m[0] = 0.25;
-    m_att_point_scale.m[5] = 0.25;
-    m_att_point_scale.m[10] = 0.25;
-
     m_bound_vao = 0;
     m_bound_programme = 0;
 
@@ -67,6 +62,7 @@ RenderContext::RenderContext(BaseApp* app){
 
     m_planetarium_renderer = nullptr;
     m_simulation_renderer = nullptr;
+    m_editor_renderer = nullptr;
 
     m_glfw_time = 0.0;
 
@@ -223,73 +219,6 @@ void RenderContext::initImgui(){
 }
 
 
-void RenderContext::renderAttPoints(const BasePart* part, const math::mat4& body_transform){
-    const std::vector<struct attachment_point>& att_points = part->getAttachmentPoints();
-
-    math::mat4 att_transform;
-
-    if(part->hasParentAttPoint()){
-        const math::vec3& point = part->getParentAttachmentPoint().point;
-        att_transform = body_transform * math::translate(math::identity_mat4(), point);
-        m_att_point_model->setMeshColor(math::vec4(0.0, 1.0, 0.0, 1.0));
-        m_att_point_model->render(att_transform * m_att_point_scale);
-    }
-
-    /*if(part->hasFreeAttPoint()){
-        point = part->getFreeAttachmentPoint()->point;
-        att_transform = body_transform * math::translate(math::identity_mat4(), point);
-        m_att_point_model->setMeshColor(math::vec4(0.0, 1.0, 1.0, 1.0));
-        num_rendered += m_att_point_model->render(att_transform * m_att_point_scale);
-    }*/
-
-    for(uint j=0; j<att_points.size(); j++){
-        const math::vec3& point = att_points.at(j).point;
-        att_transform = body_transform * math::translate(math::identity_mat4(), point);
-        m_att_point_model->setMeshColor(math::vec4(1.0, 0.0, 0.0, 1.0));
-        m_att_point_model->render(att_transform * m_att_point_scale);
-    }
-}
-
-
-int RenderContext::renderSceneEditor(struct render_buffer* rbuf){
-    int num_rendered = 0;
-
-    num_rendered = renderObjects(true, &rbuf->buffer, &rbuf->view_mat);
-    rbuf->buffer_lock.unlock();
-
-    return num_rendered;
-}
-
-
-int RenderContext::renderObjects(bool render_att_points, const std::vector<object_transform>* buff, const math::mat4* view_mat){
-    int num_rendered = 0;
-
-    glUseProgram(m_pb_notex_shader);
-    glUniformMatrix4fv(m_pb_notex_view_mat, 1, GL_FALSE, view_mat->m);
-    glUniformMatrix4fv(m_pb_notex_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
-
-    glUseProgram(m_pb_shader);
-    glUniformMatrix4fv(m_pb_view_mat, 1, GL_FALSE, view_mat->m);
-    glUniformMatrix4fv(m_pb_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
-
-    glUseProgram(m_planet_shader);
-    glUniformMatrix4fv(m_planet_view_mat, 1, GL_FALSE, view_mat->m);
-    glUniformMatrix4fv(m_planet_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
-
-    for(uint i=0; i<buff->size(); i++){
-        if(render_att_points){
-            BasePart* part = dynamic_cast<BasePart*>(buff->at(i).object_ptr.get());
-            if(part){
-                renderAttPoints(part, buff->at(i).transform);
-            }
-        }
-        num_rendered += buff->at(i).object_ptr->render(buff->at(i).transform);
-    }
-
-    return num_rendered;
-}
-
-
 void RenderContext::renderBulletDebug(const math::mat4& view_mat){
     glUseProgram(m_debug_shader);
     glUniformMatrix4fv(m_debug_view_mat, 1, GL_FALSE, view_mat.m);
@@ -360,7 +289,7 @@ void RenderContext::render(){
             case RENDER_NOTHING:
                 break;
             case RENDER_EDITOR:
-                num_rendered = renderSceneEditor(rbuf); // PENDING TO MOVE CODE
+                num_rendered = m_editor_renderer->render(rbuf);
                 break;
             case RENDER_SIMULATION:
                 num_rendered = m_simulation_renderer->render(rbuf);
@@ -431,11 +360,6 @@ void RenderContext::setLightPositionRender(){
 
 DebugOverlay* RenderContext::getDebugOverlay(){
     return m_debug_overlay.get();
-}
-
-
-void RenderContext::setAttPointModel(std::unique_ptr<Model>* att_point_model){
-    m_att_point_model = std::move(*att_point_model);
 }
 
 
@@ -600,6 +524,9 @@ void RenderContext::setRenderer(BaseRenderer* rend_ptr, short render_state){
         case RENDER_PLANETARIUM:
             m_planetarium_renderer = rend_ptr;
             break;  
+        case RENDER_EDITOR:
+            m_editor_renderer = rend_ptr;
+            break;
         default:
             std::cerr << "RenderContext::setRenderer: invalid render state: " 
                       << render_state << std::endl;
