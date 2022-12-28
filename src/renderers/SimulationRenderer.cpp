@@ -44,9 +44,6 @@ int SimulationRenderer::render(struct render_buffer* rbuf){
         planet_transform& tr = rbuf->planet_buffer.at(i);
         tr.planet_ptr->render(rbuf->cam_origin, tr.transform);
     }
-
-    rbuf->buffer_lock.unlock();
-
     return num_rendered;
 }
 
