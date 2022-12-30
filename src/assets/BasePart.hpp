@@ -192,14 +192,12 @@ class BasePart : public Object{
          * recursively through all the subtree. The method is a bit convoluted, maybe it could be
          * rewritten at some point. This method is thread safe.
          *
-         * @command_buffer: motion state command buffer, should be the command buffer
-         * m_set_motion_state_buffer from the AssetManager.
          * @disp: displacement, should be new_position - old_position.
          * @root_origin: new origin of the root of this subtree, when this method is called it
          * should be the new origin of the part we are using to call this method.
          * @rotation: new rotation of the subtree.
          */
-        void updateSubTreeMotionState(std::vector<struct set_motion_state_msg>& command_buffer, const btVector3& disp, const btVector3& root_origin, const btQuaternion& rotation);
+        void updateSubTreeMotionState(const btVector3& disp, const btVector3& root_origin, const btQuaternion& rotation);
 
         /*
          * When this part and its subtree are attached to a Vessel, m_vessel is be updated to the

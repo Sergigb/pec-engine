@@ -139,8 +139,8 @@ std::shared_ptr<BasePart> BasePart::removeChild(BasePart* child){
 }
 
 
-void BasePart::updateSubTreeMotionState(std::vector<struct set_motion_state_msg>& command_buffer, 
-                                        const btVector3& disp, const btVector3& root_origin, const btQuaternion& rotation){
+void BasePart::updateSubTreeMotionState(const btVector3& disp, const btVector3& root_origin,
+                                        const btQuaternion& rotation){
     btTransform transform, trans, trans_r;
     btQuaternion rrotation;
     btVector3 dist_from_root;
@@ -154,10 +154,10 @@ void BasePart::updateSubTreeMotionState(std::vector<struct set_motion_state_msg>
     trans_r = btTransform(rotation, btVector3(0.0, 0.0, 0.0));
     trans = trans_r * trans;
 
-    command_buffer.emplace_back(this, root_origin + trans.getOrigin() + disp, trans.getRotation());
+    m_asset_manager->setMotionState(this, root_origin + trans.getOrigin() + disp, trans.getRotation());
 
     for(uint i=0; i < m_childs.size(); i++){
-        m_childs.at(i)->updateSubTreeMotionState(command_buffer, disp, root_origin, rotation);
+        m_childs.at(i)->updateSubTreeMotionState(disp, root_origin, rotation);
     }
 }
 

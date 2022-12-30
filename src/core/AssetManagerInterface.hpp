@@ -2,27 +2,39 @@
 #define ASSET_MANAGER_INTERFACE_HPP
 
 #include <memory>
+#include <vector>
 
 
 class Vessel;
 class AssetManager;
 class BasePart;
 class btTypedConstraint;
+class Object;
 
 
 /*
  * This class is used as an interface between the asset manager and the vessels/parts, this is
- * mainly used to add commands to the command buffers, usually from the update methods, as the
- * physics thread is most likely stepping. Command buffers can be used, for example, to change
- * the motion state of a part or to add/remove constraints.
+ * mainly used to add commands to the command buffers. Command buffers are usually used by the
+ * update methods, as the physics thread is most likely stepping. Command buffers can be used,
+ * for example, to change the motion state of a part or to add/remove constraints. The commands in
+ * the buffers are applied before the new engine step, but NOT durnig the current one. This class
+ * is inherited by AssetManager.
  */
 
 class AssetManagerInterface{
-    private:
-        AssetManager* m_asset_manager;
+    protected:
+        /* command buffers */
+        std::vector<struct set_motion_state_msg> m_set_motion_state_buffer;
+        std::vector<BasePart*> m_remove_part_constraint_buffer;
+        std::vector<struct add_contraint_msg> m_add_constraint_buffer;
+        std::vector<struct add_body_msg> m_add_body_buffer;
+        std::vector<std::shared_ptr<Vessel>> m_add_vessel_buffer;
+        std::vector<struct apply_force_msg> m_apply_force_buffer;
+        std::vector<struct set_mass_props_msg> m_set_mass_buffer;
+        std::vector<std::shared_ptr<BasePart>> m_delete_subtree_buffer;
+        std::vector<BasePart*> m_build_constraint_subtree_buffer;
     public:
         AssetManagerInterface();
-        AssetManagerInterface(AssetManager* asset_manager);
         ~AssetManagerInterface();
 
         /* 
@@ -31,7 +43,7 @@ class AssetManagerInterface{
          * only reason I can think of is that we might be iterating over m_active_vessels when we
          * add the new vessel, but I still think it doesn't matter.
          * 
-         * @vessel: lvalue reference to the unique ptr of the vessel, the buffer will take 
+         * @vessel: rvalue reference to the unique ptr of the vessel, the buffer will take 
          * ownership of this pointer.
          */
         void addVessel(std::shared_ptr<Vessel>&& vessel);
@@ -96,6 +108,24 @@ class AssetManagerInterface{
          * @part: pointer to the root part of the subtree.
          */
         void buildConstraintSubtree(BasePart* part);
+
+        /*
+         * Adds the subtree under root in the delete subtree buffer. The whole subtree will be 
+         * deleted, this includes removing the rigid bodies from the dynamics world.
+         *
+         * @root: rvalue reference of the shared pointer to the root of the tree, this buffer will
+         * take ownership of this pointer and the rest of the subtree.
+         */
+        void deleteSubtree(std::shared_ptr<BasePart>&& root);
+
+        /*
+         * Sets the motion state (rotation and origin) of the object.
+         *
+         * @obj: raw pointer to the object.
+         * @orig: btVector3 with the new origin of the object.
+         * @rot: btQuaternion with the new rotation of the object.
+         */
+        void setMotionState(Object* obj, const btVector3& orig, const btQuaternion& rot);
 };
 
 

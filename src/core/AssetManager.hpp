@@ -39,13 +39,14 @@ typedef std::unordered_map<std::uint32_t, std::unique_ptr<BasePart>> BasePartMap
 
 /*
  * Class used to manage assets (planets/parts/resources etc) and buffers, performs basic tasks such
- * as updating render and command buffers (required for multithreading) or deleting/updating assets. 
- * This class exposes most of its members, so it should only be visible to core classes that may
- * need it, but not to the assets. AssetManagerInterface is used instead to interact with this 
- * class (for example, adding commands to the command buffers).
+ * as updating render and command buffers (required for multithreading) or deleting/updating 
+ * assets. This class exposes most of its members, so it should only be visible to core classes 
+ * that may need it, but not to the assets. This class inherits from AssetManagerInterface, which
+ * as its name suggests should be used to interface the assets with this class (for example, adding
+ * commands to the command buffers).
  */
 
-class AssetManager{
+class AssetManager : public AssetManagerInterface{
     private:
         /* 
          * Old method called to load some stuff that's not used anymore, will be gone in the future
@@ -59,8 +60,8 @@ class AssetManager{
         BaseApp* m_app;
 
         /* Interface class for parts */
-        friend class AssetManagerInterface;
-        AssetManagerInterface m_asset_manager_interface;
+        //friend class AssetManagerInterface;
+        //AssetManagerInterface m_asset_manager_interface;
 
         friend void load_parts(AssetManager& asset_manager);
 
@@ -82,17 +83,6 @@ class AssetManager{
         std::vector<std::unique_ptr<Model>> m_models;
         BasePartMap m_master_parts;
         ResourceMap m_resources;
-
-        /* command buffers */
-        std::vector<struct set_motion_state_msg> m_set_motion_state_buffer;
-        std::vector<BasePart*> m_remove_part_constraint_buffer;
-        std::vector<struct add_contraint_msg> m_add_constraint_buffer;
-        std::vector<struct add_body_msg> m_add_body_buffer;
-        std::vector<std::shared_ptr<Vessel>> m_add_vessel_buffer;
-        std::vector<struct apply_force_msg> m_apply_force_buffer;
-        std::vector<struct set_mass_props_msg> m_set_mass_buffer;
-        std::vector<std::shared_ptr<BasePart>> m_delete_subtree_buffer;
-        std::vector<BasePart*> m_build_constraint_subtree_buffer;
 
         /* editor objects */
         SubTreeMap m_editor_subtrees;

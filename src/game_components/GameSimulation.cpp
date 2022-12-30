@@ -196,8 +196,7 @@ void GameSimulation::editorToSimulation(){
         disp = to - from;
 
         // move the object to the sea launch base
-        vsl->getRoot()->updateSubTreeMotionState(m_asset_manager->m_set_motion_state_buffer,
-                                                 disp, from, btQuaternion(0.0, 0.0, -M_PI / 2.0));
+        vsl->getRoot()->updateSubTreeMotionState(disp, from, btQuaternion(0.0, 0.0, -M_PI / 2.0));
 
         vsl->setVesselVelocity(btVector3(-29786.6, -0.00889649, -5478.81));
         //vsl->setVesselVelocity(btVector3(0.0, 0.0, 0.0));

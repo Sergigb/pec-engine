@@ -29,7 +29,7 @@ typedef VesselMap::iterator VesselIterator;
 typedef ResourceMap::iterator ResourceIterator;
 
 
-AssetManager::AssetManager(BaseApp* app) : m_asset_manager_interface(AssetManagerInterface(this)){
+AssetManager::AssetManager(BaseApp* app){
     m_render_context = app->getRenderContext();
     m_frustum = app->getFrustum();
     m_physics = app->getPhysics();

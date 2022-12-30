@@ -246,7 +246,7 @@ void GameEditor::createConstraint(BasePart* part, BasePart* parent, btTransform 
 
     std::unique_ptr<btTypedConstraint> constraint_sptr(constraint);
 
-    m_asset_manager->m_add_constraint_buffer.emplace_back(part, std::move(constraint_sptr));
+    m_asset_manager->addConstraint(part, std::move(constraint_sptr));
 }
 
 
@@ -254,7 +254,7 @@ void GameEditor::clearSymmetrySubtrees(){
     if(m_asset_manager->m_symmetry_subtrees.size()){
         for(uint i=0; i < m_asset_manager->m_symmetry_subtrees.size(); i++){
             m_asset_manager->m_symmetry_subtrees.at(i)->clearSubTreeCloneData();
-            m_asset_manager->m_delete_subtree_buffer.emplace_back(m_asset_manager->m_symmetry_subtrees.at(i));
+            m_asset_manager->deleteSubtree(std::move(m_asset_manager->m_symmetry_subtrees.at(i)));
         }
         m_asset_manager->m_symmetry_subtrees.clear();
     }
@@ -331,8 +331,7 @@ void GameEditor::placeClonedSubtreesOnClones(BasePart* closest, btTransform& tra
 
             disp = transform_final_current.getOrigin() - transform_original.getOrigin();
 
-            current->updateSubTreeMotionState(m_asset_manager->m_set_motion_state_buffer,
-                                              disp, transform_final_current.getOrigin(),
+            current->updateSubTreeMotionState(disp, transform_final_current.getOrigin(),
                                               transform_final_current.getRotation() * transform_original.getRotation().inverse());
 
             if(lmb_focused_press){
@@ -378,7 +377,7 @@ void GameEditor::placeSubTree(float closest_dist, math::vec4& closest_att_point_
         transform_final = object_T * btTransform(part->m_user_rotation) * transform_final; // rotated and traslated attachment point (world)
 
         btVector3 disp = transform_final.getOrigin() - transform_original.getOrigin();
-        part->updateSubTreeMotionState(m_asset_manager->m_set_motion_state_buffer, disp, transform_original.getOrigin(), 
+        part->updateSubTreeMotionState(disp, transform_original.getOrigin(),
                                        part->m_user_rotation * rotation.inverse());
 
         btTransform parent_transform;
@@ -489,7 +488,7 @@ void GameEditor::placeSubTree(float closest_dist, math::vec4& closest_att_point_
             transform_final = object_T * btTransform(align_rotation * part->m_user_rotation) * transform_final;
 
             btVector3 disp = transform_final.getOrigin() - transform_original.getOrigin();
-            part->updateSubTreeMotionState(m_asset_manager->m_set_motion_state_buffer, disp, transform_original.getOrigin(),
+            part->updateSubTreeMotionState(disp, transform_original.getOrigin(),
                                            align_rotation * part->m_user_rotation * rotation.inverse());
 
             obj->m_body->getMotionState()->getWorldTransform(p_transform);
@@ -557,8 +556,7 @@ void GameEditor::placeSubTree(float closest_dist, math::vec4& closest_att_point_
                         transform_final = object_T * object_R * transform_final;
                         disp = transform_final.getOrigin() - transform_original.getOrigin();
 
-                        current->updateSubTreeMotionState(m_asset_manager->m_set_motion_state_buffer,
-                                                          disp, transform_original.getOrigin(),
+                        current->updateSubTreeMotionState(disp, transform_original.getOrigin(),
                                                           align_rotation * symmetric_rotation * 
                                                           part->m_user_rotation * rotation_current.inverse());
 
@@ -582,7 +580,7 @@ void GameEditor::placeSubTree(float closest_dist, math::vec4& closest_att_point_
             m_camera->castRayMousePos(10.f, ray_start_world, ray_end_world);
             btVector3 origin(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]);
             btVector3 disp = origin - transform_original.getOrigin();
-            part->updateSubTreeMotionState(m_asset_manager->m_set_motion_state_buffer, disp, transform_original.getOrigin(),
+            part->updateSubTreeMotionState(disp, transform_original.getOrigin(),
                                            part->m_user_rotation * rotation.inverse());
         }
     }
@@ -602,15 +600,15 @@ void GameEditor::pickAttachedObject(BasePart* part){
             BasePart* clone = temp.at(i);
 
             clone->clearSubTreeCloneData();
-            m_asset_manager->m_remove_part_constraint_buffer.emplace_back(clone);
-            m_asset_manager->m_delete_subtree_buffer.emplace_back(clone->getVessel()->removeChild(clone));
+            m_asset_manager->removePartConstraint(clone);
+            m_asset_manager->deleteSubtree(clone->getVessel()->removeChild(clone));
         }
     }
 
     m_picked_obj = part;
 
     if(!part->isRoot()){
-        m_asset_manager->m_remove_part_constraint_buffer.emplace_back(part);
+        m_asset_manager->removePartConstraint(part);
         m_asset_manager->m_editor_subtrees.insert({part->getUniqueId(), part->getVessel()->removeChild(part)});
     }
 }
@@ -668,8 +666,8 @@ void GameEditor::processGUI(){
         }
 
         if(!m_vessel_id){ // set the vessel root
-            m_asset_manager->m_add_body_buffer.emplace_back(part.get(), btVector3(0.0, 60.0, 0.0),
-                                                            btVector3(0.0, 0.0, 0.0), btQuaternion::getIdentity());
+            m_asset_manager->addBody(part.get(), btVector3(0.0, 60.0, 0.0),
+                                     btVector3(0.0, 0.0, 0.0), btQuaternion::getIdentity());
 
             std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(std::move(part), m_input);
             m_vessel_id = vessel->getId();
@@ -680,8 +678,8 @@ void GameEditor::processGUI(){
         else{
             dmath::vec3 ray_start_world, ray_end_world;
             m_camera->castRayMousePos(10.f, ray_start_world, ray_end_world);
-            m_asset_manager->m_add_body_buffer.emplace_back(part.get(), btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]),
-                                                            btVector3(0.0, 0.0, 0.0), btQuaternion::getIdentity());
+            m_asset_manager->addBody(part.get(), btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]),
+                                     btVector3(0.0, 0.0, 0.0), btQuaternion::getIdentity());
 
             m_asset_manager->m_editor_subtrees.insert({part->getUniqueId(), part});
             m_picked_obj = part.get();
