@@ -10,6 +10,7 @@
             <planet name="Mercury" thumbnail="../data/planet_thumbnails/Mercury.png">
                 <mass>3.3011e23</mass>
                 <radius>0.0</radius>
+                <base_color>5f5f5f</base_color>
                 <semi_major_axis>
                     <value>0.38709927</value>
                     <derivative>0.00000037</derivative>
@@ -39,6 +40,7 @@
             <planet name="Venus" thumbnail="../data/planet_thumbnails/Venus.png">
                 <mass>4.8675e24</mass>
                 <radius>0.0</radius>
+                <base_color>914c11</base_color>
                 <semi_major_axis>
                     <value>0.72333566</value>
                     <derivative>0.00000390</derivative>
@@ -68,6 +70,7 @@
             <planet name="Earth" thumbnail="../data/planet_thumbnails/Earth.png">
                 <mass>5.97237e24</mass>
                 <radius>0.0</radius>
+                <base_color>0036a4</base_color>
                 <semi_major_axis>
                     <value>1.00000261</value>
                     <derivative>0.00000562</derivative>
@@ -97,6 +100,7 @@
             <planet name="Mars" thumbnail="../data/planet_thumbnails/Mars.png">
                 <mass>6.4171e23</mass>
                 <radius>0.0</radius>
+                <base_color>8a4e30</base_color>
                 <semi_major_axis>
                     <value>1.52371034</value>
                     <derivative>0.00001847</derivative>
@@ -126,6 +130,7 @@
             <planet name="Jupiter" thumbnail="../data/planet_thumbnails/Jupiter.png">
                 <mass>1.8982e27</mass>
                 <radius>0.0</radius>
+                <base_color>9f7f62</base_color>
                 <semi_major_axis>
                     <value>5.20288700</value>
                     <derivative>-0.00011607</derivative>
@@ -155,6 +160,7 @@
             <planet name="Saturn" thumbnail="../data/planet_thumbnails/Saturn.png">
                 <mass>5.6834e26</mass>
                 <radius>0.0</radius>
+                <base_color>e0c497</base_color>
                 <semi_major_axis>
                     <value>9.53667594</value>
                     <derivative>-0.00125060</derivative>
@@ -184,6 +190,7 @@
             <planet name="Uranus" thumbnail="../data/planet_thumbnails/Uranus.png">
                 <mass>8.6810e25</mass>
                 <radius>0.0</radius>
+                <base_color>708390</base_color>
                 <semi_major_axis>
                     <value>19.18916464</value>
                     <derivative>-0.00196176</derivative>
@@ -213,6 +220,7 @@
             <planet name="Neptune" thumbnail="../data/planet_thumbnails/Neptune.png">
                 <mass>1.02413e26</mass>
                 <radius>0.0</radius>
+                <base_color>5272ba</base_color>
                 <semi_major_axis>
                     <value>30.06992276</value>
                     <derivative>0.00026291</derivative>
@@ -242,6 +250,7 @@
             <planet name="Pluto" thumbnail="../data/planet_thumbnails/Neptune.png">
                 <mass>1.303e22</mass>
                 <radius>0.0</radius>
+                <base_color>5272ba</base_color>
                 <semi_major_axis>
                     <value>39.48211675</value>
                     <derivative>-0.00031596</derivative>

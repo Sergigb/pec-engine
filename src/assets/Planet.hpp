@@ -81,6 +81,7 @@ class Planet{
         GLuint m_vao, m_vbo_vert, m_vbo_ind;
         RenderContext* m_render_context;
         std::string m_thumbnail_path;
+        math::vec3 m_base_color;
 
         PlanetTree m_planet_tree;
 
@@ -114,7 +115,8 @@ class Planet{
         void render(const dmath::vec3& cam_translation, const dmath::mat4 transform);
 
         /*
-         * Renders the orbit of the planet, used in the planetarium view.
+         * Renders the orbit of the planet, used in the planetarium view. The shaders has to have 
+         * been bound before calling this method.
          */
         void renderOrbit() const;
 
@@ -227,6 +229,18 @@ class Planet{
          * Updates the kinematic objects of the planet.
          */
         void updateKinematics();
+
+        /*
+         * Sets the line color to be used when rendering the planet orbit in the planetarium.
+         *
+         * @color: vec3 with the RGB color values.
+         */
+        void setBaseColor(const math::vec3& color);
+
+        /*
+         * Returns the line color to be used when rendering the planet orbit in the planetarium.
+         */
+        const math::vec3& getBaseColor() const;
 };
 
 

@@ -50,13 +50,14 @@ void PlanetariumRenderer::renderPlanetariumOrbits(const std::vector<planet_trans
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     for(uint i=0; i < buff.size(); i++){
-        Planet* current = buff.at(i).planet_ptr;
+        const Planet* current = buff.at(i).planet_ptr;
+        const math::vec3& color = current->getBaseColor();
 
         if(current->getId() == m_app->getPlayer()->getPlanetariumSelectedPlanet()){
-            glUniform3f(m_debug_color_location, 0.0, 1.0, 0.0);
+            glUniform3f(m_debug_color_location, color.v[0], color.v[1], color.v[2]);
         }
         else{
-            glUniform3f(m_debug_color_location, 1.0, 0.0, 0.0);
+            glUniform3f(m_debug_color_location, color.v[0]*0.4, color.v[1]*0.4, color.v[2]*0.4);
         }
         current->renderOrbit();
     }

@@ -269,3 +269,13 @@ void Planet::setThumbnailPath(const char* path){
 const char* Planet::getThumbnailPath() const{
     return m_thumbnail_path.c_str();
 }
+
+
+void Planet::setBaseColor(const math::vec3& color){
+    m_base_color = color;
+}
+
+
+const math::vec3& Planet::getBaseColor() const{
+    return m_base_color;
+}

@@ -1,5 +1,6 @@
 #include <iostream>
 #include <memory>
+#include <stdio.h>
 
 #include <tinyxml2.h>
 
@@ -49,6 +50,12 @@ int load_planets(const tinyxml2::XMLElement* planets_element, planet_map& planet
         if(get_attribute(planet_element, "thumbnail", &path) == EXIT_FAILURE)
             path = "../data/planet_thumbnails/Default.png";
         current_planet->setThumbnailPath(path);
+
+        const char* hex_color;
+        uint r, g, b;
+        get_string(planet_element, "base_color", &hex_color);
+        sscanf(hex_color, "%02x%02x%02x", &r, &g, &b);
+        current_planet->setBaseColor(math::vec3((float)r / 255, (float)g / 255, (float)b / 255));
 
         if(get_double(planet_element, "mass", data.m) == EXIT_FAILURE)
             data.m = 0.0;
