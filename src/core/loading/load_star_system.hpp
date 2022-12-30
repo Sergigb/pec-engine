@@ -8,7 +8,7 @@ class PlanetarySystem;
 class RenderContext;
 class PlanetarySystem;
 
-void load_star_system(PlanetarySystem* system, RenderContext* render_context, const char* path="../data/star_system.xml");
+int load_star_system(PlanetarySystem* system, RenderContext* render_context, const char* path="../data/star_system.xml");
 
 #endif
 

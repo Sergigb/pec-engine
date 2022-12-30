@@ -149,9 +149,9 @@ class AssetManager : public AssetManagerInterface{
          * Loading methods, call these depending on what the application needs. Note that you will
          * probably need to load the resources if you want to have parts.
          */
-        void loadResources();
+        int loadResources();
         void loadParts();
-        void loadStarSystem();
+        int loadStarSystem();
 
         /*
          * Cleans everything (vessels, subtrees and buffers), call when the application is about to

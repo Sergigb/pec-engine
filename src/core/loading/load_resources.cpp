@@ -54,7 +54,7 @@ int create_resource(ResourceMap& resource_map, const tinyxml2::XMLElement* resou
 }
 
 
-void load_resources(ResourceMap& resource_map, const char* path){
+int load_resources(ResourceMap& resource_map, const char* path){
     current_file = path;
     tinyxml2::XMLDocument doc;
     tinyxml2::XMLElement* root;
@@ -73,7 +73,7 @@ void load_resources(ResourceMap& resource_map, const char* path){
         std::cerr << "load_resources::load_resources: can't get the root element for the document "
                   << path << std::endl;
         log("load_resources::load_resources: can't get the root element for the document ", path);
-        return;
+        return EXIT_FAILURE;
     }
 
     tinyxml2::XMLElement* resource = root->FirstChildElement("resource");
@@ -83,7 +83,7 @@ void load_resources(ResourceMap& resource_map, const char* path){
                      "\"resource\" elements after the root" << std::endl;
         log("load_resources::load_resources: resource file ", path, "has no \"resource\" elements "
             "after the root");
-        return;
+        return EXIT_FAILURE;
     }
 
     while(resource){
@@ -95,5 +95,6 @@ void load_resources(ResourceMap& resource_map, const char* path){
         }
         resource = resource->NextSiblingElement("resource");
     }
+    return EXIT_SUCCESS;
 }
 

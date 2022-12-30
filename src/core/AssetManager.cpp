@@ -46,8 +46,16 @@ AssetManager::~AssetManager(){
 }
 
 
-void AssetManager::loadResources(){
-    load_resources(m_resources);
+int AssetManager::loadResources(){
+    if(load_resources(m_resources) == EXIT_FAILURE){
+        log("AssetManager::loadResources: failed to load resources");
+        std::cerr << "AssetManager::loadResources: failed to load resources" << std::endl;
+        return EXIT_FAILURE;
+    }
+    else{
+        log("AssetManager::loadResources: successfully loaded resources");
+        return EXIT_SUCCESS;
+    }
 }
 
 
@@ -56,9 +64,17 @@ void AssetManager::loadParts(){
 }
 
 
-void AssetManager::loadStarSystem(){
+int AssetManager::loadStarSystem(){
     m_planetary_system.reset(new PlanetarySystem(m_render_context));
-    load_star_system(m_planetary_system.get(), m_render_context);
+    if(load_star_system(m_planetary_system.get(), m_render_context) == EXIT_FAILURE){
+        log("AssetManager::loadStarSystem: failed to create star system");
+        std::cerr << "AssetManager::loadStarSystem: failed to create star system" << std::endl;
+        return EXIT_FAILURE;
+    }
+    else{
+        log("AssetManager::loadStarSystem: successfully loaded star system");
+        return EXIT_SUCCESS;
+    }
 }
 
 

@@ -8,7 +8,7 @@
 class Resource;
 
 
-void load_resources(ResourceMap& resource_map, const char* path="../data/resources.xml");
+int load_resources(ResourceMap& resource_map, const char* path="../data/resources.xml");
 
 
 #endif

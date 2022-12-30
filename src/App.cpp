@@ -35,9 +35,21 @@ void App::init(){
     m_physics->initDynamicsWorld();
     m_render_context->setDebugDrawer();
 
-    m_asset_manager->loadResources();
-    m_asset_manager->loadParts();
-    m_asset_manager->loadStarSystem();
+    if(m_asset_manager->loadResources() == EXIT_FAILURE){
+        std::cerr << "App::init: fatal - failed to load the resources,"
+                     "check the xml file!" << std::endl;
+        log("App::init: fatal - failed to load resources, check the xml file!");
+        exit(EXIT_FAILURE);
+    }
+    
+    m_asset_manager->loadParts(); // no error check yet
+
+    if(m_asset_manager->loadStarSystem() == EXIT_FAILURE){
+        std::cerr << "App::init: fatal - failed to load the star system,"
+                     "check the xml file!" << std::endl;
+        log("App::init: fatal - failed to load the star system, check the xml file!");
+        exit(EXIT_FAILURE);
+    }
 
     m_def_font_atlas.reset(new FontAtlas(256));
     m_def_font_atlas->loadFont("../data/fonts/Liberastika-Regular.ttf", 15);

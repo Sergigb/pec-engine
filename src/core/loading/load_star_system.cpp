@@ -148,7 +148,7 @@ int load_planets(const tinyxml2::XMLElement* planets_element, planet_map& planet
 }
 
 
-void load_star_system(PlanetarySystem* system, RenderContext* render_context, const char* path){
+int load_star_system(PlanetarySystem* system, RenderContext* render_context, const char* path){
     tinyxml2::XMLDocument doc;
     const tinyxml2::XMLElement* system_element,* star_element,* planets_element;
     const char* system_name;
@@ -161,7 +161,7 @@ void load_star_system(PlanetarySystem* system, RenderContext* render_context, co
                   << doc.ErrorID() << " for document " << path << std::endl;
         log("load_resources::load_resources: LoadFile returned an error with code ",
             doc.ErrorID(), " for document ", path);
-        return;
+        return EXIT_FAILURE;
     }
 
     system_element = doc.RootElement();
@@ -171,7 +171,7 @@ void load_star_system(PlanetarySystem* system, RenderContext* render_context, co
                   "document " << path << std::endl;
         log("load_star_system::load_star_system: can't get the root element for the document ",
             path);
-        return;
+        return EXIT_FAILURE;
     }
 
     if(get_attribute(system_element, "name", &system_name))
@@ -179,22 +179,25 @@ void load_star_system(PlanetarySystem* system, RenderContext* render_context, co
 
     star_element = get_element(system_element, "star");
     if(!star_element)
-        return;
+        return EXIT_FAILURE;
 
     load_star(star_element, system_star);
 
     planets_element = get_element(star_element, "planets");
     if(!star_element)
-        return;
+        return EXIT_FAILURE;
 
     if(load_planets(planets_element, *planets.get(), render_context) == EXIT_FAILURE){
         std::cerr << "load_star_system::load_star_system: failed to load star system from"
                   << "file " << path << std::endl;
         log("load_star_system::load_star_system: failed to load star system from file ", path);
+        return EXIT_FAILURE;
     }
 
     system->setPlanetMap(std::move(planets));
     system->setSystemName(system_name);
     system->setStar(system_star);
+
+    return EXIT_SUCCESS;
 }
 
