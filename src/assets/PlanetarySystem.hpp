@@ -35,22 +35,80 @@ class PlanetarySystem{
         RenderContext* m_render_context;
         AssetManagerInterface* m_asset_manager;
     public:
+        /*
+         * Constructor
+         *
+         * @render_context: raw pointer to the render context.
+         */
         PlanetarySystem(RenderContext* render_context);
         ~PlanetarySystem();
 
+        /*
+         * Sets the planet map that contains the planets of the system. The system planet map is an
+         * unordered map where the values are Planet objects and the keys are the IDs of the 
+         * planets. These IDs are created, in theory, by hashing the names of the planets.
+         *
+         * @map: rvalue reference to a unique pointer containing a planet map.
+         */
         void setPlanetMap(std::unique_ptr<planet_map>&& map);
+
+        /*
+         * Sets the system name.
+         *
+         * @name: pointer to a string with the name of the system. The name is copied, the string 
+         * should be null terminated.
+         */
         void setSystemName(const char* name);
+
+        /*
+         * Sets the star of the system. See the definition of the star struct defined above.
+         *
+         * @sysem_star: reference to an object of type star.
+         */
         void setStar(star& system_star);
 
+        /*
+         * Calls the orbit render buffer update methods of each individual planet.
+         *
+         * @current_time: current time in centuries.
+         */
         void updateRenderBuffers(const double current_time);
+
+        /*
+         * Calls the orbital elements update methods of each individual planet.
+         *
+         * @current_time: current time in centuries.
+         */
         void updateOrbitalElements(const double cent_since_j2000);
+        
+        /*
+         * Calls the update method of each planet that updates their registered kinematics.
+         */
         void updateKinematics();
 
+        /*
+         * Calls the orbit render method of each one of the planets of the system.
+         */
         void renderOrbits() const;
 
+        /*
+         * Returns a constant reference to the planets map of the system.
+         */
         const planet_map& getPlanets() const;
+
+        /*
+         * Returns reference to the planets map of the system.
+         */
         planet_map& getPlanets();
+
+        /*
+         * Returns a constant reference to the star of the system.
+         */
         const star& getStar() const;
+
+        /*
+         * Returns a constant reference to the string containing the name of the system.
+         */
         const std::string& getSystemName() const;
 };
 
