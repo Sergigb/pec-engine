@@ -11,15 +11,24 @@
 
 
 class BaseApp;
+class RenderContext;
+
+#define SKYBOX_SIZE 100000.0f
 
 
 class PlanetariumRenderer : public BaseRenderer{
     private:
         BaseApp* m_app;
         GLint m_debug_view_mat, m_debug_proj_mat, m_debug_color_location;
+        RenderContext* m_render_context;
+        GLuint m_vao, m_vbo_vert, m_vbo_tex, m_textures[6];
+
+        math::mat4 m_skybox_transforms[6];
 
         void renderPlanetariumOrbits(const std::vector<planet_transform>& buff, 
                                      const math::mat4& view_mat);
+        void createSkybox();
+        void renderSkybox(const math::mat4& view_mat);
     public:
         PlanetariumRenderer(BaseApp* app);
         ~PlanetariumRenderer();

@@ -36,6 +36,7 @@ struct planet_transform;
 #define SHADER_PLANET 5
 #define SHADER_DEBUG 6
 #define SHADER_SPRITE 7
+#define SHADER_TEXTURE_NO_LIGHT 8
 
 /* gui modes */
 #define GUI_MODE_NONE 0
@@ -90,6 +91,9 @@ class RenderContext{
 
         GLint m_sprite_proj_mat;
         GLuint m_sprite_shader;
+
+        GLuint m_tnl_shader;
+        GLint m_tnl_view_mat, m_tnl_proj_mat;
         // shaders //
 
         GLuint m_bound_vao;

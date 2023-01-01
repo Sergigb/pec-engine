@@ -95,6 +95,8 @@ RenderContext::~RenderContext(){
     glDeleteShader(m_gui_shader);
     glDeleteShader(m_planet_shader);
     glDeleteShader(m_debug_shader);
+    glDeleteShader(m_sprite_shader);
+    glDeleteShader(m_tnl_shader);
 }
 
 
@@ -166,6 +168,16 @@ void RenderContext::loadShaders(){
 
     glUseProgram(m_sprite_shader);
     glUniformMatrix4fv(m_sprite_proj_mat, 1, GL_FALSE, orto_proj.m);
+
+    m_tnl_shader = create_programme_from_files("../shaders/texture_no_light_vs.glsl",
+                                               "../shaders/texture_no_light_fs.glsl");
+    log_programme_info(m_tnl_shader);
+    m_tnl_view_mat = glGetUniformLocation(m_tnl_shader, "view");
+    m_tnl_proj_mat = glGetUniformLocation(m_tnl_shader, "proj");
+
+    glUseProgram(m_tnl_shader);
+    glUniformMatrix4fv(m_tnl_view_mat, 1, GL_FALSE, m_camera->getViewMatrix().m);
+    glUniformMatrix4fv(m_tnl_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
 
     check_gl_errors(true, "RenderContext::loadShaders");
 }
@@ -389,6 +401,9 @@ void RenderContext::useProgram(int shader) const{
         case SHADER_SPRITE:
             glUseProgram(m_sprite_shader);
             break;
+        case SHADER_TEXTURE_NO_LIGHT:
+            glUseProgram(m_tnl_shader);
+            break;
         default:
             std::cerr << "RenderContext::useProgram - wrong shader value " << shader << std::endl;
             log("RenderContext::useProgram - wrong shader value ", shader);
@@ -413,6 +428,8 @@ GLuint RenderContext::getUniformLocation(int shader, const char* location) const
             return glGetUniformLocation(m_debug_shader, location);
         case SHADER_SPRITE:
             return glGetUniformLocation(m_sprite_shader, location);
+        case SHADER_TEXTURE_NO_LIGHT:
+            return glGetUniformLocation(m_tnl_shader, location);
         default:
             std::cerr << "RenderContext::getUniformLocation - wrong shader value " << shader << std::endl;
             log("RenderContext::getUniformLocation - wrong shader value ", shader);
