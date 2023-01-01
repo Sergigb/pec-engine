@@ -28,6 +28,10 @@ PlanetariumRenderer::PlanetariumRenderer(BaseApp* app){
     m_debug_proj_mat = m_render_context->getUniformLocation(SHADER_DEBUG, "proj");
     m_debug_color_location = m_render_context->getUniformLocation(SHADER_DEBUG, "line_color");
 
+    m_skybox_view_loc = m_render_context->getUniformLocation(SHADER_TEXTURE_NO_LIGHT, "view");
+    m_skybox_proj_loc = m_render_context->getUniformLocation(SHADER_TEXTURE_NO_LIGHT, "proj");
+    m_skybox_model_loc = m_render_context->getUniformLocation(SHADER_TEXTURE_NO_LIGHT, "model");
+
     createSkybox();
 }
 
@@ -164,15 +168,11 @@ void PlanetariumRenderer::renderSkybox(const math::mat4& view_mat){
     m_render_context->useProgram(SHADER_TEXTURE_NO_LIGHT);
     m_render_context->bindVao(m_vao);
 
-    GLint view = m_render_context->getUniformLocation(SHADER_TEXTURE_NO_LIGHT, "view");
-    GLint proj = m_render_context->getUniformLocation(SHADER_TEXTURE_NO_LIGHT, "proj");
-    GLint model = m_render_context->getUniformLocation(SHADER_TEXTURE_NO_LIGHT, "model");
-
-    glUniformMatrix4fv(view, 1, GL_FALSE, view_mat.m);
-    glUniformMatrix4fv(proj, 1, GL_FALSE, m_app->getCamera()->getProjMatrix().m);
+    glUniformMatrix4fv(m_skybox_view_loc, 1, GL_FALSE, view_mat.m);
+    glUniformMatrix4fv(m_skybox_proj_loc, 1, GL_FALSE, m_app->getCamera()->getProjMatrix().m);
 
     for(uint i=0; i < 6; i++){
-        glUniformMatrix4fv(model, 1, GL_FALSE, m_skybox_transforms[i].m);
+        glUniformMatrix4fv(m_skybox_model_loc, 1, GL_FALSE, m_skybox_transforms[i].m);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, m_textures[i]);
         glDrawArrays(GL_TRIANGLES, 0, 6);
