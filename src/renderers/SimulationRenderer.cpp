@@ -8,6 +8,7 @@
 #include "../core/Camera.hpp"
 #include "../assets/Planet.hpp"
 #include "../assets/Object.hpp"
+#include "../assets/PlanetTree.hpp"
 
 
 SimulationRenderer::SimulationRenderer(BaseApp* app){
@@ -27,6 +28,8 @@ SimulationRenderer::SimulationRenderer(BaseApp* app){
     m_render_context->useProgram(SHADER_PLANET);
     m_planet_view_mat = m_render_context->getUniformLocation(SHADER_PLANET, "view");
     m_planet_proj_mat = m_render_context->getUniformLocation(SHADER_PLANET, "proj");
+
+    PlanetTree::loadBases(m_app->getFrustum(), m_render_context);
 }
 
 
@@ -42,7 +45,8 @@ int SimulationRenderer::render(struct render_buffer* rbuf){
 
     for(uint i=0; i < rbuf->planet_buffer.size(); i++){
         planet_transform& tr = rbuf->planet_buffer.at(i);
-        tr.planet_ptr->render(rbuf->cam_origin, tr.transform);
+        if(tr.planet_ptr->getName() == std::string("Earth"))
+            tr.planet_ptr->render(rbuf->cam_origin, tr.transform);
     }
     return num_rendered;
 }

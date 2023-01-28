@@ -20,6 +20,7 @@
 Planet::Planet(RenderContext* render_context) : m_planet_tree(render_context, this){
     m_render_context = render_context;
     initBuffers();
+    buildSurface();
 }
 
 
@@ -31,8 +32,9 @@ Planet::~Planet(){
 
 
 const dmath::mat4 Planet::getTransform() const{
-    dmath::mat4 t;
-    dmath::translate(t, m_orbital_data.pos);
+    dmath::mat4 t = dmath::identity_mat4();
+    t = dmath::translate(t, m_orbital_data.pos);
+
     return t;
 }
 
