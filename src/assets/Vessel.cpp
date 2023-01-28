@@ -413,7 +413,8 @@ void Vessel::updateCoM(){
         if(!m_node_list.at(i)->m_body.get()) continue;
 
         btTransform trans;
-        trans = m_node_list.at(i)->m_body->getWorldTransform();
+        m_node_list.at(i)->m_body->getMotionState()->getWorldTransform(trans);
+
         const btVector3& origin = trans.getOrigin();
 
         com += (m_node_list.at(i)->getMass() / m_total_mass) * origin;
