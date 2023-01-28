@@ -145,8 +145,10 @@ void PlanetariumRenderer::createSkybox(){
         int x, y, n;
         unsigned char* image_data = stbi_load(path.str().c_str(), &x, &y, &n, 3);
         if(!image_data) {
-            std::cerr << "TODO " << std::endl;
-            log("TODO");
+            std::cerr << "PlanetariumRenderer::createSkybox: failed to load skybox texture"
+                         " with path " << path.str() << std::endl;
+            log("PlanetariumRenderer::createSkybox: failed to load skybox texture with path ",
+                path.str());
         }
         else{
             glGenTextures(1, &m_textures[i]);
