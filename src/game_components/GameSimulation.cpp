@@ -185,8 +185,8 @@ void GameSimulation::editorToSimulation(){
         // translate to lat/long 0.0-0.0, this function doesn't work well when lat or long != 0, for some reason
         //btVector3 to = reference_ellipse_to_xyz(btRadians(0.0), btRadians(0.0), 6371025.0 - vsl->getLowerBound());
         //btVector3 to(-2.6505e+10, -38663.6, 1.44693e+11);
-        btVector3 to(-26504446806.42, -38663.47, 144693255800.63);
-        to += reference_ellipse_to_xyz(btRadians(0.0), btRadians(0.0), 6371055.0 - vsl->getLowerBound());
+        btVector3 to(-26504446806.42, -38663.47, 144693255900.63);
+        to += reference_ellipse_to_xyz(btRadians(0.0), btRadians(0.0), 6371555.0 - vsl->getLowerBound());
         btVector3 disp;
         btTransform transform;
 

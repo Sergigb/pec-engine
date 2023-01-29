@@ -28,13 +28,15 @@ Kinematic::~Kinematic(){
 
 void Kinematic::update(){
     m_body->clearForces();
-    m_body->getMotionState()->setWorldTransform(m_transform);
+    //m_body->getMotionState()->setWorldTransform(m_transform);
+    m_body->setWorldTransform(m_transform);
 }
 
 
 void Kinematic::update(const btTransform& transform){
     m_body->clearForces();
-    m_body->getMotionState()->setWorldTransform(transform * m_transform);
+    //m_body->getMotionState()->setWorldTransform(transform * m_transform);
+    m_body->setWorldTransform(transform * m_transform);
 }
 
 
@@ -44,6 +46,7 @@ void Kinematic::update(const btVector3& origin, const btQuaternion& rotation){
     transform.setOrigin(origin);
     transform.setRotation(rotation);
     m_body->getMotionState()->setWorldTransform(transform * m_transform);
+    m_body->setWorldTransform(transform * m_transform); // unsure if this is needed
 }
 
 
