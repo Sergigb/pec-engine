@@ -179,13 +179,14 @@ void Physics::runSimulation(int max_sub_steps){
                */
 
             // WARNING! THE ORDER OF THESE UPDATES IS IMPORTANT, WE NEED TO REVISE THEM
-            timing.register_tp(TP_KINEM_END);
             applyGravity();
             timing.register_tp(TP_GRAV_END);
             m_dynamics_world->stepSimulation(m_delta_t, max_sub_steps);
+            timing.register_tp(TP_BULLET_END);
             planetary_system->updateOrbitalElements(cents_since_j2000);
             timing.register_tp(TP_ORBIT_END);
             planetary_system->updateKinematics();
+
 
             m_secs_since_j2000 += m_delta_t;
         }

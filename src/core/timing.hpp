@@ -56,10 +56,10 @@ struct logic_timing{
     void register_tp(short tp){
         switch(tp){
         case TP_LOGIC_START:
-            loop_start = sch_now();;
+            loop_start = sch_now();
             break;
         case TP_LOGIC_END:
-            loop_end = sch_now();;
+            loop_end = sch_now();
             break;
         default:
             log("logic_timing::register_tp: invalid time point ", tp);
@@ -71,12 +71,12 @@ struct logic_timing{
 
 #define TP_PHYSICS_START 1
 #define TP_PHYSICS_END 2
-#define TP_KINEM_END 3
+#define TP_BULLET_END 3
 #define TP_ORBIT_END 4
 #define TP_GRAV_END 5
 
 struct physics_timing{
-    time_point loop_start, loop_end, end_kinetic, end_orbital, end_gravity;
+    time_point loop_start, loop_end, end_bullet, end_orbital, end_gravity;
     double acc_phys_load, acc_kinematic, acc_orbital, acc_gravity, acc_bullet,
            avg_phys_load, avg_kinematic, avg_orbital, avg_gravity, avg_bullet;
     int update_freq, ticks_since_last_update;
@@ -99,11 +99,11 @@ struct physics_timing{
 
     void update(bool paused){
         acc_phys_load += duration(loop_end - loop_start).count();
-        acc_orbital += paused ? 0.0 : duration(end_orbital - loop_start).count();
-        acc_kinematic += paused ? 0.0 : duration(end_kinetic - end_orbital).count();
-        acc_gravity += paused ? 0.0 : duration(end_gravity - end_kinetic).count();
-        acc_bullet += paused ? 0.0 : duration(loop_end - end_gravity).count();
-
+        
+        acc_gravity += paused ? 0.0 : duration(end_gravity - loop_start).count();
+        acc_bullet += paused ? 0.0 : duration(end_bullet - end_gravity).count();
+        acc_orbital += paused ? 0.0 : duration(end_orbital - end_bullet).count();
+        acc_kinematic += paused ? 0.0 : duration(loop_end - end_orbital).count();
         ticks_since_last_update += 1;
 
         if(ticks_since_last_update == update_freq){
@@ -127,19 +127,19 @@ struct physics_timing{
     void register_tp(short tp){
         switch(tp){
         case TP_PHYSICS_START:
-            loop_start = sch_now();;
+            loop_start = sch_now();
             break;
         case TP_PHYSICS_END:
-            loop_end = sch_now();;
+            loop_end = sch_now();
             break;
-        case TP_KINEM_END:
-            end_kinetic = sch_now();;
+        case TP_BULLET_END:
+            end_bullet = sch_now();
             break;
         case TP_ORBIT_END:
-            end_orbital = sch_now();;
+            end_orbital = sch_now();
             break;
         case TP_GRAV_END:
-            end_gravity = sch_now();;
+            end_gravity = sch_now();
             break;
         default:
             log("physics_timing::register_tp: invalid time point ", tp);
@@ -201,16 +201,16 @@ struct render_timing{
     void register_tp(short tp){
         switch(tp){
         case TP_RENDER_START:
-            loop_start = sch_now();;
+            loop_start = sch_now();
             break;
         case TP_RENDER_END:
-            loop_end = sch_now();;
+            loop_end = sch_now();
             break;
         case TP_GUI_END:
-            end_gui = sch_now();;
+            end_gui = sch_now();
             break;
         case TP_SCENE_END:
-            end_scene = sch_now();;
+            end_scene = sch_now();
             break;
         default:
             log("render_timing::register_tp: invalid time point ", tp);
