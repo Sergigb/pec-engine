@@ -28,6 +28,7 @@ class PlanetRenderer : public BaseApp{
 
         // application default font atlas
         std::unique_ptr<FontAtlas> m_def_font_atlas;
+        bool m_polygon_mode_lines;
 
         void render_side(struct surface_node& surface_subtree, math::mat4& planet_transform, int level, dmath::vec3& cam_origin, double sea_level);
     public:
@@ -36,6 +37,8 @@ class PlanetRenderer : public BaseApp{
         ~PlanetRenderer();
 
         void run();
+        void processInput();
+        void terminate();
 };
 
 
