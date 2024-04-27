@@ -306,7 +306,7 @@ static void async_texture_load(struct surface_node* node, struct planet_surface*
         std::cout << "Failed to load texture " << fname.str() << std::endl;
     }*/
 
-//    std::cout << "Loaded texture: " << fname.str() << std::endl;
+    std::cout << "Loaded texture: " << fname.str() << std::endl;
 
     fname.str("");
     fname.clear();
@@ -474,6 +474,7 @@ void PlanetTree::renderSide(struct surface_node& node, const math::mat4& planet_
         glUniform2fv(m_tex_shift_location, 1, node.tex_shift_lod.v);
         glUniform1f(m_texture_scale_location, node.texture_scale_lod);
     }
+    std::cout << "Rendered side with level " <<  node.level << std::endl;
     if(node.level >= 1 && node.level < 3){
         PlanetTree::m_base32->render_terrain(planet_transform_world);
     }
@@ -505,14 +506,19 @@ void PlanetTree::render(const dmath::vec3& cam_translation, const dmath::mat4 tr
     glUniform1i(m_planet_texture, TEXTURE_LOCATION);
     glUniform1i(m_elevation_texture, ELEVATION_LOCATION);
 
-    //dmath::vec3 cam_trans_local(0.0, 0.0, 0.0);
-    //cam_trans_local.v[0] = dplanet_transform_world.m[12];
-    //cam_trans_local.v[1] = dplanet_transform_world.m[13];
-    //cam_trans_local.v[2] = dplanet_transform_world.m[14];
+    dmath::vec3 cam_trans_local(0.0, 0.0, 0.0);
+    cam_trans_local.v[0] -= dplanet_transform_world.m[12];
+    cam_trans_local.v[1] -= dplanet_transform_world.m[13];
+    cam_trans_local.v[2] -= dplanet_transform_world.m[14];
+
+    // confusing mess of additions and subtractions of cameras and origins, seems to work but not
+    // sure why or how. also there might be floating point arithmetic problems with the rendering
+    // pipeline... (maybe not? we're rendering with planet_transform_world, which is actually
+    // relative to the centered camera... change the name of the var?)
 
     for(uint i=0; i < 6; i++){
         //dmath::vec3 t(6300000.0, 0.0, 0.0);
-        renderSide(m_surface.surface_tree[i], planet_transform_world, m_surface.max_levels, cam_translation, m_surface.planet_sea_level);
+        renderSide(m_surface.surface_tree[i], planet_transform_world, m_surface.max_levels, cam_trans_local, m_surface.planet_sea_level);
     }
 
     textureFree();
