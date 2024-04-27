@@ -14,7 +14,7 @@ std::unique_ptr<Model> PlanetTree::m_base32;
 std::unique_ptr<Model> PlanetTree::m_base64;
 std::unique_ptr<Model> PlanetTree::m_base128;
 
-
+#define ASYNC_PLANET_TEXTURE_LOAD 
 #define TEXTURE_LOCATION 0
 #define ELEVATION_LOCATION 1
 
@@ -289,7 +289,7 @@ void PlanetTree::cleanSide(struct surface_node& node, int num_levels){ // num_le
 }
 
 
-void PlanetTree::asyncTextureLoad(struct surface_node* node, struct planet_surface* surface){
+static void async_texture_load(struct surface_node* node, struct planet_surface* surface){
     int n_channels;
     std::ostringstream fname;
     //bool res;
@@ -306,6 +306,8 @@ void PlanetTree::asyncTextureLoad(struct surface_node* node, struct planet_surfa
         std::cout << "Failed to load texture " << fname.str() << std::endl;
     }*/
 
+//    std::cout << "Loaded texture: " << fname.str() << std::endl;
+
     fname.str("");
     fname.clear();
 
@@ -321,7 +323,7 @@ void PlanetTree::asyncTextureLoad(struct surface_node* node, struct planet_surfa
         std::cout << "Failed to load texture " << fname.str() << std::endl;
     }*/
 
-    //std::cout << "Loaded texture: " << fname.str() << std::endl;
+//    std::cout << "Loaded texture: " << fname.str() << std::endl;
 
     surface->data_ready_mtx.lock();
     surface->data_ready_nodes.push_back(node);
@@ -373,10 +375,14 @@ void PlanetTree::loadBases(const Frustum* frustum, const RenderContext* render_c
 }
 
 
-void PlanetTree::renderSide(struct surface_node& node, const math::mat4& planet_transform_world, int max_level, const dmath::vec3& cam_origin, double sea_level){
+void PlanetTree::renderSide(struct surface_node& node, const math::mat4& planet_transform_world,
+                            int max_level, const dmath::vec3& cam_origin, double sea_level){
     // PRECOMPUTE THIS VVVVV
     dmath::vec3 path_translation_normd = dmath::vec3(dmath::quat_to_mat4(node.base_rotation) * dmath::vec4(dmath::normalise(node.patch_translation), 1.0)) * sea_level;
     double distance = dmath::distance(path_translation_normd, cam_origin);
+    //std::cout << path_translation_normd.v[0] << " " <<  path_translation_normd.v[1] << " " <<  path_translation_normd.v[2] << std::endl;
+    //std::cout << cam_origin.v[0] << " " <<  cam_origin.v[1] << " " <<  cam_origin.v[2] << std::endl;
+    //std::cout << std::endl;
     bool texture_is_loaded = true;
 
     if(node.scale * sea_level * 1.5 > distance && node.level < max_level){
@@ -400,10 +406,10 @@ void PlanetTree::renderSide(struct surface_node& node, const math::mat4& planet_
             if(!node.uppermost_textured_parent->loading && !node.uppermost_textured_parent->data_ready){
                 node.uppermost_textured_parent->loading = true;
 #ifdef ASYNC_PLANET_TEXTURE_LOAD
-                std::thread thread(asyncTextureLoad, node.uppermost_textured_parent, &m_surface);
+                std::thread thread(async_texture_load, node.uppermost_textured_parent, &m_surface);
                 thread.detach();
 #else
-                asyncTextureLoad(node.uppermost_textured_parent, &m_surface);
+                async_texture_load(node.uppermost_textured_parent, &m_surface);
                 bindLoadedTexture(*node.uppermost_textured_parent);
 #endif
             }
@@ -429,10 +435,10 @@ void PlanetTree::renderSide(struct surface_node& node, const math::mat4& planet_
             if(!node.loading && !node.data_ready){
                 node.loading = true;
 #ifdef ASYNC_PLANET_TEXTURE_LOAD
-                std::thread thread(asyncTextureLoad, &node, &m_surface);
+                std::thread thread(async_texture_load, &node, &m_surface);
                 thread.detach();
 #else
-                asyncTextureLoad(&node, &m_surface);
+                async_texture_load(&node, &m_surface);
                 bindLoadedTexture(node);
 #endif
             }
@@ -468,7 +474,6 @@ void PlanetTree::renderSide(struct surface_node& node, const math::mat4& planet_
         glUniform2fv(m_tex_shift_location, 1, node.tex_shift_lod.v);
         glUniform1f(m_texture_scale_location, node.texture_scale_lod);
     }
-
     if(node.level >= 1 && node.level < 3){
         PlanetTree::m_base32->render_terrain(planet_transform_world);
     }
@@ -499,6 +504,11 @@ void PlanetTree::render(const dmath::vec3& cam_translation, const dmath::mat4 tr
     glUniform1f(m_planet_radius_location, m_surface.planet_sea_level);
     glUniform1i(m_planet_texture, TEXTURE_LOCATION);
     glUniform1i(m_elevation_texture, ELEVATION_LOCATION);
+
+    //dmath::vec3 cam_trans_local(0.0, 0.0, 0.0);
+    //cam_trans_local.v[0] = dplanet_transform_world.m[12];
+    //cam_trans_local.v[1] = dplanet_transform_world.m[13];
+    //cam_trans_local.v[2] = dplanet_transform_world.m[14];
 
     for(uint i=0; i < 6; i++){
         //dmath::vec3 t(6300000.0, 0.0, 0.0);

@@ -167,17 +167,6 @@ class Planet;
         void bindLoadedTexture(struct surface_node& node);
 
         /*
-         * Loads the surface and elevation textures into the data and data_elevation pointers. This
-         * method can be called asynchronously to load the data with std::thread. After loading the
-         * texture you can call bindLoadedTexture to bind them, but this has to happen
-         * synchronously. The node will be put into the data_ready vector inside the surface struct.
-         *
-         * @node: pointer to the node we want to load the textures for.
-         * @surface: pointer to the surface object, we can probably just use the member object...
-         */
-        void asyncTextureLoad(struct surface_node* node, struct planet_surface* surface);
-
-        /*
          * Binds all the textures inside data_ready. Like bindLoadedTexture has to be called from
          * the thread that holds the OpenGL context.
          */
