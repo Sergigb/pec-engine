@@ -38,26 +38,6 @@ Player::~Player(){
 
 
 
-void Player::updateEditor(){
-    // camera
-    if(!m_vessel){
-        m_camera->freeCameraUpdate();
-    }
-    else{
-        const btVector3& com = m_vessel->getCoM();
-        m_camera->setCameraPosition(dmath::vec3(com.getX(), com.getY(), com.getZ()));
-        //setCamAxisRotation();
-        m_camera->orbitalCameraUpdate();
-    }
-
-    // input
-    if((m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT))
-       && (m_input->pressed_keys[GLFW_KEY_C] & INPUT_KEY_DOWN)){
-        setPlayerTarget();
-    }
-}
-
-
 void Player::unsetVessel(){
     m_vessel->setPlayer(nullptr);
     m_vessel = nullptr;
@@ -68,19 +48,6 @@ void Player::unsetVessel(){
 void Player::setVessel(Vessel* vessel){
     m_vessel = vessel;
     m_vessel->setPlayer(this);
-}
-
-
-void Player::setPlayerTarget(){
-    if(m_behaviour & PLAYER_BEHAVIOUR_EDITOR){
-        if(m_vessel){
-            unsetVessel();
-        }
-        else if(m_asset_manager->m_editor_vessel.get()){
-            m_vessel = m_asset_manager->m_editor_vessel.get();
-            m_vessel->setPlayer(this);
-        }
-    }
 }
 
 

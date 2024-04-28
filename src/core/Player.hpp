@@ -24,10 +24,6 @@ class BaseApp;
  * Player class, has code that can be used in different applications (camera update, for example),
  * also holds information such as the vessel that the player is controlling or the planet selected
  * in the planetarium view.
- *
- * Note about this class: I think it would be easier to let the application manage the player
- * update method, which is essentially input + camera. We should make some methods of this class,
- * such as setPlayerTarget, public and let the application decide when it wants to call then.
  */
 class Player{
     private:
@@ -43,16 +39,10 @@ class Player{
         struct camera_params m_editor_cam_params;
 
         void togglePlanetariumFreecam();
-        void setPlayerTarget();
         void switchVessel();
     public:
         Player(Camera* camera, AssetManager* asset_manager, const Input* input);
         ~Player();
-
-        /*
-         * Update method for the editor.
-         */
-        void updateEditor();
 
         /*
          * This method should only be called by the player controlled vessel in case it gets
