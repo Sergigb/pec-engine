@@ -98,12 +98,13 @@ Planetarium::~Planetarium(){
 }
 
 
-GLuint color_location, proj_location, view_location; // change me :)
+GLuint color_location, proj_location, view_location, alpha_location; // change me :)
 
 void Planetarium::initGl(){
     color_location = m_render_context->getUniformLocation(SHADER_DEBUG, "line_color");
     proj_location = m_render_context->getUniformLocation(SHADER_DEBUG, "proj");
     view_location = m_render_context->getUniformLocation(SHADER_DEBUG, "view");
+    alpha_location = m_render_context->getUniformLocation(SHADER_DEBUG, "alpha");
 
     // init temp buffers
     glGenVertexArrays(1, &m_pred_vao);
@@ -116,8 +117,6 @@ void Planetarium::initGl(){
 
     glGenBuffers(1, &m_pred_vbo_ind);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_pred_vbo_ind);
-    glVertexAttribPointer(1, 2, GL_UNSIGNED_INT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(1);
 }
 
 
@@ -167,6 +166,7 @@ void Planetarium::renderOrbits(){
     }
 
     glUniform3f(color_location, 0.0, .75, 0.75);
+    glUniform1f(alpha_location, 1.0f);
     m_render_context->bindVao(m_pred_vao);
     glDrawElements(GL_LINES, m_predictor_steps * 2, GL_UNSIGNED_INT, NULL);
 }

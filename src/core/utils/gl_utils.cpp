@@ -211,8 +211,6 @@ int load_scene(const std::string pFile, GLuint& vao, int& point_count, float& cs
         glGenBuffers(1, &vbo);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * point_count * sizeof(GLuint), indices, GL_STATIC_DRAW);
-        glVertexAttribPointer(3, 3, GL_UNSIGNED_INT, GL_FALSE, 0, NULL);
-        glEnableVertexAttribArray(3);
         delete[] indices;
 
     }

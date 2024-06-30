@@ -136,8 +136,6 @@ EditorGUI::EditorGUI(const FontAtlas* atlas, const RenderContext* render_context
 
     glGenBuffers(1, &m_vbo_ind);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vbo_ind);
-    glVertexAttribPointer(3, 3, GL_UNSIGNED_SHORT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(3);
 
     // panels
     GLushort index_buffer[EDITOR_GUI_INDEX_NUM];

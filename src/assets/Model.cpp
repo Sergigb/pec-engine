@@ -159,8 +159,6 @@ int Model::loadScene(const std::string& pFile){
         glGenBuffers(1, &m_vbo_ind);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vbo_ind);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * m_num_faces * sizeof(GLuint), indices.get(), GL_STATIC_DRAW);
-        glVertexAttribPointer(3, 3, GL_UNSIGNED_INT, GL_FALSE, 0, NULL);
-        glEnableVertexAttribArray(3);
     }
 
     if(mesh->HasTangentsAndBitangents()){
@@ -206,6 +204,7 @@ void Model::render_terrain(const math::mat4& transform) const{
 
     glUniform4fv(m_color_location, 1, m_mesh_color.v);
     glUniformMatrix4fv(m_model_mat_location, 1, GL_FALSE, transform.m);
+    //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     glDrawElements(GL_TRIANGLES, m_num_faces * 3, GL_UNSIGNED_INT, NULL);
 }
 

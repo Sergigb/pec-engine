@@ -112,8 +112,6 @@ void Planet::initBuffers(){
 
     glGenBuffers(1, &m_vbo_ind);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vbo_ind);
-    glVertexAttribPointer(1, 2, GL_UNSIGNED_SHORT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray(1);
 }
 
 
