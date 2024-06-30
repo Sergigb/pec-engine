@@ -306,7 +306,6 @@ static void async_texture_load(struct surface_node* node, struct planet_surface*
         std::cout << "Failed to load texture " << fname.str() << std::endl;
     }*/
 
-    std::cout << "Loaded texture: " << fname.str() << std::endl;
 
     fname.str("");
     fname.clear();
@@ -323,8 +322,6 @@ static void async_texture_load(struct surface_node* node, struct planet_surface*
         std::cout << "Failed to load texture " << fname.str() << std::endl;
     }*/
 
-//    std::cout << "Loaded texture: " << fname.str() << std::endl;
-
     surface->data_ready_mtx.lock();
     surface->data_ready_nodes.push_back(node);
     surface->data_ready_mtx.unlock();
@@ -336,7 +333,6 @@ static void async_texture_load(struct surface_node* node, struct planet_surface*
 
 void PlanetTree::bindLoadedTextures(){
     m_surface.data_ready_mtx.lock();
-    //std::cout << data_ready_nodes.size() << std::endl;
     for(uint i=0; i < m_surface.data_ready_nodes.size(); i++){
         bindLoadedTexture(*m_surface.data_ready_nodes.at(i));
     }
@@ -380,9 +376,6 @@ void PlanetTree::renderSide(struct surface_node& node, const math::mat4& planet_
     // PRECOMPUTE THIS VVVVV
     dmath::vec3 path_translation_normd = dmath::vec3(dmath::quat_to_mat4(node.base_rotation) * dmath::vec4(dmath::normalise(node.patch_translation), 1.0)) * sea_level;
     double distance = dmath::distance(path_translation_normd, cam_origin);
-    //std::cout << path_translation_normd.v[0] << " " <<  path_translation_normd.v[1] << " " <<  path_translation_normd.v[2] << std::endl;
-    //std::cout << cam_origin.v[0] << " " <<  cam_origin.v[1] << " " <<  cam_origin.v[2] << std::endl;
-    //std::cout << std::endl;
     bool texture_is_loaded = true;
 
     if(node.scale * sea_level * 1.5 > distance && node.level < max_level){
@@ -474,7 +467,6 @@ void PlanetTree::renderSide(struct surface_node& node, const math::mat4& planet_
         glUniform2fv(m_tex_shift_location, 1, node.tex_shift_lod.v);
         glUniform1f(m_texture_scale_location, node.texture_scale_lod);
     }
-    std::cout << "Rendered side with level " <<  node.level << std::endl;
     if(node.level >= 1 && node.level < 3){
         PlanetTree::m_base32->render_terrain(planet_transform_world);
     }
