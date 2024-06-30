@@ -19,7 +19,8 @@ class RenderContext;
 class PlanetariumRenderer : public BaseRenderer{
     private:
         BaseApp* m_app;
-        GLint m_debug_view_mat, m_debug_proj_mat, m_debug_color_location;
+        GLint m_debug_view_mat, m_debug_proj_mat;
+        GLint m_debug_color_location, m_debug_alpha_location;
         RenderContext* m_render_context;
         GLuint m_vao, m_vbo_vert, m_vbo_tex, m_textures[6];
         GLint m_skybox_view_loc, m_skybox_proj_loc, m_skybox_model_loc;

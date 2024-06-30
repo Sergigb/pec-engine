@@ -46,6 +46,7 @@ DebugDrawer::DebugDrawer(const RenderContext* render_context) : m_camera_center(
     m_render_context = render_context;
 
     m_color_location = render_context->getUniformLocation(SHADER_DEBUG, "line_color");
+    m_debug_alpha_location = m_render_context->getUniformLocation(SHADER_DEBUG, "alpha");
 
     glGenVertexArrays(1, &m_line_vao);
     glBindVertexArray(m_line_vao);
@@ -81,6 +82,7 @@ void DebugDrawer::drawLine(const btVector3& from, const btVector3& to, const btV
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo_vert);
     glBufferSubData(GL_ARRAY_BUFFER, 0, VERTEX_BUF_SIZE, vertex_buf.bufferdata);
     glUniform3fv(m_color_location, 1, color_buf.bufferdata);
+    glUniform1f(m_debug_alpha_location, 1.0);
 
     glDrawArrays(GL_LINES, 0, VERTEX_BUF_SIZE);
 }

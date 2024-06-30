@@ -19,7 +19,7 @@ class RenderContext;
 class DebugDrawer : public btIDebugDraw{
         btVector3 m_camera_center;
 
-        GLuint m_line_vao, m_vbo_vert, m_color_location;
+        GLuint m_line_vao, m_vbo_vert, m_color_location, m_debug_alpha_location;
 
         const RenderContext* m_render_context;
     public:

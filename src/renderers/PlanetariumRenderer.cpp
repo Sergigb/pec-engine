@@ -27,6 +27,7 @@ PlanetariumRenderer::PlanetariumRenderer(BaseApp* app){
     m_debug_view_mat = m_render_context->getUniformLocation(SHADER_DEBUG, "view");
     m_debug_proj_mat = m_render_context->getUniformLocation(SHADER_DEBUG, "proj");
     m_debug_color_location = m_render_context->getUniformLocation(SHADER_DEBUG, "line_color");
+    m_debug_alpha_location = m_render_context->getUniformLocation(SHADER_DEBUG, "alpha");
 
     m_skybox_view_loc = m_render_context->getUniformLocation(SHADER_TEXTURE_NO_LIGHT, "view");
     m_skybox_proj_loc = m_render_context->getUniformLocation(SHADER_TEXTURE_NO_LIGHT, "proj");
@@ -70,9 +71,11 @@ void PlanetariumRenderer::renderPlanetariumOrbits(const std::vector<planet_trans
 
         if(current->getId() == m_app->getPlayer()->getPlanetariumSelectedPlanet()){
             glUniform3f(m_debug_color_location, color.v[0], color.v[1], color.v[2]);
+            glUniform1f(m_debug_alpha_location, 1 - m_target_fade);
         }
         else{
             glUniform3f(m_debug_color_location, color.v[0]*0.5, color.v[1]*0.5, color.v[2]*0.5);
+            glUniform1f(m_debug_alpha_location, 1 - m_target_fade);
         }
         current->renderOrbit();
     }
