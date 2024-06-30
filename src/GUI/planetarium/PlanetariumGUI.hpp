@@ -72,6 +72,7 @@ class PlanetariumGUI : public BaseGUI{
         std::uint32_t m_selected_planet;
         struct system_gui_data m_system_gui_data;
         bool m_freecam;
+        float m_target_fade = 0.0;
 
         const FontAtlas* m_font_atlas;
         const RenderContext* m_render_context;
@@ -90,6 +91,7 @@ class PlanetariumGUI : public BaseGUI{
         void setSimulationDeltaT(double delta_t);
         void setSelectedPlanet(std::uint32_t planet_id);
         void setFreecam(bool freecam);
+        void setTargetFade(float value);
 
         void onFramebufferSizeUpdate();
         void render();

@@ -24,6 +24,8 @@ class PlanetariumRenderer : public BaseRenderer{
         GLuint m_vao, m_vbo_vert, m_vbo_tex, m_textures[6];
         GLint m_skybox_view_loc, m_skybox_proj_loc, m_skybox_model_loc;
 
+        float m_target_fade = 0.0;
+
         math::mat4 m_skybox_transforms[6];
 
         void renderPlanetariumOrbits(const std::vector<planet_transform>& buff, 
@@ -35,6 +37,8 @@ class PlanetariumRenderer : public BaseRenderer{
         ~PlanetariumRenderer();
 
         int render(struct render_buffer* rbuf);
+
+        void setTargetFade(float value);
 };
 
 

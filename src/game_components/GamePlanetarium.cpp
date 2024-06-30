@@ -66,17 +66,25 @@ void GamePlanetarium::updateInput(){
     }
 
     double scx, scy;
+    float fade = 0.0; /// this should go somewhere else
     m_input->getScroll(scx, scy);
     if((scy) && !m_render_context->imGuiWantCaptureMouse()){
         double current_distance = m_camera->getOrbitalCamDistance(), increment;
 
-        if(current_distance < 0.15)
+        if(current_distance < 0.15){
             increment = -SIGN(scy) * (0.02 * current_distance);
-        else if(current_distance < 1)
-            increment = -SIGN(scy) * (0.2 * current_distance);
-        else
+            fade = 1.0;
+            }
+        else if(current_distance < 1){ // fade at this interval
+            fade = 1.0 - ((current_distance - 0.15) / (1 - 0.15));
+            increment = -SIGN(scy) * (0.1 * current_distance);
+        }
+        else{
             increment = -SIGN(scy) * std::min((std::pow(std::abs(current_distance), 2.0) / 100.0)
                                               + 0.5, 75.0);
+            fade = 0.0;
+        }
+        std::cout << "fade " << fade << " at dist " << current_distance << std::endl;
         if(current_distance + increment > 10000.0){
             increment = 10000.0;
             increment = 0.0;
@@ -85,6 +93,8 @@ void GamePlanetarium::updateInput(){
             increment = 0.0;
             current_distance = 1e7 / PLANETARIUM_SCALE_FACTOR;
         }
+        m_gui->setTargetFade(fade);
+        m_renderer->setTargetFade(fade);
         m_camera->setOrbitalCamDistance(current_distance + increment); // we should check the camera mode
     }
 }

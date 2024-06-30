@@ -32,6 +32,8 @@ PlanetariumRenderer::PlanetariumRenderer(BaseApp* app){
     m_skybox_proj_loc = m_render_context->getUniformLocation(SHADER_TEXTURE_NO_LIGHT, "proj");
     m_skybox_model_loc = m_render_context->getUniformLocation(SHADER_TEXTURE_NO_LIGHT, "model");
 
+    m_target_fade = 0.0;
+
     createSkybox();
 }
 
@@ -180,4 +182,9 @@ void PlanetariumRenderer::renderSkybox(const math::mat4& view_mat){
         glDrawArrays(GL_TRIANGLES, 0, 6);
     }
     check_gl_errors(true, "renderSkybox");
+}
+
+
+void PlanetariumRenderer::setTargetFade(float value){
+    m_target_fade = value;
 }

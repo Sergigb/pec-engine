@@ -25,6 +25,7 @@ PlanetariumGUI::PlanetariumGUI(const FontAtlas* atlas, const BaseApp* app){
     m_selected_planet = 0;
     m_asset_manager = app->getAssetManager();
     m_freecam = false;
+    m_target_fade = 0.0;
 
     buildSystemGUIData();
 
@@ -276,4 +277,9 @@ void PlanetariumGUI::buildSystemGUIData(){
 
 void PlanetariumGUI::setFreecam(bool freecam){
     m_freecam = freecam;
+}
+
+
+void PlanetariumGUI::setTargetFade(float value){
+    m_target_fade = value;
 }
