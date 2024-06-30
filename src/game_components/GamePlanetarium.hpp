@@ -16,7 +16,7 @@ class PlanetariumRenderer;
 class RenderContext;
 
 
-#define PLANETARIUM_SCALE_FACTOR 1e8
+#define PLANETARIUM_SCALE_FACTOR 1e9
 
 
 class GamePlanetarium{

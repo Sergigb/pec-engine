@@ -72,7 +72,7 @@ void GamePlanetarium::updateInput(){
         double current_distance = m_camera->getOrbitalCamDistance(), increment;
 
         if(current_distance < 0.15){
-            increment = -SIGN(scy) * (0.02 * current_distance);
+            increment = -SIGN(scy) * (0.08 * current_distance);
             fade = 1.0;
             }
         else if(current_distance < 1){ // fade at this interval
@@ -84,7 +84,6 @@ void GamePlanetarium::updateInput(){
                                               + 0.5, 75.0);
             fade = 0.0;
         }
-        std::cout << "fade " << fade << " at dist " << current_distance << std::endl;
         if(current_distance + increment > 10000.0){
             increment = 10000.0;
             increment = 0.0;

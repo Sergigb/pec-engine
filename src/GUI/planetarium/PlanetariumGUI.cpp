@@ -118,9 +118,11 @@ void PlanetariumGUI::renderPlanets(const math::mat4& proj_mat, const math::mat4&
             pos_screen = ((pos_screen / pos_screen.v[3]) + 1. ) / 2.;
 
             mbstowcs(buff, current->getName().c_str(), 256);
+            float faded_c[4] = {0.85, 0.85, 0.85, 1 - m_target_fade};
             m_main_text->addString(buff, pos_screen.v[0] * m_fb_width, 
                                    pos_screen.v[1] * m_fb_height - 15, 1.0f,
-                                   STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_CENTER_XY, c);
+                                   STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_CENTER_XY,
+                                   m_selected_planet == current->getId() ? faded_c : c);
             planets.at(i).m_planet_sprite.render(math::vec2(pos_screen.v[0] * m_fb_width, 
                                                             pos_screen.v[1] * m_fb_height));
             m_main_text->render();

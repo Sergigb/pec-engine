@@ -113,7 +113,7 @@ void BaseApp::displayLoadingScreen(){
 void BaseApp::init(int gl_width, int gl_height){
     m_input.reset(new Input());
     m_camera.reset(new Camera(dmath::vec3(-0.0f, 50.0f, 50.0f), 67.0f,
-                              (float)gl_width / (float)gl_height, 0.1f, 63000000.0f,
+                              (float)gl_width / (float)gl_height, 0.01f, 6300000000.0f,
                               m_input.get()));
     m_camera->setSpeed(10.f);
     m_window_handler.reset(new WindowHandler(gl_width, gl_height, m_input.get(),
