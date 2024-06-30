@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <vector>
+#include <stdint.h>
 
 class BaseApp;
 class PlanetariumGUI;
@@ -15,7 +16,7 @@ class PlanetariumRenderer;
 class RenderContext;
 
 
-#define PLANETARIUM_SCALE_FACTOR 1e10
+#define PLANETARIUM_SCALE_FACTOR 1e9
 
 
 class GamePlanetarium{
@@ -23,7 +24,7 @@ class GamePlanetarium{
         std::unique_ptr<PlanetariumGUI> m_gui;
         std::unique_ptr<PlanetariumRenderer> m_renderer;
 
-        std::uint32_t m_selected_planet;
+        uint32_t m_selected_planet;
         uint m_selected_planet_idx;
         bool m_freecam;
         std::vector<const Planet*> m_ordered_planets;
@@ -42,8 +43,6 @@ class GamePlanetarium{
 
         void update();
         void updateCamera();
-
-        const PlanetariumGUI* getPlanetariumGUI() const;
 };
 
 

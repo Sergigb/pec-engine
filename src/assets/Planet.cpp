@@ -11,6 +11,7 @@
 #include "../core/log.hpp"
 #include "../core/Physics.hpp"
 #include "../GUI/Sprite.hpp"
+#include "../game_components/GamePlanetarium.hpp"
 
 
 #define TEXTURE_LOCATION 0
@@ -223,7 +224,7 @@ void Planet::updateRenderBuffers(double current_time){
 
         v = 2 * std::atan(std::sqrt((1 + e) / (1 - e)) * std::tan(E / 2));
 
-        double rad = a * (1 - e * std::cos(E)) * (AU_TO_METERS / 1e10);
+        double rad = a * (1 - e * std::cos(E)) * (AU_TO_METERS / PLANETARIUM_SCALE_FACTOR);
 
         vertex_buffer[i * 3] = rad * (std::cos(W) * std::cos(w + v) -
                                std::sin(W) * std::sin(w + v) * std::cos(inc));

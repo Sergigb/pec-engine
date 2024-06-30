@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <cmath>
 
 #include "GamePlanetarium.hpp"
 #include "../core/BaseApp.hpp"
@@ -52,10 +53,6 @@ GamePlanetarium::~GamePlanetarium(){
 }
 
 
-const PlanetariumGUI* GamePlanetarium::getPlanetariumGUI() const{
-    return m_gui.get();
-}
-
 void GamePlanetarium::updateInput(){
     if((m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)) 
         && (m_input->pressed_keys[GLFW_KEY_C] & INPUT_KEY_DOWN)){
@@ -71,7 +68,22 @@ void GamePlanetarium::updateInput(){
     double scx, scy;
     m_input->getScroll(scx, scy);
     if((scy) && !m_render_context->imGuiWantCaptureMouse()){
-        m_camera->incrementOrbitalCamDistance(-scy * 5.0); // we should check the camera mode
+        double current_distance = m_camera->getOrbitalCamDistance(), increment;
+
+        if(current_distance < 0.05)
+            increment = -SIGN(scy) * (0.02 * current_distance);
+        else
+            increment = -SIGN(scy) * std::min((std::pow(std::abs(current_distance), 2.0) / 100.0) + 0.5,
+                                              75.0);
+        if(current_distance + increment > 1000.0)
+            increment = 1000.0 - current_distance;
+        else if(current_distance + increment < 0.0001){
+            increment = 0.0;
+            std::cout << "forcing increment 0.0" << std::endl;
+        }
+        std::cout << "distance: " << current_distance << " real distance: " << current_distance * PLANETARIUM_SCALE_FACTOR << std::endl;
+
+        m_camera->setOrbitalCamDistance(current_distance + increment); // we should check the camera mode
     }
 }
 

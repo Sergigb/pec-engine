@@ -129,18 +129,23 @@ class Camera{
         void setUpVector(const dmath::vec4& vec);
 
         /*
-         * Sets the distance to the object in the orbital camera.
+         * Sets the distance to the target in the orbital camera.
          *
-         * @distance: distance from the camera to the object, in meters.
+         * @distance: distance from the camera to the target, in meters.
          */
         void setOrbitalCamDistance(double distance);
 
         /*
-         * Increments the distance between the camera and the object in the orbital camera.
+         * Increments the distance between the camera and the target in the orbital camera.
          *
          * @incremet: increment, positive or negative, in meters.
          */
         void incrementOrbitalCamDistance(double increment);
+
+        /*
+         * Returns the distance between the orbital camera and the target.
+         */
+        double getOrbitalCamDistance() const;
 
         /*
          * Test method, should be used to recover the orientation of the camera when we change

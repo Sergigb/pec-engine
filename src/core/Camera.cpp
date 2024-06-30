@@ -431,9 +431,15 @@ void Camera::setOrbitalCamDistance(double distance){
 
 
 void Camera::incrementOrbitalCamDistance(double increment){
-    if(m_radial_distance + increment > 1.0){
+    if(m_radial_distance + increment > 0.0)
         m_radial_distance += increment;
-    }
+    else
+        m_radial_distance = 0.0;
+}
+
+
+double Camera::getOrbitalCamDistance() const{
+    return m_radial_distance;
 }
 
 

@@ -11,6 +11,7 @@
 #include "../../core/BaseApp.hpp"
 #include "../../assets/PlanetarySystem.hpp"
 #include "../../assets/Vessel.hpp"
+#include "../../game_components/GamePlanetarium.hpp"
 
 
 PlanetariumGUI::PlanetariumGUI(const FontAtlas* atlas, const BaseApp* app){
@@ -55,9 +56,9 @@ void PlanetariumGUI::updateVesselsText(const math::mat4& proj_mat, const math::m
         const btVector3& com = it->second->getCoM();
 
 
-        math::vec4 pos(com.getX() / 1e10,
-                       com.getY() / 1e10,
-                       com.getZ() / 1e10, 1.0f);
+        math::vec4 pos(com.getX() / PLANETARIUM_SCALE_FACTOR,
+                       com.getY() / PLANETARIUM_SCALE_FACTOR,
+                       com.getZ() / PLANETARIUM_SCALE_FACTOR, 1.0f);
         math::vec4 pos_screen = proj_mat * view_mat * pos;
 
         if(pos_screen.v[2] > 0.0){
@@ -87,9 +88,9 @@ void PlanetariumGUI::renderPlanets(const math::mat4& proj_mat, const math::mat4&
         struct planet_gui_data& current = planets.at(i);
         const dmath::vec3& current_pos = current.m_planet_data->getPosition();
 
-        math::vec4 pos(current_pos.v[0] / 1e10,
-                       current_pos.v[1] / 1e10,
-                       current_pos.v[2] / 1e10, 1.0f);
+        math::vec4 pos(current_pos.v[0] / PLANETARIUM_SCALE_FACTOR,
+                       current_pos.v[1] / PLANETARIUM_SCALE_FACTOR,
+                       current_pos.v[2] / PLANETARIUM_SCALE_FACTOR, 1.0f);
         math::vec4 pos_screen = proj_mat * view_mat * pos;
         current.m_pos_screen = math::vec3(pos_screen);
         current.m_screen_dist = pos_screen.v[2];
@@ -102,9 +103,9 @@ void PlanetariumGUI::renderPlanets(const math::mat4& proj_mat, const math::mat4&
         const Planet* current = planets.at(i).m_planet_data;
         const dmath::vec3& current_pos = current->getPosition();
 
-        math::vec4 pos(current_pos.v[0] / 1e10,
-                       current_pos.v[1] / 1e10,
-                       current_pos.v[2] / 1e10, 1.0f);
+        math::vec4 pos(current_pos.v[0] / PLANETARIUM_SCALE_FACTOR,
+                       current_pos.v[1] / PLANETARIUM_SCALE_FACTOR,
+                       current_pos.v[2] / PLANETARIUM_SCALE_FACTOR, 1.0f);
         math::vec4 pos_screen = proj_mat * view_mat * pos;
 
         if(pos_screen.v[2] > 0.0){
