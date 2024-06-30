@@ -70,19 +70,21 @@ void GamePlanetarium::updateInput(){
     if((scy) && !m_render_context->imGuiWantCaptureMouse()){
         double current_distance = m_camera->getOrbitalCamDistance(), increment;
 
-        if(current_distance < 0.05)
+        if(current_distance < 0.15)
             increment = -SIGN(scy) * (0.02 * current_distance);
+        else if(current_distance < 1)
+            increment = -SIGN(scy) * (0.2 * current_distance);
         else
-            increment = -SIGN(scy) * std::min((std::pow(std::abs(current_distance), 2.0) / 100.0) + 0.5,
-                                              75.0);
-        if(current_distance + increment > 1000.0)
-            increment = 1000.0 - current_distance;
-        else if(current_distance + increment < 0.0001){
+            increment = -SIGN(scy) * std::min((std::pow(std::abs(current_distance), 2.0) / 100.0)
+                                              + 0.5, 75.0);
+        if(current_distance + increment > 10000.0){
+            increment = 10000.0;
             increment = 0.0;
-            std::cout << "forcing increment 0.0" << std::endl;
         }
-        std::cout << "distance: " << current_distance << " real distance: " << current_distance * PLANETARIUM_SCALE_FACTOR << std::endl;
-
+        else if(current_distance + increment < 1e7 / PLANETARIUM_SCALE_FACTOR){
+            increment = 0.0;
+            current_distance = 1e7 / PLANETARIUM_SCALE_FACTOR;
+        }
         m_camera->setOrbitalCamDistance(current_distance + increment); // we should check the camera mode
     }
 }
