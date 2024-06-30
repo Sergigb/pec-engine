@@ -9,6 +9,8 @@ typedef unsigned int EntityId;
 
 #define UNUSED(expr) do { (void)(expr); } while (0)  //to avoid unused parameter warnings in callbacks
 
+#define SIGN(val) ((0 < val) - (val < 0))
+
 struct color{
     float r;
     float g;
