@@ -147,7 +147,7 @@ void RenderContext::loadShaders(){
     glUniformMatrix4fv(m_pb_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
     glUniform3fv(m_pb_light_pos, 1, math::vec3(0.0, 0.0, 0.0).v);
 
-    m_text_shader = create_programme_from_files("../shaders/2D_vs.glsl",
+    m_text_shader = create_programme_from_files("../shaders/text_vs.glsl",
                                                 "../shaders/text_fs.glsl");
     m_text_proj_mat = glGetUniformLocation(m_text_shader, "projection");
 
@@ -162,7 +162,7 @@ void RenderContext::loadShaders(){
     glUseProgram(m_gui_shader);
     glUniformMatrix4fv(m_gui_proj_mat, 1, GL_FALSE, orto_proj.m);
 
-    m_sprite_shader = create_programme_from_files("../shaders/2D_vs.glsl",
+    m_sprite_shader = create_programme_from_files("../shaders/sprite_vs.glsl",
                                                   "../shaders/sprite_fs.glsl");
     m_sprite_proj_mat = glGetUniformLocation(m_sprite_shader, "projection");
 
