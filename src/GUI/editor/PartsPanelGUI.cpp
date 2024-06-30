@@ -9,6 +9,9 @@
 #include "../../core/Input.hpp"
 
 
+const float c[4] = {.85f, .85f, .85f, 1.f};
+
+
 PartsPanelGUI::PartsPanelGUI(float fb_width, float fb_height, const FontAtlas* atlas, const RenderContext* render_context, const Input* input){
     m_fb_width = fb_width;
     m_fb_height = fb_height;
@@ -29,8 +32,7 @@ PartsPanelGUI::PartsPanelGUI(float fb_width, float fb_height, const FontAtlas* a
 
     m_projection = math::orthographic(fb_width, 0, fb_height, 0, 1.0f , -1.0f);
 
-    color c{1., 1., 1.};
-    m_text.reset(new Text2D(fb_width, fb_height, c, m_font_atlas, render_context));
+    m_text.reset(new Text2D(fb_width, fb_height, m_font_atlas, render_context));
 
     glGenFramebuffers(1, &m_fb);
     glBindFramebuffer(GL_FRAMEBUFFER, m_fb);
@@ -94,7 +96,8 @@ void PartsPanelGUI::setMasterPartList(const std::unordered_map<std::uint32_t, st
 
         it->second->getFancyName(name);
         std::mbstowcs(wname, name.c_str(), STRING_MAX_LEN);
-        m_text->addString(wname, 10., 20. + (float)i*20., 1, STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
+        m_text->addString(wname, 10., 20. + (float)i*20., 1,
+                          STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT, c);
 
         i++;
     }

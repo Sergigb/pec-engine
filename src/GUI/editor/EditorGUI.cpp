@@ -19,6 +19,9 @@ EditorGUI::EditorGUI(){
 }
 
 
+const float c[4] = {.85f, .85f, .85f, 1.f};
+
+
 EditorGUI::EditorGUI(const FontAtlas* atlas, const RenderContext* render_context, const Input* input){
     m_render_context = render_context;
     m_render_context->getDefaultFbSize(m_fb_width, m_fb_height);
@@ -33,8 +36,7 @@ EditorGUI::EditorGUI(const FontAtlas* atlas, const RenderContext* render_context
     m_max_symmetric_sides = 8;
     m_radial_align = true;
 
-    color c{0.85, 0.85, 0.85};
-    m_main_text.reset(new Text2D(m_fb_width, m_fb_height, c, m_font_atlas, render_context));
+    m_main_text.reset(new Text2D(m_fb_width, m_fb_height, m_font_atlas, render_context));
 
     m_parts_panel.reset(new PartsPanelGUI(EDITOR_GUI_LP_W - EDITOR_GUI_PP_MARGIN * 2,
                                           m_fb_height - EDITOR_GUI_TP_H - EDITOR_GUI_PP_MARGIN * 2 - EDITOR_GUI_PP_LOW_MARGIN - TAB_HEIGTH,
@@ -350,10 +352,12 @@ void EditorGUI::updateBuffers(){
     vertex_buffer[disp + 15] = x_start + TAB_WIDTH;
     vertex_buffer[disp + 16] = y_start;
 
-    m_main_text->addString(L"Parts", EDITOR_GUI_PP_MARGIN + TAB_WIDTH * 0.5f, y_start + TAB_HEIGTH * 0.5 + 5,
-                            1, STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_CENTER_XY);
-    m_main_text->addString(L"Staging", EDITOR_GUI_PP_MARGIN + TAB_WIDTH * 1.5f, y_start + TAB_HEIGTH * 0.5 + 5,
-                            1, STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_CENTER_XY);
+    m_main_text->addString(L"Parts", EDITOR_GUI_PP_MARGIN + TAB_WIDTH * 0.5f,
+                            y_start + TAB_HEIGTH * 0.5 + 5, 1, STRING_DRAW_ABSOLUTE_BL,
+                            STRING_ALIGN_CENTER_XY, c);
+    m_main_text->addString(L"Staging", EDITOR_GUI_PP_MARGIN + TAB_WIDTH * 1.5f,
+                            y_start + TAB_HEIGTH * 0.5 + 5, 1, STRING_DRAW_ABSOLUTE_BL,
+                            STRING_ALIGN_CENTER_XY, c);
 
     m_render_context->bindVao(m_vao);
 

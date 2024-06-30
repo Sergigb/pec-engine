@@ -14,6 +14,9 @@
 #include "../../game_components/GamePlanetarium.hpp"
 
 
+const float c[4] = {.85f, .85f, .85f, 1.f};
+
+
 PlanetariumGUI::PlanetariumGUI(const FontAtlas* atlas, const BaseApp* app){
     m_font_atlas = atlas;
     m_render_context = app->getRenderContext();
@@ -29,7 +32,7 @@ PlanetariumGUI::PlanetariumGUI(const FontAtlas* atlas, const BaseApp* app){
 
     buildSystemGUIData();
 
-    m_main_text.reset(new Text2D(m_fb_width, m_fb_height, color{0.85, 0.85, 0.85},
+    m_main_text.reset(new Text2D(m_fb_width, m_fb_height,
                       m_font_atlas, m_render_context));
 
 }
@@ -117,7 +120,7 @@ void PlanetariumGUI::renderPlanets(const math::mat4& proj_mat, const math::mat4&
             mbstowcs(buff, current->getName().c_str(), 256);
             m_main_text->addString(buff, pos_screen.v[0] * m_fb_width, 
                                    pos_screen.v[1] * m_fb_height - 15, 1.0f,
-                                   STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_CENTER_XY);
+                                   STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_CENTER_XY, c);
             planets.at(i).m_planet_sprite.render(math::vec2(pos_screen.v[0] * m_fb_width, 
                                                             pos_screen.v[1] * m_fb_height));
             m_main_text->render();
@@ -165,7 +168,7 @@ void PlanetariumGUI::updateSceneText(const math::mat4& proj_mat, const math::mat
             mbstowcs(buff, oss.str().c_str(), 256);
             woss << buff << std::fixed << std::setprecision(2);
             m_main_text->addString(woss.str().c_str(), 10, 15, 1.0f,
-                                   STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
+                                   STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT, c);
 
             woss.str(L"");
             woss.clear();
@@ -181,7 +184,7 @@ void PlanetariumGUI::updateSceneText(const math::mat4& proj_mat, const math::mat
             
             // too many strings already...
             m_main_text->addString(woss.str().c_str(), 10, 95, 1.0f,
-                                   STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
+                                   STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT, c);
 
             woss.str(L"");
             woss.clear();
@@ -202,7 +205,7 @@ void PlanetariumGUI::updateSceneText(const math::mat4& proj_mat, const math::mat
             woss << L"\nMass: " << std::scientific << data.m << "kg";
 
             m_main_text->addString(woss.str().c_str(), 10, 235, 1.0f,
-                                   STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
+                                   STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT, c);
         }
         catch(const std::out_of_range& oor){
             std::cerr << "PlanetariumGUI::updateSceneText: wrong index value for selected planet: "
@@ -217,12 +220,12 @@ void PlanetariumGUI::updateSceneText(const math::mat4& proj_mat, const math::mat
     time_t current_time = (time_t)m_physics->getCurrentTime() + SECS_FROM_UNIX_TO_J2000;
     mbstowcs(buff, ctime(&current_time), 256);
     m_main_text->addString(buff, 25, 50, 1.0f,
-                           STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_RIGHT);
+                           STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_RIGHT, c);
 
     woss << L"delta_t: " << m_delta_t << L"ms (" << m_delta_t / 36000.0
          << L" hours, x" << long(m_delta_t / (1. / 60.)) << L")";
     m_main_text->addString(woss.str().c_str(), 25, 35, 1.0f,
-                           STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_RIGHT);
+                           STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_RIGHT, c);
 }
 
 

@@ -666,7 +666,10 @@ void RenderContext::renderNotifications(){
     uint disp = 0.0;
     while(it != notifications.end()){
         disp += 20;
-        m_notification_text->addString(it->string.c_str(), m_fb_width / 2, (m_fb_height / 2) - disp, 1.0, STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_CENTER_XY);
+        float c[4] = {0.f, 1.f, 0.f, 1.f};
+        m_notification_text->addString(it->string.c_str(), m_fb_width / 2,
+                                       (m_fb_height / 2) - disp, 1.0, STRING_DRAW_ABSOLUTE_BL,
+                                       STRING_ALIGN_CENTER_XY, c);
 
         it->ttl -= 1;
         if(it->ttl < 0){
@@ -682,6 +685,7 @@ void RenderContext::renderNotifications(){
 
 void RenderContext::setDefaultFontAtlas(const FontAtlas* atlas){
     m_default_atlas = atlas;
-    m_notification_text.reset(new Text2D(m_fb_width, m_fb_height, {0.f, 1.f, 0.f}, m_default_atlas, this));
+    m_notification_text.reset(new Text2D(m_fb_width, m_fb_height,
+                                         m_default_atlas, this));
 }
 

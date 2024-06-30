@@ -8,6 +8,9 @@
 #include "../../core/Input.hpp"
 
 
+const float c[4] = {.85f, .85f, .85f, 1.f};
+
+
 StagingPanelGUI::StagingPanelGUI(float fb_width, float fb_height, const FontAtlas* atlas, const RenderContext* render_context, const Input* input){
     m_fb_width = fb_width;
     m_fb_height = fb_height;
@@ -22,8 +25,7 @@ StagingPanelGUI::StagingPanelGUI(float fb_width, float fb_height, const FontAtla
 
     m_projection = math::orthographic(fb_width, 0, fb_height, 0, 1.0f , -1.0f);
 
-    color c{1., 1., 1.};
-    m_text.reset(new Text2D(fb_width, fb_height, c, m_font_atlas, render_context));
+    m_text.reset(new Text2D(fb_width, fb_height, m_font_atlas, render_context));
 
     glGenFramebuffers(1, &m_fb);
     glBindFramebuffer(GL_FRAMEBUFFER, m_fb);
@@ -37,9 +39,9 @@ StagingPanelGUI::StagingPanelGUI(float fb_width, float fb_height, const FontAtla
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_tex, 0);
 
-    m_text->addString(L"Test string", 10., 100., 1, STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
-    m_text->addString(L"Hello", 10., 150., 1, STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
-    m_text->addString(L"fffusfksj", 10., 200., 1, STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT);
+    m_text->addString(L"Test string", 10., 100., 1, STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT, c);
+    m_text->addString(L"Hello", 10., 150., 1, STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT, c);
+    m_text->addString(L"fffusfksj", 10., 200., 1, STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT, c);
 
     /*GLenum draw_bufs[] = {GL_COLOR_ATTACHMENT0};
     glDrawBuffers(1, draw_bufs);

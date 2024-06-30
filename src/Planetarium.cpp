@@ -75,10 +75,10 @@ void Planetarium::init(){
     int fb_width, fb_height;
     m_window_handler->getFramebufferSize(fb_width, fb_height);
 
-    m_text.reset(new Text2D(fb_width, fb_height, {0.f, 1.f, 1.f}, 
-                            m_def_font_atlas.get(), m_render_context.get()));
-    m_text2.reset(new Text2D(fb_width, fb_height, {0.f, 1.f, 0.f}, 
-                            m_def_font_atlas.get(), m_render_context.get()));
+    m_text.reset(new Text2D(fb_width, fb_height, m_def_font_atlas.get(),
+                            m_render_context.get()));
+    m_text2.reset(new Text2D(fb_width, fb_height, m_def_font_atlas.get(),
+                            m_render_context.get()));
 
     m_planetarium_gui.reset(new PlanetariumGUI(m_def_font_atlas.get(), m_render_context.get(),
                                                m_camera.get(), m_physics.get(),
