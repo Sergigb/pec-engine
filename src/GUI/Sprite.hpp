@@ -28,6 +28,8 @@ class Sprite{
         math::vec2 m_pos;
         short m_positioning;
         float m_size, m_alpha;
+        bool m_free_on_destruction;
+        
 
         const RenderContext* m_render_context;
 
@@ -48,8 +50,17 @@ class Sprite{
          */
         Sprite(const RenderContext* render_context, const math::vec2& pos, short positioning,
                const char* path, const float size);
+
+        // DO NOT USE - READ BELOW (just use pointers or whatever, do not copy)
         Sprite(const Sprite& sprite);
-        Sprite& operator=(const Sprite& sprite);
+
+        /* VERY IMPORTANT!!
+         * Sprites should only be move-assigned or moved. When these two constructors are called,
+         * the m_free_on_destruction variable of the object being moved is set to false, which
+         * means that the destructor of the moved object will not free the gl data.
+         */
+        Sprite(Sprite&& sprite);
+        Sprite& operator=(Sprite&& sprite);
         ~Sprite();
 
         /*

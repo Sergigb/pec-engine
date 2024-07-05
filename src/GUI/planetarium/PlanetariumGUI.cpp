@@ -276,7 +276,7 @@ void PlanetariumGUI::buildSystemGUIData(){
         const Planet* current = it->second.get();
         Sprite sprite(m_render_context, math::vec2(.0f, .0f), SPRITE_DRAW_ABSOLUTE,
                       current->getThumbnailPath(), 24.0f);
-        m_system_gui_data.m_planets_data.emplace_back(std::move(current), sprite);
+        m_system_gui_data.m_planets_data.emplace_back(current, std::move(sprite));
     }
     m_system_gui_data.update_id_map();
 }

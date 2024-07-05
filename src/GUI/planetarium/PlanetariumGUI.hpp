@@ -35,10 +35,29 @@ struct planet_gui_data{
     math::vec3 m_pos_screen;
     float m_screen_dist;
 
-    planet_gui_data(const Planet* planet, const Sprite& planet_sprite):
-            m_planet_sprite(planet_sprite), m_pos_screen(0.0f, 0.0f, 0.0f){
+    planet_gui_data(){
+        m_planet_data = nullptr;
+    }
+
+    planet_gui_data(const Planet* planet, Sprite&& planet_sprite):
+            m_planet_sprite(std::move(planet_sprite)), m_pos_screen(0.0f, 0.0f, 0.0f){
         m_planet_data = planet;
         m_screen_dist = 0.0;
+    }
+
+    planet_gui_data& operator=(planet_gui_data&& data){
+        m_planet_sprite = std::move(data.m_planet_sprite);
+        m_pos_screen = data.m_pos_screen;
+        m_planet_data = data.m_planet_data;
+        m_screen_dist = data.m_screen_dist;
+        return *this;
+    }
+
+    planet_gui_data(planet_gui_data&& data) noexcept :
+            m_planet_sprite(std::move(data.m_planet_sprite)),
+            m_pos_screen(data.m_pos_screen){
+        m_planet_data = data.m_planet_data;
+        m_screen_dist = data.m_screen_dist;
     }
 };
 

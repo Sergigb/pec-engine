@@ -9,24 +9,29 @@
 
 
 Sprite::Sprite(){
-
+    m_free_on_destruction = false;
 }
 
 
 Sprite::Sprite(const RenderContext* render_context, const math::vec2& pos, short positioning,
                const char* path, float size) : m_pos(pos){
     assert(path);
-
     m_positioning = positioning;
     m_size = size;
     m_render_context = render_context;
     m_render_context->getDefaultFbSize(m_fb_width, m_fb_height);
     m_alpha = 1.0f;
+    m_free_on_destruction = true;
 
     initgl(path);
 }
 
 Sprite::Sprite(const Sprite& sprite) : m_pos(sprite.m_pos){
+    std::cerr << "Sprite::Sprite(const Sprite& sprite): Warning, copy constructor of Sprite"
+                  "should not be used, as the destructor of the original or the copy will destroy"
+                  "the gl data!" << std::endl;
+    log("Sprite::Sprite(const Sprite& sprite): Warning, copy constructor of Sprite should not be"
+         "used, as the destructor of the original or the copy will destroy the gl data!");
     m_vao = sprite.m_vao;
     m_vbo_vert = sprite.m_vbo_vert;
     m_vbo_tex = sprite.m_vbo_tex;
@@ -43,7 +48,8 @@ Sprite::Sprite(const Sprite& sprite) : m_pos(sprite.m_pos){
 }
 
 
-Sprite& Sprite::operator=(const Sprite& sprite){
+
+Sprite& Sprite::operator=(Sprite&& sprite){
     m_vao = sprite.m_vao;
     m_vbo_vert = sprite.m_vbo_vert;
     m_vbo_tex = sprite.m_vbo_tex;
@@ -56,12 +62,38 @@ Sprite& Sprite::operator=(const Sprite& sprite){
     m_size = sprite.m_size;
     m_alpha = sprite.m_alpha;
     m_alpha_location = sprite.m_alpha_location;
+    m_free_on_destruction = true;
+    sprite.m_free_on_destruction = false;
     return *this;
 }
 
-        
+
+Sprite::Sprite(Sprite&& sprite) : m_pos(sprite.m_pos){
+    m_vao = sprite.m_vao;
+    m_vbo_vert = sprite.m_vbo_vert;
+    m_vbo_tex = sprite.m_vbo_tex;
+    m_sprite = sprite.m_sprite;
+    m_disp_location = sprite.m_disp_location;
+    m_fb_width = sprite.m_fb_width;
+    m_fb_height = sprite.m_fb_height;
+    m_pos = sprite.m_pos;
+    m_positioning = sprite.m_positioning;
+    m_size = sprite.m_size;
+    m_render_context = sprite.m_render_context;
+    m_alpha = sprite.m_alpha;
+    m_alpha_location = sprite.m_alpha_location;
+    m_free_on_destruction = true;
+    sprite.m_free_on_destruction = false;
+}
+
+
 Sprite::~Sprite(){
-    // WARNING!!! FREEING TEXTURES AND VBO/VAO MISSING!!!
+    if(m_free_on_destruction){
+        glDeleteBuffers(1, &m_vbo_vert);
+        glDeleteBuffers(1, &m_vbo_tex);
+        glDeleteTextures(1, &m_sprite);
+        glDeleteVertexArrays(1, &m_vao);
+    }
 }
 
 
