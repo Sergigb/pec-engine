@@ -21,6 +21,7 @@ Sprite::Sprite(const RenderContext* render_context, const math::vec2& pos, short
     m_size = size;
     m_render_context = render_context;
     m_render_context->getDefaultFbSize(m_fb_width, m_fb_height);
+    m_alpha = 1.0f;
 
     initgl(path);
 }
@@ -37,6 +38,8 @@ Sprite::Sprite(const Sprite& sprite) : m_pos(sprite.m_pos){
     m_positioning = sprite.m_positioning;
     m_size = sprite.m_size;
     m_render_context = sprite.m_render_context;
+    m_alpha = sprite.m_alpha;
+    m_alpha_location = sprite.m_alpha_location;
 }
 
 
@@ -51,6 +54,8 @@ Sprite& Sprite::operator=(const Sprite& sprite){
     m_pos = sprite.m_pos;
     m_positioning = sprite.m_positioning;
     m_size = sprite.m_size;
+    m_alpha = sprite.m_alpha;
+    m_alpha_location = sprite.m_alpha_location;
     return *this;
 }
 
@@ -85,6 +90,7 @@ void Sprite::initgl(const char* path){
     m_render_context->bindVao(m_vao);
 
     m_disp_location = m_render_context->getUniformLocation(SHADER_SPRITE, "disp");
+    m_alpha_location = m_render_context->getUniformLocation(SHADER_SPRITE, "alpha");
 
     glGenBuffers(1, &m_vbo_vert);
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo_vert);
@@ -144,6 +150,7 @@ void Sprite::render() const{
     m_render_context->useProgram(SHADER_SPRITE);
     float disp[] = {0.0f, 0.0f};
     glUniform2fv(m_disp_location, 1.0f, disp);
+    glUniform1f(m_alpha_location, m_alpha);
 
     m_render_context->bindVao(m_vao);
     glActiveTexture(GL_TEXTURE0);
@@ -167,9 +174,15 @@ void Sprite::render(const math::vec2& pos) const{
     m_render_context->useProgram(SHADER_SPRITE);
     float disp[] = {0.0f, 0.0f};
     glUniform2fv(m_disp_location, 1.0f, disp);
+    glUniform1f(m_alpha_location, m_alpha);
 
     m_render_context->bindVao(m_vao);
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_sprite);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+}
+
+
+void Sprite::setAlpha(const float alpha){
+    m_alpha = alpha;
 }

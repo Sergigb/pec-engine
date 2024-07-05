@@ -123,6 +123,8 @@ void PlanetariumGUI::renderPlanets(const math::mat4& proj_mat, const math::mat4&
                                    pos_screen.v[1] * m_fb_height - 15, 1.0f,
                                    STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_CENTER_XY,
                                    m_selected_planet == current->getId() ? faded_c : c);
+            planets.at(i).m_planet_sprite.setAlpha(
+                m_selected_planet == current->getId() ? 1 - m_target_fade : 1.0f);
             planets.at(i).m_planet_sprite.render(math::vec2(pos_screen.v[0] * m_fb_width, 
                                                             pos_screen.v[1] * m_fb_height));
             m_main_text->render();

@@ -23,11 +23,11 @@ class Sprite{
     private:
         GLuint m_vao, m_vbo_vert, m_vbo_tex;
         GLuint m_sprite;
-        GLuint m_disp_location;
+        GLuint m_disp_location, m_alpha_location;
         float m_fb_width, m_fb_height;
         math::vec2 m_pos;
         short m_positioning;
-        float m_size;
+        float m_size, m_alpha;
 
         const RenderContext* m_render_context;
 
@@ -84,6 +84,13 @@ class Sprite{
          * @pos: position of the sprite.
          */
         void render(const math::vec2& pos) const;
+
+        /*
+         * Sets the alpha of the sprite (transparency)
+         *
+         * @alpha: transparency value, 1.0 opaque, 0.0 completely transparent.
+         */
+        void setAlpha(const float alpha);
 };
 
 
