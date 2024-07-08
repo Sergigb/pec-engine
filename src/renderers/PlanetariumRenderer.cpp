@@ -16,6 +16,7 @@
 #include "../core/utils/gl_utils.hpp"
 #include "../assets/Planet.hpp"
 #include "../assets/PlanetarySystem.hpp"
+#include "../assets/Vessel.hpp"
 
 
 PlanetariumRenderer::PlanetariumRenderer(BaseApp* app){
@@ -44,16 +45,151 @@ PlanetariumRenderer::~PlanetariumRenderer(){
 }
 
 
+void PlanetariumRenderer::initBuffers(){
+    glGenVertexArrays(1, &m_pred_vao);
+    m_render_context->bindVao(m_pred_vao);
+
+    glGenBuffers(1, &m_pred_vbo_vert);
+    glBindBuffer(GL_ARRAY_BUFFER, m_pred_vbo_vert);
+    glVertexAttribPointer(0, 3,  GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray(0);
+
+    glGenBuffers(1, &m_pred_vbo_ind);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_pred_vbo_ind);
+}
+
+
 int PlanetariumRenderer::render(struct render_buffer* rbuf){
     m_app->getAssetManager()->m_planetary_system->updateRenderBuffers(
         m_app->getPhysics()->getCurrentTime() / SECONDS_IN_A_CENTURY);
-    renderPlanetariumOrbits(rbuf->planet_buffer, rbuf->view_mat);
+    renderOrbits(rbuf->planet_buffer, rbuf->view_mat);
+    renderPredictions(rbuf->view_mat);
 
     return 0;
 }
 
+// declare the following in the header
+uint m_predictor_steps = 200;
+uint m_predictor_period = 356; // in days?
 
-void PlanetariumRenderer::renderPlanetariumOrbits(const std::vector<planet_transform>& buff,
+void PlanetariumRenderer::renderPredictions(const math::mat4& view_mat){
+    planet_map::const_iterator it;
+    const planet_map& planets = m_app->getAssetManager()->m_planetary_system->getPlanets();
+    double star_mass = m_app->getAssetManager()->m_planetary_system->getStar().mass;
+    double vessel_mass;
+    const Vessel* user_vessel = m_app->getPlayer()->getVessel();
+    btVector3 vessel_com_bullet;
+    dmath::vec3 vessel_com;
+
+    if(user_vessel == nullptr){
+        return;
+    }
+    else{
+        vessel_com_bullet = user_vessel->getCoM();
+        vessel_com = dmath::vec3(vessel_com_bullet.getX(),
+                                 vessel_com_bullet.getY(),
+                                 vessel_com_bullet.getZ());
+        vessel_mass = user_vessel->getTotalMass();
+    }
+
+    std::unique_ptr<GLfloat[]> vertex_buffer;
+    std::unique_ptr<GLuint[]> index_buffer;
+
+    vertex_buffer.reset(new GLfloat[3 * m_predictor_steps]);
+    index_buffer.reset(new GLuint[2 * m_predictor_steps]);
+
+    m_render_context->bindVao(m_pred_vao);
+
+    double elapsed_time = m_app->getPhysics()->getCurrentTime();
+
+    double e, W, w, inc, a, L, p, M, v;
+    double time = elapsed_time / SECONDS_IN_A_CENTURY;
+    double predictor_delta_t_secs = (m_predictor_period * 24 * 60 * 60) / m_predictor_steps;
+    double predictor_delta_t_cent = predictor_delta_t_secs / SECONDS_IN_A_CENTURY;
+
+    for(uint i=0; i < m_predictor_steps; i++){
+        dmath::vec3 force_on_vessel;  // in nm
+        for(it=planets.begin();it!=planets.end();it++){
+            const orbital_data& data = it->second->getOrbitalData();
+            dmath::vec3 planet_origin;
+
+            // update planet position
+            a = data.a_0 + data.a_d * time;
+            e = data.e_0 + data.e_d * time;
+            inc = data.i_0 + data.i_d * time;
+            L = data.L_0 + data.L_d * time;
+            p = data.p_0 + data.p_d * time;
+            W = data.W_0 + data.W_d * time;
+
+
+            M = L - p;
+            w = p - W;
+
+            double E = M;
+            double ecc_d = 10.;
+            int iter = 0;
+            while(std::abs(ecc_d) > 1e-6 && iter < MAX_SOLVER_ITER){
+                ecc_d = (E - e * std::sin(E) - M) / (1 - e * std::cos(E));
+                E -= ecc_d;
+                iter++;
+            }
+
+            v = 2 * std::atan(std::sqrt((1 + e) / (1 - e)) * std::tan(E / 2));
+
+            double rad = a * (1 - e * std::cos(E)) * AU_TO_METERS;
+
+            planet_origin.v[0] = rad * (std::cos(W) * std::cos(w + v) -
+                                 std::sin(W) * std::sin(w + v) * std::cos(inc));
+            planet_origin.v[1] = rad * (std::sin(inc) * std::sin(w + v));
+            planet_origin.v[2] = rad * (std::sin(W) * std::cos(w + v) +
+                                 std::cos(W) * std::sin(w + v) *std::cos(inc));
+
+            // update gravity force on current object
+            double Rh = dmath::distance(planet_origin, vessel_com);
+
+            double acceleration = GRAVITATIONAL_CONSTANT * (data.m / (Rh*Rh));
+            dmath::vec3 f = dmath::normalise(planet_origin - vessel_com)
+                                             * acceleration * vessel_mass;
+            force_on_vessel += f;
+        }
+
+        // force of the star
+        double Rh = dmath::length(vessel_com); // centered star com at (0, 0, 0)
+        double acceleration = GRAVITATIONAL_CONSTANT * (star_mass / (Rh*Rh));
+        dmath::vec3 f = dmath::normalise(dmath::vec3(-vessel_com.v[0],
+                                                     -vessel_com.v[1],
+                                                     -vessel_com.v[2])) * acceleration * vessel_mass;
+        force_on_vessel += f;
+
+
+        // udpate buffers
+        time += predictor_delta_t_cent;
+
+        vertex_buffer[i * 3] = vessel_com.v[0] / 1e10;
+        vertex_buffer[i * 3 + 1] = vessel_com.v[1] / 1e10;
+        vertex_buffer[i * 3 + 2] = vessel_com.v[2] / 1e10;
+
+        index_buffer[i * 2] = i;
+        index_buffer[i * 2 + 1] = i + 1;
+    }
+
+}
+
+
+inline void solverSymplecticEuler(dmath::vec3 force, double delta_t){
+    dmath::vec3 acceleration = force / p.mass;
+
+    dmath::vec3 velocity_tp1 = p.velocity + acceleration * delta_t;
+    p.origin = p.origin + velocity_tp1 * delta_t;
+
+    p.velocity = velocity_tp1;
+    p.total_force.v[0] = 0.0;
+    p.total_force.v[1] = 0.0;
+    p.total_force.v[2] = 0.0;
+}
+
+
+void PlanetariumRenderer::renderOrbits(const std::vector<planet_transform>& buff,
                                                   const math::mat4& view_mat){
     glClearColor(0.f, 0.f, 0.f, 0.f);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

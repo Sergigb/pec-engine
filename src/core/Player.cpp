@@ -95,7 +95,12 @@ void Player::setBehaviour(short behaviour){
 }
 
 
-Vessel* Player::getVessel() const{
+const Vessel* Player::getVessel() const{
+    return m_vessel;
+}
+
+
+Vessel* Player::getVessel(){
     return m_vessel;
 }
 

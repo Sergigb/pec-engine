@@ -64,9 +64,16 @@ class Player{
         void setSelectedPlanet(std::uint32_t planet_id);
 
         /*
-         * Returns a raw pointer to the user controlled vessel.
+         * Returns a raw pointer to the user controlled vessel. Returns nullptr if no vessel is
+         * selected.
          */
-        Vessel* getVessel() const;
+        const Vessel* getVessel() const;
+
+        /*
+         * Returns a raw pointer to the user controlled vessel. Returns nullptr if no vessel is
+         * selected
+         */
+        Vessel* getVessel();
 
         /*
          * Returns the behaviour of the player, the possible behaviours of the player are defined
