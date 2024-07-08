@@ -7,6 +7,7 @@
 #include <stb/stb_image.h>
 
 #include "PlanetariumRenderer.hpp"
+#include "../game_components/GamePlanetarium.hpp"
 #include "../core/BaseApp.hpp"
 #include "../core/Physics.hpp"
 #include "../core/AssetManager.hpp"
@@ -14,9 +15,11 @@
 #include "../core/Camera.hpp"
 #include "../core/Player.hpp"
 #include "../core/utils/gl_utils.hpp"
+#include "../core/predictors.hpp"
 #include "../assets/Planet.hpp"
 #include "../assets/PlanetarySystem.hpp"
 #include "../assets/Vessel.hpp"
+#include "../assets/BasePart.hpp"
 
 
 PlanetariumRenderer::PlanetariumRenderer(BaseApp* app){
@@ -72,120 +75,55 @@ int PlanetariumRenderer::render(struct render_buffer* rbuf){
 uint m_predictor_steps = 200;
 uint m_predictor_period = 356; // in days?
 
+
 void PlanetariumRenderer::renderPredictions(const math::mat4& view_mat){
-    planet_map::const_iterator it;
-    const planet_map& planets = m_app->getAssetManager()->m_planetary_system->getPlanets();
-    double star_mass = m_app->getAssetManager()->m_planetary_system->getStar().mass;
-    double vessel_mass;
     const Vessel* user_vessel = m_app->getPlayer()->getVessel();
-    btVector3 vessel_com_bullet;
-    dmath::vec3 vessel_com;
+    std::vector<struct particle_state>& states;
+    std::vector<std::vector<GLfloat>> prediction_buffers;
 
     if(user_vessel == nullptr){
         return;
     }
     else{
-        vessel_com_bullet = user_vessel->getCoM();
-        vessel_com = dmath::vec3(vessel_com_bullet.getX(),
-                                 vessel_com_bullet.getY(),
-                                 vessel_com_bullet.getZ());
-        vessel_mass = user_vessel->getTotalMass();
+        btVector3 bvec3;
+        dmath::vec3 vessel_com, vessel_vel;
+
+        bvec3 = user_vessel->getCoM();
+        vessel_com = dmath::vec3(bvec3.getX(), bvec3.getY(), bvec3.getZ());
+
+        bvec3= user_vessel->getRoot()->m_body->getLinearVelocity();
+        vessel_vel = dmath::vec3(bvec3.getX(), bvec3.getY(), bvec3.getZ());
+
+        states.emplace_back(vessel_com, vessel_vel, user_vessel->getTotalMass());
     }
-
-    std::unique_ptr<GLfloat[]> vertex_buffer;
+    
     std::unique_ptr<GLuint[]> index_buffer;
-
-    vertex_buffer.reset(new GLfloat[3 * m_predictor_steps]);
     index_buffer.reset(new GLuint[2 * m_predictor_steps]);
 
-    m_render_context->bindVao(m_pred_vao);
-
     double elapsed_time = m_app->getPhysics()->getCurrentTime();
-
-    double e, W, w, inc, a, L, p, M, v;
-    double time = elapsed_time / SECONDS_IN_A_CENTURY;
     double predictor_delta_t_secs = (m_predictor_period * 24 * 60 * 60) / m_predictor_steps;
     double predictor_delta_t_cent = predictor_delta_t_secs / SECONDS_IN_A_CENTURY;
 
+    // can't find a smarter way to initialise this buffer
     for(uint i=0; i < m_predictor_steps; i++){
-        dmath::vec3 force_on_vessel;  // in nm
-        for(it=planets.begin();it!=planets.end();it++){
-            const orbital_data& data = it->second->getOrbitalData();
-            dmath::vec3 planet_origin;
-
-            // update planet position
-            a = data.a_0 + data.a_d * time;
-            e = data.e_0 + data.e_d * time;
-            inc = data.i_0 + data.i_d * time;
-            L = data.L_0 + data.L_d * time;
-            p = data.p_0 + data.p_d * time;
-            W = data.W_0 + data.W_d * time;
-
-
-            M = L - p;
-            w = p - W;
-
-            double E = M;
-            double ecc_d = 10.;
-            int iter = 0;
-            while(std::abs(ecc_d) > 1e-6 && iter < MAX_SOLVER_ITER){
-                ecc_d = (E - e * std::sin(E) - M) / (1 - e * std::cos(E));
-                E -= ecc_d;
-                iter++;
-            }
-
-            v = 2 * std::atan(std::sqrt((1 + e) / (1 - e)) * std::tan(E / 2));
-
-            double rad = a * (1 - e * std::cos(E)) * AU_TO_METERS;
-
-            planet_origin.v[0] = rad * (std::cos(W) * std::cos(w + v) -
-                                 std::sin(W) * std::sin(w + v) * std::cos(inc));
-            planet_origin.v[1] = rad * (std::sin(inc) * std::sin(w + v));
-            planet_origin.v[2] = rad * (std::sin(W) * std::cos(w + v) +
-                                 std::cos(W) * std::sin(w + v) *std::cos(inc));
-
-            // update gravity force on current object
-            double Rh = dmath::distance(planet_origin, vessel_com);
-
-            double acceleration = GRAVITATIONAL_CONSTANT * (data.m / (Rh*Rh));
-            dmath::vec3 f = dmath::normalise(planet_origin - vessel_com)
-                                             * acceleration * vessel_mass;
-            force_on_vessel += f;
-        }
-
-        // force of the star
-        double Rh = dmath::length(vessel_com); // centered star com at (0, 0, 0)
-        double acceleration = GRAVITATIONAL_CONSTANT * (star_mass / (Rh*Rh));
-        dmath::vec3 f = dmath::normalise(dmath::vec3(-vessel_com.v[0],
-                                                     -vessel_com.v[1],
-                                                     -vessel_com.v[2])) * acceleration * vessel_mass;
-        force_on_vessel += f;
-
-
-        // udpate buffers
-        time += predictor_delta_t_cent;
-
-        vertex_buffer[i * 3] = vessel_com.v[0] / 1e10;
-        vertex_buffer[i * 3 + 1] = vessel_com.v[1] / 1e10;
-        vertex_buffer[i * 3 + 2] = vessel_com.v[2] / 1e10;
-
         index_buffer[i * 2] = i;
         index_buffer[i * 2 + 1] = i + 1;
     }
+    index_buffer[(2 * m_predictor_steps) - 1] = m_predictor_steps - 1;
 
-}
+    compute_trajectories_render(m_app->getAssetManager()->m_planetary_system, prediction_buffers,
+                                states, elapsed_time, predictor_delta_t_secs, m_predictor_steps,
+                                PLANETARIUM_SCALE_FACTOR);
 
+    m_render_context->bindVao(m_pred_vao);
 
-inline void solverSymplecticEuler(dmath::vec3 force, double delta_t){
-    dmath::vec3 acceleration = force / p.mass;
+    glBindBuffer(GL_ARRAY_BUFFER, m_pred_vbo_vert);
+    glBufferData(GL_ARRAY_BUFFER, 3 * prediction_buffers.at(i).size() * sizeof(GLfloat),
+                 &prediction_buffers.at[0], GL_STATIC_DRAW);
 
-    dmath::vec3 velocity_tp1 = p.velocity + acceleration * delta_t;
-    p.origin = p.origin + velocity_tp1 * delta_t;
-
-    p.velocity = velocity_tp1;
-    p.total_force.v[0] = 0.0;
-    p.total_force.v[1] = 0.0;
-    p.total_force.v[2] = 0.0;
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_pred_vbo_ind);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 2 * m_predictor_steps * sizeof(GLuint),
+                 index_buffer.get(), GL_STATIC_DRAW);
 }
 
 
