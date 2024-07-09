@@ -989,9 +989,9 @@ dmath::vec3 dmath::vec3::operator-( const vec3 &rhs ) const {
 
 dmath::vec3 dmath::vec3::operator-() const {
     dmath::vec3 vc;
-    vc.v[0] = v[0];
-    vc.v[1] = v[1];
-    vc.v[2] = v[2];
+    vc.v[0] = -v[0];
+    vc.v[1] = -v[1];
+    vc.v[2] = -v[2];
     return vc;
 }
 
