@@ -77,8 +77,9 @@ uint m_predictor_period = 356; // in days?
 
 
 void PlanetariumRenderer::renderPredictions(const math::mat4& view_mat){
+    UNUSED(view_mat);
     const Vessel* user_vessel = m_app->getPlayer()->getVessel();
-    std::vector<struct particle_state>& states;
+    std::vector<struct particle_state> states;
     std::vector<std::vector<GLfloat>> prediction_buffers;
 
     if(user_vessel == nullptr){
@@ -102,7 +103,6 @@ void PlanetariumRenderer::renderPredictions(const math::mat4& view_mat){
 
     double elapsed_time = m_app->getPhysics()->getCurrentTime();
     double predictor_delta_t_secs = (m_predictor_period * 24 * 60 * 60) / m_predictor_steps;
-    double predictor_delta_t_cent = predictor_delta_t_secs / SECONDS_IN_A_CENTURY;
 
     // can't find a smarter way to initialise this buffer
     for(uint i=0; i < m_predictor_steps; i++){
@@ -111,19 +111,21 @@ void PlanetariumRenderer::renderPredictions(const math::mat4& view_mat){
     }
     index_buffer[(2 * m_predictor_steps) - 1] = m_predictor_steps - 1;
 
-    compute_trajectories_render(m_app->getAssetManager()->m_planetary_system, prediction_buffers,
-                                states, elapsed_time, predictor_delta_t_secs, m_predictor_steps,
-                                PLANETARIUM_SCALE_FACTOR);
+    compute_trajectories_render(m_app->getAssetManager()->m_planetary_system.get(),
+                                prediction_buffers, states, elapsed_time, predictor_delta_t_secs,
+                                m_predictor_steps, PLANETARIUM_SCALE_FACTOR);
 
     m_render_context->bindVao(m_pred_vao);
 
     glBindBuffer(GL_ARRAY_BUFFER, m_pred_vbo_vert);
-    glBufferData(GL_ARRAY_BUFFER, 3 * prediction_buffers.at(i).size() * sizeof(GLfloat),
-                 &prediction_buffers.at[0], GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, 3 * prediction_buffers.at(0).size() * sizeof(GLfloat),
+                 &prediction_buffers.at(0), GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_pred_vbo_ind);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, 2 * m_predictor_steps * sizeof(GLuint),
                  index_buffer.get(), GL_STATIC_DRAW);
+
+    check_gl_errors(true, "PlanetariumRenderer::renderPredictions");
 }
 
 
@@ -153,6 +155,7 @@ void PlanetariumRenderer::renderOrbits(const std::vector<planet_transform>& buff
         }
         current->renderOrbit();
     }
+    check_gl_errors(true, "PlanetariumRenderer::renderOrbits");
 }
 
 

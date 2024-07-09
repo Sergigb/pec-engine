@@ -58,13 +58,15 @@ struct particle_state{
 
 
 /*
- * Returns the position of the planet with the parameters given in data (check Planet.hpp) at the
- * queried time.
+ * Calculates the position of the planet with the parameters given in data (check Planet.hpp) at
+ * the queried time.
  * 
  * @data: the orbital parameters of the planet (struct defined in Planet.hpp).
  * @time: the time at which we want to know the position. In centuries.
+ * @planet_origin: is updated with the position of the planet at the queried time
  */
-inline dmath::vec3& compute_planet_position(const orbital_data& data, double time);
+void compute_planet_position(const orbital_data& data, double time,
+                             dmath::vec3& planet_origin);
 
 
 /*
@@ -87,20 +89,20 @@ inline dmath::vec3& compute_planet_position(const orbital_data& data, double tim
  * @predictor_steps: number of steps of the simluation, in seconds.
  * @scale: divides each coordinate.
  */
-inline void compute_trajectories_render(const PlanetarySystem* planet_system,
-                                        std::vector<std::vector<GLfloat>>& position_buffers,
-                                        std::vector<struct particle_state>& states,
-                                        double start_time; uint predictor_delta_t_secs,
-                                        uint predictor_steps, float scale);
+void compute_trajectories_render(const PlanetarySystem* planet_system,
+                                 std::vector<std::vector<GLfloat>>& position_buffers,
+                                 std::vector<struct particle_state>& states,
+                                 double start_time, uint predictor_delta_t_secs,
+                                 uint predictor_steps, float scale);
 
 
 /*
  * This function computes the approximate trajectories of different particles given their initial
  * motion state and a planetary system object. Stores the positions of each particle at each time
  * as double precision coordinates. You can specify the starting time of the simulation (which
- * determines the initial position of the planets), the number of steps, the time delta of each
- * step, and the scale of the stored coordinates. The precision of the predictions depends on the
- * time delta of each step and the number of steps.
+ * determines the initial position of the planets), the number of steps, and the time delta of
+ * each step. The precision of the predictions depends on the time delta of each step and the
+ * number of steps.
  * 
  * @planet_system: planetary system object (check assets/PlanetarySystem.hpp) with the system data
  * @positions: vector of vectors of 3D coordinates, they store the location of each particle at
@@ -112,11 +114,11 @@ inline void compute_trajectories_render(const PlanetarySystem* planet_system,
  * @predictor_steps: number of steps of the simluation, in seconds.
  * @scale: divides each coordinate.
  */
-inline void compute_trajectories_double(const PlanetarySystem* planet_system,
-                                        std::vector<std::vector<dmath::vec3>>& positions,
-                                        std::vector<struct particle_state>& states,
-                                        double start_time; uint predictor_delta_t_secs,
-                                        uint predictor_steps)
+void compute_trajectories_double(const PlanetarySystem* planet_system,
+                                 std::vector<std::vector<dmath::vec3>>& positions,
+                                 std::vector<struct particle_state>& states,
+                                 double start_time, uint predictor_delta_t_secs,
+                                 uint predictor_steps);
 
 
 #endif
