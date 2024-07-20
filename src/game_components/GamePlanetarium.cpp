@@ -34,7 +34,7 @@ GamePlanetarium::GamePlanetarium(BaseApp* app, const FontAtlas* font_atlas){
     m_render_context->setGUI(m_gui.get(), GUI_MODE_PLANETARIUM);
     m_gui->setSelectedPlanet(0);
 
-    m_renderer.reset(new PlanetariumRenderer(m_app));
+    m_renderer.reset(new PlanetariumRenderer(m_app, m_gui.get()));
     m_render_context->setRenderer(m_renderer.get(), RENDER_PLANETARIUM);
 
     // ordered planet vector init
