@@ -134,5 +134,17 @@ void GamePlanetarium::update(){
     m_app->getPlayer()->setSelectedPlanet(m_selected_planet);
     m_gui->setSelectedPlanet(m_selected_planet);
     m_gui->setFreecam(m_freecam);
-    m_gui->update();
+    int action = m_gui->update();
+
+    if(action == PLANETARIUM_ACTION_SET_VELOCITY){
+        Vessel* vessel = m_app->getPlayer()->getVessel();
+        const btVector3 velocity = m_gui->getCheatVelocity();
+        if(vessel){
+            m_app->getAssetManager()->setVesselVelocity(vessel, velocity);
+        }
+        else{
+            std::cerr << "GamePlanetarium::update - Can't set vessel velocity because Player"
+                         "returned nullptr" << std::endl;
+        }
+    }
 }
