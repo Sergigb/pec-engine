@@ -93,11 +93,15 @@ class PlanetariumGUI : public BaseGUI{
         bool m_freecam;
         float m_target_fade = 0.0;
 
+        // gui
+        bool m_show_settings;
+
         const FontAtlas* m_font_atlas;
         const RenderContext* m_render_context;
         const Camera* m_camera;
         const Physics* m_physics;
         const AssetManager* m_asset_manager;
+        const BaseApp* m_app;
 
         void buildSystemGUIData();
         void updateSceneText(const math::mat4& proj_mat, const math::mat4& view_mat);
@@ -115,6 +119,11 @@ class PlanetariumGUI : public BaseGUI{
         void onFramebufferSizeUpdate();
         void render();
         int update();
+        void renderImGUI();
+
+        // move this shit to a struct with "predictor config parameters"
+        int m_predictor_steps;
+        float m_predictor_period;
 };
 
 

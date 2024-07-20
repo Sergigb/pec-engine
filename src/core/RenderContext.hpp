@@ -252,6 +252,22 @@ class RenderContext{
         void setGUI(BaseGUI* gui_ptr, short gui);
 
         /*
+         * Gets a GUI object given a valid GUI type. Returns nullptr for invalid gui types.
+         *
+         * @gui: GUI that we want to set, has to be one of the valid GUI modes defined above (
+         * macros GUI_MODE_*).
+         */
+        BaseGUI* getGUI(short gui);
+
+        /*
+         * Gets a GUI object given a valid GUI type. Returns nullptr for invalid gui types.
+         *
+         * @gui: GUI that we want to set, has to be one of the valid GUI modes defined above (
+         * macros GUI_MODE_*).
+         */
+        const BaseGUI* getGUI(short gui) const;
+
+        /*
          * Sets a renderer given a pointer of type BaseRenderer and a valid render state.
          *
          * @rend_ptr: pointer to the renderer object, should be a derived class from BaseRenderer.

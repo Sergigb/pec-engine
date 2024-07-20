@@ -533,6 +533,38 @@ void RenderContext::setGUI(BaseGUI* gui_ptr, short gui){
 }
 
 
+const BaseGUI* RenderContext::getGUI(short gui) const{
+    switch(gui){
+        case GUI_MODE_EDITOR:
+            return m_editor_gui;
+            break;
+        case GUI_MODE_PLANETARIUM:
+            return m_planetarium_gui;
+            break;
+        default:
+            std::cerr << "RenderContext::setGUI: invalid GUI mode: " << gui << std::endl;
+            log("RenderContext::setGUI: invalid GUI mode ", gui);
+    }
+    return nullptr;
+}
+
+
+BaseGUI* RenderContext::getGUI(short gui){
+    switch(gui){
+        case GUI_MODE_EDITOR:
+            return m_editor_gui;
+            break;
+        case GUI_MODE_PLANETARIUM:
+            return m_planetarium_gui;
+            break;
+        default:
+            std::cerr << "RenderContext::setGUI: invalid GUI mode: " << gui << std::endl;
+            log("RenderContext::setGUI: invalid GUI mode ", gui);
+    }
+    return nullptr;
+}
+
+
 void RenderContext::setRenderer(BaseRenderer* rend_ptr, short render_state){
     switch(render_state){
         case RENDER_SIMULATION:
@@ -573,6 +605,21 @@ void RenderContext::renderImGui(){
             m_buffers->buffer_2.buffer_lock.unlock();
         }
     }
+
+    switch(m_app->getGUIMode()){
+        case GUI_MODE_NONE:
+            break;
+        case GUI_MODE_EDITOR:
+            break;
+        case GUI_MODE_PLANETARIUM:
+            m_planetarium_gui->renderImGUI();
+            break;
+        default:
+            std::cerr << "RenderContext::renderImGUI: Warning, "
+                         "invalid GUI mode (" << m_app->getGUIMode() << ")" << std::endl;
+            log("RenderContext::render: renderImGUI, invalid GUI mode (",
+                m_app->getGUIMode(), ")");
+        }
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());

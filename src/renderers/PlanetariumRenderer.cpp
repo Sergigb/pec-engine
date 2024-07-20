@@ -20,12 +20,14 @@
 #include "../assets/PlanetarySystem.hpp"
 #include "../assets/Vessel.hpp"
 #include "../assets/BasePart.hpp"
+#include "../GUI/planetarium/PlanetariumGUI.hpp"
 
 
-PlanetariumRenderer::PlanetariumRenderer(BaseApp* app){
+PlanetariumRenderer::PlanetariumRenderer(BaseApp* app, PlanetariumGUI* planetarium_gui){
     m_app = app;
 
     m_render_context = m_app->getRenderContext();
+    m_planetarium_gui = planetarium_gui;
 
     m_render_context->useProgram(SHADER_DEBUG);
     m_debug_view_mat = m_render_context->getUniformLocation(SHADER_DEBUG, "view");
@@ -95,6 +97,10 @@ void PlanetariumRenderer::renderPredictions(){
     const Vessel* user_vessel = m_app->getPlayer()->getVessel();
     std::vector<struct particle_state> states;
     std::vector<std::vector<GLfloat>> prediction_buffers;
+
+    // TEMP!!
+    m_predictor_steps = m_planetarium_gui->m_predictor_steps;
+    m_predictor_period = m_planetarium_gui->m_predictor_period;
 
     if(user_vessel == nullptr){
         return;

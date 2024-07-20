@@ -1,6 +1,10 @@
 #include <iomanip>
 #include <algorithm>
 
+#include <imgui.h>
+#include <imgui_impl_opengl3.h>
+#include <imgui_impl_glfw.h>
+
 #include "PlanetariumGUI.hpp"
 #include "../Text2D.hpp"
 #include "../../core/RenderContext.hpp"
@@ -9,6 +13,7 @@
 #include "../../core/Physics.hpp"
 #include "../../core/AssetManager.hpp"
 #include "../../core/BaseApp.hpp"
+#include "../../core/WindowHandler.hpp"
 #include "../../assets/PlanetarySystem.hpp"
 #include "../../assets/Vessel.hpp"
 #include "../../game_components/GamePlanetarium.hpp"
@@ -19,6 +24,7 @@ const float c[4] = {.85f, .85f, .85f, 1.f};
 
 PlanetariumGUI::PlanetariumGUI(const FontAtlas* atlas, const BaseApp* app){
     m_font_atlas = atlas;
+    m_app = app;
     m_render_context = app->getRenderContext();
     m_physics = app->getPhysics();;
     m_render_context->getDefaultFbSize(m_fb_width, m_fb_height);
@@ -29,6 +35,9 @@ PlanetariumGUI::PlanetariumGUI(const FontAtlas* atlas, const BaseApp* app){
     m_asset_manager = app->getAssetManager();
     m_freecam = false;
     m_target_fade = 0.0;
+    m_show_settings = false;
+    m_predictor_steps = 400;
+    m_predictor_period = 365.f;
 
     buildSystemGUIData();
 
@@ -289,4 +298,47 @@ void PlanetariumGUI::setFreecam(bool freecam){
 
 void PlanetariumGUI::setTargetFade(float value){
     m_target_fade = value;
+}
+
+ /*   if (no_titlebar)        window_flags |= ImGuiWindowFlags_NoTitleBar;
+    if (no_scrollbar)       window_flags |= ImGuiWindowFlags_NoScrollbar;
+    if (!no_menu)           window_flags |= ImGuiWindowFlags_MenuBar;
+    if (no_move)            window_flags |= ImGuiWindowFlags_NoMove;
+    if (no_resize)          window_flags |= ImGuiWindowFlags_NoResize;
+    if (no_collapse)        window_flags |= ImGuiWindowFlags_NoCollapse;
+    if (no_nav)             window_flags |= ImGuiWindowFlags_NoNav;
+    if (no_background)      window_flags |= ImGuiWindowFlags_NoBackground;
+    if (no_bring_to_front)  window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus;
+    if (no_docking)         window_flags |= ImGuiWindowFlags_NoDocking;
+    if (unsaved_document)   window_flags |= ImGuiWindowFlags_UnsavedDocument;*/
+void PlanetariumGUI::renderImGUI(){
+    static bool window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar
+                             | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoResize
+                             | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove
+                             | ImGuiWindowFlags_NoBackground;
+    int fb_x, fb_y;
+    m_app->getWindowHandler()->getFramebufferSize(fb_x, fb_y);
+
+    // upper right menu
+    ImGui::SetNextWindowSize(ImVec2(1000, 39));
+    ImGui::SetNextWindowPos(ImVec2(fb_x - 235, 0));
+    ImGui::Begin("Planetarium settings", nullptr, window_flags);
+    if (ImGui::Button("Settings"))
+        m_show_settings = !m_show_settings;
+    ImGui::End();
+
+    if(m_show_settings){
+        ImGui::Begin("Predictor settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+
+        ImGui::Text("Predictor configuration");
+        ImGui::InputInt("Predictor steps", &m_predictor_steps);
+        ImGui::InputFloat("Predictor period (days)", &m_predictor_period);
+
+        if(m_predictor_steps <= 0){
+            m_predictor_steps = 1;
+        }
+        ImGui::End();
+    }
+
+
 }

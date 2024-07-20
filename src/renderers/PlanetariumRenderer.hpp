@@ -12,6 +12,7 @@
 
 class BaseApp;
 class RenderContext;
+class PlanetariumGUI;
 
 #define SKYBOX_SIZE 100000.0f
 
@@ -22,6 +23,7 @@ class PlanetariumRenderer : public BaseRenderer{
         GLint m_debug_view_mat, m_debug_proj_mat;
         GLint m_debug_color_location, m_debug_alpha_location;
         RenderContext* m_render_context;
+        PlanetariumGUI* m_planetarium_gui;
         // skybox render
         GLuint m_vao, m_vbo_vert, m_vbo_tex, m_textures[6];
         GLint m_skybox_view_loc, m_skybox_proj_loc, m_skybox_model_loc;
@@ -38,7 +40,7 @@ class PlanetariumRenderer : public BaseRenderer{
         void renderSkybox(const math::mat4& view_mat);
         void initBuffers();
     public:
-        PlanetariumRenderer(BaseApp* app);
+        PlanetariumRenderer(BaseApp* app, PlanetariumGUI* planetarium_gui);
         ~PlanetariumRenderer();
 
         int render(struct render_buffer* rbuf);
