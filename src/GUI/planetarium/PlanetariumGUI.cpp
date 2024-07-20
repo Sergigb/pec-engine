@@ -14,6 +14,7 @@
 #include "../../core/AssetManager.hpp"
 #include "../../core/BaseApp.hpp"
 #include "../../core/WindowHandler.hpp"
+#include "../../core/Player.hpp"
 #include "../../assets/PlanetarySystem.hpp"
 #include "../../assets/Vessel.hpp"
 #include "../../game_components/GamePlanetarium.hpp"
@@ -35,10 +36,13 @@ PlanetariumGUI::PlanetariumGUI(const FontAtlas* atlas, const BaseApp* app){
     m_asset_manager = app->getAssetManager();
     m_freecam = false;
     m_target_fade = 0.0;
-    m_show_settings = false;
+    m_show_predictor_settings = false;
+    m_show_cheats = false;
     m_predictor_steps = 400;
     m_predictor_period = 365.f;
-
+    m_action = PLANETARIUM_ACTION_NONE;
+    m_cheat_vel_x = 0; m_cheat_vel_y = 0; m_cheat_vel_z = 0;
+ 
     buildSystemGUIData();
 
     m_main_text.reset(new Text2D(m_fb_width, m_fb_height,
@@ -260,7 +264,9 @@ void PlanetariumGUI::render(){
 
 
 int PlanetariumGUI::update(){
-    return PLANETARIUM_ACTION_NONE;
+    int return_action = m_action;
+    m_action = PLANETARIUM_ACTION_NONE;
+    return return_action;
 }
 
 
@@ -313,22 +319,55 @@ void PlanetariumGUI::renderImGUI(){
     ImGui::SetNextWindowSize(ImVec2(1000, 39));
     ImGui::SetNextWindowPos(ImVec2(fb_x - 235, 0));
     ImGui::Begin("Planetarium settings", nullptr, window_flags);
-    if (ImGui::Button("Settings"))
-        m_show_settings = !m_show_settings;
+    if(ImGui::Button("Settings"))
+        m_show_predictor_settings = !m_show_predictor_settings;
+    ImGui::SameLine();
+    if(ImGui::Button("Cheats"))
+        m_show_cheats = !m_show_cheats;
+    ImGui::Button("Pause")
     ImGui::End();
 
-    if(m_show_settings){
+    if(m_show_predictor_settings){
         ImGui::Begin("Predictor settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
         ImGui::Text("Predictor configuration");
         ImGui::InputInt("Predictor steps", &m_predictor_steps);
         ImGui::InputFloat("Predictor period (days)", &m_predictor_period);
 
-        if(m_predictor_steps <= 0){
+        if(m_predictor_steps <= 0)
             m_predictor_steps = 1;
-        }
+
+        if(m_predictor_period <= 0)
+            m_predictor_period = 0.00001;
+
         ImGui::End();
     }
 
+    if(m_show_cheats){
+        ImGui::Begin("Cheats", nullptr, 0);
 
+        const Vessel* vessel = m_app->getPlayer()->getVessel();
+        if(vessel != nullptr){
+            const btVector3& com = vessel->getVesselVelocity();
+            if(ImGui::Button("Set to current")){
+                m_cheat_vel_x = com.getX();
+                m_cheat_vel_y = com.getY();
+                m_cheat_vel_z = com.getZ();
+            }
+
+            ImGui::InputDouble("X", &m_cheat_vel_x);
+            ImGui::InputDouble("Y", &m_cheat_vel_y);
+            ImGui::InputDouble("Z", &m_cheat_vel_z);
+
+            if(ImGui::Button("Set")){
+                m_action = PLANETARIUM_ACTION_SET_VELOCITY;
+            }
+        }
+
+        ImGui::End();        
+    }
+}
+
+const btVector3 PlanetariumGUI::getCheatVelocity() const{
+    return btVector3(m_cheat_vel_x, m_cheat_vel_y, m_cheat_vel_z);
 }

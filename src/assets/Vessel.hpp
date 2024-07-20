@@ -247,6 +247,12 @@ class Vessel{
          */
         double getLowerBound() const;
 
+
+        /*
+         * Returns the velocity of the root of the vessel.
+         */
+        const btVector3 getVesselVelocity() const;
+
         /*
          * Updates stuff like the mass and the subtree.
          */

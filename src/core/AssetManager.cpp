@@ -168,6 +168,11 @@ void AssetManager::processCommandBuffers(bool physics_pause){
         m_delete_subtree_buffer.at(i)->removeBodiesSubtree();
     }
     m_delete_subtree_buffer.clear();
+
+    for(uint i=0; i < m_set_vessel_velocity_subtree.size(); i++){
+        const btVector3& velocity = m_set_vessel_velocity_subtree.at(i).velocity;
+        m_set_vessel_velocity_subtree.at(i).vessel->setVesselVelocity(velocity);
+    }
 }
 
 

@@ -138,7 +138,7 @@ void compute_trajectories_double(const PlanetarySystem* planet_system,
     positions.clear();
     positions.reserve(states.size());
     for(uint i=0; i < states.size(); i++){
-        positions.push_back(std::vector<dmath::vec3>()); // no idea if this is correct - check when we compile lol 
+        positions.push_back(std::vector<dmath::vec3>()); 
         positions.at(i).reserve(predictor_steps * 3);
     }
 

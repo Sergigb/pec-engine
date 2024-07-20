@@ -33,6 +33,7 @@ class AssetManagerInterface{
         std::vector<struct set_mass_props_msg> m_set_mass_buffer;
         std::vector<std::shared_ptr<BasePart>> m_delete_subtree_buffer;
         std::vector<BasePart*> m_build_constraint_subtree_buffer;
+        std::vector<struct set_vessel_velocity_msg> m_set_vessel_velocity_subtree;
     public:
         AssetManagerInterface();
         ~AssetManagerInterface();
@@ -126,6 +127,14 @@ class AssetManagerInterface{
          * @rot: btQuaternion with the new rotation of the object.
          */
         void setMotionState(Object* obj, const btVector3& orig, const btQuaternion& rot);
+
+        /*
+         * Sets the velocity of the subtree of a vessel.
+         *
+         * @vessel: raw pointer to a Vessel.
+         * @vel: new velocity value.
+         */
+        void setVesselVelocity(Vessel* vessel, const btVector3& vel);
 };
 
 

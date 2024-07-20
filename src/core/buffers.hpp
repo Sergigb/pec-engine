@@ -12,6 +12,7 @@
 
 class Object;
 class Planet;
+class Vessel;
 
 
 /******************/
@@ -223,6 +224,24 @@ struct set_mass_props_msg{
     set_mass_props_msg(BasePart* ptr, double m){
         part = ptr;
         mass = m;
+    }
+};
+
+
+/* Message used to set the velocity of a vessel, including the whole subtree, can be accessed via
+   AssetManagerInterface::setVesselVelocity*/
+struct set_vessel_velocity_msg{
+    Vessel* vessel;
+    btVector3 velocity;
+
+    /* Constructor
+     *
+     * @ptr: raw pointer to a Vessel.
+     * @vel: new velocity value.
+     */
+    set_vessel_velocity_msg(Vessel* ptr, const btVector3& vel){
+        vessel = ptr;
+        velocity = vel;
     }
 };
 

@@ -406,6 +406,14 @@ void Vessel::setVesselVelocity(const btVector3& velocity){
 }
 
 
+const btVector3 Vessel::getVesselVelocity() const{
+    if(m_vessel_root)
+        return m_vessel_root->m_body->getLinearVelocity();
+    else
+        return btVector3(0.0, 0.0, 0.0);
+}
+
+
 void Vessel::updateCoM(){
     btVector3 com(0.0, 0.0, 0.0);
 
