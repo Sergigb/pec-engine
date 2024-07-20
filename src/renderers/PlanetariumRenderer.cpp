@@ -40,11 +40,14 @@ PlanetariumRenderer::PlanetariumRenderer(BaseApp* app){
     m_target_fade = 0.0;
 
     createSkybox();
+    initBuffers();
 }
 
 
 PlanetariumRenderer::~PlanetariumRenderer(){
-
+    glDeleteBuffers(1, &m_pred_vbo_vert);
+    glDeleteBuffers(1, &m_pred_vbo_ind);
+    glDeleteVertexArrays(1, &m_pred_vao);
 }
 
 
@@ -65,19 +68,30 @@ void PlanetariumRenderer::initBuffers(){
 int PlanetariumRenderer::render(struct render_buffer* rbuf){
     m_app->getAssetManager()->m_planetary_system->updateRenderBuffers(
         m_app->getPhysics()->getCurrentTime() / SECONDS_IN_A_CENTURY);
-    renderOrbits(rbuf->planet_buffer, rbuf->view_mat);
-    renderPredictions(rbuf->view_mat);
 
+    glClearColor(0.f, 0.f, 0.f, 0.f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    renderSkybox(rbuf->view_mat);
+
+    m_render_context->useProgram(SHADER_DEBUG);
+
+    glUniformMatrix4fv(m_debug_view_mat, 1, GL_FALSE, rbuf->view_mat.m);
+    glUniformMatrix4fv(m_debug_proj_mat, 1, GL_FALSE, m_app->getCamera()->getProjMatrix().m);
+
+    renderOrbits(rbuf->planet_buffer);
+    renderPredictions();
+
+    check_gl_errors(true, "PlanetariumRenderer::render");
     return 0;
 }
 
 // declare the following in the header
-uint m_predictor_steps = 200;
-uint m_predictor_period = 356; // in days?
+uint m_predictor_steps = 1000;
+double m_predictor_period = 365.2422; // in days?
 
 
-void PlanetariumRenderer::renderPredictions(const math::mat4& view_mat){
-    UNUSED(view_mat);
+void PlanetariumRenderer::renderPredictions(){
     const Vessel* user_vessel = m_app->getPlayer()->getVessel();
     std::vector<struct particle_state> states;
     std::vector<std::vector<GLfloat>> prediction_buffers;
@@ -92,7 +106,7 @@ void PlanetariumRenderer::renderPredictions(const math::mat4& view_mat){
         bvec3 = user_vessel->getCoM();
         vessel_com = dmath::vec3(bvec3.getX(), bvec3.getY(), bvec3.getZ());
 
-        bvec3= user_vessel->getRoot()->m_body->getLinearVelocity();
+        bvec3 = user_vessel->getRoot()->m_body->getLinearVelocity();
         vessel_vel = dmath::vec3(bvec3.getX(), bvec3.getY(), bvec3.getZ());
 
         states.emplace_back(vessel_com, vessel_vel, user_vessel->getTotalMass());
@@ -102,14 +116,13 @@ void PlanetariumRenderer::renderPredictions(const math::mat4& view_mat){
     index_buffer.reset(new GLuint[2 * m_predictor_steps]);
 
     double elapsed_time = m_app->getPhysics()->getCurrentTime();
-    double predictor_delta_t_secs = (m_predictor_period * 24 * 60 * 60) / m_predictor_steps;
+    double predictor_delta_t_secs = (m_predictor_period * 24 * 60 * 60)/ m_predictor_steps;
 
     // can't find a smarter way to initialise this buffer
     for(uint i=0; i < m_predictor_steps; i++){
         index_buffer[i * 2] = i;
         index_buffer[i * 2 + 1] = i + 1;
     }
-    index_buffer[(2 * m_predictor_steps) - 1] = m_predictor_steps - 1;
 
     compute_trajectories_render(m_app->getAssetManager()->m_planetary_system.get(),
                                 prediction_buffers, states, elapsed_time, predictor_delta_t_secs,
@@ -118,28 +131,26 @@ void PlanetariumRenderer::renderPredictions(const math::mat4& view_mat){
     m_render_context->bindVao(m_pred_vao);
 
     glBindBuffer(GL_ARRAY_BUFFER, m_pred_vbo_vert);
-    glBufferData(GL_ARRAY_BUFFER, 3 * prediction_buffers.at(0).size() * sizeof(GLfloat),
-                 &prediction_buffers.at(0), GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, prediction_buffers.at(0).size() * sizeof(GLfloat),
+                 &prediction_buffers.at(0)[0], GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_pred_vbo_ind);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, 2 * m_predictor_steps * sizeof(GLuint),
                  index_buffer.get(), GL_STATIC_DRAW);
 
+    m_render_context->useProgram(SHADER_DEBUG);
+
+    glUniform3f(m_debug_color_location, 0.f, 1.f, 0.f);
+    glUniform1f(m_debug_alpha_location, 1.f);
+
+    glDrawElements(GL_LINES, m_predictor_steps * 2, GL_UNSIGNED_INT, NULL);
+
     check_gl_errors(true, "PlanetariumRenderer::renderPredictions");
 }
 
 
-void PlanetariumRenderer::renderOrbits(const std::vector<planet_transform>& buff,
-                                                  const math::mat4& view_mat){
-    glClearColor(0.f, 0.f, 0.f, 0.f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-    renderSkybox(view_mat);
-
+void PlanetariumRenderer::renderOrbits(const std::vector<planet_transform>& buff){
     m_render_context->useProgram(SHADER_DEBUG);
-
-    glUniformMatrix4fv(m_debug_view_mat, 1, GL_FALSE, view_mat.m);
-    glUniformMatrix4fv(m_debug_proj_mat, 1, GL_FALSE, m_app->getCamera()->getProjMatrix().m);
 
     for(uint i=0; i < buff.size(); i++){
         const Planet* current = buff.at(i).planet_ptr;

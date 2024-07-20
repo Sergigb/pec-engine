@@ -32,9 +32,8 @@ class PlanetariumRenderer : public BaseRenderer{
 
         math::mat4 m_skybox_transforms[6];
 
-        void renderPredictions(const math::mat4& view_mat);
-        void renderOrbits(const std::vector<planet_transform>& buff, 
-                                     const math::mat4& view_mat);
+        void renderPredictions();
+        void renderOrbits(const std::vector<planet_transform>& buff);
         void createSkybox();
         void renderSkybox(const math::mat4& view_mat);
         void initBuffers();

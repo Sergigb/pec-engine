@@ -41,7 +41,7 @@ void compute_planet_position(const orbital_data& data, double time,
                          std::cos(W) * std::sin(w + v) *std::cos(inc));
 }
 
-
+#include "../core/common.hpp"
 void compute_trajectories_render(const PlanetarySystem* planet_system,
                                  std::vector<std::vector<GLfloat>>& position_buffers,
                                  std::vector<struct particle_state>& states,
@@ -63,11 +63,16 @@ void compute_trajectories_render(const PlanetarySystem* planet_system,
     position_buffers.clear();
     position_buffers.reserve(states.size());
     for(uint i=0; i < states.size(); i++){
-        position_buffers.push_back(std::vector<GLfloat>()); // no idea if this is correct - check when we compile lol 
+        position_buffers.push_back(std::vector<GLfloat>());
         position_buffers.at(i).reserve(3 * predictor_steps);
+
+        position_buffers.at(i).push_back(states.at(i).origin.v[0] / scale);
+        position_buffers.at(i).push_back(states.at(i).origin.v[1] / scale);
+        position_buffers.at(i).push_back(states.at(i).origin.v[2] / scale);
     }
 
     for(uint i=0; i < predictor_steps; i++){
+        time += predictor_delta_t_cent;
         // iterate over each planet
         for(it=planets.begin();it!=planets.end();it++){
             const orbital_data& data = it->second->getOrbitalData();
@@ -92,7 +97,12 @@ void compute_trajectories_render(const PlanetarySystem* planet_system,
             // force of the star
             double Rh = dmath::length(current.origin); // centered star com at (0, 0, 0)
             double acceleration = GRAVITATIONAL_CONSTANT * (star_mass / (Rh*Rh));
-            dmath::vec3 f = dmath::normalise(-current.origin) * acceleration * current.mass;
+            //dmath::vec3 f = dmath::normalise(-current.origin) * acceleration * current.mass; // does not work?
+            dmath::vec3 f = dmath::normalise(dmath::vec3(-current.origin.v[0],
+                                                         -current.origin.v[1],
+                                                         -current.origin.v[2]))
+                                             * acceleration * current.mass;
+
             current.total_force += f;
 
             // solve motion current step
@@ -103,7 +113,6 @@ void compute_trajectories_render(const PlanetarySystem* planet_system,
             position_buffers.at(j).push_back(current.origin.v[1] / scale);
             position_buffers.at(j).push_back(current.origin.v[2] / scale);
         }
-        time += predictor_delta_t_cent;
     }
 }
 

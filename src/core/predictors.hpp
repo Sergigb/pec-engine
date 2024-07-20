@@ -82,6 +82,7 @@ void compute_planet_position(const orbital_data& data, double time,
  * Each buffer belongs to a particle, and will contiguously contain the 3D location of the particle
  * at each time step, the components of the coordinates are also contiguous (x1, y1, z1, x2, y2, 
  * z2, etc). These buffers can directly be used to render the trajectories of the praticles.
+ * Returns a buffer of size (predictor_steps + 1) * 3.
  * @states: the initial motion states of each particle.
  * @start_time: starting time of the simulation, determines the location of the planets, and should
  * be the current time of the simulation.
