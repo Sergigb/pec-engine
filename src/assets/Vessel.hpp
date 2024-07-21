@@ -262,6 +262,16 @@ class Vessel{
          * Returns staging, input, subtree, etc.
          */
         void updateCoM();
+
+        /*
+         * Sets the motion state (origin and rotation) of the vessel's subtree. It uses moves the 
+         * root to the given origin.
+         *
+         * @origin: new origin of the vessel, the root will be moved to this position.
+         * @rotation: new rotation of the vessel. This method IS thread safe (uses command buffers
+         * :))
+         */
+        void setSubTreeMotionState(const btVector3& origin, const btQuaternion& rotation);
 };
 
 

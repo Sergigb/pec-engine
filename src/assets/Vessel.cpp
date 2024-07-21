@@ -516,3 +516,16 @@ double Vessel::getLowerBound() const{
     return lower_bound - local_y;
 }
 
+
+void Vessel::setSubTreeMotionState(const btVector3& origin, const btQuaternion& rotation){
+    btVector3 disp;
+    btTransform transform;
+
+    m_vessel_root.get()->m_body->getMotionState()->getWorldTransform(transform);
+    const btVector3& from = transform.getOrigin();
+
+    disp = origin - from;
+
+    m_vessel_root->updateSubTreeMotionState(disp, from, rotation);
+}
+
