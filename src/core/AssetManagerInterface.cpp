@@ -66,5 +66,5 @@ void AssetManagerInterface::setMotionState(Object* obj, const btVector3& orig, c
 
 
 void  AssetManagerInterface::setVesselVelocity(Vessel* vessel, const btVector3& vel){
-    m_set_vessel_velocity_subtree.emplace_back(vessel, vel);
+    m_set_vessel_velocity_buffer.emplace_back(vessel, vel);
 }
