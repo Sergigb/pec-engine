@@ -13,6 +13,7 @@
 /* Planetarium actions */
 #define PLANETARIUM_ACTION_NONE 0
 #define PLANETARIUM_ACTION_SET_VELOCITY 1
+#define PLANETARIUM_ACTION_SET_POSITION 2
 
 
 class FontAtlas;
@@ -98,6 +99,7 @@ class PlanetariumGUI : public BaseGUI{
         bool m_show_predictor_settings, m_show_cheats;
         int m_action;
         double m_cheat_vel_x, m_cheat_vel_y, m_cheat_vel_z; 
+        double m_cheat_pos_x, m_cheat_pos_y, m_cheat_pos_z; 
 
         const FontAtlas* m_font_atlas;
         const RenderContext* m_render_context;
@@ -125,6 +127,7 @@ class PlanetariumGUI : public BaseGUI{
         void renderImGUI();
 
         const btVector3 getCheatVelocity() const;
+        const btVector3 getCheatPosition() const;
 
         // move this shit to a struct with "predictor config parameters"
         int m_predictor_steps;

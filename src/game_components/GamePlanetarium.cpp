@@ -10,6 +10,8 @@
 #include "../core/Input.hpp"
 #include "../core/RenderContext.hpp"
 #include "../assets/PlanetarySystem.hpp"
+#include "../assets/Vessel.hpp"
+#include "../assets/BasePart.hpp"
 #include "../GUI/planetarium/PlanetariumGUI.hpp"
 #include "../renderers/PlanetariumRenderer.hpp"
 
@@ -144,6 +146,18 @@ void GamePlanetarium::update(){
         }
         else{
             std::cerr << "GamePlanetarium::update - Can't set vessel velocity because Player"
+                         "returned nullptr" << std::endl;
+        }
+    }
+    else if(action == PLANETARIUM_ACTION_SET_POSITION){
+        Vessel* vessel = m_app->getPlayer()->getVessel();
+        const btVector3 origin = m_gui->getCheatPosition();
+        const btQuaternion rotation = vessel->getRoot()->m_body->getOrientation();
+        if(vessel){
+            vessel->setSubTreeMotionState(origin, rotation); // thread safe
+        }
+        else{
+            std::cerr << "GamePlanetarium::update - Can't set vessel position because Player"
                          "returned nullptr" << std::endl;
         }
     }

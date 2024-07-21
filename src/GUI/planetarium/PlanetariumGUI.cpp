@@ -42,6 +42,7 @@ PlanetariumGUI::PlanetariumGUI(const FontAtlas* atlas, const BaseApp* app){
     m_predictor_period = 365.f;
     m_action = PLANETARIUM_ACTION_NONE;
     m_cheat_vel_x = 0; m_cheat_vel_y = 0; m_cheat_vel_z = 0;
+    m_cheat_pos_x = 0; m_cheat_pos_y = 0; m_cheat_pos_z = 0;
  
     buildSystemGUIData();
 
@@ -315,7 +316,7 @@ void PlanetariumGUI::renderImGUI(){
     int fb_x, fb_y;
     m_app->getWindowHandler()->getFramebufferSize(fb_x, fb_y);
 
-    // upper right menu
+    // upper options menu
     ImGui::SetNextWindowSize(ImVec2(1000, 39));
     ImGui::SetNextWindowPos(ImVec2(fb_x - 235, 0));
     ImGui::Begin("Planetarium settings", nullptr, window_flags);
@@ -324,9 +325,11 @@ void PlanetariumGUI::renderImGUI(){
     ImGui::SameLine();
     if(ImGui::Button("Cheats"))
         m_show_cheats = !m_show_cheats;
-    ImGui::Button("Pause")
+    ImGui::SameLine();
+    ImGui::Button("Pause");
     ImGui::End();
 
+    // prediction settings menu
     if(m_show_predictor_settings){
         ImGui::Begin("Predictor settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
@@ -338,36 +341,66 @@ void PlanetariumGUI::renderImGUI(){
             m_predictor_steps = 1;
 
         if(m_predictor_period <= 0)
-            m_predictor_period = 0.00001;
+            m_predictor_period = 1;
 
         ImGui::End();
     }
 
+    // cheat menu
     if(m_show_cheats){
-        ImGui::Begin("Cheats", nullptr, 0);
+        ImGui::Begin("Cheats", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
         const Vessel* vessel = m_app->getPlayer()->getVessel();
         if(vessel != nullptr){
-            const btVector3& com = vessel->getVesselVelocity();
-            if(ImGui::Button("Set to current")){
-                m_cheat_vel_x = com.getX();
-                m_cheat_vel_y = com.getY();
-                m_cheat_vel_z = com.getZ();
+            const btVector3& vel = vessel->getVesselVelocity();
+            const btVector3& com = vessel->getCoM();
+
+            // vessel velocity
+            ImGui::Text("Vessel velocity");
+            if(ImGui::Button("Set to current##1")){
+                m_cheat_vel_x = vel.getX();
+                m_cheat_vel_y = vel.getY();
+                m_cheat_vel_z = vel.getZ();
             }
 
-            ImGui::InputDouble("X", &m_cheat_vel_x);
-            ImGui::InputDouble("Y", &m_cheat_vel_y);
-            ImGui::InputDouble("Z", &m_cheat_vel_z);
+            ImGui::PushItemWidth(100);
+            ImGui::InputDouble("X##1", &m_cheat_vel_x);
+            ImGui::PushItemWidth(100);ImGui::SameLine();
+            ImGui::InputDouble("Y##1", &m_cheat_vel_y);
+            ImGui::PushItemWidth(100);ImGui::SameLine();
+            ImGui::InputDouble("Z##1", &m_cheat_vel_z);
 
-            if(ImGui::Button("Set")){
+            if(ImGui::Button("Set##1"))
                 m_action = PLANETARIUM_ACTION_SET_VELOCITY;
+
+            // vessel position
+            ImGui::Separator();
+            ImGui::Text("Vessel position");
+            if(ImGui::Button("Set to current##2")){
+                m_cheat_pos_x = com.getX();
+                m_cheat_pos_y = com.getY();
+                m_cheat_pos_z = com.getZ();
             }
+            ImGui::PushItemWidth(100);
+            ImGui::InputDouble("X##2", &m_cheat_pos_x);
+            ImGui::PushItemWidth(100);ImGui::SameLine();
+            ImGui::InputDouble("Y##2", &m_cheat_pos_y);
+            ImGui::PushItemWidth(100);ImGui::SameLine();
+            ImGui::InputDouble("Z##2", &m_cheat_pos_z);
+
+            if(ImGui::Button("Set##2"))
+                m_action = PLANETARIUM_ACTION_SET_POSITION;
         }
 
-        ImGui::End();        
+        ImGui::End();
     }
 }
 
 const btVector3 PlanetariumGUI::getCheatVelocity() const{
     return btVector3(m_cheat_vel_x, m_cheat_vel_y, m_cheat_vel_z);
+}
+
+
+const btVector3 PlanetariumGUI::getCheatPosition() const{
+    return btVector3(m_cheat_pos_x, m_cheat_pos_y, m_cheat_pos_z);
 }
