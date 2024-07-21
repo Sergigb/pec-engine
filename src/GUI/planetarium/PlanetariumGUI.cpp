@@ -1,5 +1,6 @@
 #include <iomanip>
 #include <algorithm>
+#include <cstring>
 
 #include <imgui.h>
 #include <imgui_impl_opengl3.h>
@@ -43,7 +44,16 @@ PlanetariumGUI::PlanetariumGUI(const FontAtlas* atlas, const BaseApp* app){
     m_action = PLANETARIUM_ACTION_NONE;
     m_cheat_vel_x = 0; m_cheat_vel_y = 0; m_cheat_vel_z = 0;
     m_cheat_pos_x = 0; m_cheat_pos_y = 0; m_cheat_pos_z = 0;
- 
+    m_match_for = true;
+
+    // set to earth because why not
+    m_cheat_orbit_params.a_0 = 149598290450.51898;
+    m_cheat_orbit_params.e_0 = 0.01671123;
+    m_cheat_orbit_params.i_0 = -0.00001531;
+    m_cheat_orbit_params.p_0 = 102.93768193;
+    m_cheat_orbit_params.W_0 = 0.0;
+    m_cheat_orbit_params.L_0 = 100.46457166;
+
     buildSystemGUIData();
 
     m_main_text.reset(new Text2D(m_fb_width, m_fb_height,
@@ -347,53 +357,86 @@ void PlanetariumGUI::renderImGUI(){
     }
 
     // cheat menu
-    if(m_show_cheats){
-        ImGui::Begin("Cheats", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
+    if(m_show_cheats)
+        showCheatsMenu();
+}
 
-        const Vessel* vessel = m_app->getPlayer()->getVessel();
-        if(vessel != nullptr){
-            const btVector3& vel = vessel->getVesselVelocity();
-            const btVector3& com = vessel->getCoM();
 
-            // vessel velocity
-            ImGui::Text("Vessel velocity");
-            if(ImGui::Button("Set to current##1")){
-                m_cheat_vel_x = vel.getX();
-                m_cheat_vel_y = vel.getY();
-                m_cheat_vel_z = vel.getZ();
-            }
+void PlanetariumGUI::showCheatsMenu(){
+    ImGui::Begin("Cheats", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
-            ImGui::PushItemWidth(100);
-            ImGui::InputDouble("X##1", &m_cheat_vel_x);
-            ImGui::PushItemWidth(100);ImGui::SameLine();
-            ImGui::InputDouble("Y##1", &m_cheat_vel_y);
-            ImGui::PushItemWidth(100);ImGui::SameLine();
-            ImGui::InputDouble("Z##1", &m_cheat_vel_z);
+    const Vessel* vessel = m_app->getPlayer()->getVessel();
+    if(vessel != nullptr){
+        const btVector3& vel = vessel->getVesselVelocity();
+        const btVector3& com = vessel->getCoM();
 
-            if(ImGui::Button("Set##1"))
-                m_action = PLANETARIUM_ACTION_SET_VELOCITY;
-
-            // vessel position
-            ImGui::Separator();
-            ImGui::Text("Vessel position");
-            if(ImGui::Button("Set to current##2")){
-                m_cheat_pos_x = com.getX();
-                m_cheat_pos_y = com.getY();
-                m_cheat_pos_z = com.getZ();
-            }
-            ImGui::PushItemWidth(100);
-            ImGui::InputDouble("X##2", &m_cheat_pos_x);
-            ImGui::PushItemWidth(100);ImGui::SameLine();
-            ImGui::InputDouble("Y##2", &m_cheat_pos_y);
-            ImGui::PushItemWidth(100);ImGui::SameLine();
-            ImGui::InputDouble("Z##2", &m_cheat_pos_z);
-
-            if(ImGui::Button("Set##2"))
-                m_action = PLANETARIUM_ACTION_SET_POSITION;
+        // vessel velocity
+        ImGui::Text("Vessel velocity");
+        if(ImGui::Button("Set to current##1")){
+            m_cheat_vel_x = vel.getX();
+            m_cheat_vel_y = vel.getY();
+            m_cheat_vel_z = vel.getZ();
         }
 
-        ImGui::End();
+        ImGui::PushItemWidth(100);
+        ImGui::InputDouble("X##1", &m_cheat_vel_x);
+        ImGui::PushItemWidth(100);ImGui::SameLine();
+        ImGui::InputDouble("Y##1", &m_cheat_vel_y);
+        ImGui::PushItemWidth(100);ImGui::SameLine();
+        ImGui::InputDouble("Z##1", &m_cheat_vel_z);
+
+        if(ImGui::Button("Set##1"))
+            m_action = PLANETARIUM_ACTION_SET_VELOCITY;
+
+        // vessel position
+        ImGui::Separator();
+        ImGui::Text("Vessel position");
+        if(ImGui::Button("Set to current##2")){
+            m_cheat_pos_x = com.getX();
+            m_cheat_pos_y = com.getY();
+            m_cheat_pos_z = com.getZ();
+        }
+        ImGui::PushItemWidth(100);
+        ImGui::InputDouble("X##2", &m_cheat_pos_x);
+        ImGui::PushItemWidth(100);ImGui::SameLine();
+        ImGui::InputDouble("Y##2", &m_cheat_pos_y);
+        ImGui::PushItemWidth(100);ImGui::SameLine();
+        ImGui::InputDouble("Z##2", &m_cheat_pos_z);
+
+        if(ImGui::Button("Set##2"))
+            m_action = PLANETARIUM_ACTION_SET_POSITION;
+
+        ImGui::Separator();
+        ImGui::Text("Set orbit");
+
+        // set to be the planets
+        const char* targets[] = {"Sun", "Mercury", "CCCC", "DDDD", "EEEE", "FFFF", "GGGG", "HHHH", "IIIIIII", "JJJJ", "KKKKKKK" };
+        static int current_target = 0;
+        ImGui::Combo("Target", &current_target, targets, IM_ARRAYSIZE(targets));
+        ImGui::Checkbox("Match frame", &m_match_for);
+
+        ImGui::Text("Orbital parameters");
+        ImGui::PushItemWidth(150);
+        ImGui::InputDouble("S-m axis (met.)", &m_cheat_orbit_params.a_0);
+        ImGui::PushItemWidth(50);
+        ImGui::InputDouble("Ecc.", &m_cheat_orbit_params.e_0);
+        ImGui::PushItemWidth(50);ImGui::SameLine();
+        ImGui::InputDouble("Inc. (deg.)", &m_cheat_orbit_params.i_0);
+        ImGui::PushItemWidth(50);ImGui::SameLine();
+        ImGui::InputDouble("Long. Peri. (deg.)", &m_cheat_orbit_params.p_0);
+        ImGui::PushItemWidth(50);
+        ImGui::InputDouble("L. A. Node (deg.)", &m_cheat_orbit_params.W_0);
+        ImGui::PushItemWidth(50);ImGui::SameLine();
+        ImGui::InputDouble("Mean Long. (met.)", &m_cheat_orbit_params.L_0);
+
+        if(ImGui::Button("Set##2"))
+            m_action = PLANETARIUM_ACTION_SET_ORBIT;
     }
+    else{
+        ImGui::Text("No vessel");
+    }
+
+    ImGui::End();
 }
 
 const btVector3 PlanetariumGUI::getCheatVelocity() const{
@@ -403,4 +446,9 @@ const btVector3 PlanetariumGUI::getCheatVelocity() const{
 
 const btVector3 PlanetariumGUI::getCheatPosition() const{
     return btVector3(m_cheat_pos_x, m_cheat_pos_y, m_cheat_pos_z);
+}
+
+
+const struct orbital_data PlanetariumGUI::getCheatOrbitParameters() const{
+    return m_cheat_orbit_params;
 }

@@ -14,6 +14,7 @@
 #define PLANETARIUM_ACTION_NONE 0
 #define PLANETARIUM_ACTION_SET_VELOCITY 1
 #define PLANETARIUM_ACTION_SET_POSITION 2
+#define PLANETARIUM_ACTION_SET_ORBIT 3
 
 
 class FontAtlas;
@@ -96,10 +97,11 @@ class PlanetariumGUI : public BaseGUI{
         float m_target_fade = 0.0;
 
         // gui
-        bool m_show_predictor_settings, m_show_cheats;
+        bool m_show_predictor_settings, m_show_cheats, m_match_for;
         int m_action;
         double m_cheat_vel_x, m_cheat_vel_y, m_cheat_vel_z; 
-        double m_cheat_pos_x, m_cheat_pos_y, m_cheat_pos_z; 
+        double m_cheat_pos_x, m_cheat_pos_y, m_cheat_pos_z;
+        struct orbital_data m_cheat_orbit_params;
 
         const FontAtlas* m_font_atlas;
         const RenderContext* m_render_context;
@@ -112,6 +114,7 @@ class PlanetariumGUI : public BaseGUI{
         void updateSceneText(const math::mat4& proj_mat, const math::mat4& view_mat);
         void updateVesselsText(const math::mat4& proj_mat, const math::mat4& view_mat);
         void renderPlanets(const math::mat4& proj_mat, const math::mat4& view_mat);
+        void showCheatsMenu();
     public:
         PlanetariumGUI(const FontAtlas* atlas, const BaseApp* app);
         ~PlanetariumGUI();
@@ -128,6 +131,7 @@ class PlanetariumGUI : public BaseGUI{
 
         const btVector3 getCheatVelocity() const;
         const btVector3 getCheatPosition() const;
+        const struct orbital_data getCheatOrbitParameters() const;
 
         // move this shit to a struct with "predictor config parameters"
         int m_predictor_steps;

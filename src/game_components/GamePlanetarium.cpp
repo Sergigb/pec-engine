@@ -161,4 +161,7 @@ void GamePlanetarium::update(){
                          "returned nullptr" << std::endl;
         }
     }
+    else if(action == PLANETARIUM_ACTION_SET_ORBIT){
+        
+    }
 }

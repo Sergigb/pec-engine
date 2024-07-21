@@ -58,6 +58,18 @@ struct particle_state{
 
 
 /*
+ * Computes the cartesian origin and velocity of an object given its orbital parameters. Only
+ * parameters a_0, e_0, i_0, p_0, W_0, L_0 are necessary, the derivatives and other parameters are
+ * not used.
+ * 
+ * @data: orbital parameters of the object's orbit (struct defined in Planet.hpp).
+ * @origin: will contain the cartesian coordinates of the object.
+ * @velocity: will contain the velocity of the object.
+ */
+void kepler_to_cartesian(const orbital_data& data, dmath::vec3& origin, dmath::vec3& velocity);
+
+
+/*
  * Calculates the position of the planet with the parameters given in data (check Planet.hpp) at
  * the queried time.
  * 

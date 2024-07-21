@@ -5,6 +5,12 @@
 #include "../core/Physics.hpp"
 
 
+
+void kepler_to_cartesian(const orbital_data& data, dmath::vec3& origin, dmath::vec3& velocity){
+    
+}
+
+
 void compute_planet_position(const orbital_data& data, double time,
                              dmath::vec3& planet_origin){
     double e, W, w, inc, a, L, p, M, v;
