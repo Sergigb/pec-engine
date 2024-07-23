@@ -1,13 +1,68 @@
 #include <cassert>
+#include <cmath>
+#include <iostream>
 
 #include "predictors.hpp"
 #include "solvers.hpp"
 #include "../core/Physics.hpp"
+#include "../core/log.hpp"
 
 
+void kepler_to_cartesian(const orbital_data& data, const PlanetarySystem& system,
+                         std::uint32_t body_target, bool match_frame, 
+                         dmath::vec3& origin, dmath::vec3& velocity){
+    double M = data.L_0 - data.p_0;
+    double w = data.p_0 - data.W_0;
+    double E = M;
+    double ecc_d = 10.;
 
-void kepler_to_cartesian(const orbital_data& data, dmath::vec3& origin, dmath::vec3& velocity){
-    
+    int iter = 0;
+    while(std::abs(ecc_d) > 1e-6 && iter < MAX_CONIC_SOLVER_ITER){
+        ecc_d = (E - data.e_0 * std::sin(E) - M) / (1 - data.e_0 * std::cos(E));
+        E -= ecc_d;
+        iter++;
+    }
+
+    double v = 2 * std::atan(std::sqrt((1 + data.e_0) / (1 - data.e_0)) * std::tan(E / 2));
+
+    double rad = data.a_0 * (1 - data.e_0 * std::cos(E));// * AU_TO_METERS;
+
+    origin.v[0] = rad * (std::cos(data.W_0) * std::cos(w + v) -
+                  std::sin(data.W_0) * std::sin(w + v) * std::cos(data.i_0));
+    origin.v[1] = rad * (std::sin(data.i_0) * std::sin(w + v));
+    origin.v[2] = rad * (std::sin(data.W_0) * std::cos(w + v) +
+                  std::cos(data.W_0) * std::sin(w + v) *std::cos(data.i_0));
+
+    double mu;
+    if(body_target == 0)
+        mu = GRAVITATIONAL_CONSTANT * system.getStar().mass;
+    else
+        mu = GRAVITATIONAL_CONSTANT * 
+             system.getPlanets().at(body_target).get()->getOrbitalData().m;
+
+    double h = std::sqrt(mu * data.a_0 * (1 - (data.e_0 * data.e_0)));
+    double p = data.a_0 * (1 - (data.e_0 * data.e_0));
+
+    velocity.v[0] = (origin.v[0] * h * data.e_0 / (rad * p))*std::sin(v) - (h / rad) *
+                    (std::cos(data.W_0) * std::sin(w + v) + std::sin(data.W_0) *
+                    std::cos(w + v) * std::cos(data.i_0));
+    velocity.v[1] = (origin.v[2] * h * data.e_0/(rad * p)) * std::sin(v) + (h / rad) * 
+                    (std::cos(w + v) * std::sin(data.i_0));
+    velocity.v[2] = (origin.v[1] * h * data.e_0/(rad * p)) * std::sin(v) - (h / rad) * 
+                    (std::sin(data.W_0) * std::sin(w + v) - std::cos(data.W_0) * 
+                    std::cos(w + v) * std::cos(data.i_0));
+
+    if(match_frame && body_target != 0){
+        const dmath::vec3& target_pos = system.getPlanets().at(body_target).
+                                        get()->getOrbitalData().pos;
+        const dmath::vec3& target_pos_prev = system.getPlanets().at(body_target).
+                                        get()->getOrbitalData().pos_prev;
+        origin += target_pos;
+        std::cerr << "kepler_to_cartesian: we use a fixed time-step!" << std::endl;
+        log("kepler_to_cartesian: we use a fixed time-step");
+        velocity += (target_pos - target_pos_prev) / (1. / 60.); // HARDCODED TIME STEP - DIRTYYYY
+    }
+
 }
 
 
@@ -47,7 +102,7 @@ void compute_planet_position(const orbital_data& data, double time,
                          std::cos(W) * std::sin(w + v) *std::cos(inc));
 }
 
-#include "../core/common.hpp"
+
 void compute_trajectories_render(const PlanetarySystem* planet_system,
                                  std::vector<std::vector<GLfloat>>& position_buffers,
                                  std::vector<struct particle_state>& states,

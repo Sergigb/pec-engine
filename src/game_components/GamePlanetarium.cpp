@@ -9,6 +9,7 @@
 #include "../core/Camera.hpp"
 #include "../core/Input.hpp"
 #include "../core/RenderContext.hpp"
+#include "../core/predictors.hpp"
 #include "../assets/PlanetarySystem.hpp"
 #include "../assets/Vessel.hpp"
 #include "../assets/BasePart.hpp"
@@ -140,8 +141,8 @@ void GamePlanetarium::update(){
 
     if(action == PLANETARIUM_ACTION_SET_VELOCITY){
         Vessel* vessel = m_app->getPlayer()->getVessel();
-        const btVector3 velocity = m_gui->getCheatVelocity();
         if(vessel){
+            const btVector3 velocity = m_gui->getCheatVelocity();
             m_app->getAssetManager()->setVesselVelocity(vessel, velocity);
         }
         else{
@@ -151,9 +152,9 @@ void GamePlanetarium::update(){
     }
     else if(action == PLANETARIUM_ACTION_SET_POSITION){
         Vessel* vessel = m_app->getPlayer()->getVessel();
-        const btVector3 origin = m_gui->getCheatPosition();
-        const btQuaternion rotation = vessel->getRoot()->m_body->getOrientation();
         if(vessel){
+            const btVector3 origin = m_gui->getCheatPosition();
+            const btQuaternion rotation = vessel->getRoot()->m_body->getOrientation();
             vessel->setSubTreeMotionState(origin, rotation); // thread safe
         }
         else{
@@ -162,6 +163,24 @@ void GamePlanetarium::update(){
         }
     }
     else if(action == PLANETARIUM_ACTION_SET_ORBIT){
-        
+        Vessel* vessel = m_app->getPlayer()->getVessel();
+        if(vessel){
+            const btQuaternion rotation = vessel->getRoot()->m_body->getOrientation();
+            const PlanetarySystem& planet_system = *m_asset_manager->m_planetary_system.get();
+            const struct cheat_orbit cheat_orbit_data = m_gui->getCheatOrbitParameters();
+            dmath::vec3 origin, velocity;
+
+            kepler_to_cartesian(cheat_orbit_data.cheat_orbit_params, planet_system, 
+                                cheat_orbit_data.body_target, cheat_orbit_data.match_frame, origin,
+                                velocity);
+            vessel->setSubTreeMotionState(btVector3(origin.v[0], origin.v[1], origin.v[2]),
+                                          rotation); // thread safe
+            m_app->getAssetManager()->setVesselVelocity(vessel, 
+                                    btVector3(velocity.v[0], velocity.v[1], velocity.v[2]));
+        }
+        else{
+            std::cerr << "GamePlanetarium::update - Can't set vessel position because Player"
+                         "returned nullptr" << std::endl;
+        }
     }
 }

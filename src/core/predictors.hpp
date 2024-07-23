@@ -16,6 +16,8 @@
 
 struct orbital_data;
 
+class PlanetarySystem;
+
 
 /*
  * This struct contains the motion state of a particle, which includes its origin, its velocity and
@@ -59,14 +61,21 @@ struct particle_state{
 
 /*
  * Computes the cartesian origin and velocity of an object given its orbital parameters. Only
- * parameters a_0, e_0, i_0, p_0, W_0, L_0 are necessary, the derivatives and other parameters are
- * not used.
+ * parameters a_0, e_0, i_0, L_0, W_0, p_0 are necessary, the derivatives and other parameters are
+ * not used. If we want to match the velocity of the target body, we also use the target mass. 
  * 
  * @data: orbital parameters of the object's orbit (struct defined in Planet.hpp).
+ * @system: planet system with the planets and the star (object of type PlanetarySystem).
+ * @body_target: id of the planet that we want to orbit. If 0, the object will orbit around the
+ * star.
+ * @match_frame: if true, the speed of the object will be computed taking into acoount the frame
+ * of reference of the target. If we want to orbit the star, this parameter is irrelevant. 
  * @origin: will contain the cartesian coordinates of the object.
  * @velocity: will contain the velocity of the object.
  */
-void kepler_to_cartesian(const orbital_data& data, dmath::vec3& origin, dmath::vec3& velocity);
+void kepler_to_cartesian(const orbital_data& data, const PlanetarySystem& system,
+                         std::uint32_t body_target, bool match_frame, 
+                         dmath::vec3& origin, dmath::vec3& velocity);
 
 
 /*

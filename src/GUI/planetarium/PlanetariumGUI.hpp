@@ -80,6 +80,25 @@ struct system_gui_data{
 };
 
 
+struct cheat_orbit{
+    struct orbital_data cheat_orbit_params;
+    std::uint32_t body_target;
+    bool match_frame;
+
+    cheat_orbit(){
+        body_target = 0;
+        match_frame = true;
+        // set to earth because why not
+        cheat_orbit_params.a_0 = 149600000000.0;
+        cheat_orbit_params.e_0 = 0.01671123 * ONE_DEG_IN_RAD;
+        cheat_orbit_params.i_0 = -0.00001531 * ONE_DEG_IN_RAD;
+        cheat_orbit_params.L_0 = 100.46457166 * ONE_DEG_IN_RAD;
+        cheat_orbit_params.W_0 = 0.0 * ONE_DEG_IN_RAD;
+        cheat_orbit_params.p_0 = 102.93768193 * ONE_DEG_IN_RAD;
+    }
+};
+
+
 /* Planetarium GUI class, more docs incoming maybe... */
 
 
@@ -97,11 +116,11 @@ class PlanetariumGUI : public BaseGUI{
         float m_target_fade = 0.0;
 
         // gui
-        bool m_show_predictor_settings, m_show_cheats, m_match_for;
+        bool m_show_predictor_settings, m_show_cheats;
         int m_action;
         double m_cheat_vel_x, m_cheat_vel_y, m_cheat_vel_z; 
         double m_cheat_pos_x, m_cheat_pos_y, m_cheat_pos_z;
-        struct orbital_data m_cheat_orbit_params;
+        struct cheat_orbit m_cheat_orbit;    
 
         const FontAtlas* m_font_atlas;
         const RenderContext* m_render_context;
@@ -131,7 +150,7 @@ class PlanetariumGUI : public BaseGUI{
 
         const btVector3 getCheatVelocity() const;
         const btVector3 getCheatPosition() const;
-        const struct orbital_data getCheatOrbitParameters() const;
+        const struct cheat_orbit getCheatOrbitParameters() const;
 
         // move this shit to a struct with "predictor config parameters"
         int m_predictor_steps;

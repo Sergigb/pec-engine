@@ -44,15 +44,6 @@ PlanetariumGUI::PlanetariumGUI(const FontAtlas* atlas, const BaseApp* app){
     m_action = PLANETARIUM_ACTION_NONE;
     m_cheat_vel_x = 0; m_cheat_vel_y = 0; m_cheat_vel_z = 0;
     m_cheat_pos_x = 0; m_cheat_pos_y = 0; m_cheat_pos_z = 0;
-    m_match_for = true;
-
-    // set to earth because why not
-    m_cheat_orbit_params.a_0 = 149598290450.51898;
-    m_cheat_orbit_params.e_0 = 0.01671123;
-    m_cheat_orbit_params.i_0 = -0.00001531;
-    m_cheat_orbit_params.p_0 = 102.93768193;
-    m_cheat_orbit_params.W_0 = 0.0;
-    m_cheat_orbit_params.L_0 = 100.46457166;
 
     buildSystemGUIData();
 
@@ -408,28 +399,48 @@ void PlanetariumGUI::showCheatsMenu(){
 
         ImGui::Separator();
         ImGui::Text("Set orbit");
+    
+        const planet_map& planets = m_asset_manager->m_planetary_system.get()->getPlanets();
+        planet_map::const_iterator it;
+        if(ImGui::BeginCombo("Target", m_cheat_orbit.body_target == 0 ? "Star" : 
+           planets.at(m_cheat_orbit.body_target)->getName().c_str(), 0)){
+            bool is_selected = (m_cheat_orbit.body_target == 0);
 
-        // set to be the planets
-        const char* targets[] = {"Sun", "Mercury", "CCCC", "DDDD", "EEEE", "FFFF", "GGGG", "HHHH", "IIIIIII", "JJJJ", "KKKKKKK" };
-        static int current_target = 0;
-        ImGui::Combo("Target", &current_target, targets, IM_ARRAYSIZE(targets));
-        ImGui::Checkbox("Match frame", &m_match_for);
+            if(ImGui::Selectable("Star", is_selected))
+                    m_cheat_orbit.body_target = 0;
+            if(is_selected)
+                ImGui::SetItemDefaultFocus();
+
+            for(it=planets.begin(); it!=planets.end(); it++){
+                const Planet* current = it->second.get();
+                bool is_selected = (m_cheat_orbit.body_target == it->first);
+
+                if(ImGui::Selectable(current->getName().c_str(), is_selected))
+                    m_cheat_orbit.body_target = it->first;
+                if(is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }
+
+        ImGui::Checkbox("Match frame", &m_cheat_orbit.match_frame);
 
         ImGui::Text("Orbital parameters");
         ImGui::PushItemWidth(150);
-        ImGui::InputDouble("S-m axis (met.)", &m_cheat_orbit_params.a_0);
+        ImGui::InputDouble("S-m axis (met.)", &m_cheat_orbit.cheat_orbit_params.a_0);
+        ImGui::PushItemWidth(50);ImGui::SameLine();
+        ImGui::InputDouble("Ecc.", &m_cheat_orbit.cheat_orbit_params.e_0);
         ImGui::PushItemWidth(50);
-        ImGui::InputDouble("Ecc.", &m_cheat_orbit_params.e_0);
+        ImGui::InputDouble("Inc. (rad.)", &m_cheat_orbit.cheat_orbit_params.i_0);
         ImGui::PushItemWidth(50);ImGui::SameLine();
-        ImGui::InputDouble("Inc. (deg.)", &m_cheat_orbit_params.i_0);
-        ImGui::PushItemWidth(50);ImGui::SameLine();
-        ImGui::InputDouble("Long. Peri. (deg.)", &m_cheat_orbit_params.p_0);
+        ImGui::InputDouble("Mean Long. (rad.)", &m_cheat_orbit.cheat_orbit_params.L_0);
         ImGui::PushItemWidth(50);
-        ImGui::InputDouble("L. A. Node (deg.)", &m_cheat_orbit_params.W_0);
+        ImGui::InputDouble("Long. Arc. Node (rad.)", &m_cheat_orbit.cheat_orbit_params.W_0);
         ImGui::PushItemWidth(50);ImGui::SameLine();
-        ImGui::InputDouble("Mean Long. (met.)", &m_cheat_orbit_params.L_0);
+        ImGui::InputDouble("Long of the Periap. (rad.)", &m_cheat_orbit.cheat_orbit_params.p_0);
+        ImGui::PushItemWidth(50);
 
-        if(ImGui::Button("Set##2"))
+        if(ImGui::Button("Set##3"))
             m_action = PLANETARIUM_ACTION_SET_ORBIT;
     }
     else{
@@ -449,6 +460,6 @@ const btVector3 PlanetariumGUI::getCheatPosition() const{
 }
 
 
-const struct orbital_data PlanetariumGUI::getCheatOrbitParameters() const{
-    return m_cheat_orbit_params;
+const struct cheat_orbit PlanetariumGUI::getCheatOrbitParameters() const{
+    return m_cheat_orbit;
 }
