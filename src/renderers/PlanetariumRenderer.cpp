@@ -15,7 +15,6 @@
 #include "../core/Camera.hpp"
 #include "../core/Player.hpp"
 #include "../core/utils/gl_utils.hpp"
-#include "../core/predictors.hpp"
 #include "../core/Predictor.hpp"
 #include "../assets/Planet.hpp"
 #include "../assets/PlanetarySystem.hpp"

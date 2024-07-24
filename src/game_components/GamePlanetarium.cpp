@@ -9,7 +9,6 @@
 #include "../core/Camera.hpp"
 #include "../core/Input.hpp"
 #include "../core/RenderContext.hpp"
-#include "../core/predictors.hpp"
 #include "../core/Physics.hpp"
 #include "../core/Predictor.hpp"
 #include "../assets/PlanetarySystem.hpp"

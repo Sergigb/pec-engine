@@ -8,7 +8,7 @@ struct particle_state;
 
 /*
  * Integrates the forces applied to a particle to find its next position using the Euler method.
- * It updates the velocity and the position of the particle. Check predictors.hpp to see the fields
+ * It updates the velocity and the position of the particle. Check Predictor.hpp to see the fields
  * of the particle state (basically origin, total force applied and initial velocity). Being a
  * first order solver, it does not use the previous origin and instead uses the velocity field
  * of the particle.
@@ -31,7 +31,7 @@ inline void solverExplicitEuler(struct particle_state& p, double delta_t){
 
 /*
  * Integrates the forces applied to a particle to find its next position using simplectic Euler. It
- * updates the velocity and the position of the particle. Check predictors.hpp to see the fields of
+ * updates the velocity and the position of the particle. Check Predictor.hpp to see the fields of
  * the particle state (basically origin, total force applied and initial velocity). Being a first
  * order solver, it does not use the previous origin and instead uses the velocity field of the
  * particle.
@@ -54,7 +54,7 @@ inline void solverSymplecticEuler(struct particle_state& p, double delta_t){
 
 /*
  * Integrates the forces applied to a particle to find its next position using the Verler method.
- * It updates the velocity and the position of the particle. Check predictors.hpp to see the fields
+ * It updates the velocity and the position of the particle. Check Predictor.hpp to see the fields
  * of the particle state (basically origin, total force applied and initial velocity). Being a
  * second order solver, it uses the previous origin and the velocity field is not used.
  *
