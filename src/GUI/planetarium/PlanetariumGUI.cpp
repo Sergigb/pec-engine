@@ -345,28 +345,28 @@ void PlanetariumGUI::renderImGUI(){
         if(m_fixed_traj_config.predictor_period_secs <= 0)
             m_fixed_traj_config.predictor_period_secs = 1;
 
-       /* const planet_map& planets = m_asset_manager->m_planetary_system.get()->getPlanets();
+        const planet_map& planets = m_asset_manager->m_planetary_system.get()->getPlanets();
         planet_map::const_iterator it;
-        if(ImGui::BeginCombo("Relative to", m_cheat_orbit.body_target == 0 ? "Star" : 
-           planets.at(m_cheat_orbit.body_target)->getName().c_str(), 0)){
-            bool is_selected = (m_cheat_orbit.body_target == 0);
+        if(ImGui::BeginCombo("Relative to", m_fixed_traj_config.relative_to == 0 ? "Star" : 
+           planets.at(m_fixed_traj_config.relative_to)->getName().c_str(), 0)){
+            bool is_selected = (m_fixed_traj_config.relative_to == 0);
 
             if(ImGui::Selectable("Star", is_selected))
-                    m_cheat_orbit.body_target = 0;
+                m_fixed_traj_config.relative_to = 0;
             if(is_selected)
                 ImGui::SetItemDefaultFocus();
 
             for(it=planets.begin(); it!=planets.end(); it++){
                 const Planet* current = it->second.get();
-                bool is_selected = (m_cheat_orbit.body_target == it->first);
+                bool is_selected = (m_fixed_traj_config.relative_to == it->first);
 
                 if(ImGui::Selectable(current->getName().c_str(), is_selected))
-                    m_cheat_orbit.body_target = it->first;
+                    m_fixed_traj_config.relative_to = it->first;
                 if(is_selected)
                     ImGui::SetItemDefaultFocus();
             }
             ImGui::EndCombo();
-        }*/
+        }
 
         ImGui::End();
     }
@@ -431,7 +431,7 @@ void PlanetariumGUI::showCheatsMenu(){
             bool is_selected = (m_cheat_orbit.body_target == 0);
 
             if(ImGui::Selectable("Star", is_selected))
-                    m_cheat_orbit.body_target = 0;
+                m_cheat_orbit.body_target = 0;
             if(is_selected)
                 ImGui::SetItemDefaultFocus();
 

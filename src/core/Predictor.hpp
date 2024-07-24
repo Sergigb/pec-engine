@@ -59,20 +59,23 @@ struct fixed_time_trajectory_config{
     double predictor_period_secs;
     int predictor_steps;
     float predictor_scale;
+    std::uint32_t relative_to;
 
     fixed_time_trajectory_config(){
         predictor_start_time = 0;
         predictor_period_secs = 31536000.0;
         predictor_steps = 400;
         predictor_scale = 1.0;
+        relative_to = 0;
     }
 
-    fixed_time_trajectory_config(double start_time, double period_secs,
-                                 int steps, float scale){
+    fixed_time_trajectory_config(double start_time, double period_secs, int steps,
+                                 float scale, std::uint32_t relative){
         predictor_start_time = start_time;
         predictor_period_secs = period_secs;
         predictor_steps = steps;
         predictor_scale = scale;
+        relative_to = relative;
     }
 };
 

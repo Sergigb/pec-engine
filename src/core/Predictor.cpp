@@ -127,10 +127,11 @@ void Predictor::computeTrajectoriesRender(std::vector<std::vector<GLfloat>>& pos
     assert(states.size());
     assert(config.predictor_period_secs);
     assert(config.predictor_steps);
-    const PlanetarySystem* planet_system = m_app->getAssetManager()->m_planetary_system.get();
 
+    const PlanetarySystem* planet_system = m_app->getAssetManager()->m_planetary_system.get();
     planet_map::const_iterator it;
     const planet_map& planets = planet_system->getPlanets();
+    dmath::vec3 original_relative_pos;
     double star_mass = planet_system->getStar().mass;
 
     double time = config.predictor_start_time / SECONDS_IN_A_CENTURY;
@@ -149,13 +150,21 @@ void Predictor::computeTrajectoriesRender(std::vector<std::vector<GLfloat>>& pos
         position_buffers.at(i).push_back(states.at(i).origin.v[2] / config.predictor_scale);
     }
 
+    if(config.relative_to != 0)
+        original_relative_pos = planets.at(config.relative_to)->getOrbitalData().pos;
+
     for(int i=0; i < config.predictor_steps; i++){
+        dmath::vec3 planet_disp; // displacement of the planet we're rendering the orbit relative to
+
         time += predictor_delta_t_cent;
         // iterate over each planet
         for(it=planets.begin();it!=planets.end();it++){
             const orbital_data& data = it->second->getOrbitalData();
             dmath::vec3 planet_origin;
             computeObjectPos(data, time, planet_origin);
+
+            if(it->second->getId() == config.relative_to)
+                planet_disp = original_relative_pos - planet_origin;
 
             // iterate over each object
             for(uint j = 0; j < states.size(); j++){
@@ -187,9 +196,19 @@ void Predictor::computeTrajectoriesRender(std::vector<std::vector<GLfloat>>& pos
             solverSymplecticEuler(current, config.predictor_period_secs / config.predictor_steps);
 
             // udpate buffers
-            position_buffers.at(j).push_back(current.origin.v[0] / config.predictor_scale);
-            position_buffers.at(j).push_back(current.origin.v[1] / config.predictor_scale);
-            position_buffers.at(j).push_back(current.origin.v[2] / config.predictor_scale);
+            if(config.relative_to != 0){
+                position_buffers.at(j).push_back((current.origin.v[0] + planet_disp.v[0])
+                                                 / config.predictor_scale);
+                position_buffers.at(j).push_back((current.origin.v[1] + planet_disp.v[1] )
+                                                 / config.predictor_scale);
+                position_buffers.at(j).push_back((current.origin.v[2] + planet_disp.v[2] )
+                                                 / config.predictor_scale);
+            }
+            else{
+                position_buffers.at(j).push_back(current.origin.v[0] / config.predictor_scale);
+                position_buffers.at(j).push_back(current.origin.v[1] / config.predictor_scale);
+                position_buffers.at(j).push_back(current.origin.v[2] / config.predictor_scale);
+            }
         }
     }
 }
