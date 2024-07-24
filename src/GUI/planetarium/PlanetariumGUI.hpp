@@ -8,6 +8,7 @@
 #include "../BaseGUI.hpp"
 #include "../Sprite.hpp"
 #include "../../assets/Planet.hpp"
+#include "../../core/Predictor.hpp"
 
 
 /* Planetarium actions */
@@ -127,7 +128,8 @@ class PlanetariumGUI : public BaseGUI{
         int m_action;
         double m_cheat_vel_x, m_cheat_vel_y, m_cheat_vel_z; 
         double m_cheat_pos_x, m_cheat_pos_y, m_cheat_pos_z;
-        struct cheat_orbit m_cheat_orbit;    
+        struct cheat_orbit m_cheat_orbit;
+        struct fixed_time_trajectory_config m_fixed_traj_config;
 
         const FontAtlas* m_font_atlas;
         const RenderContext* m_render_context;
@@ -158,10 +160,7 @@ class PlanetariumGUI : public BaseGUI{
         const btVector3 getCheatVelocity() const;
         const btVector3 getCheatPosition() const;
         const struct cheat_orbit getCheatOrbitParameters() const;
-
-        // move this shit to a struct with "predictor config parameters"
-        int m_predictor_steps;
-        float m_predictor_period;
+        struct fixed_time_trajectory_config getPredictorConfig();
 };
 
 

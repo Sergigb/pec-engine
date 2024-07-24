@@ -39,8 +39,6 @@ PlanetariumGUI::PlanetariumGUI(const FontAtlas* atlas, const BaseApp* app){
     m_target_fade = 0.0;
     m_show_predictor_settings = false;
     m_show_cheats = false;
-    m_predictor_steps = 400;
-    m_predictor_period = 365.f;
     m_action = PLANETARIUM_ACTION_NONE;
     m_cheat_vel_x = 0; m_cheat_vel_y = 0; m_cheat_vel_z = 0;
     m_cheat_pos_x = 0; m_cheat_pos_y = 0; m_cheat_pos_z = 0;
@@ -335,14 +333,40 @@ void PlanetariumGUI::renderImGUI(){
         ImGui::Begin("Predictor settings", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
         ImGui::Text("Predictor configuration");
-        ImGui::InputInt("Predictor steps", &m_predictor_steps);
-        ImGui::InputFloat("Predictor period (days)", &m_predictor_period);
+        ImGui::InputInt("Predictor steps", &m_fixed_traj_config.predictor_steps);
 
-        if(m_predictor_steps <= 0)
-            m_predictor_steps = 1;
+        double period_days = m_fixed_traj_config.predictor_period_secs / (24 * 60 * 60);
+        ImGui::InputDouble("Predictor period (days)", &period_days);
+        m_fixed_traj_config.predictor_period_secs = period_days * 24 * 60 * 60;
 
-        if(m_predictor_period <= 0)
-            m_predictor_period = 1;
+        if(m_fixed_traj_config.predictor_steps <= 0)
+            m_fixed_traj_config.predictor_steps = 1;
+
+        if(m_fixed_traj_config.predictor_period_secs <= 0)
+            m_fixed_traj_config.predictor_period_secs = 1;
+
+       /* const planet_map& planets = m_asset_manager->m_planetary_system.get()->getPlanets();
+        planet_map::const_iterator it;
+        if(ImGui::BeginCombo("Relative to", m_cheat_orbit.body_target == 0 ? "Star" : 
+           planets.at(m_cheat_orbit.body_target)->getName().c_str(), 0)){
+            bool is_selected = (m_cheat_orbit.body_target == 0);
+
+            if(ImGui::Selectable("Star", is_selected))
+                    m_cheat_orbit.body_target = 0;
+            if(is_selected)
+                ImGui::SetItemDefaultFocus();
+
+            for(it=planets.begin(); it!=planets.end(); it++){
+                const Planet* current = it->second.get();
+                bool is_selected = (m_cheat_orbit.body_target == it->first);
+
+                if(ImGui::Selectable(current->getName().c_str(), is_selected))
+                    m_cheat_orbit.body_target = it->first;
+                if(is_selected)
+                    ImGui::SetItemDefaultFocus();
+            }
+            ImGui::EndCombo();
+        }*/
 
         ImGui::End();
     }
@@ -464,4 +488,9 @@ const btVector3 PlanetariumGUI::getCheatPosition() const{
 
 const struct cheat_orbit PlanetariumGUI::getCheatOrbitParameters() const{
     return m_cheat_orbit;
+}
+
+
+struct fixed_time_trajectory_config PlanetariumGUI::getPredictorConfig(){
+    return m_fixed_traj_config;
 }

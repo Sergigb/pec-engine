@@ -125,7 +125,7 @@ void Predictor::computeTrajectoriesRender(std::vector<std::vector<GLfloat>>& pos
                                          std::vector<struct particle_state>& states,
                                          const struct fixed_time_trajectory_config& config) const{
     assert(states.size());
-    assert(config.predictor_delta_t_secs);
+    assert(config.predictor_period_secs);
     assert(config.predictor_steps);
     const PlanetarySystem* planet_system = m_app->getAssetManager()->m_planetary_system.get();
 
@@ -134,7 +134,8 @@ void Predictor::computeTrajectoriesRender(std::vector<std::vector<GLfloat>>& pos
     double star_mass = planet_system->getStar().mass;
 
     double time = config.predictor_start_time / SECONDS_IN_A_CENTURY;
-    double predictor_delta_t_cent = config.predictor_delta_t_secs / SECONDS_IN_A_CENTURY;
+    double predictor_delta_t_cent = config.predictor_period_secs / config.predictor_steps / 
+                                    SECONDS_IN_A_CENTURY;
 
     // reserve buffer memory to their expected size to avoid dynamic re-allocation by std
     position_buffers.clear();
@@ -183,7 +184,7 @@ void Predictor::computeTrajectoriesRender(std::vector<std::vector<GLfloat>>& pos
             current.total_force += f;
 
             // solve motion current step
-            solverSymplecticEuler(current, config.predictor_delta_t_secs);
+            solverSymplecticEuler(current, config.predictor_period_secs / config.predictor_steps);
 
             // udpate buffers
             position_buffers.at(j).push_back(current.origin.v[0] / config.predictor_scale);

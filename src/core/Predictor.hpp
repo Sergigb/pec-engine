@@ -56,21 +56,21 @@ struct particle_state{
 
 struct fixed_time_trajectory_config{
     double predictor_start_time;
-    double predictor_delta_t_secs;
+    double predictor_period_secs;
     int predictor_steps;
     float predictor_scale;
 
     fixed_time_trajectory_config(){
         predictor_start_time = 0;
-        predictor_delta_t_secs = 1;
-        predictor_steps = 100;
+        predictor_period_secs = 31536000.0;
+        predictor_steps = 400;
         predictor_scale = 1.0;
     }
 
-    fixed_time_trajectory_config(double start_time, double step_delta_t,
+    fixed_time_trajectory_config(double start_time, double period_secs,
                                  int steps, float scale){
         predictor_start_time = start_time;
-        predictor_delta_t_secs = step_delta_t;
+        predictor_period_secs = period_secs;
         predictor_steps = steps;
         predictor_scale = scale;
     }
