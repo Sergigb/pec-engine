@@ -10,6 +10,8 @@
 #include "../core/Input.hpp"
 #include "../core/RenderContext.hpp"
 #include "../core/predictors.hpp"
+#include "../core/Physics.hpp"
+#include "../core/Predictor.hpp"
 #include "../assets/PlanetarySystem.hpp"
 #include "../assets/Vessel.hpp"
 #include "../assets/BasePart.hpp"
@@ -32,6 +34,7 @@ GamePlanetarium::GamePlanetarium(BaseApp* app, const FontAtlas* font_atlas){
     m_asset_manager = m_app->getAssetManager();
     m_camera = m_app->getCamera();
     m_render_context = m_app->getRenderContext();
+    m_predictor = m_app->getPredictor();
 
     m_gui.reset(new PlanetariumGUI(font_atlas, m_app));
     m_render_context->setGUI(m_gui.get(), GUI_MODE_PLANETARIUM);
@@ -166,13 +169,14 @@ void GamePlanetarium::update(){
         Vessel* vessel = m_app->getPlayer()->getVessel();
         if(vessel){
             const btQuaternion rotation = vessel->getRoot()->m_body->getOrientation();
-            const PlanetarySystem& planet_system = *m_asset_manager->m_planetary_system.get();
             const struct cheat_orbit cheat_orbit_data = m_gui->getCheatOrbitParameters();
+            double current_time = m_app->getPhysics()->getCurrentTime();
             dmath::vec3 origin, velocity;
 
-            kepler_to_cartesian(cheat_orbit_data.cheat_orbit_params, planet_system, 
-                                cheat_orbit_data.body_target, cheat_orbit_data.match_frame, origin,
-                                velocity);
+            m_predictor->computeObjectPosVel(cheat_orbit_data.cheat_orbit_params,
+                                             cheat_orbit_data.body_target, current_time,
+                                             cheat_orbit_data.match_frame, origin, velocity);
+
             vessel->setSubTreeMotionState(btVector3(origin.v[0], origin.v[1], origin.v[2]),
                                           rotation); // thread safe
             m_app->getAssetManager()->setVesselVelocity(vessel, 

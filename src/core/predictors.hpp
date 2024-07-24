@@ -1,30 +1,30 @@
 #ifndef PREDICTORS_HPP
 #define PREDICTORS_HPP
-
+/*
 #include <memory>
 
 #include "maths_funcs.hpp"
 #include "../assets/PlanetarySystem.hpp"
 
-#define MAX_CONIC_SOLVER_ITER 10
+#define MAX_CONIC_SOLVER_ITER 10*/
 
 /*
  * This class defines a series of functions and data structures that can be used to predict orbital
  * characteristics. One example of the currently implemented one is the simple orbital predictor,
  * which predicts the orbit of a series of queried particles.
  */
-
+/*
 struct orbital_data;
 
 class PlanetarySystem;
-
+*/
 
 /*
  * This struct contains the motion state of a particle, which includes its origin, its velocity and
  * total force before its position is integrated. prev_origin contains the previous location, used
  * by second-order integrators.
  */
-struct particle_state{
+/*struct particle_state{
     dmath::vec3 origin;
     dmath::vec3 prev_origin;
     dmath::vec3 velocity;
@@ -56,7 +56,7 @@ struct particle_state{
         mass = p.mass;
         total_force = dmath::vec3(0.0, 0.0, 0.0);
     }
-};
+};*/
 
 
 /*
@@ -73,21 +73,21 @@ struct particle_state{
  * @origin: will contain the cartesian coordinates of the object.
  * @velocity: will contain the velocity of the object.
  */
-void kepler_to_cartesian(const orbital_data& data, const PlanetarySystem& system,
-                         std::uint32_t body_target, bool match_frame, 
-                         dmath::vec3& origin, dmath::vec3& velocity);
+//void compute_object_position_and_velocity(const orbital_data& data, const PlanetarySystem& system,
+//                                          std::uint32_t body_target, bool match_frame, 
+//                                          dmath::vec3& origin, dmath::vec3& velocity);
 
 
 /*
- * Calculates the position of the planet with the parameters given in data (check Planet.hpp) at
+ * Calculates the position of the object with the parameters given in data (check Planet.hpp) at
  * the queried time.
  * 
- * @data: the orbital parameters of the planet (struct defined in Planet.hpp).
+ * @data: the orbital parameters of the object (struct defined in Planet.hpp).
  * @time: the time at which we want to know the position. In centuries.
  * @planet_origin: is updated with the position of the planet at the queried time
  */
-void compute_planet_position(const orbital_data& data, double time,
-                             dmath::vec3& planet_origin);
+//void compute_object_position(const orbital_data& data, double time,
+//                             dmath::vec3& planet_origin);
 
 
 /*
@@ -111,11 +111,11 @@ void compute_planet_position(const orbital_data& data, double time,
  * @predictor_steps: number of steps of the simluation, in seconds.
  * @scale: divides each coordinate.
  */
-void compute_trajectories_render(const PlanetarySystem* planet_system,
+/*void compute_trajectories_render(const PlanetarySystem* planet_system,
                                  std::vector<std::vector<GLfloat>>& position_buffers,
                                  std::vector<struct particle_state>& states,
                                  double start_time, uint predictor_delta_t_secs,
-                                 uint predictor_steps, float scale);
+                                 uint predictor_steps, float scale);*/
 
 
 /*
@@ -136,11 +136,12 @@ void compute_trajectories_render(const PlanetarySystem* planet_system,
  * @predictor_steps: number of steps of the simluation, in seconds.
  * @scale: divides each coordinate.
  */
+/*
 void compute_trajectories_double(const PlanetarySystem* planet_system,
                                  std::vector<std::vector<dmath::vec3>>& positions,
                                  std::vector<struct particle_state>& states,
                                  double start_time, uint predictor_delta_t_secs,
                                  uint predictor_steps);
 
-
+*/
 #endif

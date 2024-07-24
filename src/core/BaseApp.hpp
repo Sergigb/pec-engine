@@ -19,6 +19,7 @@ class RenderContext;
 class AssetManager;
 class Player;
 class GameEditor;
+class Predictor;
 
 
 /*
@@ -40,6 +41,7 @@ class BaseApp{
         std::unique_ptr<Physics> m_physics;
         std::unique_ptr<AssetManager> m_asset_manager;
         std::unique_ptr<Player> m_player;
+        std::unique_ptr<Predictor> m_predictor;
 
         short m_gui_mode, m_render_state;
 
@@ -166,6 +168,16 @@ class BaseApp{
          * Returns a pointer to the Player object of the app.
          */
         Player* getPlayer();
+
+        /*
+         * Returns a constant pointer to the Predictor object of the app.
+         */
+        const Predictor* getPredictor() const;
+
+        /*
+         * Returns a pointer to the Predictor object of the app.
+         */
+        Predictor* getPredictor();
 };
 
 

@@ -16,6 +16,7 @@
 #include "../core/Player.hpp"
 #include "../core/utils/gl_utils.hpp"
 #include "../core/predictors.hpp"
+#include "../core/Predictor.hpp"
 #include "../assets/Planet.hpp"
 #include "../assets/PlanetarySystem.hpp"
 #include "../assets/Vessel.hpp"
@@ -88,19 +89,16 @@ int PlanetariumRenderer::render(struct render_buffer* rbuf){
     return 0;
 }
 
-// declare the following in the header
-uint m_predictor_steps = 1000;
-double m_predictor_period = 365.2422; // in days?
-
 
 void PlanetariumRenderer::renderPredictions(){
     const Vessel* user_vessel = m_app->getPlayer()->getVessel();
+    const Predictor* predictor = m_app->getPredictor();
     std::vector<struct particle_state> states;
     std::vector<std::vector<GLfloat>> prediction_buffers;
 
     // TEMP!!
-    m_predictor_steps = m_planetarium_gui->m_predictor_steps;
-    m_predictor_period = m_planetarium_gui->m_predictor_period;
+    int predictor_steps = m_planetarium_gui->m_predictor_steps;
+    double predictor_period = m_planetarium_gui->m_predictor_period;
 
     if(user_vessel == nullptr){
         return;
@@ -119,20 +117,20 @@ void PlanetariumRenderer::renderPredictions(){
     }
     
     std::unique_ptr<GLuint[]> index_buffer;
-    index_buffer.reset(new GLuint[2 * m_predictor_steps]);
+    index_buffer.reset(new GLuint[2 * predictor_steps]);
 
     double elapsed_time = m_app->getPhysics()->getCurrentTime();
-    double predictor_delta_t_secs = (m_predictor_period * 24 * 60 * 60)/ m_predictor_steps;
+    double predictor_delta_t_secs = (predictor_period * 24 * 60 * 60) / predictor_steps;
 
     // can't find a smarter way to initialise this buffer
-    for(uint i=0; i < m_predictor_steps; i++){
+    for(int i=0; i < predictor_steps; i++){
         index_buffer[i * 2] = i;
         index_buffer[i * 2 + 1] = i + 1;
     }
 
-    compute_trajectories_render(m_app->getAssetManager()->m_planetary_system.get(),
-                                prediction_buffers, states, elapsed_time, predictor_delta_t_secs,
-                                m_predictor_steps, PLANETARIUM_SCALE_FACTOR);
+    struct fixed_time_trajectory_config config(elapsed_time, predictor_delta_t_secs, 
+                                               predictor_steps, PLANETARIUM_SCALE_FACTOR);
+    predictor->computeTrajectoriesRender(prediction_buffers, states, config);
 
     m_render_context->bindVao(m_pred_vao);
 
@@ -141,7 +139,7 @@ void PlanetariumRenderer::renderPredictions(){
                  &prediction_buffers.at(0)[0], GL_STATIC_DRAW);
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_pred_vbo_ind);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 2 * m_predictor_steps * sizeof(GLuint),
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, 2 * predictor_steps * sizeof(GLuint),
                  index_buffer.get(), GL_STATIC_DRAW);
 
     m_render_context->useProgram(SHADER_DEBUG);
@@ -149,7 +147,7 @@ void PlanetariumRenderer::renderPredictions(){
     glUniform3f(m_debug_color_location, 0.f, 1.f, 0.f);
     glUniform1f(m_debug_alpha_location, 1.f);
 
-    glDrawElements(GL_LINES, m_predictor_steps * 2, GL_UNSIGNED_INT, NULL);
+    glDrawElements(GL_LINES, predictor_steps * 2, GL_UNSIGNED_INT, NULL);
 
     check_gl_errors(true, "PlanetariumRenderer::renderPredictions");
 }

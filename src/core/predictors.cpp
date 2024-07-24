@@ -2,15 +2,15 @@
 #include <cmath>
 #include <iostream>
 
-#include "predictors.hpp"
+#include "predictors.hpp"/*
 #include "solvers.hpp"
 #include "../core/Physics.hpp"
-#include "../core/log.hpp"
+#include "../core/log.hpp"*/
 
-
-void kepler_to_cartesian(const orbital_data& data, const PlanetarySystem& system,
-                         std::uint32_t body_target, bool match_frame, 
-                         dmath::vec3& origin, dmath::vec3& velocity){
+/*
+void compute_object_position_and_velocity(const orbital_data& data, const PlanetarySystem& system,
+                                          std::uint32_t body_target, bool match_frame, 
+                                          dmath::vec3& origin, dmath::vec3& velocity){
     double M = data.L_0 - data.p_0;
     double w = data.p_0 - data.W_0;
     double E = M;
@@ -53,20 +53,20 @@ void kepler_to_cartesian(const orbital_data& data, const PlanetarySystem& system
                     std::cos(w + v) * std::cos(data.i_0));
 
     if(match_frame && body_target != 0){
-        const dmath::vec3& target_pos = system.getPlanets().at(body_target).
-                                        get()->getOrbitalData().pos;
-        const dmath::vec3& target_pos_prev = system.getPlanets().at(body_target).
-                                        get()->getOrbitalData().pos_prev;
+        dmath::vec3 target_pos, target_vel;
+        const struct orbital_data& target_data = 
+            system.getPlanets().at(body_target).get()->getOrbitalData();
+
+        compute_object_position_and_velocity(target_data, system, 0, false, 
+                                             target_pos, target_vel);
         origin += target_pos;
-        std::cerr << "kepler_to_cartesian: we use a fixed time-step!" << std::endl;
-        log("kepler_to_cartesian: we use a fixed time-step");
-        velocity += (target_pos - target_pos_prev) / (1. / 60.); // HARDCODED TIME STEP - DIRTYYYY
+        velocity += target_vel;
     }
 
 }
 
 
-void compute_planet_position(const orbital_data& data, double time,
+void compute_object_position(const orbital_data& data, double time,
                              dmath::vec3& planet_origin){
     double e, W, w, inc, a, L, p, M, v;
 
@@ -138,7 +138,7 @@ void compute_trajectories_render(const PlanetarySystem* planet_system,
         for(it=planets.begin();it!=planets.end();it++){
             const orbital_data& data = it->second->getOrbitalData();
             dmath::vec3 planet_origin;
-            compute_planet_position(data, time, planet_origin);
+            compute_object_position(data, time, planet_origin);
 
             // iterate over each object
             for(uint j = 0; j < states.size(); j++){
@@ -208,7 +208,7 @@ void compute_trajectories_double(const PlanetarySystem* planet_system,
         for(it=planets.begin();it!=planets.end();it++){
             const orbital_data& data = it->second->getOrbitalData();
             dmath::vec3 planet_origin;
-            compute_planet_position(data, time, planet_origin);
+            compute_object_position(data, time, planet_origin);
 
             // iterate over each object
             for(uint j = 0; j < states.size(); j++){
@@ -242,3 +242,4 @@ void compute_trajectories_double(const PlanetarySystem* planet_system,
         time += predictor_delta_t_cent;
     }
 }
+*/

@@ -13,6 +13,7 @@
 #include "Player.hpp"
 #include "../assets/Model.hpp"
 #include "log.hpp"
+#include "Predictor.hpp"
 
 
 BaseApp::BaseApp(){
@@ -126,6 +127,7 @@ void BaseApp::init(int gl_width, int gl_height){
     m_physics.reset(new Physics(this));
     m_asset_manager.reset(new AssetManager(this));
     m_player.reset(new Player(m_camera.get(), m_asset_manager.get(), m_input.get()));
+    m_predictor.reset(new Predictor(this));
 
     m_buffers.last_updated = none;
 
@@ -251,4 +253,14 @@ struct render_buffers* BaseApp::getRenderBuffers(){
 
 struct thread_monitor* BaseApp::getThreadMonitor(){
     return &m_thread_monitor;
+}
+
+
+const Predictor* BaseApp::getPredictor() const{
+    return m_predictor.get();
+}
+
+
+Predictor* BaseApp::getPredictor(){
+    return m_predictor.get();
 }

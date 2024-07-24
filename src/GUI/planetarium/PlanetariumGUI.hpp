@@ -89,12 +89,19 @@ struct cheat_orbit{
         body_target = 0;
         match_frame = true;
         // set to earth because why not
-        cheat_orbit_params.a_0 = 149600000000.0;
+        cheat_orbit_params.a_0 = 1.00000261;
         cheat_orbit_params.e_0 = 0.01671123 * ONE_DEG_IN_RAD;
         cheat_orbit_params.i_0 = -0.00001531 * ONE_DEG_IN_RAD;
         cheat_orbit_params.L_0 = 100.46457166 * ONE_DEG_IN_RAD;
         cheat_orbit_params.W_0 = 0.0 * ONE_DEG_IN_RAD;
         cheat_orbit_params.p_0 = 102.93768193 * ONE_DEG_IN_RAD;
+        cheat_orbit_params.a_d = 0.0;
+        cheat_orbit_params.e_d = 0.0;
+        cheat_orbit_params.i_d = 0.0;
+        cheat_orbit_params.L_d = 0.0;
+        cheat_orbit_params.W_d = 0.0;
+        cheat_orbit_params.p_d = 0.0;
+
     }
 };
 

@@ -427,7 +427,9 @@ void PlanetariumGUI::showCheatsMenu(){
 
         ImGui::Text("Orbital parameters");
         ImGui::PushItemWidth(150);
-        ImGui::InputDouble("S-m axis (met.)", &m_cheat_orbit.cheat_orbit_params.a_0);
+        m_cheat_orbit.cheat_orbit_params.a_0 *= AU_TO_METERS;
+        ImGui::InputDouble("S-m axis (AU)", &m_cheat_orbit.cheat_orbit_params.a_0);
+        m_cheat_orbit.cheat_orbit_params.a_0 /= AU_TO_METERS;
         ImGui::PushItemWidth(50);ImGui::SameLine();
         ImGui::InputDouble("Ecc.", &m_cheat_orbit.cheat_orbit_params.e_0);
         ImGui::PushItemWidth(50);
