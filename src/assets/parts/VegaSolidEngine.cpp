@@ -67,7 +67,7 @@ void VegaSolidEngine::renderOther(){
 
         ImGui::SetNextWindowPos(mousepos, ImGuiCond_Appearing);
         ImGui::SetNextWindowSize(ImVec2(300.f, 300.f), ImGuiCond_Appearing);
-        ImGui::Begin((m_fancy_name + ss.str()).c_str(), &m_show_editor_menu);
+        ImGui::Begin((m_fancy_name + "##" + ss.str()).c_str(), &m_show_editor_menu);
 
         ImGui::ColorEdit3("Mesh color", m_mesh_color.v);
 
