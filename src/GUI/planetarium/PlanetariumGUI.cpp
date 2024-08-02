@@ -22,6 +22,7 @@
 
 
 const float c[4] = {.85f, .85f, .85f, 1.f};
+const float light_gray[4] = {.9f, .9f, .9f, 1.f};
 
 
 PlanetariumGUI::PlanetariumGUI(const FontAtlas* atlas, const BaseApp* app){
@@ -48,6 +49,8 @@ PlanetariumGUI::PlanetariumGUI(const FontAtlas* atlas, const BaseApp* app){
     m_main_text.reset(new Text2D(m_fb_width, m_fb_height,
                       m_font_atlas, m_render_context));
 
+    m_object_sprite = Sprite(m_render_context, math::vec2(0.f, 0.f),
+                             SPRITE_DRAW_ABSOLUTE, "../data/sat_thumb.png", 35.0f);
 }
 
 
@@ -59,17 +62,12 @@ void PlanetariumGUI::onFramebufferSizeUpdate(){
 }
 
 
-void PlanetariumGUI::updateVesselsText(const math::mat4& proj_mat, const math::mat4& view_mat){
-    UNUSED(proj_mat);
-    UNUSED(view_mat);
-    /*
-    //const VesselMap& active_vessels = m_asset_manager->m_active_vessels;
-    const std::vector<struct planet_gui_data>& planets = m_system_gui_data.m_planets_data;
+void PlanetariumGUI::showVessels(const math::mat4& proj_mat, const math::mat4& view_mat){
+    const VesselMap& active_vessels = m_asset_manager->m_active_vessels;
+    VesselMap::const_iterator it;
     wchar_t buff[256];
 
-    for(uint i=0; i < planets.size(); i++){
-        //const btVecror3& com = planets.at(i).m_planet->getCoM();
-        const Planet& planets.at(i).m_planet;
+    for(it = active_vessels.begin(); it != active_vessels.end(); it++){
         const btVector3& com = it->second->getCoM();
 
 
@@ -83,11 +81,13 @@ void PlanetariumGUI::updateVesselsText(const math::mat4& proj_mat, const math::m
 
             mbstowcs(buff, it->second->getVesselName().c_str(), 256);
             m_main_text->addString(buff, pos_screen.v[0] * m_fb_width, 
-                                   pos_screen.v[1] * m_fb_height + 5, 1.0f,
-                                   STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_CENTER_XY);
+                                   pos_screen.v[1] * m_fb_height - 15, 1.0f,
+                                   STRING_DRAW_ABSOLUTE_BL, STRING_ALIGN_CENTER_XY,
+                                   light_gray);
+            m_object_sprite.render(math::vec2(pos_screen.v[0] * m_fb_width,
+                                              pos_screen.v[1] * m_fb_height));
         }
-
-    }*/
+    }
 }
 
 
@@ -147,7 +147,7 @@ void PlanetariumGUI::renderPlanets(const math::mat4& proj_mat, const math::mat4&
 
 
 
-void PlanetariumGUI::updateSceneText(const math::mat4& proj_mat, const math::mat4& view_mat){
+void PlanetariumGUI::updateSceneText(){
     const PlanetarySystem* planetary_system = m_system_gui_data.m_planetary_system;
     const std::vector<struct planet_gui_data>& planets = m_system_gui_data.m_planets_data;
     uint selected_planet_idx;
@@ -156,8 +156,6 @@ void PlanetariumGUI::updateSceneText(const math::mat4& proj_mat, const math::mat
     wchar_t buff[256];
 
     m_main_text->clearStrings();
-
-    updateVesselsText(proj_mat, view_mat);
 
     oss << "System name: " << planetary_system->getSystemName();
     oss << "\nStar name: " << planetary_system->getStar().star_name;
@@ -258,7 +256,8 @@ void PlanetariumGUI::render(){
     const math::mat4& proj_mat = m_camera->getProjMatrix();
     const math::mat4 view_mat = m_camera->getViewMatrix();
     renderPlanets(proj_mat, view_mat);
-    updateSceneText(proj_mat, view_mat);
+    updateSceneText();
+    showVessels(proj_mat, view_mat);
     m_main_text->render();
 }
 

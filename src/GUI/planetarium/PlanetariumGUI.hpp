@@ -130,6 +130,7 @@ class PlanetariumGUI : public BaseGUI{
         double m_cheat_pos_x, m_cheat_pos_y, m_cheat_pos_z;
         struct cheat_orbit m_cheat_orbit;
         struct fixed_time_trajectory_config m_fixed_traj_config;
+        Sprite m_object_sprite;
 
         const FontAtlas* m_font_atlas;
         const RenderContext* m_render_context;
@@ -139,8 +140,8 @@ class PlanetariumGUI : public BaseGUI{
         const BaseApp* m_app;
 
         void buildSystemGUIData();
-        void updateSceneText(const math::mat4& proj_mat, const math::mat4& view_mat);
-        void updateVesselsText(const math::mat4& proj_mat, const math::mat4& view_mat);
+        void updateSceneText();
+        void showVessels(const math::mat4& proj_mat, const math::mat4& view_mat);
         void renderPlanets(const math::mat4& proj_mat, const math::mat4& view_mat);
         void showCheatsMenu();
     public:
