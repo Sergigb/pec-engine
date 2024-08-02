@@ -60,6 +60,7 @@ Sprite& Sprite::operator=(Sprite&& sprite){
     m_pos = sprite.m_pos;
     m_positioning = sprite.m_positioning;
     m_size = sprite.m_size;
+    m_render_context = sprite.m_render_context;
     m_alpha = sprite.m_alpha;
     m_alpha_location = sprite.m_alpha_location;
     m_free_on_destruction = true;
