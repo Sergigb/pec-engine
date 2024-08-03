@@ -22,7 +22,6 @@
 
 
 EditorGUI::EditorGUI(){
-    m_fb_update = true;
     m_init = false;
 }
 
@@ -34,28 +33,27 @@ EditorGUI::EditorGUI(const BaseApp* app, const FontAtlas* atlas){
     assert(app);
     assert(atlas);
 
+    float fb_width, fb_height;
+
     m_app = app;
     m_render_context = m_app->getRenderContext();
-    m_render_context->getDefaultFbSize(m_fb_width, m_fb_height);
-    m_fb_update = true;
+    m_render_context->getDefaultFbSize(fb_width, fb_height);
     m_init = true;
     m_font_atlas = atlas;
     m_input = m_app->getInput();
-    m_tab_option = TAB_OPTION_PARTS;
-    m_input->getMousePos(m_mouse_y, m_mouse_x);
-    m_mouse_y = m_fb_height - m_mouse_y;
     m_symmetric_sides = 1;
     m_max_symmetric_sides = 8;
     m_radial_align = true;
     strcpy(m_vessel_name, "Unnamed vessel");
     m_action = EDITOR_ACTION_NONE;
     m_master_parts_list = nullptr;
+    m_picked_object = 0;
 
-    m_main_text.reset(new Text2D(m_fb_width, m_fb_height, m_font_atlas, m_render_context));
+    m_main_text.reset(new Text2D(fb_width, fb_height, m_font_atlas, m_render_context));
 
     // texture atlas loading test
-    int n;
-    unsigned char* image_data = stbi_load("../data/editor_atlas.png", &m_tex_size_x, &m_tex_size_y, &n, 4);
+    int n, x, y;
+    unsigned char* image_data = stbi_load("../data/editor_atlas.png", &x, &y, &n, 4);
     if(!image_data) {
         std::cerr << "EditorGUI::EditorGUI - could not load GUI texture atlas" << std::endl;
         log("EditorGUI::EditorGUI - could not load GUI texture atlas");
@@ -67,7 +65,7 @@ EditorGUI::EditorGUI(const BaseApp* app, const FontAtlas* atlas){
         glGenTextures(1, &m_texture_atlas);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, m_texture_atlas);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, m_tex_size_x, m_tex_size_y,
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, x, y,
                      0, GL_RGBA, GL_UNSIGNED_BYTE, image_data);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
@@ -84,55 +82,10 @@ EditorGUI::~EditorGUI(){
 }
 
 
-void EditorGUI::onFramebufferSizeUpdate(){
-    m_fb_update = true;
-}
-
-
-void EditorGUI::updateBuffers(){
-
-}
-
-
-void EditorGUI::setButtonColor(float r ,float g, float b, float a, GLintptr offset){
-    UNUSED(r);
-    UNUSED(g);
-  UNUSED(b);  
-  UNUSED(a);
-  UNUSED(offset);
-
-}
-
-
-void EditorGUI::updateTabsColor(){
-    
-}
-
-
-void EditorGUI::updateDeleteArea(){
-
-}
-
-
-void EditorGUI::updateTopButtons(){
- 
-
-}
-
-
-void EditorGUI::updateButtons(){ // used to update button colors
-    //updateTabsColor();
-    //updateDeleteArea();
-    //updateTopButtons();
-}
-
-
-void EditorGUI::render(){
-
-}
-
-
 int EditorGUI::update(){
+    int action = m_action;
+    m_action = EDITOR_ACTION_NONE;
+
     return action;
 }
 
@@ -144,7 +97,7 @@ void EditorGUI::setMasterPartList(const std::unordered_map<std::uint32_t,
 
 
 const std::unique_ptr<BasePart>* EditorGUI::getPickedObject() const{
-    return m_parts_panel->getPickedObject();
+    return &m_master_parts_list->at(m_picked_object);
 }
 
 
@@ -174,6 +127,14 @@ void EditorGUI::renderImGUI(){
 }
 
 
+void EditorGUI::onFramebufferSizeUpdate(){
+}
+
+
+void EditorGUI::render(){
+}
+
+
 void EditorGUI::drawLeftPanel(){
     int fb_x, fb_y;
     m_app->getWindowHandler()->getFramebufferSize(fb_x, fb_y);
@@ -181,6 +142,7 @@ void EditorGUI::drawLeftPanel(){
                              | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoBringToFrontOnFocus
                              | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove
                              | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoResize;
+    ImVec2 uv0, uv1, b_im_size;
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
@@ -197,11 +159,23 @@ void EditorGUI::drawLeftPanel(){
     ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
     ImGui::PushItemWidth(295);
     if (ImGui::BeginTabBar("taskbar", tab_bar_flags)){
+        /*ImVec2 pos = ImGui::GetCursorScreenPos();
+        pos.x += 1;
+        ImGui::SetCursorScreenPos(pos);*/
         if(ImGui::BeginTabItem("Parts") && m_master_parts_list){
-            ImGui::Dummy(ImVec2(0.5, 0)); ImGui::SameLine();
-
+            ImGui::Dummy(ImVec2(1, 0)); ImGui::SameLine();
             ImGui::BeginChildFrame(102, ImVec2(290, fb_y * .5), window_flags);
             ImGui::PushItemWidth(285);
+
+            const char* types[] = {"All", "Engines", "Tanks", "Others"};
+            static int item_current = 0;
+            ImGui::Text("Show type:");
+            ImGui::Combo("##part_type", &item_current, types, IM_ARRAYSIZE(types));
+
+            const char* sort_types[] = {"Alphabetical", "Cost", "Others"};
+            static int sort_type = 0;
+            ImGui::Text("Sort by:");
+            ImGui::Combo("##sort_by", &sort_type, sort_types, IM_ARRAYSIZE(sort_types));
 
             std::unordered_map<std::uint32_t, std::unique_ptr<BasePart>>::const_iterator it;
             uint i = 0;
@@ -214,15 +188,22 @@ void EditorGUI::drawLeftPanel(){
                     pos.y -= 8;
                     ImGui::SetCursorScreenPos(pos);
                 }
+                else{
+                    pos.y += 8;
+                    ImGui::SetCursorScreenPos(pos);
+                }
 
                 ImGui::PushID(it->second->getBaseId());
 
                 pos = ImGui::GetCursorScreenPos();
-                ImGui::Selectable("##give_id", i%2, 0, ImVec2(285, 35));
+                if(ImGui::Selectable("##give_id", i%2, 0, ImVec2(285, 35))){
+                    m_picked_object = it->first;
+                    m_action = EDITOR_ACTION_OBJECT_PICK;
+                }
                 
-                ImVec2 b_im_size = ImVec2(35, 35);
-                ImVec2 uv0 = ImVec2(0.8203125, 0.41015625);
-                ImVec2 uv1 = ImVec2(0.95703125, 0.546875);
+                b_im_size = ImVec2(35, 35);
+                uv0 = ImVec2(0.8203125, 0.41015625);
+                uv1 = ImVec2(0.95703125, 0.546875);
                 ImGui::SetCursorScreenPos(pos);
                 ImGui::Image((ImTextureID*)(intptr_t)m_texture_atlas, b_im_size, uv0, uv1);
 
@@ -250,6 +231,24 @@ void EditorGUI::drawLeftPanel(){
         }
         ImGui::EndTabBar();
     }
+
+    
+    ImVec2 pos = ImGui::GetCursorScreenPos();
+    pos.x += 8;
+    ImGui::SetCursorScreenPos(pos);
+
+    ImGui::BeginChildFrame(103, ImVec2(290, 85), window_flags);
+    b_im_size = ImVec2(240, 75);
+    uv0 = ImVec2(0.0, 0.0);
+    uv1 = ImVec2(0.9375, 0.2734375);
+    pos = ImGui::GetCursorScreenPos();
+    pos.x += 20;
+    ImGui::SetCursorScreenPos(pos);
+    if(ImGui::ImageButton((ImTextureID*)(intptr_t)m_texture_atlas,
+                           b_im_size, uv0, uv1, 0, ImVec4(0., 0., 0., 0)))
+        m_action = EDITOR_ACTION_DELETE;
+
+    ImGui::EndChildFrame();
 
     ImGui::End();
 }
