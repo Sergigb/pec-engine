@@ -610,6 +610,7 @@ void RenderContext::renderImGui(){
         case GUI_MODE_NONE:
             break;
         case GUI_MODE_EDITOR:
+            m_editor_gui->renderImGUI();
             break;
         case GUI_MODE_PLANETARIUM:
             m_planetarium_gui->renderImGUI();

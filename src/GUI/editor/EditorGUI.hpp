@@ -18,6 +18,8 @@ class PartsPanelGUI;
 class Text2D;
 class StagingPanelGUI;
 class Sprite;
+class BaseApp;
+class ImFont;
 
 
 // not sure if it's a good idea to hardcode this
@@ -69,6 +71,9 @@ class Sprite;
 #define EDITOR_ACTION_SYMMETRY_SIDES 4
 #define EDITOR_ACTION_TOGGLE_ALIGN 5
 #define EDITOR_ACTION_CLEAR_SCENE 6
+#define EDITOR_ACTION_CHANGE_NAME 7
+
+#define MAX_LEN_VESSEL_NAME 32
 
 
 class EditorGUI : public BaseGUI{
@@ -79,9 +84,14 @@ class EditorGUI : public BaseGUI{
         char m_tab_option;
         short m_symmetric_sides, m_max_symmetric_sides;
         bool m_radial_align;
+        char m_vessel_name[MAX_LEN_VESSEL_NAME];
+        int m_action;
+
+        const std::unordered_map<std::uint32_t, std::unique_ptr<BasePart>>* m_master_parts_list;
 
         GLuint m_vao, m_vbo_vert, m_vbo_tex, m_vbo_ind, m_vbo_clr;
         GLuint m_texture_atlas;
+        int m_tex_size_x, m_tex_size_y;
         GLuint m_disp_location;
 
         // parts panel, this is related to the drawing on the panel, not the contents
@@ -96,6 +106,7 @@ class EditorGUI : public BaseGUI{
         const FontAtlas* m_font_atlas;
         const RenderContext* m_render_context;
         const Input* m_input;
+        const BaseApp* m_app;
 
         void updateBuffers();
         void updateButtons();
@@ -103,9 +114,11 @@ class EditorGUI : public BaseGUI{
         void updateDeleteArea();
         void updateTopButtons();
         void setButtonColor(float r ,float g, float b, float a, GLintptr offset);
+        void drawTaskBar();
+        void drawLeftPanel();
     public:
         EditorGUI();
-        EditorGUI(const FontAtlas* atlas, const RenderContext* render_context, const Input* input);
+        EditorGUI(const BaseApp* app, const FontAtlas* atlas);
         ~EditorGUI();
 
         void setMasterPartList(const std::unordered_map<std::uint32_t, std::unique_ptr<BasePart>>* master_parts_list);
@@ -118,7 +131,7 @@ class EditorGUI : public BaseGUI{
         void onFramebufferSizeUpdate();
         void render();
         int update();
-        void renderImGUI(){};
+        void renderImGUI();
 
         const std::unique_ptr<BasePart>* getPickedObject() const;
 };

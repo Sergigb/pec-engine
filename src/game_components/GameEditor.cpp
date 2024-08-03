@@ -31,26 +31,26 @@ bool lmb_focused_press = false;
 
 
 GameEditor::GameEditor(BaseApp* app, FontAtlas* font_atlas){
-    m_input = app->getInput();
-    m_camera = app->getCamera();
-    m_window_handler = app->getWindowHandler();
-    m_frustum = app->getFrustum();
-    m_render_context = app->getRenderContext();
-    m_physics = app->getPhysics();
-    m_asset_manager = app->getAssetManager();
-    m_player = app->getPlayer();
+    m_app = app;
+    m_input = m_app->getInput();
+    m_camera = m_app->getCamera();
+    m_window_handler = m_app->getWindowHandler();
+    m_frustum = m_app->getFrustum();
+    m_render_context = m_app->getRenderContext();
+    m_physics = m_app->getPhysics();
+    m_asset_manager = m_app->getAssetManager();
+    m_player = m_app->getPlayer();
 
-    m_thread_monitor= app->getThreadMonitor();
+    m_thread_monitor= m_app->getThreadMonitor();
 
     m_def_font_atlas = font_atlas;
 
-    m_editor_gui.reset(new EditorGUI(m_def_font_atlas, m_render_context, m_input));
+    m_editor_gui.reset(new EditorGUI(m_app, m_def_font_atlas));
     m_editor_gui->setMasterPartList(&m_asset_manager->m_master_parts);
     m_render_context->setGUI(m_editor_gui.get(), GUI_MODE_EDITOR);
-    m_renderer.reset(new EditorRenderer(app));
-    app->getRenderContext()->setRenderer(m_renderer.get(), RENDER_EDITOR);
+    m_renderer.reset(new EditorRenderer(m_app));
+    m_app->getRenderContext()->setRenderer(m_renderer.get(), RENDER_EDITOR);
 
-    m_app = app;
     init();
 }
 
