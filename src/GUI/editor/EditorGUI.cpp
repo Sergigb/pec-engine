@@ -164,7 +164,7 @@ void EditorGUI::drawLeftPanel(){
         ImGui::SetCursorScreenPos(pos);*/
         if(ImGui::BeginTabItem("Parts") && m_master_parts_list){
             ImGui::Dummy(ImVec2(1, 0)); ImGui::SameLine();
-            ImGui::BeginChildFrame(102, ImVec2(290, fb_y * .5), window_flags);
+            ImGui::BeginChildFrame(102, ImVec2(290, 100), window_flags);
             ImGui::PushItemWidth(285);
 
             const char* types[] = {"All", "Engines", "Tanks", "Others"};
@@ -176,7 +176,11 @@ void EditorGUI::drawLeftPanel(){
             static int sort_type = 0;
             ImGui::Text("Sort by:");
             ImGui::Combo("##sort_by", &sort_type, sort_types, IM_ARRAYSIZE(sort_types));
+            ImGui::PopItemWidth();
+            ImGui::EndChildFrame();
 
+            ImGui::Dummy(ImVec2(1, 0)); ImGui::SameLine();
+            ImGui::BeginChildFrame(104, ImVec2(290, fb_y * 0.5), window_flags);
             std::unordered_map<std::uint32_t, std::unique_ptr<BasePart>>::const_iterator it;
             uint i = 0;
             for(it = m_master_parts_list->begin(); it != m_master_parts_list->end(); it++){
@@ -216,8 +220,6 @@ void EditorGUI::drawLeftPanel(){
 
                 ImGui::PopID();
             }
-
-            ImGui::PopItemWidth();
             ImGui::EndChildFrame();
             ImGui::EndTabItem();
         }
