@@ -17,8 +17,10 @@
 #include "../../core/Input.hpp"
 #include "../../core/log.hpp"
 #include "../../core/WindowHandler.hpp"
+#include "../../core/AssetManager.hpp"
 #include "../../core/utils/gl_utils.hpp"
 #include "../../assets/BasePart.hpp"
+#include "../../assets/Vessel.hpp"
 
 
 EditorGUI::EditorGUI(){
@@ -135,13 +137,136 @@ void EditorGUI::render(){
 }
 
 
+// global for all the windows
+static bool window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar
+                         | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoBringToFrontOnFocus
+                         | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove
+                         | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoResize;
+
+void EditorGUI::drawPartsTab(){
+    int fb_x, fb_y;
+    m_app->getWindowHandler()->getFramebufferSize(fb_x, fb_y);
+    ImVec2 uv0, uv1, b_im_size;
+
+    ImGui::Dummy(ImVec2(1, 0)); ImGui::SameLine();
+    ImGui::BeginChildFrame(102, ImVec2(290, 100), window_flags);
+    ImGui::PushItemWidth(285);
+
+    const char* types[] = {"All", "Engines", "Tanks", "Others"};
+    static int item_current = 0;
+    ImGui::Text("Show type:");
+    ImGui::Combo("##part_type", &item_current, types, IM_ARRAYSIZE(types));
+
+    const char* sort_types[] = {"Alphabetical", "Cost", "Others"};
+    static int sort_type = 0;
+    ImGui::Text("Sort by:");
+    ImGui::Combo("##sort_by", &sort_type, sort_types, IM_ARRAYSIZE(sort_types));
+    ImGui::PopItemWidth();
+    ImGui::EndChildFrame();
+
+    ImGui::Dummy(ImVec2(1, 0)); ImGui::SameLine();
+    ImGui::BeginChildFrame(104, ImVec2(290, fb_y * 0.5), window_flags);
+    std::unordered_map<std::uint32_t, std::unique_ptr<BasePart>>::const_iterator it;
+    uint i = 0;
+    for(it = m_master_parts_list->begin(); it != m_master_parts_list->end(); it++){
+        std::string part_name;
+        i++;
+
+        ImVec2 pos = ImGui::GetCursorScreenPos();
+        if(i != 1){
+            pos.y -= 8;
+            ImGui::SetCursorScreenPos(pos);
+        }
+        else{
+            pos.y += 8;
+            ImGui::SetCursorScreenPos(pos);
+        }
+
+        ImGui::PushID(it->second->getBaseId());
+
+        pos = ImGui::GetCursorScreenPos();
+        if(ImGui::Selectable("##give_id", i%2, 0, ImVec2(285, 35))){
+            m_picked_object = it->first;
+            m_action = EDITOR_ACTION_OBJECT_PICK;
+        }
+        
+        b_im_size = ImVec2(35, 35);
+        uv0 = ImVec2(0.8203125, 0.41015625);
+        uv1 = ImVec2(0.95703125, 0.546875);
+        ImGui::SetCursorScreenPos(pos);
+        ImGui::Image((ImTextureID*)(intptr_t)m_texture_atlas, b_im_size, uv0, uv1);
+
+        ImGui::SameLine();
+        pos = ImGui::GetCursorScreenPos();
+        pos.y += 8;
+        ImGui::SetCursorScreenPos(pos);
+        it->second->getFancyName(part_name);
+        ImGui::Text(part_name.c_str());
+
+        ImGui::PopID();
+    }
+    ImGui::EndChildFrame();
+    ImGui::EndTabItem();
+}
+
+
+void EditorGUI::drawStagingTab(){
+    int fb_x, fb_y;
+    m_app->getWindowHandler()->getFramebufferSize(fb_x, fb_y);
+    ImVec2 uv0, uv1, b_im_size;
+    Vessel* editor_vessel = m_app->getAssetManager()->m_editor_vessel.get();
+
+    ImGui::Dummy(ImVec2(1, 0)); ImGui::SameLine();
+    ImGui::BeginChildFrame(102, ImVec2(290, fb_y * 0.5), window_flags);
+    if(editor_vessel){
+        vessel_stages* stages = editor_vessel->getStages();
+
+        for(uint i=0; i < stages->size(); i++){
+            std::string stage_name = "Stage ";
+            stage_name += std::to_string(i);
+
+            ImVec2 pos = ImGui::GetCursorScreenPos();
+            ImGui::Text(stage_name.c_str());
+            //b_im_size = ImVec2(35, 35);
+            //uv0 = ImVec2(0.8203125, 0.41015625);
+            //uv1 = ImVec2(0.95703125, 0.546875);
+            //ImGui::Image((ImTextureID*)(intptr_t)m_texture_atlas, b_im_size, uv0, uv1);                
+
+            //ImGui::SetCursorScreenPos(pos);
+
+            for(uint j=0; j < stages->at(i).size(); j++){
+                //std::cout << "\t" << name << " - " << v.at(j).part->getUniqueId() << std::endl;
+                std::string action_str = "    ";
+                stages->at(i).at(j).part->getFancyName(action_str);
+                action_str += " action ";
+                action_str += std::to_string(stages->at(i).at(j).action);
+                ImGui::Text(action_str.c_str());
+            }
+
+            ImVec2 pos2 = ImGui::GetCursorScreenPos();
+            ImGui::SetCursorScreenPos(pos);
+            ImGui::Selectable("##unique id?", i%2, 0, ImVec2(285, pos2.y - pos.y));
+
+           /* if (ImGui::IsItemActive() && !ImGui::IsItemHovered())
+            {
+                int n_next = i + (ImGui::GetMouseDragDelta(0).y < 0.f ? -1 : 1);
+                if (n_next >= 0 && n_next < IM_ARRAYSIZE(item_names))
+                {
+                    item_names[i] = item_names[n_next];
+                    item_names[n_next] = item;
+                    ImGui::ResetMouseDragDelta();
+                }
+            }*/
+        }
+    }
+    ImGui::EndChildFrame();
+    ImGui::EndTabItem();
+}
+
+
 void EditorGUI::drawLeftPanel(){
     int fb_x, fb_y;
     m_app->getWindowHandler()->getFramebufferSize(fb_x, fb_y);
-    static bool window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoScrollbar
-                             | ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoBringToFrontOnFocus
-                             | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoMove
-                             | ImGuiWindowFlags_NoNavFocus | ImGuiWindowFlags_NoResize;
     ImVec2 uv0, uv1, b_im_size;
 
     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.f, 0.f));
@@ -162,71 +287,12 @@ void EditorGUI::drawLeftPanel(){
         /*ImVec2 pos = ImGui::GetCursorScreenPos();
         pos.x += 1;
         ImGui::SetCursorScreenPos(pos);*/
-        if(ImGui::BeginTabItem("Parts") && m_master_parts_list){
-            ImGui::Dummy(ImVec2(1, 0)); ImGui::SameLine();
-            ImGui::BeginChildFrame(102, ImVec2(290, 100), window_flags);
-            ImGui::PushItemWidth(285);
+        if(ImGui::BeginTabItem("Parts") && m_master_parts_list)
+            drawPartsTab();
 
-            const char* types[] = {"All", "Engines", "Tanks", "Others"};
-            static int item_current = 0;
-            ImGui::Text("Show type:");
-            ImGui::Combo("##part_type", &item_current, types, IM_ARRAYSIZE(types));
+        if (ImGui::BeginTabItem("Staging"))
+            drawStagingTab();
 
-            const char* sort_types[] = {"Alphabetical", "Cost", "Others"};
-            static int sort_type = 0;
-            ImGui::Text("Sort by:");
-            ImGui::Combo("##sort_by", &sort_type, sort_types, IM_ARRAYSIZE(sort_types));
-            ImGui::PopItemWidth();
-            ImGui::EndChildFrame();
-
-            ImGui::Dummy(ImVec2(1, 0)); ImGui::SameLine();
-            ImGui::BeginChildFrame(104, ImVec2(290, fb_y * 0.5), window_flags);
-            std::unordered_map<std::uint32_t, std::unique_ptr<BasePart>>::const_iterator it;
-            uint i = 0;
-            for(it = m_master_parts_list->begin(); it != m_master_parts_list->end(); it++){
-                std::string part_name;
-                i++;
-
-                ImVec2 pos = ImGui::GetCursorScreenPos();
-                if(i != 1){
-                    pos.y -= 8;
-                    ImGui::SetCursorScreenPos(pos);
-                }
-                else{
-                    pos.y += 8;
-                    ImGui::SetCursorScreenPos(pos);
-                }
-
-                ImGui::PushID(it->second->getBaseId());
-
-                pos = ImGui::GetCursorScreenPos();
-                if(ImGui::Selectable("##give_id", i%2, 0, ImVec2(285, 35))){
-                    m_picked_object = it->first;
-                    m_action = EDITOR_ACTION_OBJECT_PICK;
-                }
-                
-                b_im_size = ImVec2(35, 35);
-                uv0 = ImVec2(0.8203125, 0.41015625);
-                uv1 = ImVec2(0.95703125, 0.546875);
-                ImGui::SetCursorScreenPos(pos);
-                ImGui::Image((ImTextureID*)(intptr_t)m_texture_atlas, b_im_size, uv0, uv1);
-
-                ImGui::SameLine();
-                pos = ImGui::GetCursorScreenPos();
-                pos.y += 8;
-                ImGui::SetCursorScreenPos(pos);
-                it->second->getFancyName(part_name);
-                ImGui::Text(part_name.c_str());
-
-                ImGui::PopID();
-            }
-            ImGui::EndChildFrame();
-            ImGui::EndTabItem();
-        }
-        if (ImGui::BeginTabItem("Staging")){
-            ImGui::Text("Stages");
-            ImGui::EndTabItem();
-        }
         if (ImGui::BeginTabItem("Other")){
             ImGui::Text("Other");
             ImGui::EndTabItem();
@@ -234,10 +300,8 @@ void EditorGUI::drawLeftPanel(){
         ImGui::EndTabBar();
     }
 
-    
-    ImVec2 pos = ImGui::GetCursorScreenPos();
-    pos.x += 8;
-    ImGui::SetCursorScreenPos(pos);
+    ImVec2 pos;
+    ImGui::Dummy(ImVec2(1, 0)); ImGui::SameLine();
 
     ImGui::BeginChildFrame(103, ImVec2(290, 85), window_flags);
     b_im_size = ImVec2(240, 75);

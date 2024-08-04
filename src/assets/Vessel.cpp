@@ -529,3 +529,12 @@ void Vessel::setSubTreeMotionState(const btVector3& origin, const btQuaternion& 
     m_vessel_root->updateSubTreeMotionState(disp, from, rotation);
 }
 
+
+const vessel_stages* Vessel::getStages() const{
+    return &m_stages;
+}
+
+
+vessel_stages* Vessel::getStages(){
+    return &m_stages;
+}

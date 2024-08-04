@@ -59,6 +59,8 @@ class EditorGUI : public BaseGUI{
 
         void drawTaskBar();
         void drawLeftPanel();
+        void drawPartsTab();
+        void drawStagingTab();
     public:
         EditorGUI();
         EditorGUI(const BaseApp* app, const FontAtlas* atlas);

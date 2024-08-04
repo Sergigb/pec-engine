@@ -31,6 +31,9 @@ struct stage_action{
 };
 
 
+typedef std::vector<std::vector<stage_action>> vessel_stages;
+
+
 /*
  * Vessel class, holds the vessel tree and other information. The player should is able to control
  * vessels.
@@ -45,7 +48,7 @@ class Vessel{
         float m_yaw, m_pitch;
         double m_total_mass;
         btVector3 m_com;
-        std::vector<std::vector<stage_action>> m_stages;
+        vessel_stages m_stages;
 
         Player* m_player; // player controlling the vessel
         const Input* m_input;
@@ -272,6 +275,19 @@ class Vessel{
          * :))
          */
         void setSubTreeMotionState(const btVector3& origin, const btQuaternion& rotation);
+
+        /*
+         * Returns the sating of the vessel. Being a pointer, it might not be valid the next time
+         * step, so aquire it again.
+         */
+        const vessel_stages* getStages() const;
+
+        /*
+         * Returns the sating of the vessel. Being a pointer, it might not be valid the next time
+         * step, so aquire it again.
+         */
+        vessel_stages* getStages();
+
 };
 
 
