@@ -50,6 +50,7 @@ EditorGUI::EditorGUI(const BaseApp* app, const FontAtlas* atlas){
     m_action = EDITOR_ACTION_NONE;
     m_master_parts_list = nullptr;
     m_picked_object = 0;
+    m_action_swap = {-1, -1};
 
     m_main_text.reset(new Text2D(fb_width, fb_height, m_font_atlas, m_render_context));
 
@@ -220,44 +221,62 @@ void EditorGUI::drawStagingTab(){
     ImGui::BeginChildFrame(102, ImVec2(290, fb_y * 0.5), window_flags);
     if(editor_vessel){
         vessel_stages* stages = editor_vessel->getStages();
-
+        int index_1 = -1, index_2 = -1;
         for(uint i=0; i < stages->size(); i++){
             std::string stage_name = "Stage ";
             stage_name += std::to_string(i);
 
             ImVec2 pos = ImGui::GetCursorScreenPos();
-            ImGui::Text(stage_name.c_str());
-            //b_im_size = ImVec2(35, 35);
-            //uv0 = ImVec2(0.8203125, 0.41015625);
-            //uv1 = ImVec2(0.95703125, 0.546875);
-            //ImGui::Image((ImTextureID*)(intptr_t)m_texture_atlas, b_im_size, uv0, uv1);                
-
-            //ImGui::SetCursorScreenPos(pos);
+            ImGui::Text(stage_name.c_str());             
 
             for(uint j=0; j < stages->at(i).size(); j++){
-                //std::cout << "\t" << name << " - " << v.at(j).part->getUniqueId() << std::endl;
+                const stage_action& action = stages->at(i).at(j);
+
+                ImGui::Dummy(ImVec2(35, 0)); ImGui::SameLine();
                 std::string action_str = "    ";
-                stages->at(i).at(j).part->getFancyName(action_str);
-                action_str += " action ";
-                action_str += std::to_string(stages->at(i).at(j).action);
-                ImGui::Text(action_str.c_str());
+                action.part->getFancyName(action_str);
+                action_str += " action " + std::to_string(action.action);
+                action_str +=  + "##" + std::string(std::to_string(
+                                  action.part->getUniqueId())) + 
+                                  std::to_string(action.action);
+                ImGui::Selectable(action_str.c_str());
+
+                if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)){
+                    m_action_swap = {i, j};
+                    ImGui::SetDragDropPayload("STAGE_ACTION_MOVE", &m_action_swap,
+                                              sizeof(m_action_swap));
+                    ImGui::EndDragDropSource();
+                }
             }
 
             ImVec2 pos2 = ImGui::GetCursorScreenPos();
             ImGui::SetCursorScreenPos(pos);
-            ImGui::Selectable("##unique id?", i%2, 0, ImVec2(285, pos2.y - pos.y));
+            ImGui::Selectable(std::string("##stage_" + std::to_string(i)).c_str() , 
+                false, 0, ImVec2(285, pos2.y - pos.y));
 
-           /* if (ImGui::IsItemActive() && !ImGui::IsItemHovered())
-            {
+            if(ImGui::BeginDragDropTarget()){
+                const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("STAGE_ACTION_MOVE");
+                if(payload){
+                    int s_i = std::get<0>(m_action_swap), s_j = std::get<1>(m_action_swap);
+                    std::cout << i << " " << s_i << " " << s_j << std::endl;
+                    stages->at(i).push_back(stages->at(s_i).at(s_j));
+                    stages->at(s_i).erase(stages->at(s_i).begin() + s_j);
+                }
+
+                ImGui::EndDragDropTarget();
+            }
+
+            /*if(ImGui::IsItemActive() && !ImGui::IsItemHovered()){
                 int n_next = i + (ImGui::GetMouseDragDelta(0).y < 0.f ? -1 : 1);
-                if (n_next >= 0 && n_next < IM_ARRAYSIZE(item_names))
-                {
-                    item_names[i] = item_names[n_next];
-                    item_names[n_next] = item;
+                if(n_next >= 0 && n_next < (int)stages->size()){
+                    index_1 = n_next;
+                    index_2 = i;
                     ImGui::ResetMouseDragDelta();
                 }
             }*/
         }
+        if(index_1 != -1 && index_2 != -1)
+            std::swap(stages->at(index_1), stages->at(index_2));
     }
     ImGui::EndChildFrame();
     ImGui::EndTabItem();

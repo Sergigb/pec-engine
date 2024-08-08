@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 #include <unordered_map>
 #include <memory>
+#include <tuple>
 
 #include "../BaseGUI.hpp"
 #include "../../core/maths_funcs.hpp"
@@ -43,6 +44,7 @@ class EditorGUI : public BaseGUI{
         int m_action;
         bool m_init;
         std::uint32_t m_picked_object;
+        std::tuple<int, int> m_action_swap;
 
         const std::unordered_map<std::uint32_t, std::unique_ptr<BasePart>>* m_master_parts_list;
 
