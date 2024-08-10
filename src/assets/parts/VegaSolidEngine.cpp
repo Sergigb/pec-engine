@@ -205,7 +205,7 @@ int VegaSolidEngine::render(){
     }
 
     if(m_vessel){
-        m_model->setMeshColor(math::vec4(m_mesh_color, 1.0));
+        m_model->setMeshColor(math::vec4(m_mesh_color, m_alpha));
     }
     else{
         m_model->setMeshColor(math::vec4(m_mesh_color, 0.5));
@@ -213,7 +213,7 @@ int VegaSolidEngine::render(){
 
     if(m_childs.size() && m_fairing_model){
         if(m_vessel){
-            m_fairing_model->setMeshColor(math::vec4(m_mesh_color, 1.0));
+            m_fairing_model->setMeshColor(math::vec4(m_mesh_color, m_alpha));
         }
         else{
             m_fairing_model->setMeshColor(math::vec4(m_mesh_color, 0.5));
@@ -227,7 +227,7 @@ int VegaSolidEngine::render(){
 
 int VegaSolidEngine::render(const math::mat4& body_transform){
     if(m_vessel){
-        m_model->setMeshColor(math::vec4(m_mesh_color, 1.0));
+        m_model->setMeshColor(math::vec4(m_mesh_color, m_alpha));
     }
     else{
         m_model->setMeshColor(math::vec4(m_mesh_color, 0.5));
@@ -235,7 +235,7 @@ int VegaSolidEngine::render(const math::mat4& body_transform){
 
     if(m_childs.size() && m_fairing_model){
         if(m_vessel){
-            m_fairing_model->setMeshColor(math::vec4(m_mesh_color, 1.0));
+            m_fairing_model->setMeshColor(math::vec4(m_mesh_color, m_alpha));
         }
         else{
             m_fairing_model->setMeshColor(math::vec4(m_mesh_color, 0.5));

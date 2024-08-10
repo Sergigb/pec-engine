@@ -34,6 +34,7 @@ Vessel::Vessel(std::shared_ptr<BasePart>&& vessel_root, const Input* input) : m_
 
     updateNodes();
     updateMass();
+    updateStaging();
 }
 
 
@@ -457,7 +458,7 @@ void Vessel::updateStaging(){
             new_staging.pop_back();
     }
 
-    if(new_staging.size() == 0)
+    if(!new_staging.size())
         new_staging.emplace_back(std::vector<stage_action>());
 
     bool new_stage = false;
