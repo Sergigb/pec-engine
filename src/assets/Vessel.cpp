@@ -438,34 +438,61 @@ const btVector3& Vessel::getCoM() const{
 
 
 void Vessel::updateStaging(){
-    std::vector<stage_action> s;
-    m_stages.clear();
-    m_stages.emplace_back(s);
+    vessel_stages new_staging;
 
-    updateStagingRec(m_vessel_root.get());
-    if(m_stages.back().size() == 0){
-        m_stages.pop_back();
-    }
-}
+    for(uint i=0; i < m_stages.size(); i++){
+        new_staging.emplace_back(std::vector<stage_action>());
+        for(uint j=0; j < m_stages.at(i).size(); j++){
+            bool found = false;
 
-
-void Vessel::updateStagingRec(BasePart* part){
-    long properties = part->getProperties();
-    
-    // maybe we could replace these ifs with a method on part that asks for the default action to take (only one?)
-    if(properties & PART_SEPARATES){
-        m_stages.back().emplace_back(part, PART_ACTION_SEPARATE);
-        std::vector<stage_action> s;
-        m_stages.emplace_back(s);
-    }
-    if(properties & PART_HAS_ENGINE){
-        m_stages.back().emplace_back(part, PART_ACTION_ENGINE_START);
+            for(uint k=0; k < m_node_list.size(); k++){
+                if(m_stages.at(i).at(j).part == m_node_list.at(k))
+                    found = true;
+            }
+            if(found)
+                new_staging.back().emplace_back(m_stages.at(i).at(j).part,
+                                                m_stages.at(i).at(j).action);
+        }
+        if(new_staging.back().size() == 0)
+            new_staging.pop_back();
     }
 
-    std::vector<std::shared_ptr<BasePart>>& childs = part->getChilds();
-    for(uint i=0; i < childs.size(); i++){
-        updateStagingRec(childs.at(i).get());
+    if(new_staging.size() == 0)
+        new_staging.emplace_back(std::vector<stage_action>());
+
+    bool new_stage = false;
+    for(uint j=0; j < new_staging.back().size(); j++)
+        if(new_staging.back().at(j).action == PART_ACTION_SEPARATE)
+            new_stage = true;
+
+    // if last stage has a separator, append new stage
+    if(new_stage)
+        new_staging.emplace_back(std::vector<stage_action>());
+
+    for(uint k=0; k < m_node_list.size(); k++){
+        bool found = false;
+        for(uint i=0; i < m_stages.size(); i++){
+            for(uint j=0; j < m_stages.at(i).size(); j++){
+                if(m_node_list.at(k) == m_stages.at(i).at(j).part)
+                    found = true;
+            }
+        }
+
+        if(!found){
+            long properties = m_node_list.at(k)->getProperties();
+            if(properties & PART_SEPARATES){
+                new_staging.back().emplace_back(m_node_list.at(k), PART_ACTION_SEPARATE);
+                new_staging.emplace_back(std::vector<stage_action>());
+            }
+            if(properties & PART_HAS_ENGINE){
+                new_staging.back().emplace_back(m_node_list.at(k), PART_ACTION_ENGINE_START);
+            }
+        }
     }
+    if(new_staging.size() > 1 && new_staging.back().size() == 0)
+        new_staging.pop_back();
+
+    m_stages = new_staging;
 }
 
 

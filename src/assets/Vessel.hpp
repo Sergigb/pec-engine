@@ -70,12 +70,6 @@ class Vessel{
         void updateStaging();
 
         /*
-         * Recursive method used by updateStaging.
-         */
-
-        void updateStagingRec(BasePart* part);
-
-        /*
          * Triggers the next stage of the vessel.
          */
         void activateNextStage();
