@@ -51,6 +51,7 @@ EditorGUI::EditorGUI(const BaseApp* app, const FontAtlas* atlas){
     m_master_parts_list = nullptr;
     m_picked_object = 0;
     m_action_swap = {-1, -1};
+    m_highlight_part = nullptr;
 
     m_main_text.reset(new Text2D(fb_width, fb_height, m_font_atlas, m_render_context));
 
@@ -241,6 +242,9 @@ void EditorGUI::drawStagingTab(){
                                   std::to_string(action.action);
                 ImGui::Selectable(action_str.c_str());
 
+                if(ImGui::IsItemHovered())
+                    m_highlight_part = action.part;
+
                 if(ImGui::BeginDragDropSource(ImGuiDragDropFlags_None)){
                     m_action_swap = {i, j};
                     ImGui::SetDragDropPayload("STAGE_ACTION_MOVE", &m_action_swap,
@@ -258,7 +262,6 @@ void EditorGUI::drawStagingTab(){
                 const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("STAGE_ACTION_MOVE");
                 if(payload){
                     int s_i = std::get<0>(m_action_swap), s_j = std::get<1>(m_action_swap);
-                    std::cout << i << " " << s_i << " " << s_j << std::endl;
                     stages->at(i).push_back(stages->at(s_i).at(s_j));
                     stages->at(s_i).erase(stages->at(s_i).begin() + s_j);
                 }
@@ -303,6 +306,7 @@ void EditorGUI::drawLeftPanel(){
     ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
     ImGui::PushItemWidth(295);
     if (ImGui::BeginTabBar("taskbar", tab_bar_flags)){
+        m_highlight_part = nullptr; // reset highlighted part here
         /*ImVec2 pos = ImGui::GetCursorScreenPos();
         pos.x += 1;
         ImGui::SetCursorScreenPos(pos);*/
@@ -440,4 +444,9 @@ void EditorGUI::drawTaskBar(){
 
     ImGui::End();
 
+}
+
+
+BasePart* EditorGUI::getHighlightedPart() const{
+    return m_highlight_part;
 }

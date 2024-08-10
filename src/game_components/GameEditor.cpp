@@ -66,6 +66,7 @@ void GameEditor::init(){
     m_symmetry_sides = 1;
     m_radial_align = true;
     m_exit_editor = false;
+    m_highlight_part = nullptr;
 }
 
 
@@ -801,6 +802,19 @@ void GameEditor::processInput(){
 }
 
 
+void GameEditor::setPartHighlight(){
+    BasePart* new_highlight = m_editor_gui->getHighlightedPart();
+
+    if(m_highlight_part != nullptr)
+        m_highlight_part->setAlpha(1.f);
+
+    if(new_highlight != nullptr){
+        new_highlight->setAlpha(.5f);
+        m_highlight_part = new_highlight;
+    }
+}
+
+
 void GameEditor::logic(){
     m_gui_action = m_editor_gui->update();
 
@@ -843,6 +857,7 @@ void GameEditor::logic(){
 
     processGUI();
     processInput();
+    setPartHighlight();
 }
 
 

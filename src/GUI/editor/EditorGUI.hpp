@@ -45,6 +45,7 @@ class EditorGUI : public BaseGUI{
         bool m_init;
         std::uint32_t m_picked_object;
         std::tuple<int, int> m_action_swap;
+        BasePart* m_highlight_part;
 
         const std::unordered_map<std::uint32_t, std::unique_ptr<BasePart>>* m_master_parts_list;
 
@@ -74,6 +75,7 @@ class EditorGUI : public BaseGUI{
 
         int getSymmetrySides() const;
         bool getRadialAlign() const;
+        BasePart* getHighlightedPart() const;
 
         void onFramebufferSizeUpdate();
         void render();

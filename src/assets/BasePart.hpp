@@ -81,6 +81,7 @@ class BasePart : public Object{
         bool m_is_root, m_has_parent_att, m_has_free_att;
         bool m_show_editor_menu, m_show_game_menu;
         long m_properties;
+        float m_alpha;
 
         /* editor cloning stuff, shouldn't be used outside of the editor */
         std::vector<BasePart*> m_clones;
@@ -432,6 +433,13 @@ class BasePart : public Object{
          * }
          */
         virtual BasePart* clone() const;
+
+        /*
+         * Sets new alpha value for the rendering.
+         * 
+         * @new_alpha: new alpha value
+         */
+        void setAlpha(float new_alpha);
 
         btQuaternion m_user_rotation;
 };

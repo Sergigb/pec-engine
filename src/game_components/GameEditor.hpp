@@ -41,6 +41,7 @@ class GameEditor{
         // GUI
         int m_gui_action;
         std::unique_ptr<EditorGUI> m_editor_gui;
+        BasePart* m_highlight_part;
 
         // Editor renderer
         std::unique_ptr<EditorRenderer> m_renderer;
@@ -87,6 +88,7 @@ class GameEditor{
         void placeSubTree(float closest_dist, math::vec4& closest_att_point_world, BasePart* closest, BasePart* part);
         void pickObject();
         void init();
+        void setPartHighlight();
     public:
         GameEditor(BaseApp* app, FontAtlas* font_atlas);
         ~GameEditor();

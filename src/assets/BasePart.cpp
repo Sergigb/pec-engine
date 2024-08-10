@@ -35,6 +35,7 @@ void BasePart::init(){
     m_properties = 0;
     m_show_game_menu = false;
     m_cloned_from = nullptr;
+    m_alpha = 1.f;
 }
 
 
@@ -61,6 +62,7 @@ BasePart::BasePart(const BasePart& part) : Object(part), m_user_rotation(btQuate
     m_properties = part.m_properties;
     m_resources = part.m_resources;
     m_cloned_from = nullptr;
+    m_alpha = part.m_alpha;
 }
 
 
@@ -208,7 +210,7 @@ int BasePart::render(){
     }
 
     if(m_vessel){
-        m_model->setMeshColor(math::vec4(m_mesh_color, 1.0));
+        m_model->setMeshColor(math::vec4(m_mesh_color, m_alpha));
     }
     else{
         m_model->setMeshColor(math::vec4(m_mesh_color, 0.5));
@@ -220,7 +222,7 @@ int BasePart::render(){
 
 int BasePart::render(const math::mat4& body_transform){
     if(m_vessel){
-        m_model->setMeshColor(math::vec4(m_mesh_color, 1.0));
+        m_model->setMeshColor(math::vec4(m_mesh_color, m_alpha));
     }
     else{
         m_model->setMeshColor(math::vec4(m_mesh_color, 0.5));
@@ -613,5 +615,10 @@ void BasePart::addSubTreeToRenderBuffer(std::vector<object_transform>& buffer, c
     for(uint i=0; i < m_childs.size(); i++){
         m_childs.at(i)->addSubTreeToRenderBuffer(buffer, btv_cam_origin);
     }
+}
+
+
+void BasePart::setAlpha(float new_alpha){
+    m_alpha = new_alpha;
 }
 
