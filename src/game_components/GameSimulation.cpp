@@ -162,8 +162,11 @@ void GameSimulation::onRightMouseButton(){
 
 
 void GameSimulation::onStateChange(){
+    std::cout << "game simulation on state change" << std::endl;
     editorToSimulation();
-    initLaunchBase();
+    std::cout << "after editorToSimulation" << std::endl;
+    initLaunchBase();  // POSSIBLE SEG FAULT HERE
+    std::cout << "after initLaunchBase" << std::endl;
 }
 
 
@@ -193,12 +196,15 @@ void GameSimulation::editorToSimulation(){
         root->m_body->getMotionState()->getWorldTransform(transform);
         const btVector3& from = transform.getOrigin();
 
+     /*   btVector3 to(180000000000.0, 0.0, 0.0);
+*/
         disp = to - from;
 
         // move the object to the sea launch base
         vsl->getRoot()->updateSubTreeMotionState(disp, from, btQuaternion(0.0, 0.0, -M_PI / 2.0));
 
         vsl->setVesselVelocity(btVector3(-29786.6, -0.00889649, -5478.81));
+        //vsl->setVesselVelocity(btVector3(0.0, 0.0, 27154.0));
         //vsl->setVesselVelocity(btVector3(0.0, 0.0, 0.0));
 
         m_asset_manager->m_active_vessels.insert({vsl->getId(), vsl});

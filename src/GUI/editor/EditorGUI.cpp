@@ -52,6 +52,7 @@ EditorGUI::EditorGUI(const BaseApp* app, const FontAtlas* atlas){
     m_picked_object = 0;
     m_action_swap = {-1, -1};
     m_highlight_part = nullptr;
+    m_new_stage_pos = 0;
 
     m_main_text.reset(new Text2D(fb_width, fb_height, m_font_atlas, m_render_context));
 
@@ -228,7 +229,23 @@ void EditorGUI::drawStagingTab(){
             stage_name += std::to_string(i);
 
             ImVec2 pos = ImGui::GetCursorScreenPos();
-            ImGui::Text(stage_name.c_str());             
+            ImGui::Text(stage_name.c_str());
+
+            if(!stages->at(i).size()){
+                ImGui::SetCursorScreenPos(pos);
+                ImGui::Dummy(ImVec2(225, 0)); ImGui::SameLine();
+                if(ImGui::Button(std::string(std::string(" - ##") + std::to_string(i)).c_str())){
+                    m_action = EDITOR_ACTION_REMOVE_STAGE;
+                    m_new_stage_pos = i;  // we use the same name wtf
+                }
+            }
+
+            ImGui::SetCursorScreenPos(pos);
+            ImGui::Dummy(ImVec2(250, 0)); ImGui::SameLine();
+            if(ImGui::Button(std::string(std::string(" + ##") + std::to_string(i)).c_str())){
+                m_action = EDITOR_ACTION_ADD_STAGE;
+                m_new_stage_pos = i;
+            }
 
             for(uint j=0; j < stages->at(i).size(); j++){
                 const stage_action& action = stages->at(i).at(j);
@@ -449,4 +466,9 @@ void EditorGUI::drawTaskBar(){
 
 BasePart* EditorGUI::getHighlightedPart() const{
     return m_highlight_part;
+}
+
+
+uint EditorGUI::getNewStagePos() const{
+    return m_new_stage_pos;
 }

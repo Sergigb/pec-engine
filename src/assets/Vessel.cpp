@@ -566,3 +566,18 @@ const vessel_stages* Vessel::getStages() const{
 vessel_stages* Vessel::getStages(){
     return &m_stages;
 }
+
+
+void Vessel::addEmptyStage(uint stage_num){
+    assert(stage_num <= m_stages.size() - 1);
+
+    m_stages.insert(m_stages.begin() + stage_num + 1, std::vector<stage_action>());
+}
+
+
+void Vessel::removeEmptyStage(uint stage_num){
+    assert(stage_num <= m_stages.size() - 1);
+
+    if(m_stages.at(stage_num).size() == 0)
+        m_stages.erase(m_stages.begin() + stage_num);
+}

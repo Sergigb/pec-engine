@@ -282,6 +282,23 @@ class Vessel{
          */
         vessel_stages* getStages();
 
+        /*
+         * Creates a new empty stage after the given stage number. Does not create anything if 
+         * stage_num is bigger than the number of stages - 1
+         *
+         * @stage_num: position of the new stage, we start counting at 0
+         */
+        void addEmptyStage(uint stage_num);
+
+        /*
+         * Removes an empty stage, must be a valid index smaller than number of stages - 1. If the 
+         * stage is not empty does nothing.
+         *
+         * @stage_num: position of the stage to delete
+         */
+        void removeEmptyStage(uint stage_num);
+
+
 };
 
 

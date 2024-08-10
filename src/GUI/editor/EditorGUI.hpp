@@ -32,6 +32,9 @@ class ImFont;
 #define EDITOR_ACTION_TOGGLE_ALIGN 5
 #define EDITOR_ACTION_CLEAR_SCENE 6
 #define EDITOR_ACTION_CHANGE_NAME 7
+#define EDITOR_ACTION_ADD_STAGE 8
+#define EDITOR_ACTION_REMOVE_STAGE 9
+
 
 #define MAX_LEN_VESSEL_NAME 32
 
@@ -46,6 +49,7 @@ class EditorGUI : public BaseGUI{
         std::uint32_t m_picked_object;
         std::tuple<int, int> m_action_swap;
         BasePart* m_highlight_part;
+        uint m_new_stage_pos;
 
         const std::unordered_map<std::uint32_t, std::unique_ptr<BasePart>>* m_master_parts_list;
 
@@ -76,6 +80,7 @@ class EditorGUI : public BaseGUI{
         int getSymmetrySides() const;
         bool getRadialAlign() const;
         BasePart* getHighlightedPart() const;
+        uint getNewStagePos() const;
 
         void onFramebufferSizeUpdate();
         void render();
