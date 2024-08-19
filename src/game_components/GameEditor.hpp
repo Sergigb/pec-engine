@@ -28,6 +28,9 @@ class EditorRenderer;
 
 struct thread_monitor;
 
+#define EXIT_LAUNCH 1
+#define EXIT_MAIN_MENU 2
+
 
 class GameEditor{
     private:
@@ -48,6 +51,9 @@ class GameEditor{
 
         // application default font atlas
         const FontAtlas* m_def_font_atlas;
+
+        // quit code
+        int m_exit_code;
 
         // here be something derived from BaseApp
         BaseApp* m_app;
@@ -93,7 +99,7 @@ class GameEditor{
         GameEditor(BaseApp* app, FontAtlas* font_atlas);
         ~GameEditor();
 
-        void start();
+        int start();
 };
 
 

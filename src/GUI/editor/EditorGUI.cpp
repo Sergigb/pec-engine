@@ -457,6 +457,28 @@ void EditorGUI::drawTaskBar(){
     ImGui::PopItemWidth();
     ImGui::EndChildFrame();
 
+    ImGui::SameLine();
+
+    // launch button
+    ImGui::SetCursorPosX(fb_x - 110);
+    uv0 = ImVec2(0.f, 0.546875f);
+    uv1 = ImVec2(0.13671875f, 0.68359375f);
+    ImGui::PushID("launch");
+    if(ImGui::ImageButton((ImTextureID*)(intptr_t)m_texture_atlas, b_im_size, uv0, uv1))
+        m_action = EDITOR_ACTION_LAUNCH;
+    ImGui::PopID();
+
+    ImGui::SameLine();
+
+    // launch button
+    uv0 = ImVec2(0.13671875f, 0.546875f);
+    uv1 = ImVec2(0.2734375f, 0.68359375f);
+    ImGui::PushID("exit");
+    if(ImGui::ImageButton((ImTextureID*)(intptr_t)m_texture_atlas, b_im_size, uv0, uv1))
+        m_action = EDITOR_ACTION_EXIT;
+    ImGui::PopID();
+
+    // end
     ImGui::PopStyleVar();
 
     ImGui::End();

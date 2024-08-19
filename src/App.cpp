@@ -142,7 +142,13 @@ void App::run(){
     m_physics->startSimulation(10);
     m_render_context->start();
 
-    m_editor->start();
+    int edit_exit_status = m_editor->start();
+    // when we have a main menu this will do somethign else
+    if(edit_exit_status == EXIT_MAIN_MENU){
+        terminate();
+        return;
+    }
+
     m_simulation->onStateChange();
 
     setUpSimulation();

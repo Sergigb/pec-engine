@@ -67,6 +67,7 @@ void GameEditor::init(){
     m_radial_align = true;
     m_exit_editor = false;
     m_highlight_part = nullptr;
+    m_exit_code = EXIT_MAIN_MENU;
 }
 
 
@@ -122,7 +123,7 @@ void GameEditor::waitPhysics(){
 }
 
 
-void GameEditor::start(){
+int GameEditor::start(){
     double delta_t_ms = (1. / 60.) * 1000000.;
     logic_timing timing;
     timing.delta_t = delta_t_ms;
@@ -151,6 +152,8 @@ void GameEditor::start(){
         }
     }
     clearSymmetrySubtrees();
+
+    return m_exit_code;
 }
 
 
@@ -722,6 +725,16 @@ void GameEditor::processGUI(){
         if(m_asset_manager->m_editor_vessel)
             m_asset_manager->m_editor_vessel->removeEmptyStage(pos);
     }
+
+    if(m_gui_action == EDITOR_ACTION_LAUNCH){
+        m_exit_editor = true;
+        m_exit_code = EXIT_LAUNCH;
+    }
+
+    if(m_gui_action == EDITOR_ACTION_EXIT){
+        m_exit_editor = true;
+        m_exit_code = EXIT_MAIN_MENU;
+    }
 }
 
 
@@ -801,6 +814,7 @@ void GameEditor::processInput(){
 
         if(m_input->pressed_keys[GLFW_KEY_ESCAPE] == INPUT_KEY_DOWN){
             m_exit_editor = true;
+            m_exit_code = EXIT_LAUNCH;
         }
 
         if(m_input->pressed_keys[GLFW_KEY_P] == INPUT_KEY_DOWN){
