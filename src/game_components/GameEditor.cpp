@@ -710,6 +710,18 @@ void GameEditor::processGUI(){
     if(m_gui_action == EDITOR_ACTION_CLEAR_SCENE){
         m_clear_scene = true;
     }
+
+    if(m_gui_action == EDITOR_ACTION_ADD_STAGE){
+        uint pos = m_editor_gui->getNewStagePos();
+        if(m_asset_manager->m_editor_vessel)
+            m_asset_manager->m_editor_vessel->addEmptyStage(pos);
+    }
+
+    if(m_gui_action == EDITOR_ACTION_REMOVE_STAGE){
+        uint pos = m_editor_gui->getNewStagePos();
+        if(m_asset_manager->m_editor_vessel)
+            m_asset_manager->m_editor_vessel->removeEmptyStage(pos);
+    }
 }
 
 
