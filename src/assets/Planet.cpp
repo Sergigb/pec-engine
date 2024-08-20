@@ -11,7 +11,7 @@
 #include "../core/log.hpp"
 #include "../core/Physics.hpp"
 #include "../GUI/Sprite.hpp"
-#include "../game_components/GamePlanetarium.hpp"
+#include "../game_components/GameSimulation.hpp"
 
 
 #define TEXTURE_LOCATION 0

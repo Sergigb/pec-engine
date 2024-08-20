@@ -7,7 +7,7 @@
 #include <stb/stb_image.h>
 
 #include "PlanetariumRenderer.hpp"
-#include "../game_components/GamePlanetarium.hpp"
+#include "../game_components/GameSimulation.hpp"
 #include "../core/BaseApp.hpp"
 #include "../core/Physics.hpp"
 #include "../core/AssetManager.hpp"

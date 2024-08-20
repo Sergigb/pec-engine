@@ -14,8 +14,6 @@
 class Object;
 class FontAtlas;
 class GameEditor;
-class PlanetariumGUI;
-class GamePlanetarium;
 class SimulationRenderer;
 class GameSimulation;
 
@@ -23,7 +21,6 @@ class GameSimulation;
 class App : public BaseApp{
     private:
         std::unique_ptr<GameEditor> m_editor;
-        std::unique_ptr<GamePlanetarium> m_planetarium;
         std::unique_ptr<GameSimulation> m_simulation;
 
         // application default font atlas

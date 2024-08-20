@@ -6,7 +6,6 @@
 #include "core/RenderContext.hpp"
 #include "core/AssetManager.hpp"
 #include "game_components/GameEditor.hpp"
-#include "game_components/GamePlanetarium.hpp"
 #include "game_components/GameSimulation.hpp"
 #include "core/Physics.hpp"
 #include "core/WindowHandler.hpp"
@@ -60,7 +59,6 @@ void App::init(){
     m_render_context->setDefaultFontAtlas(m_def_font_atlas.get());
 
     m_editor.reset(new GameEditor(this, m_def_font_atlas.get()));
-    m_planetarium.reset(new GamePlanetarium(this, m_def_font_atlas.get()));
     m_simulation.reset(new GameSimulation(this, m_def_font_atlas.get()));
 }
 

@@ -18,7 +18,7 @@
 #include "../../core/Player.hpp"
 #include "../../assets/PlanetarySystem.hpp"
 #include "../../assets/Vessel.hpp"
-#include "../../game_components/GamePlanetarium.hpp"
+#include "../../game_components/GameSimulation.hpp"
 
 
 const float c[4] = {.85f, .85f, .85f, 1.f};

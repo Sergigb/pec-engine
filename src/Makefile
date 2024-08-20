@@ -25,7 +25,7 @@ BASEOBJS := $(foreach source, $(BASESRCS), $(OBJPATH)/$(source:.cpp=.o))
 DEPENDS_BASE = ${BASEOBJS:.o=.d}
 
 #main game objects
-MAIN_APP_SCRS := main.cpp App.cpp game_components/GameEditor.cpp game_components/GamePlanetarium.cpp game_components/GameSimulation.cpp
+MAIN_APP_SCRS := main.cpp App.cpp game_components/GameEditor.cpp game_components/GameSimulation.cpp
 MAIN_APP_OBJS := $(foreach source, $(MAIN_APP_SCRS), $(OBJPATH)/$(source:.cpp=.o))
 
 #planet renderer objects
@@ -68,13 +68,13 @@ $(OBJPATH)/%.o: ../thirdparty/imgui/%.cpp
 	$(CXX) $(INC) -O3 -Wall -Wformat -DIMGUI_IMPL_OPENGL_LOADER_GLEW -c $< -o $@
 
 clean: 
-	rm -f $(BASEOBJS) $(MAIN_APP_OBJS) $(PLANET_RENDERER_APP_OBJS) $(EXECPATH)/main $(EXECPATH)/planet-renderer
+	rm -f $(BASEOBJS) $(MAIN_APP_OBJS) $(PLANET_RENDERER_APP_OBJS) ${DEPENDS} $(EXECPATH)/main $(EXECPATH)/planet-renderer
 clean-main:
-	rm -f $(MAIN_APP_OBJS) $(EXECPATH)/main
+	rm -f $(MAIN_APP_OBJS) ${DEPENDS} $(EXECPATH)/main
 clean-planet-renderer:
-	rm -f $(PLANET_RENDERER_APP_OBJS) $(EXECPATH)/planet-renderer
+	rm -f $(PLANET_RENDERER_APP_OBJS) ${DEPENDS} $(EXECPATH)/planet-renderer
 clean-planetarium:
-	rm -f $(PLANETARIUM_APP_OBJS) $(EXECPATH)/planetarium
+	rm -f $(PLANETARIUM_APP_OBJS) ${DEPENDS} $(EXECPATH)/planetarium
 clean-imgui:
 	rm -f $(IMGUIOBJS)
 clean-all:

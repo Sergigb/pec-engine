@@ -1,5 +1,6 @@
 #include <memory>
 #include <iostream>
+#include <algorithm>
 
 #include "GameSimulation.hpp"
 #include "../core/log.hpp"
@@ -14,6 +15,7 @@
 #include "../core/WindowHandler.hpp"
 #include "../core/Frustum.hpp"
 #include "../core/timing.hpp"
+#include "../core/Predictor.hpp"
 #include "../GUI/DebugOverlay.hpp"
 #include "../assets/Vessel.hpp"
 #include "../assets/BasePart.hpp"
@@ -22,10 +24,19 @@
 #include "../assets/Kinematic.hpp"
 #include "../assets/Model.hpp"
 #include "../assets/PlanetarySystem.hpp"
+#include "../assets/Planet.hpp"
 #include "../renderers/SimulationRenderer.hpp"
+#include "../renderers/PlanetariumRenderer.hpp"
+#include "../GUI/planetarium/PlanetariumGUI.hpp"
 
 
 typedef VesselMap::iterator VesselIterator;
+
+
+bool comparator(const Planet* a, const Planet* b){
+    return a->getOrbitalData().a_0 < b->getOrbitalData().a_0;
+}
+
 
 
 GameSimulation::GameSimulation(BaseApp* app, const FontAtlas* font_atlas){
@@ -39,14 +50,33 @@ GameSimulation::GameSimulation(BaseApp* app, const FontAtlas* font_atlas){
     m_input = m_app->getInput();
     m_frustum = m_app->getFrustum();
     m_window_handler = m_app->getWindowHandler();
+    m_predictor = m_app->getPredictor();
 
     m_thread_monitor= m_app->getThreadMonitor();
     m_quit = false;
     m_current_view = VIEW_SIMULATION;
+    m_freecam = true;
+    m_selected_planet = 0;
+    m_selected_planet_idx = 0;
 
-    m_renderer.reset(new SimulationRenderer(m_app));
-    m_app->getRenderContext()->setRenderer(m_renderer.get(), RENDER_SIMULATION);
-    
+    m_renderer_simulation.reset(new SimulationRenderer(m_app));
+    m_app->getRenderContext()->setRenderer(m_renderer_simulation.get(), RENDER_SIMULATION);
+
+    m_gui_planetarium.reset(new PlanetariumGUI(font_atlas, m_app));
+    m_render_context->setGUI(m_gui_planetarium.get(), GUI_MODE_PLANETARIUM);
+    m_gui_planetarium->setSelectedPlanet(0);
+
+    m_renderer_planetarium.reset(new PlanetariumRenderer(m_app, m_gui_planetarium.get()));
+    m_render_context->setRenderer(m_renderer_planetarium.get(), RENDER_PLANETARIUM);
+
+    // ordered planet vector init
+    const planet_map& planets = m_asset_manager->m_planetary_system.get()->getPlanets();
+    planet_map::const_iterator it;
+
+    for(it=planets.begin();it!=planets.end();it++){
+        m_ordered_planets.emplace_back(it->second.get());
+    }
+    std::sort(m_ordered_planets.begin(), m_ordered_planets.end(), comparator);
 }
 
 
@@ -128,10 +158,67 @@ void GameSimulation::wakePhysics(){
 void GameSimulation::logic(){
     if(m_current_view == VIEW_SIMULATION)
         processInputSimulation();
-    else
+    else{
         processKeyboardInputPlanetarium();
+        updatePlanetarium();
+    }
     processInput();
     m_asset_manager->updateVessels();
+}
+
+
+void GameSimulation::updatePlanetarium(){
+    m_app->getPlayer()->setSelectedPlanet(m_selected_planet);
+    m_gui_planetarium->setSelectedPlanet(m_selected_planet);
+    m_gui_planetarium->setFreecam(m_freecam);
+    int action = m_gui_planetarium->update();
+
+    if(action == PLANETARIUM_ACTION_SET_VELOCITY){
+        Vessel* vessel = m_app->getPlayer()->getVessel();
+        if(vessel){
+            const btVector3 velocity = m_gui_planetarium->getCheatVelocity();
+            m_app->getAssetManager()->setVesselVelocity(vessel, velocity);
+        }
+        else{
+            std::cerr << "GameSimulation::updatePlanetarium - Can't set vessel velocity because"
+                         " Player returned nullptr" << std::endl;
+        }
+    }
+    else if(action == PLANETARIUM_ACTION_SET_POSITION){
+        Vessel* vessel = m_app->getPlayer()->getVessel();
+        if(vessel){
+            const btVector3 origin = m_gui_planetarium->getCheatPosition();
+            const btQuaternion rotation = vessel->getRoot()->m_body->getOrientation();
+            vessel->setSubTreeMotionState(origin, rotation); // thread safe
+        }
+        else{
+            std::cerr << "GameSimulation::updatePlanetarium - Can't set vessel position because"
+                         " Player returned nullptr" << std::endl;
+        }
+    }
+    else if(action == PLANETARIUM_ACTION_SET_ORBIT){
+        Vessel* vessel = m_app->getPlayer()->getVessel();
+        if(vessel){
+            const btQuaternion rotation = vessel->getRoot()->m_body->getOrientation();
+            const struct cheat_orbit cheat_orbit_data = 
+                m_gui_planetarium->getCheatOrbitParameters();
+            double current_time = m_app->getPhysics()->getCurrentTime();
+            dmath::vec3 origin, velocity;
+
+            m_predictor->computeObjectPosVel(cheat_orbit_data.cheat_orbit_params,
+                                             cheat_orbit_data.body_target, current_time,
+                                             cheat_orbit_data.match_frame, origin, velocity);
+
+            vessel->setSubTreeMotionState(btVector3(origin.v[0], origin.v[1], origin.v[2]),
+                                          rotation); // thread safe
+            m_app->getAssetManager()->setVesselVelocity(vessel, 
+                                    btVector3(velocity.v[0], velocity.v[1], velocity.v[2]));
+        }
+        else{
+            std::cerr << "GameSimulation::updatePlanetarium - Can't set vessel position because"
+                         "Player returned nullptr" << std::endl;
+        }
+    }
 }
 
 
@@ -302,8 +389,8 @@ void GameSimulation::processKeyboardInputPlanetarium(){
             increment = 0.0;
             current_distance = 1e7 / PLANETARIUM_SCALE_FACTOR;
         }
-        m_gui->setTargetFade(fade);
-        m_renderer->setTargetFade(fade);
+        m_gui_planetarium->setTargetFade(fade);
+        m_renderer_planetarium->setTargetFade(fade);
         m_camera->setOrbitalCamDistance(current_distance + increment); // we should check the camera mode
     }
 }
@@ -346,6 +433,21 @@ void GameSimulation::onRightMouseButton(){
         part = static_cast<BasePart*>(obj);
         part->onSimulationRightMouseButton();
     }
+}
+
+
+void GameSimulation::switchPlanet(){
+    if(!m_selected_planet){
+        m_selected_planet_idx = 0;  // initialized to 0 but just to be sure
+    }
+    else{
+        m_selected_planet_idx++;
+        if(m_selected_planet_idx >= m_ordered_planets.size()){
+            m_selected_planet_idx = 0;
+        }
+    }
+
+    m_selected_planet = m_ordered_planets.at(m_selected_planet_idx)->getId();
 }
 
 

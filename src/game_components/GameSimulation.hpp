@@ -3,10 +3,14 @@
 
 #include <cstdint>
 #include <chrono>
+#include <vector>
+#include <stdint.h>
 
 class FontAtlas;
 class BaseApp;
 class SimulationRenderer;
+class PlanetariumRenderer;
+class PlanetariumGUI;
 class Physics;
 class Player;
 class Camera;
@@ -15,11 +19,16 @@ class AssetManager;
 class Input;
 class WindowHandler;
 class Frustum;
+class Planet;
+class Predictor;
 
 struct thread_monitor;
 
 #define VIEW_SIMULATION 1
 #define VIEW_PLANETARIUM 2
+
+#define PLANETARIUM_SCALE_FACTOR 1e9
+
 
 class GameSimulation{
     private:
@@ -32,12 +41,20 @@ class GameSimulation{
         Input* m_input;
         WindowHandler* m_window_handler;
         Frustum* m_frustum;
+        const Predictor* m_predictor;
 
-        std::unique_ptr<SimulationRenderer> m_renderer;
+        std::unique_ptr<SimulationRenderer> m_renderer_simulation;
+        std::unique_ptr<PlanetariumRenderer> m_renderer_planetarium;
+        std::unique_ptr<PlanetariumGUI> m_gui_planetarium;
 
         int m_current_view;
         struct thread_monitor* m_thread_monitor;
         bool m_quit;
+
+        uint32_t m_selected_planet;
+        uint m_selected_planet_idx;
+        bool m_freecam;
+        std::vector<const Planet*> m_ordered_planets;
 
         void logic();
         void processKeyboardInputSimulation();
@@ -49,9 +66,11 @@ class GameSimulation{
         void initLaunchBase();
         void setPlayerTarget();
         void switchVessel();
+        void switchPlanet();
         void updateCameraSimulation();
         void updateCameraPlanetarium();
-        void updateSimulation();
+        //void updateSimulation();
+        void updatePlanetarium();
 
         void synchPostStep();
         void synchPreStep();
