@@ -32,14 +32,7 @@ class App : public BaseApp{
         bool m_quit;
 
         void init();
-        void processInput();
-        void wakePhysics();
-        void waitPhysics();
-        void setUpSimulation();
-        void logic();
         void terminate();
-        void synchPreStep();
-        void synchPostStep();
     public:
         App();
         App(int gl_width, int gl_height);

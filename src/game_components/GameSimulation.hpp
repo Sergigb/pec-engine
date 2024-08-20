@@ -18,6 +18,8 @@ class Frustum;
 
 struct thread_monitor;
 
+#define VIEW_SIMULATION 1
+#define VIEW_PLANETARIUM 2
 
 class GameSimulation{
     private:
@@ -33,21 +35,35 @@ class GameSimulation{
 
         std::unique_ptr<SimulationRenderer> m_renderer;
 
+        int m_current_view;
+        struct thread_monitor* m_thread_monitor;
+        bool m_quit;
+
         void logic();
-        void processKeyboardInput();
+        void processKeyboardInputSimulation();
+        void processKeyboardInputPlanetarium();
+        void processInputSimulation();
         void processInput();
         void onRightMouseButton();
         void editorToSimulation();
         void initLaunchBase();
         void setPlayerTarget();
         void switchVessel();
+        void updateCameraSimulation();
+        void updateCameraPlanetarium();
+        void updateSimulation();
+
+        void synchPostStep();
+        void synchPreStep();
+        void wakePhysics();
+        void waitPhysics();
     public:
         GameSimulation(BaseApp* app, const FontAtlas* font_atlas);
         ~GameSimulation();
 
-        void onStateChange();
-        void update();
-        void updateCamera();
+        int start();
+
+        void setUpSimulation();
 };
 
 

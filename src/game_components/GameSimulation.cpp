@@ -13,6 +13,8 @@
 #include "../core/Input.hpp"
 #include "../core/WindowHandler.hpp"
 #include "../core/Frustum.hpp"
+#include "../core/timing.hpp"
+#include "../GUI/DebugOverlay.hpp"
 #include "../assets/Vessel.hpp"
 #include "../assets/BasePart.hpp"
 #include "../assets/Object.hpp"
@@ -36,6 +38,11 @@ GameSimulation::GameSimulation(BaseApp* app, const FontAtlas* font_atlas){
     m_asset_manager = m_app->getAssetManager();
     m_input = m_app->getInput();
     m_frustum = m_app->getFrustum();
+    m_window_handler = m_app->getWindowHandler();
+
+    m_thread_monitor= m_app->getThreadMonitor();
+    m_quit = false;
+    m_current_view = VIEW_SIMULATION;
 
     m_renderer.reset(new SimulationRenderer(m_app));
     m_app->getRenderContext()->setRenderer(m_renderer.get(), RENDER_SIMULATION);
@@ -46,11 +53,128 @@ GameSimulation::GameSimulation(BaseApp* app, const FontAtlas* font_atlas){
 GameSimulation::~GameSimulation(){}
 
 
-void GameSimulation::update(){
-    processInput();
+int GameSimulation::start(){
+    double delta_t_ms = (1. / 60.) * 1000000.;
+    logic_timing timing;
+    timing.delta_t = delta_t_ms;
+
+    m_app->setGUIMode(GUI_MODE_NONE);
+    m_app->setRenderState(RENDER_SIMULATION);
+    m_player->setBehaviour(PLAYER_BEHAVIOUR_SIMULATION);
+
+    m_physics->pauseSimulation(false);
+    m_camera->setCameraPosition(dmath::vec3(9300000.0, 0.0, 0.0));
+    m_camera->setSpeed(630000.0f);
+    m_render_context->setLightPosition(math::vec3(63000000000.0, 0.0, 0.0));
+
+    while(!m_quit){
+        timing.register_tp(TP_LOGIC_START);
+
+        synchPreStep();
+        wakePhysics();
+        logic();
+
+        m_render_context->getDebugOverlay()->setLogicTimes(timing);
+
+        waitPhysics();
+        synchPostStep();
+
+        timing.register_tp(TP_LOGIC_END);
+        timing.update();
+
+        if(timing.current_sleep > 0.0){
+            std::this_thread::sleep_for(duration(timing.current_sleep));
+        }
+    }
+
+    return 0;
 }
 
-void GameSimulation::updateCamera(){
+
+void GameSimulation::synchPostStep(){
+    m_asset_manager->updateCoMs();
+    if(m_current_view == VIEW_SIMULATION)
+        updateCameraSimulation();
+    else
+        updateCameraPlanetarium();
+    m_asset_manager->updateBuffers();
+}
+
+
+void GameSimulation::waitPhysics(){
+    std::unique_lock<std::mutex> lck(m_thread_monitor->mtx_end);
+    while(!m_thread_monitor->worker_ended){
+        m_thread_monitor->cv_end.wait(lck);
+    }
+    m_thread_monitor->worker_ended = false;
+}
+
+
+void GameSimulation::synchPreStep(){
+    m_asset_manager->processCommandBuffers(false);
+    m_input->update();
+    m_window_handler->update();
+    m_frustum->extractPlanes(m_camera->getCenteredViewMatrix(), m_camera->getProjMatrix(), false);
+}
+
+
+void GameSimulation::wakePhysics(){
+    std::unique_lock<std::mutex> lck2(m_thread_monitor->mtx_start);
+    m_thread_monitor->worker_start = true;
+    m_thread_monitor->cv_start.notify_all();
+}
+
+
+void GameSimulation::logic(){
+    if(m_current_view == VIEW_SIMULATION)
+        processInputSimulation();
+    else
+        processKeyboardInputPlanetarium();
+    processInput();
+    m_asset_manager->updateVessels();
+}
+
+
+void GameSimulation::processInput(){
+    if(m_render_context->imGuiWantCaptureKeyboard()){
+        return;
+    }
+
+    if(m_input->pressed_keys[GLFW_KEY_ESCAPE] == INPUT_KEY_DOWN){
+        m_quit = true;
+    }
+
+    if(m_input->pressed_keys[GLFW_KEY_M] == INPUT_KEY_DOWN){
+        if(m_player->getBehaviour() & PLAYER_BEHAVIOUR_SIMULATION){
+            m_app->setRenderState(RENDER_PLANETARIUM);
+            m_app->setGUIMode(GUI_MODE_PLANETARIUM);
+            m_player->setBehaviour(PLAYER_BEHAVIOUR_PLANETARIUM);
+            m_current_view = VIEW_PLANETARIUM;
+        }
+        else{
+            m_app->setRenderState(RENDER_SIMULATION);
+            m_app->setGUIMode(GUI_MODE_NONE);
+            m_player->setBehaviour(PLAYER_BEHAVIOUR_SIMULATION);
+            m_current_view = VIEW_SIMULATION;
+        }
+    }
+
+    if(m_input->pressed_keys[GLFW_KEY_F12] == INPUT_KEY_DOWN){
+        m_render_context->toggleDebugOverlay();
+    }
+
+    if(m_input->pressed_keys[GLFW_KEY_F11] == INPUT_KEY_DOWN){
+        m_render_context->toggleDebugDraw();
+    }
+
+    if(m_input->pressed_keys[GLFW_KEY_F10] == INPUT_KEY_DOWN){
+        m_render_context->reloadShaders();
+        m_render_context->setLightPosition(math::vec3(63000000000.0, 0.0, 0.0));
+    }
+}
+
+
+void GameSimulation::updateCameraSimulation(){
     const Vessel* vessel = m_player->getVessel();
     if(!vessel){
         m_camera->freeCameraUpdate();
@@ -63,6 +187,21 @@ void GameSimulation::updateCamera(){
         m_camera->orbitalCameraUpdate();
     }
 }
+
+
+void GameSimulation::updateCameraPlanetarium(){
+    if(!m_selected_planet || m_freecam){
+        m_camera->freeCameraUpdate();
+    }
+    else if(m_selected_planet && !m_freecam){
+        m_camera->setCameraPosition(
+            m_asset_manager->m_planetary_system->getPlanets().at(m_selected_planet)->getPosition()
+            / PLANETARIUM_SCALE_FACTOR);
+        m_camera->setOrbitalInclination(0.0, dmath::vec3(0.0, 0.0, 0.0));
+        m_camera->orbitalCameraUpdate();
+    }
+}
+
 
 void GameSimulation::switchVessel(){
     VesselIterator it = m_asset_manager->m_active_vessels.find(m_player->getVessel()->getId());
@@ -95,7 +234,7 @@ void GameSimulation::setPlayerTarget(){
 }
 
 
-void GameSimulation::processKeyboardInput(){
+void GameSimulation::processKeyboardInputSimulation(){
     if(m_render_context->imGuiWantCaptureKeyboard()){
         return;
     }
@@ -124,7 +263,53 @@ void GameSimulation::processKeyboardInput(){
 }
 
 
-void GameSimulation::processInput(){
+void GameSimulation::processKeyboardInputPlanetarium(){
+    if((m_input->pressed_keys[GLFW_KEY_LEFT_SHIFT] & (INPUT_KEY_DOWN | INPUT_KEY_REPEAT)) 
+        && (m_input->pressed_keys[GLFW_KEY_C] & INPUT_KEY_DOWN)){
+        m_freecam = !m_freecam;
+        if(!m_selected_planet && !m_freecam)
+            switchPlanet();
+    }
+
+    if(m_input->pressed_keys[GLFW_KEY_TAB] & INPUT_KEY_DOWN && !m_freecam){
+        switchPlanet();
+    }
+
+    double scx, scy;
+    float fade = 0.0; /// this should go somewhere else
+    m_input->getScroll(scx, scy);
+    if((scy) && !m_render_context->imGuiWantCaptureMouse()){
+        double current_distance = m_camera->getOrbitalCamDistance(), increment;
+
+        if(current_distance < 0.15){
+            increment = -SIGN(scy) * (0.08 * current_distance);
+            fade = 1.0;
+            }
+        else if(current_distance < 1){ // fade at this interval
+            fade = 1.0 - ((current_distance - 0.15) / (1 - 0.15));
+            increment = -SIGN(scy) * (0.1 * current_distance);
+        }
+        else{
+            increment = -SIGN(scy) * std::min((std::pow(std::abs(current_distance), 2.0) / 100.0)
+                                              + 0.5, 75.0);
+            fade = 0.0;
+        }
+        if(current_distance + increment > 10000.0){
+            increment = 10000.0;
+            increment = 0.0;
+        }
+        else if(current_distance + increment < 1e7 / PLANETARIUM_SCALE_FACTOR){
+            increment = 0.0;
+            current_distance = 1e7 / PLANETARIUM_SCALE_FACTOR;
+        }
+        m_gui->setTargetFade(fade);
+        m_renderer->setTargetFade(fade);
+        m_camera->setOrbitalCamDistance(current_distance + increment); // we should check the camera mode
+    }
+}
+
+
+void GameSimulation::processInputSimulation(){
     double scx, scy;
     m_input->getScroll(scx, scy);
     if((scy) && !m_render_context->imGuiWantCaptureMouse()){
@@ -132,10 +317,11 @@ void GameSimulation::processInput(){
     }
 
     if(m_input->pressed_mbuttons[GLFW_MOUSE_BUTTON_2] & INPUT_MBUTTON_RELEASE &&
-        !m_render_context->imGuiWantCaptureMouse() && m_camera->getPrevInputMode() != GLFW_CURSOR_DISABLED){
+       !m_render_context->imGuiWantCaptureMouse() && 
+       m_camera->getPrevInputMode() != GLFW_CURSOR_DISABLED){
         onRightMouseButton();
     }
-    processKeyboardInput();
+    processKeyboardInputSimulation();
 }
 
 
@@ -146,8 +332,10 @@ void GameSimulation::onRightMouseButton(){
 
     m_camera->castRayMousePos(1000.f, ray_start_world, ray_end_world);
 
-    btCollisionWorld::ClosestRayResultCallback ray_callback(btVector3(ray_start_world.v[0], ray_start_world.v[1], ray_start_world.v[2]),
-                                                            btVector3(ray_end_world.v[0], ray_end_world.v[1], ray_end_world.v[2]));
+    btCollisionWorld::ClosestRayResultCallback ray_callback(btVector3(ray_start_world.v[0], 
+                                                ray_start_world.v[1], ray_start_world.v[2]),
+                                                            btVector3(ray_end_world.v[0],
+                                                ray_end_world.v[1], ray_end_world.v[2]));
     ray_callback.m_collisionFilterGroup = CG_RAY_EDITOR_SELECT;
 
     obj = m_physics->testRay(ray_callback, 
@@ -161,12 +349,9 @@ void GameSimulation::onRightMouseButton(){
 }
 
 
-void GameSimulation::onStateChange(){
-    std::cout << "game simulation on state change" << std::endl;
+void GameSimulation::setUpSimulation(){
     editorToSimulation();
-    std::cout << "after editorToSimulation" << std::endl;
     initLaunchBase();  // POSSIBLE SEG FAULT HERE
-    std::cout << "after initLaunchBase" << std::endl;
 }
 
 
@@ -189,7 +374,8 @@ void GameSimulation::editorToSimulation(){
         //btVector3 to = reference_ellipse_to_xyz(btRadians(0.0), btRadians(0.0), 6371025.0 - vsl->getLowerBound());
         //btVector3 to(-2.6505e+10, -38663.6, 1.44693e+11);
         btVector3 to(-26504446806.42, -38663.47, 144693255900.63);
-        to += reference_ellipse_to_xyz(btRadians(0.0), btRadians(0.0), 6371555.0 - vsl->getLowerBound());
+        to += reference_ellipse_to_xyz(btRadians(0.0), btRadians(0.0),
+                                       6371555.0 - vsl->getLowerBound());
         btVector3 disp;
         btTransform transform;
 
