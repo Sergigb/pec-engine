@@ -27,8 +27,6 @@ Camera::Camera(){
     m_far = 100.f;
     m_fovy = 67.f;
     m_ar = 1.f;
-    m_proj_change = false;
-    m_fb_callback = false;
     m_cam_input_mode = GLFW_CURSOR_NORMAL;
     m_prev_cam_input_mode = GLFW_CURSOR_NORMAL;
     updateViewMatrix();
@@ -57,8 +55,6 @@ Camera::Camera(const dmath::vec3& pos, float fovy, float ar, float near, float f
     m_far = far;
     m_fovy = fovy;
     m_ar = ar;
-    m_proj_change = false;
-    m_fb_callback = false;
     m_cam_input_mode = GLFW_CURSOR_NORMAL;
     m_prev_cam_input_mode = GLFW_CURSOR_NORMAL;
     updateViewMatrix();
@@ -86,17 +82,20 @@ void Camera::setCameraOrientationFromAxisRad(float cam_heading, const dmath::vec
 }
 
 
-void Camera::createProjMat(float near, float far, float fovy, float ar){
+void Camera::createProjMat(float near, float far, float fovy){
+    int fb_width, fb_height;
+
+    m_window_handler->getFramebufferSize(fb_width, fb_height);
+
     m_near = near;
     m_far = far;
     m_fovy = fovy;
-    m_ar = ar;
+    m_ar = fb_width / fb_height;
     m_proj_mat = math::perspective(m_fovy, m_ar, m_near, m_far);
 }
 
 void Camera::onFramebufferSizeUpdate(int width, int height){
     m_proj_mat = math::perspective(m_fovy, (float)width/(float)height, m_near, m_far);
-    m_fb_callback = true;
 }
 
 
@@ -187,13 +186,6 @@ void Camera::update(){
 
     m_elapsed_time = current_frame_time - m_previous_frame_time;
     m_previous_frame_time = current_frame_time;
-
-    if(m_fb_callback){
-        m_proj_change = true;
-        m_fb_callback = false;
-    }
-    else if(m_proj_change)
-        m_proj_change = false;
 }
 
 
@@ -204,11 +196,6 @@ void Camera::setSpeed(float speed){
 
 void Camera::setAngularSpeed(float speed){
     m_cam_heading_speed = speed;
-}
-
-
-bool Camera::projChanged() const{
-    return m_proj_change;
 }
 
 

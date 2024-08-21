@@ -38,7 +38,6 @@ class Camera{
         dmath::mat4 m_view_matrix;
         float m_cam_speed, m_cam_heading_speed, m_near, m_far, m_fovy, m_ar;
         double m_previous_frame_time, m_elapsed_time;
-        bool m_proj_change, m_fb_callback;
         int m_cam_input_mode, m_prev_cam_input_mode;
 
         /* orbital camera params */
@@ -106,9 +105,8 @@ class Camera{
          * @near: near plane, in meters.
          * @far: far plane, in meters.
          * @fovy: horizontal field of view, in degrees.
-         * @ar: aspect-ratio, should match the viewport's.
          */
-        void createProjMat(float near, float far, float fovy, float ar);
+        void createProjMat(float near, float far, float fovy);
 
         /*
          * Method called by the window handler in case the framebuffer size changes. Could be
@@ -189,8 +187,6 @@ class Camera{
          * @translation: new position of the camera.
          */
         void setCameraPosition(const dmath::vec3& translation);
-
-        bool projChanged() const;
 
         /*
          * Getters for the view and projection matrices. Note that getViewMatrix returns a single
