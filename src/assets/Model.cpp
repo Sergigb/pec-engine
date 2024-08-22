@@ -134,7 +134,6 @@ int Model::loadScene(const std::string& pFile){
     
     glGenVertexArrays(1, &m_vao);
     glBindVertexArray(m_vao);
-    glUniform4fv(m_color_location, 1, m_mesh_color.v); // set mesh color to white
 
     if(mesh->HasPositions()){
         glGenBuffers(1, &m_vbo_vert);
