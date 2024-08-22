@@ -90,7 +90,7 @@ void Camera::createProjMat(float near, float far, float fovy){
     m_near = near;
     m_far = far;
     m_fovy = fovy;
-    m_ar = fb_width / fb_height;
+    m_ar = float(fb_width) / float(fb_height);
     m_proj_mat = math::perspective(m_fovy, m_ar, m_near, m_far);
 }
 
