@@ -95,6 +95,7 @@ int GameSimulation::start(){
     m_physics->pauseSimulation(false);
     m_camera->setCameraPosition(dmath::vec3(9300000.0, 0.0, 0.0));
     m_camera->setSpeed(630000.0f);
+    m_camera->createProjMat(1.0, 63000000, 67.0);
     m_render_context->setLightPosition(math::vec3(63000000000.0, 0.0, 0.0));
 
     while(!m_quit){

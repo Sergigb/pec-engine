@@ -6,6 +6,7 @@
 #include "../core/Physics.hpp"
 #include "../core/RenderContext.hpp"
 #include "../core/Camera.hpp"
+#include "../core/utils/gl_utils.hpp"
 #include "../assets/Planet.hpp"
 #include "../assets/Object.hpp"
 #include "../assets/PlanetTree.hpp"
@@ -28,6 +29,8 @@ SimulationRenderer::SimulationRenderer(BaseApp* app){
     m_render_context->useProgram(SHADER_PLANET);
     m_planet_view_mat = m_render_context->getUniformLocation(SHADER_PLANET, "view");
     m_planet_proj_mat = m_render_context->getUniformLocation(SHADER_PLANET, "proj");
+
+    check_gl_errors(true, "SimulationRenderer::SimulationRenderer");
 
     PlanetTree::loadBases(m_app->getFrustum(), m_render_context);
 }
@@ -67,6 +70,8 @@ int SimulationRenderer::renderObjects(const std::vector<object_transform>& buff,
     m_render_context->useProgram(SHADER_PLANET);
     glUniformMatrix4fv(m_planet_view_mat, 1, GL_FALSE, view_mat.m);
     glUniformMatrix4fv(m_planet_proj_mat, 1, GL_FALSE, m_camera->getProjMatrix().m);
+
+    check_gl_errors(true, "SimulationRenderer::renderObjects");
 
     for(uint i=0; i<buff.size(); i++){
         num_rendered += buff.at(i).object_ptr->render(buff.at(i).transform);

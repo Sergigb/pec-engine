@@ -41,6 +41,8 @@ PlanetariumRenderer::PlanetariumRenderer(BaseApp* app, PlanetariumGUI* planetari
 
     m_target_fade = 0.0;
 
+    check_gl_errors(true, "PlanetariumRenderer::PlanetariumRenderer");
+
     createSkybox();
     initBuffers();
 }
@@ -50,6 +52,8 @@ PlanetariumRenderer::~PlanetariumRenderer(){
     glDeleteBuffers(1, &m_pred_vbo_vert);
     glDeleteBuffers(1, &m_pred_vbo_ind);
     glDeleteVertexArrays(1, &m_pred_vao);
+
+    check_gl_errors(true, "PlanetariumRenderer::~PlanetariumRenderer");
 }
 
 
@@ -64,6 +68,8 @@ void PlanetariumRenderer::initBuffers(){
 
     glGenBuffers(1, &m_pred_vbo_ind);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_pred_vbo_ind);
+
+    check_gl_errors(true, "PlanetariumRenderer::initBuffers");
 }
 
 

@@ -97,6 +97,8 @@ RenderContext::~RenderContext(){
     glDeleteShader(m_debug_shader);
     glDeleteShader(m_sprite_shader);
     glDeleteShader(m_tnl_shader);
+
+    check_gl_errors(true, "RenderContext::~RenderContext");
 }
 
 
@@ -240,6 +242,8 @@ void RenderContext::renderBulletDebug(const math::mat4& view_mat){
     m_debug_drawer->getReady();
     m_debug_drawer->setCameraCenter(btVector3(cam_position.v[0], cam_position.v[1], cam_position.v[2]));
     m_physics->getDynamicsWorld()->debugDrawWorld();
+
+    check_gl_errors(true, "RenderContext::renderBulletDebug");
 }
 
 
@@ -351,7 +355,7 @@ void RenderContext::render(){
         glEnable(GL_DEPTH_TEST);
     }
 
-    check_gl_errors(true, "RenderContext::render - fix them :P");
+    check_gl_errors(true, "RenderContext::render - did someone not check their errors?");
 }
 
 
@@ -367,6 +371,8 @@ void RenderContext::setLightPositionRender(){
     glUniform3fv(m_pb_light_pos, 1, m_light_position.v);
     glUseProgram(m_planet_shader);
     glUniform3fv(m_planet_light_pos, 1, m_light_position.v);
+
+    check_gl_errors(true, "RenderContext::setLightPositionRender");
 }
 
 
@@ -409,6 +415,7 @@ void RenderContext::useProgram(int shader) const{
             log("RenderContext::useProgram - wrong shader value ", shader);
             return;
     }
+    check_gl_errors(true, "RenderContext::useProgram");
 }
 
 
@@ -434,6 +441,7 @@ GLuint RenderContext::getUniformLocation(int shader, const char* location) const
             std::cerr << "RenderContext::getUniformLocation - wrong shader value " << shader << std::endl;
             log("RenderContext::getUniformLocation - wrong shader value ", shader);
     }
+    check_gl_errors(true, "RenderContext::getUniformLocation");
     return -1;
 }
 
@@ -442,6 +450,7 @@ void RenderContext::bindVao(GLuint vao) const{
     if(vao != m_bound_vao){
         glBindVertexArray(vao);
     }
+    check_gl_errors(true, "RenderContext::bindVao");
 }
 
 
@@ -474,6 +483,8 @@ void RenderContext::run(){
         m_debug_overlay->setRenderTimes(m_timing);
 
         glfwSwapBuffers(m_window_handler->getWindow());
+
+        check_gl_errors(true, "RenderContext::run main loop");
     }
 
     ImGui_ImplOpenGL3_Shutdown();

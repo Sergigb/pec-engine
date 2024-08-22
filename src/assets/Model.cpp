@@ -7,6 +7,7 @@
 #include "../core/RenderContext.hpp"
 #include "../core/maths_funcs.hpp"
 #include "../core/log.hpp"
+#include "../core/utils/gl_utils.hpp"
 
 
 Model::Model(){
@@ -48,7 +49,7 @@ Model::Model(const char* path_to_mesh, const char* path_to_texture, int shader, 
     else{
         m_has_texture = false;
     }
-
+    check_gl_errors(true, "Model::Model");
 }
 
 
@@ -60,6 +61,7 @@ Model::~Model(){
     glDeleteVertexArrays(1, &m_vao);
     if(m_has_texture)
         glDeleteTextures(1, &m_tex_id);
+    check_gl_errors(true, "Model::~Model");
 }
 
 
@@ -165,6 +167,10 @@ int Model::loadScene(const std::string& pFile){
         // NB: could store/print tangents here
     }
 
+    std::string msg = std::string("Model::loadScene") + pFile;
+
+    check_gl_errors(true, msg.c_str());
+
     return EXIT_SUCCESS;
 }
 
@@ -183,6 +189,8 @@ int Model::render(const math::mat4& transform) const{
         glUniform4fv(m_color_location, 1, m_mesh_color.v);
         glUniformMatrix4fv(m_model_mat_location, 1, GL_FALSE, transform.m);
         glDrawElements(GL_TRIANGLES, m_num_faces * 3, GL_UNSIGNED_INT, NULL);
+
+        check_gl_errors(true, "Model::render(const math::mat4&)");
 
         return 1;
     }
@@ -206,5 +214,7 @@ void Model::render_terrain(const math::mat4& transform) const{
     glUniformMatrix4fv(m_model_mat_location, 1, GL_FALSE, transform.m);
     //glPolygonMode( GL_FRONT_AND_BACK, GL_LINE );
     glDrawElements(GL_TRIANGLES, m_num_faces * 3, GL_UNSIGNED_INT, NULL);
+
+    check_gl_errors(true, "Model::render_terrain");
 }
 

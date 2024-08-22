@@ -6,6 +6,7 @@
 #include "../core/Physics.hpp"
 #include "../core/RenderContext.hpp"
 #include "../core/Camera.hpp"
+#include "../core/utils/gl_utils.hpp"
 #include "../assets/Object.hpp"
 #include "../assets/Model.hpp"
 #include "../assets/BasePart.hpp"
@@ -33,6 +34,8 @@ EditorRenderer::EditorRenderer(BaseApp* app){
     m_att_point_scale.m[0] = 0.25;
     m_att_point_scale.m[5] = 0.25;
     m_att_point_scale.m[10] = 0.25;
+
+    check_gl_errors(true, "EditorRenderer::EditorRenderer");
 }
 
 
@@ -45,6 +48,8 @@ int EditorRenderer::render(struct render_buffer* rbuf){
     int num_rendered = 0;
 
     num_rendered = renderObjects(rbuf->buffer, rbuf->view_mat);
+
+    check_gl_errors(true, "EditorRenderer::render");
 
     return num_rendered;
 }
@@ -73,6 +78,8 @@ int EditorRenderer::renderObjects(const std::vector<object_transform>& buff,
             renderAttPoints(part, buff.at(i).transform);
         num_rendered += buff.at(i).object_ptr->render(buff.at(i).transform);
     }
+
+    check_gl_errors(true, "EditorRenderer::renderObjects");
 
     return num_rendered;
 }

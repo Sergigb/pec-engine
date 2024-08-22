@@ -78,12 +78,15 @@ EditorGUI::EditorGUI(const BaseApp* app, const FontAtlas* atlas){
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     }
     stbi_image_free(image_data);
+
+    check_gl_errors(true, "EditorGUI::EditorGUI");
 }
 
 
 EditorGUI::~EditorGUI(){
     if(m_init)
         glDeleteTextures(1, &m_texture_atlas);
+    check_gl_errors(true, "EditorGUI::~EditorGUI");
 }
 
 

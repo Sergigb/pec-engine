@@ -1,7 +1,5 @@
 #include <vector>
 
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/btBulletDynamicsCommon.h>
 

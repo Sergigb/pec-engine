@@ -8,6 +8,7 @@
 #include "Model.hpp"
 #include "../core/RenderContext.hpp"
 #include "../core/log.hpp"
+#include "../core/utils/gl_utils.hpp"
 
 
 std::unique_ptr<Model> PlanetTree::m_base32;
@@ -52,6 +53,8 @@ PlanetTree::PlanetTree(RenderContext* render_context, Planet* planet){
 #endif
         warning_async_notified = true;
     }
+
+    check_gl_errors(true, "PlanetTree::PlanetTree");
 }
 
 
@@ -64,6 +67,8 @@ PlanetTree::~PlanetTree(){
         textureFree();
     }
     m_surface.is_built = false;
+
+    check_gl_errors(true, "PlanetTree::~PlanetTree");
 }
 
 
@@ -112,6 +117,8 @@ void PlanetTree::bindTexture(struct surface_node& node){
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
     stbi_image_free(data);
+
+    check_gl_errors(true, "PlanetTree::bindTexture");
 }
 
 
@@ -136,6 +143,8 @@ void PlanetTree::bindElevationTexture(struct surface_node& node){
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
     stbi_image_free(data);
+
+    check_gl_errors(true, "PlanetTree::bindElevationTexture");
 }
 
 
@@ -223,6 +232,8 @@ void PlanetTree::bindLoadedTexture(struct surface_node& node){
     node.ticks_since_last_use = 0;
     node.texture_loaded = true;
     node.data_ready = false;
+
+    check_gl_errors(true, "PlanetTree::bindLoadedTexture");
 }
 
 
@@ -358,6 +369,8 @@ void PlanetTree::textureFree(){
             it++;
         }
     }
+
+    check_gl_errors(true, "PlanetTree::textureFree");
 }
 
 
@@ -378,7 +391,7 @@ void PlanetTree::renderSide(struct surface_node& node, const math::mat4& planet_
     double distance = dmath::distance(path_translation_normd, cam_origin);
     bool texture_is_loaded = true;
 
-    if(node.scale * sea_level * 1.5 > distance && node.level < max_level){
+    if(node.scale * sea_level * 1.5 > distance && node.level < max_level{ // && false){
         for(uint i = 0; i < 4; i++){
             renderSide(*node.childs[i].get(), planet_transform_world, max_level, cam_origin, sea_level);
         }
@@ -476,6 +489,7 @@ void PlanetTree::renderSide(struct surface_node& node, const math::mat4& planet_
     else{
         PlanetTree::m_base128->render_terrain(planet_transform_world);
     }
+    check_gl_errors(true, "PlanetTree::renderSide");
 }
 
 
@@ -502,6 +516,8 @@ void PlanetTree::render(const dmath::vec3& cam_translation, const dmath::mat4 tr
     cam_trans_local.v[0] -= dplanet_transform_world.m[12];
     cam_trans_local.v[1] -= dplanet_transform_world.m[13];
     cam_trans_local.v[2] -= dplanet_transform_world.m[14];
+
+    check_gl_errors(true, "PlanetTree::render");
 
     // confusing mess of additions and subtractions of cameras and origins, seems to work but not
     // sure why or how. also there might be floating point arithmetic problems with the rendering

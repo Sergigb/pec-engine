@@ -9,6 +9,7 @@
 #include "../core/RenderContext.hpp"
 #include "../core/maths_funcs.hpp"
 #include "../core/utils/utils.hpp"
+#include "../core/utils/gl_utils.hpp"
 
 
 Text2D::Text2D(){
@@ -54,6 +55,8 @@ void Text2D::initgl(){
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vbo_ind);
 
     m_disp_location = m_render_context->getUniformLocation(SHADER_TEXT, "disp");
+
+    check_gl_errors(true, "Text2D::initgl");
 }
 
 
@@ -65,6 +68,7 @@ Text2D::~Text2D(){
         glDeleteBuffers(1, &m_vbo_col);
         glDeleteVertexArrays(1, &m_vao);
     }
+    check_gl_errors(true, "Text2D::~Text2D");
 }
 
 
@@ -195,6 +199,8 @@ void Text2D::updateBuffers(){
 
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_vbo_ind);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, 6 * total_num_characters * sizeof(GLushort), index_buffer.get(), GL_STATIC_DRAW);
+
+    check_gl_errors(true, "Text2D::updateBuffers");
 }
 
 
@@ -210,6 +216,8 @@ void Text2D::render(){
 
     m_font_atlas->bindTexture();
     glDrawElements(GL_TRIANGLES, m_num_indices, GL_UNSIGNED_SHORT, NULL);
+
+    check_gl_errors(true, "Text2D::render");
 }
 
 

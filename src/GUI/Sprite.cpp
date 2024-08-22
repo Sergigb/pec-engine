@@ -6,6 +6,7 @@
 #include "Sprite.hpp"
 #include "../core/log.hpp"
 #include "../core/RenderContext.hpp"
+#include "../core/utils/gl_utils.hpp"
 
 
 Sprite::Sprite(){
@@ -95,6 +96,7 @@ Sprite::~Sprite(){
         glDeleteTextures(1, &m_sprite);
         glDeleteVertexArrays(1, &m_vao);
     }
+    check_gl_errors(true, "Sprite::~Sprite");
 }
 
 
@@ -144,6 +146,7 @@ void Sprite::initgl(const char* path){
                                  1.0f, 1.0f};
     glBufferData(GL_ARRAY_BUFFER, 2 * 6 * sizeof(GLfloat), tex_coords, GL_STATIC_DRAW);
 
+    check_gl_errors(true, "Sprite::initgl");
 }
 
 
@@ -158,6 +161,8 @@ void Sprite::updateVertexArray(){
                                pos_x - m_size / 2, pos_y - m_size / 2,
                                pos_x + m_size / 2, pos_y - m_size / 2};
     glBufferData(GL_ARRAY_BUFFER, 2 * 6 * sizeof(GLfloat), vertices, GL_STATIC_DRAW);
+
+    check_gl_errors(true, "Sprite::updateVertexArray");
 }
 
 
@@ -189,6 +194,8 @@ void Sprite::render() const{
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_sprite);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    check_gl_errors(true, "Sprite::render()");
 }
 
 
@@ -213,6 +220,8 @@ void Sprite::render(const math::vec2& pos) const{
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, m_sprite);
     glDrawArrays(GL_TRIANGLES, 0, 6);
+
+    check_gl_errors(true, "Sprite::render(const math::vec2&)");
 }
 
 

@@ -160,4 +160,6 @@ void debug_info_box(Text2D** t, int fb_width, int fb_height, const FontAtlas* fo
     oss << "System memory: " << mem_gb << " GB";
     mbstowcs(totalmemory_w, oss.str().c_str(), 64);
     (*t)->addString(totalmemory_w, 15, 105, 1, STRING_DRAW_ABSOLUTE_TL, STRING_ALIGN_RIGHT, c);
+
+    check_gl_errors(true, "debug_info_box");
 }

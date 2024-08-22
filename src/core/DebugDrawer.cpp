@@ -2,6 +2,7 @@
 
 #include "DebugDrawer.hpp"
 #include "RenderContext.hpp"
+#include "utils/gl_utils.hpp"
 
 
 #pragma GCC diagnostic push  // Temporal, remove when implemented
@@ -56,6 +57,8 @@ DebugDrawer::DebugDrawer(const RenderContext* render_context) : m_camera_center(
     glBufferData(GL_ARRAY_BUFFER, VERTEX_BUF_SIZE, vertex_buf.bufferdata, GL_DYNAMIC_DRAW);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
     glEnableVertexAttribArray(0);
+
+    check_gl_errors(true, "DebugDrawer::DebugDrawer");
 }
 
 
@@ -85,6 +88,8 @@ void DebugDrawer::drawLine(const btVector3& from, const btVector3& to, const btV
     glUniform1f(m_debug_alpha_location, 1.0);
 
     glDrawArrays(GL_LINES, 0, VERTEX_BUF_SIZE);
+
+    check_gl_errors(true, "DebugDrawer::drawLine");
 }
 
 

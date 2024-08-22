@@ -14,6 +14,7 @@
 #include "../assets/Model.hpp"
 #include "log.hpp"
 #include "Predictor.hpp"
+#include "utils/gl_utils.hpp"
 
 
 BaseApp::BaseApp(){
@@ -107,6 +108,8 @@ void BaseApp::displayLoadingScreen(){
     glDrawArrays(GL_TRIANGLES, 0, 6);
 
     glfwSwapBuffers(m_window_handler->getWindow());
+
+    check_gl_errors(true, "BaseApp::displayLoadingScreen");
 }
 
 

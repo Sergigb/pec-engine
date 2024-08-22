@@ -4,6 +4,7 @@
 #include "Model.hpp"
 #include "../core/Physics.hpp"
 #include "../core/id_manager.hpp"
+#include "../core/utils/gl_utils.hpp"
 
 
 Object::Object(){
@@ -101,13 +102,22 @@ int Object::render(){
     }
 
     m_model->setMeshColor(math::vec4(m_mesh_color, m_alpha));
-    return m_model->render(body_transform);
+    int num_rend = m_model->render(body_transform);
+
+    check_gl_errors(true, "Object::render()");
+
+    return num_rend;
 }
 
 
 int Object::render(const math::mat4& body_transform){
     m_model->setMeshColor(math::vec4(m_mesh_color, m_alpha));
-    return m_model->render(m_has_transform ? body_transform * m_mesh_transform : body_transform);
+    int num_rend = m_model->render(m_has_transform ? body_transform * m_mesh_transform :
+                                   body_transform);
+
+    check_gl_errors(true, "Object::render(const math::mat4&)");
+
+    return num_rend;
 }
 
 
