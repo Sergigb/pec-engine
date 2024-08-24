@@ -382,6 +382,7 @@ DebugOverlay* RenderContext::getDebugOverlay(){
 
 
 void RenderContext::useProgram(int shader) const{
+    check_gl_errors(true, "unchecked errors at the beginning of RenderContext::useProgram");
     if(shader == m_bound_programme){
         return;
     }
@@ -420,6 +421,8 @@ void RenderContext::useProgram(int shader) const{
 
 
 GLuint RenderContext::getUniformLocation(int shader, const char* location) const{
+    check_gl_errors(true, "unchecked errors at the beginning of RenderContext::bindVao");
+
     switch(shader){
         case SHADER_PHONG_BLINN:
             return glGetUniformLocation(m_pb_shader, location);
@@ -447,6 +450,7 @@ GLuint RenderContext::getUniformLocation(int shader, const char* location) const
 
 
 void RenderContext::bindVao(GLuint vao) const{
+    check_gl_errors(true, "unchecked errors at the beginning of RenderContext::bindVao");
     if(vao != m_bound_vao){
         glBindVertexArray(vao);
     }
