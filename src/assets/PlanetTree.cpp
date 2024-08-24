@@ -60,6 +60,7 @@ PlanetTree::PlanetTree(RenderContext* render_context, Planet* planet){
 
 PlanetTree::~PlanetTree(){
     if(m_surface.is_built){
+        //std::cout << "planet tree destructor disabled" << std::endl;
         for(uint i=0; i < 6; i++){
             cleanSide(m_surface.surface_tree[i], m_surface.max_levels);
         }
@@ -179,6 +180,7 @@ void PlanetTree::buildChilds(struct surface_node& node, int num_levels){
         node.childs[i]->data_ready = false;
         node.childs[i]->has_elevation = true;
         node.childs[i]->tex_id_fl = node.tex_id_fl;
+        node.childs[i]->e_tex_id_fl = node.e_tex_id_fl;
         node.childs[i]->texture_scale_lod = node.texture_scale_lod / 2.0;
         if(node.level + 1 < 5){
             node.childs[i]->texture_scale = 1.0;
@@ -275,6 +277,7 @@ void PlanetTree::buildSurface(){
         m_surface.surface_tree[i].tex_id_fl = m_surface.surface_tree[i].tex_id;
         bindElevationTexture(m_surface.surface_tree[i]);
         m_surface.surface_tree[i].e_tex_id_fl = m_surface.surface_tree[i].e_tex_id;
+        //UNUSED(num_levels);
         buildChilds(m_surface.surface_tree[i], num_levels);
     }
 }
@@ -391,7 +394,7 @@ void PlanetTree::renderSide(struct surface_node& node, const math::mat4& planet_
     double distance = dmath::distance(path_translation_normd, cam_origin);
     bool texture_is_loaded = true;
 
-    if(node.scale * sea_level * 1.5 > distance && node.level < max_level{ // && false){
+    if(node.scale * sea_level * 1.5 > distance && node.level < max_level){ // && false){
         for(uint i = 0; i < 4; i++){
             renderSide(*node.childs[i].get(), planet_transform_world, max_level, cam_origin, sea_level);
         }
@@ -472,6 +475,8 @@ void PlanetTree::renderSide(struct surface_node& node, const math::mat4& planet_
 
     glUniformMatrix4fv(m_relative_planet_location, 1, GL_FALSE, transform_planet_relative.m);
 
+    check_gl_errors(true, "PlanetTree::renderSide");
+
     if(texture_is_loaded){
         glUniform2fv(m_tex_shift_location, 1, node.tex_shift.v);
         glUniform1f(m_texture_scale_location, node.texture_scale);
@@ -489,7 +494,6 @@ void PlanetTree::renderSide(struct surface_node& node, const math::mat4& planet_
     else{
         PlanetTree::m_base128->render_terrain(planet_transform_world);
     }
-    check_gl_errors(true, "PlanetTree::renderSide");
 }
 
 
