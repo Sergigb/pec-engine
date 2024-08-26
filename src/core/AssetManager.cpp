@@ -6,6 +6,7 @@
 
 #include "loading/load_resources.hpp"
 #include "loading/load_star_system.hpp"
+#include "loading/load_parts.hpp"
 #include "AssetManager.hpp"
 #include "RenderContext.hpp"
 #include "Frustum.hpp"
@@ -59,8 +60,18 @@ int AssetManager::loadResources(){
 }
 
 
-void AssetManager::loadParts(){
-    load_parts(*this);
+int AssetManager::loadParts(){
+    load_parts_old(*this); // remove this later
+
+    if(load_parts(m_master_parts, "../data/parts.xml")){
+        log("AssetManager::loadParts: failed to load parts");
+        std::cerr << "AssetManager::loadParts: failed to load parts" << std::endl;
+        return EXIT_FAILURE;
+    }
+    else{
+        log("AssetManager::loadParts: successfully loaded parts");
+        return EXIT_SUCCESS;
+    }
 }
 
 

@@ -63,7 +63,7 @@ class AssetManager : public AssetManagerInterface{
         //friend class AssetManagerInterface;
         //AssetManagerInterface m_asset_manager_interface;
 
-        friend void load_parts(AssetManager& asset_manager);
+        friend void load_parts_old(AssetManager& asset_manager);
 
         /* render buffers */
         struct render_buffers* m_buffers;
@@ -150,7 +150,7 @@ class AssetManager : public AssetManagerInterface{
          * probably need to load the resources if you want to have parts.
          */
         int loadResources();
-        void loadParts();
+        int loadParts();
         int loadStarSystem();
 
         /*

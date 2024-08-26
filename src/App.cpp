@@ -50,6 +50,13 @@ void App::init(){
         exit(EXIT_FAILURE);
     }
 
+    if(m_asset_manager->loadParts() == EXIT_FAILURE){
+        std::cerr << "App::init: fatal - failed to load the parts,"
+                     "check the xml file!" << std::endl;
+        log("App::init: fatal - failed to load the parts, check the xml file!");
+        exit(EXIT_FAILURE);
+    }
+
     m_def_font_atlas.reset(new FontAtlas(256));
     m_def_font_atlas->loadFont("../data/fonts/Liberastika-Regular.ttf", 15);
     m_def_font_atlas->loadCharacterRange(32, 255); // ascii

@@ -17,7 +17,7 @@ struct iv_array;
  *
  * @asset_manager: reference to the asset manager of the game.
  */
-void load_parts(AssetManager& asset_manager);
+void load_parts_old(AssetManager& asset_manager);
 
 
 /*

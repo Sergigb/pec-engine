@@ -13,7 +13,7 @@
 #include "../../assets/parts/parts.hpp"
 #include "../../assets/Model.hpp"
 
-void load_parts(AssetManager& asset_manager){
+void load_parts_old(AssetManager& asset_manager){
     btQuaternion quat;
     quat.setEuler(0, 0, 0);
     typedef BasePartMap::iterator map_iterator;
