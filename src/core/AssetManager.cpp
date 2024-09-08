@@ -63,7 +63,7 @@ int AssetManager::loadResources(){
 int AssetManager::loadParts(){
     load_parts_old(*this); // remove this later
 
-    if(load_parts(m_master_parts, "../data/parts.xml")){
+    if(load_parts(m_master_parts, "../data/parts.xml", m_app)){
         log("AssetManager::loadParts: failed to load parts");
         std::cerr << "AssetManager::loadParts: failed to load parts" << std::endl;
         return EXIT_FAILURE;

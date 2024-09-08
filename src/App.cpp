@@ -41,8 +41,6 @@ void App::init(){
         exit(EXIT_FAILURE);
     }
     
-    m_asset_manager->loadParts(); // no error check yet
-
     if(m_asset_manager->loadStarSystem() == EXIT_FAILURE){
         std::cerr << "App::init: fatal - failed to load the star system,"
                      "check the xml file!" << std::endl;
