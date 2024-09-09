@@ -241,9 +241,11 @@ int load_resources(const xmle* part_element, std::unique_ptr<BasePart>& part,
                     (float)mass, (float)max_mass});
             }
             catch(const std::out_of_range &err){
-                std::cerr << "Invalid resource name in resource defined in line "
+                std::cerr << "load_resources: Invalid resource name in resource defined in line "
                           << resource_elem->GetLineNum() << " (" << err.what()
                           << ")" << std::endl;
+                log("load_resources: Invalid resource name in resource defined in line ",
+                    resource_elem->GetLineNum(), " (", err.what(), ")");
             }
             resource_elem = resource_elem->NextSiblingElement("resource");
         }
@@ -350,16 +352,22 @@ int load_parts(BasePartMap& part_map, const char* path, BaseApp* app){
             return EXIT_FAILURE;
 
         // end part creation
+        std::string final_part_name;
+        part->getName(final_part_name);
+        log("load_parts: successfully created part with name ", final_part_name, " (",
+            fancy_name, ") with id ", base_id);
+
         typedef BasePartMap::iterator map_iterator;
         std::pair<map_iterator, bool> res;
         res = part_map.insert({base_id, std::move(part)});
 
         if(!res.second){
-            log("Failed to insert part with id ", base_id, " (collided with ",
+            log("load_parts: Failed to insert part with id ", base_id, " (collided with ",
                  res.first->first, ")");
-            std::cerr << "Failed to insert part with id " << base_id << " (collided with "
-                      << res.first->first << ")" << std::endl;
+            std::cerr << "load_parts: Failed to insert part with id " << base_id 
+                      << " (collided with " << res.first->first << ")" << std::endl;
         }
+        log("load_parts: insedted part with base ID ", base_id);
 
         asset_manager->m_collision_shapes.push_back(std::move(shape));
         asset_manager->m_models.push_back(std::move(model));
