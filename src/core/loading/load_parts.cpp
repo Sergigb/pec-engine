@@ -1,4 +1,4 @@
-#include<iostream>
+#include <iostream>
 
 #include <tinyxml2.h>
 
@@ -12,68 +12,11 @@
 #include "../../assets/parts/parts.hpp"
 
 
-/*
-    tinyxml2::XMLDocument doc;
-    const tinyxml2::XMLElement* system_element,* star_element,* planets_element;
-    const char* system_name;
-    doc.LoadFile(path);
-    struct star system_star;
-    std::unique_ptr<planet_map> planets(new planet_map());
-
-    if(doc.Error()){
-        std::cerr << "load_star_system::load_star_system: LoadFile returned an error with code " 
-                  << doc.ErrorID() << " for document " << path << std::endl;
-        log("load_resources::load_resources: LoadFile returned an error with code ",
-            doc.ErrorID(), " for document ", path);
-        return EXIT_FAILURE;
-    }
-
-    system_element = doc.RootElement();
-
-
-
-
-
-#include "assets_utils.hpp"
-#include "../RenderContext.hpp"
-#include "../Physics.hpp"
-#include "../log.hpp"
-#include "../../assets/parts/parts.hpp"
-#include "../../assets/Model.hpp"
-
-
-
-
-
-
-*/
-/*
-void get_instance_by_name(const char* class_name, Model* model, Physics* physics,
-                          btCollisionShape* col_shape, btScalar dry_mass,
-                          AssetManagerInterface* asset_manager, ){
-
-    std::hash<std::string> str_hash; // :)
-
-    switch(str_hash(class_name)){
-        case str_hash("Separator"):
-            Separator(model, physics, col_shape, dry_mass, str_hash("Separator"), asset_manager) : 
-            return
-        case str_hash("BasePart"):
-            Separator(model, physics, col_shape, dry_mass, str_hash("BasePart"), asset_manager) : 
-
-        default:
-
-    }
-
-}
-
-*/
+typedef tinyxml2::XMLElement xmle;
 
 int load_parts(BasePartMap& part_map, const char* path, BaseApp* app){
     tinyxml2::XMLDocument doc;
     doc.LoadFile(path);
-    //const char* name, *path;
-    //std::pair<planet_map::iterator, bool> res;
     std::hash<std::string> str_hash;
     AssetManager* asset_manager = app->getAssetManager();
 
@@ -85,14 +28,14 @@ int load_parts(BasePartMap& part_map, const char* path, BaseApp* app){
         return EXIT_FAILURE;
     }
 
-    const tinyxml2::XMLElement* part_element = doc.FirstChildElement("part");
+    const xmle* part_element = doc.FirstChildElement("part");
 
     if(!part_element)
         return EXIT_FAILURE;
 
     while(part_element){
 
-        const char* part_class, *part_name;
+        const char *part_class, *part_name, *fancy_name;
 
         if(get_string(part_element, "part_class", &part_class) == EXIT_FAILURE)
             return EXIT_FAILURE;
@@ -100,10 +43,14 @@ int load_parts(BasePartMap& part_map, const char* path, BaseApp* app){
         if(get_string(part_element, "part_name", &part_name) == EXIT_FAILURE)
             return EXIT_FAILURE;
 
+        std::string part_name_str(part_name);
+
+        if(get_string(part_element, "part_fancy_name", &fancy_name) == EXIT_FAILURE)
+            return EXIT_FAILURE;
+
         /// coll shape
         int collision_shape;
-        const tinyxml2::XMLElement* collision_element = 
-            get_element(part_element, "collision");
+        const xmle* collision_element = get_element(part_element, "collision");
 
         if(!collision_element){
             std::cerr << "Missing collision element for part defined in line " 
@@ -117,8 +64,7 @@ int load_parts(BasePartMap& part_map, const char* path, BaseApp* app){
         if(get_int(collision_element, "shape", collision_shape) == EXIT_FAILURE)
             return EXIT_FAILURE;
 
-        const tinyxml2::XMLElement* properties_element = 
-            get_element(collision_element, "properties");
+        const xmle* properties_element = get_element(collision_element, "properties");
 
         if(!properties_element){
             std::cerr << "Missing properties element for collision element defined in line " 
@@ -131,7 +77,7 @@ int load_parts(BasePartMap& part_map, const char* path, BaseApp* app){
 
         std::unique_ptr<btCollisionShape> shape;
         switch(collision_shape){
-            case CYLINDER_SHAPE:
+            case CYLINDER_SHAPE:{
                 double param1, param2, param3;
 
                 if(get_double(properties_element, "param1", param1))
@@ -141,14 +87,21 @@ int load_parts(BasePartMap& part_map, const char* path, BaseApp* app){
                 if(get_double(properties_element, "param3", param3))
                     return EXIT_FAILURE;
 
-                shape.reset(new btCylinderShape(btVector3(param1, param2, param3)));
+                shape.reset(new btCylinderShape(btVector3(param1, param2, param3)));}
 
                 break;
 
-                //return EXIT_SUCCESS;
-            //case str_hash("Other"):
-                //return
+            case CONE_SHAPE:{
+                double param1, param2;
 
+                if(get_double(properties_element, "param1", param1))
+                    return EXIT_FAILURE;
+                if(get_double(properties_element, "param2", param2))
+                    return EXIT_FAILURE;
+
+                shape.reset(new btConeShape(param1, param2));}
+
+                break;
             default:
                 std::cerr << "Invalid collision shape in collision element defined in line "
                           << collision_element->GetLineNum() << std::endl;
@@ -178,25 +131,162 @@ int load_parts(BasePartMap& part_map, const char* path, BaseApp* app){
             return EXIT_FAILURE;
 
         // hash class type and create part
-        std::uint32_t base_id = str_hash(std::string(part_name));
+        std::uint32_t base_id = str_hash(part_name_str);
         std::unique_ptr<BasePart> part;
         if(strcmp(part_class, "Separator") == 0){
             part.reset(new Separator(model.get(), app->getPhysics(),
                                      shape.get(), mass, base_id, asset_manager));
         }
+        if(strcmp(part_class, "BasePart") == 0){
+            part.reset(new BasePart(model.get(), app->getPhysics(),
+                                    shape.get(), mass, base_id, asset_manager));
+        }
+        if(strcmp(part_class, "GenericEngine") == 0){
+            part.reset(new GenericEngine(model.get(), app->getPhysics(),
+                                         shape.get(), mass, base_id, asset_manager));
+        }
 
-        // other config? missing
         part->setColor(math::vec3(0.75, 0.75, 0.75));
         
-        // HARDCODEED
-        part->setParentAttachmentPoint(math::vec3(0.0, 0.065, 0.0), math::vec3(0.0, 0.0, 0.0));
-        part->addAttachmentPoint(math::vec3(0.0, -0.065, 0.0), math::vec3(0.0, 0.0, 0.0));
-        part->setName(std::string("separator_") + std::to_string(555));
-        part->setFancyName("SeparatorCode");
+        part->setName(part_name_str + std::to_string(base_id));
+        part->setFancyName(fancy_name);
         part->setCollisionGroup(CG_DEFAULT | CG_PART);
         part->setCollisionFilters(~CG_RAY_EDITOR_RADIAL);
-        part->setProperties(PART_SEPARATES);
-        
+
+        const xmle* p_att_element = get_element(part_element, "parent_att_point", true);
+        if(p_att_element){
+            const xmle* origin_element = get_element(p_att_element, "origin");
+            const xmle* orient_element = get_element(p_att_element, "orientation");
+            double x, y, z, ox, oy, oz;
+
+            if(!origin_element){
+                std::cerr << "Missing origin element for parent attachment point defined in line "
+                          << p_att_element->GetLineNum() << std::endl;
+                log("Missing origin element for parent attachment point defined in line ", 
+                    p_att_element->GetLineNum());
+
+                return EXIT_FAILURE;
+            }
+
+            if(!orient_element){
+                std::cerr << "Missing orientation element for parent attachment point defined"
+                             " in line " << p_att_element->GetLineNum() << std::endl;
+                log("Missing orientation element for parent attachment point defined in line ", 
+                    p_att_element->GetLineNum());
+
+                return EXIT_FAILURE;
+            }
+
+            if(get_double(origin_element, "x", x))
+                return EXIT_FAILURE;
+            if(get_double(origin_element, "y", y))
+                return EXIT_FAILURE;
+            if(get_double(origin_element, "z", z))
+                return EXIT_FAILURE;
+
+            if(get_double(orient_element, "x", ox))
+                return EXIT_FAILURE;
+            if(get_double(orient_element, "y", oy))
+                return EXIT_FAILURE;
+            if(get_double(orient_element, "z", oz))
+                return EXIT_FAILURE;
+
+            part->setParentAttachmentPoint(math::vec3(x, y, z), math::vec3(ox, oy, oz));
+        }
+
+        const xmle* att_pts_elem = get_element(part_element, "att_points", true);
+
+        if(att_pts_elem){
+            const xmle* point_elem = att_pts_elem->FirstChildElement("point");
+            
+            while(point_elem){
+                double x, y, z, ox, oy, oz;
+                const xmle* origin_element = get_element(point_elem, "origin");
+                const xmle* orient_element = get_element(point_elem, "orientation");
+
+                if(!origin_element){
+                    std::cerr << "Missing origin element for free attachment point defined "
+                                 "in line " << p_att_element->GetLineNum() << std::endl;
+                    log("Missing origin element for free attachment point defined in line ", 
+                        p_att_element->GetLineNum());
+
+                    return EXIT_FAILURE;
+                }
+
+                if(!orient_element){
+                    std::cerr << "Missing orientation element for free attachment point defined"
+                                 " in line " << p_att_element->GetLineNum() << std::endl;
+                    log("Missing orientation element for free attachment point defined in line ", 
+                        p_att_element->GetLineNum());
+
+                    return EXIT_FAILURE;
+                }
+
+                if(get_double(origin_element, "x", x))
+                    return EXIT_FAILURE;
+                if(get_double(origin_element, "y", y))
+                    return EXIT_FAILURE;
+                if(get_double(origin_element, "z", z))
+                    return EXIT_FAILURE;
+
+                if(get_double(orient_element, "x", ox))
+                    return EXIT_FAILURE;
+                if(get_double(orient_element, "y", oy))
+                    return EXIT_FAILURE;
+                if(get_double(orient_element, "z", oz))
+                    return EXIT_FAILURE;
+
+                part->addAttachmentPoint(math::vec3(x, y, z), math::vec3(ox, oy, oz));
+                
+                point_elem = point_elem->NextSiblingElement("point");
+            }
+        }
+
+        long properties = 0;
+        const xmle* prop_element = get_element(part_element, "properties", true);
+
+        if(prop_element){
+            const xmle* property = prop_element->FirstChildElement("p");
+            while(property){
+                int prop;
+                property->QueryIntText(&prop);
+                properties |= prop;
+
+                property = property->NextSiblingElement("p");
+            }
+        }
+        part->setProperties(properties);
+
+        const xmle* resources_elem = get_element(part_element, "resources", true);
+
+        if(resources_elem){
+            const xmle* resource_elem = resources_elem->FirstChildElement("resource");
+
+            while(resource_elem){
+                const char* resource_name;
+                double mass, max_mass;
+
+                if(get_string(resource_elem, "name", &resource_name) == EXIT_FAILURE)
+                    return EXIT_FAILURE;
+                if(get_double(resource_elem, "mass", mass) == EXIT_FAILURE)
+                    return EXIT_FAILURE;
+                if(get_double(resource_elem, "max_mass", max_mass) == EXIT_FAILURE)
+                    return EXIT_FAILURE;
+
+                try{
+                    part->addResource(
+                        {asset_manager->m_resources.at(str_hash(resource_name)).get(),
+                        (float)mass, (float)max_mass});
+                }
+                catch(const std::out_of_range &err){
+                    std::cerr << "Invalid resource name in resource defined in line "
+                              << resource_elem->GetLineNum() << " (" << err.what()
+                              << ")" << std::endl;
+                }
+                resource_elem = resource_elem->NextSiblingElement("resource");
+            }
+        }
+
         // end part creation
         typedef BasePartMap::iterator map_iterator;
         std::pair<map_iterator, bool> res;
@@ -212,7 +302,7 @@ int load_parts(BasePartMap& part_map, const char* path, BaseApp* app){
         asset_manager->m_collision_shapes.push_back(std::move(shape));
         asset_manager->m_models.push_back(std::move(model));
 
-        part_element = part_element->NextSiblingElement("part");        
+        part_element = part_element->NextSiblingElement("part");    
     }
 
     return EXIT_SUCCESS;

@@ -7,10 +7,10 @@
 
 
 const tinyxml2::XMLElement* get_element(const tinyxml2::XMLElement* parent, 
-                                        const char* element_name){
+                                        const char* element_name, bool no_error){
     const tinyxml2::XMLElement* element = parent->FirstChildElement(element_name);
 
-    if(!element){
+    if(!element and !no_error){
         std::cerr << "xml_utils::get_element: missing element \"" << element_name
                   << "\" in parent element \"" << parent->Name() << "\" found in line " << 
                   parent->GetLineNum() << std::endl;

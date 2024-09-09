@@ -6,6 +6,7 @@
 class BaseApp;
 
 #define CYLINDER_SHAPE 1
+#define CONE_SHAPE 2
 
 int load_parts(BasePartMap& part_map, const char* path, BaseApp* app);
 
