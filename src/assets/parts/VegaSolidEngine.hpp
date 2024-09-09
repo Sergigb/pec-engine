@@ -35,9 +35,7 @@ class VegaSolidEngine : public BasePart{
         int render(const math::mat4& body_transform);
         int render();
 
-        void setFairingModel(Model* fairing_model);
-        void setEngineStats(double average_thrust, double mass_flow_rate, double max_deflection_angle);
-        void setSeparationForce(double force);
+        int loadCustom(const tinyxml2::XMLElement* elem);
 };
 
 

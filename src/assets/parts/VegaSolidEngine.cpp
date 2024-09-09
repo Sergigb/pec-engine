@@ -2,6 +2,8 @@
 #include <functional>
 #include <iostream>
 
+#include <tinyxml2.h>
+
 #include "VegaSolidEngine.hpp"
 #include "../Resource.hpp"
 #include "../Model.hpp"
@@ -9,13 +11,16 @@
 #include "../../core/AssetManagerInterface.hpp"
 #include "../../core/maths_funcs.hpp"
 #include "../../core/log.hpp"
+#include "../../core/loading/xml_utils.hpp"
 
 
 
 #define EARTH_GRAVITY 9.81
 
 
-VegaSolidEngine::VegaSolidEngine(Model* model, Physics* physics, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager) : 
+VegaSolidEngine::VegaSolidEngine(Model* model, Physics* physics, btCollisionShape* col_shape,
+                                 btScalar mass, int baseID,
+                                 AssetManagerInterface* asset_manager) : 
     BasePart(model, physics, col_shape, mass, baseID, asset_manager){
     init();
 }
@@ -73,7 +78,8 @@ void VegaSolidEngine::renderOther(){
 
         for(uint i=0; i < m_resources.size(); i++){
             const std::string& rname = m_resources.at(i).resource->getFancyName();
-            ImGui::SliderFloat(rname.c_str(), &m_resources.at(i).mass, 0.0f, m_resources.at(i).max_mass);
+            ImGui::SliderFloat(rname.c_str(), &m_resources.at(i).mass,
+                               0.0f, m_resources.at(i).max_mass);
         }
 
         ss.str("");
@@ -156,9 +162,11 @@ void VegaSolidEngine::update(){
         }
 
         // thrust = flow rate ratio (output / max) * avg_thrust
-        force = btVector3(0.0, (current_flow / (m_mass_flow_rate * TIME_STEP)) * m_average_thrust, 0.0);
+        force = btVector3(0.0, (current_flow / (m_mass_flow_rate * TIME_STEP))
+                               * m_average_thrust, 0.0);
 
-        gimbal.setEulerZYX(m_vessel->getYaw() * m_max_deflection_angle, 0.0, m_vessel->getPitch() * m_max_deflection_angle);
+        gimbal.setEulerZYX(m_vessel->getYaw() * m_max_deflection_angle, 0.0,
+                           m_vessel->getPitch() * m_max_deflection_angle);
         force = basis * gimbal * force;
         m_asset_manager->applyForce(this, force, basis * btVector3(0.0, -5.0, 0.0));
     }
@@ -192,7 +200,8 @@ void VegaSolidEngine::action(int action){
             m_separate = true;
             break;
         default:
-            std::cerr << "VegaSolidEngine::action: got an invalid action value: " << action << std::endl;
+            std::cerr << "VegaSolidEngine::action: got an invalid action value: "
+                      << action << std::endl;
             log("VegaSolidEngine::action: got an invalid action value: ", action);
     }
 }
@@ -247,19 +256,58 @@ int VegaSolidEngine::render(const math::mat4& body_transform){
 }
 
 
-void VegaSolidEngine::setFairingModel(Model* fairing_model){
-    m_fairing_model = fairing_model;
+typedef tinyxml2::XMLElement xmle;
+int VegaSolidEngine::loadCustom(const tinyxml2::XMLElement* elem){
+    const xmle* stats_elem = get_element(elem, "engine_stats");
+    const xmle* eject_elem = get_element(elem, "separation_force");
+    //const xmle* fairing_elem = get_element(elem, "fairing_model_path");
+    //const char* fairing_model_path;
+
+    if(!stats_elem){
+        std::cerr << "VegaSolidEngine::loadCustom: Missing stats elements in engine defined in "
+                  << elem->GetLineNum() << std::endl;
+        log("VegaSolidEngine::loadCustom: Missing stats elements in engine defined in ",
+            elem->GetLineNum());
+
+        return EXIT_FAILURE;
+    }
+
+    if(!eject_elem){
+        std::cerr << "VegaSolidEngine::loadCustom: Missing ejection force element in engine "
+                     "defined in " << elem->GetLineNum() << std::endl;
+        log("VegaSolidEngine::loadCustom: Missing ejection force element in engine defined in ",
+            elem->GetLineNum());
+
+        return EXIT_FAILURE;
+    }
+
+    if(get_double(stats_elem, "avg_thrust", m_average_thrust) == EXIT_FAILURE)
+        return EXIT_FAILURE;
+    if(get_double(stats_elem, "mass_flow_rate", m_mass_flow_rate) == EXIT_FAILURE)
+        return EXIT_FAILURE;
+    if(get_double(stats_elem, "max_deflect_angle", m_max_deflection_angle) == EXIT_FAILURE)
+        return EXIT_FAILURE;
+
+    if(eject_elem->QueryDoubleText(&m_separation_force))
+        return EXIT_FAILURE;
+
+    // load fairing
+    /*if(fairing_elem){
+        if(elem->GetText(&fairing_model_path))
+            return EXIT_FAILURE;
+
+        std::unique_ptr<Model> fairing(new Model(fairing_model_path, nullptr,
+                                SHADER_PHONG_BLINN_NO_TEXTURE, asset_manager.m_frustum, asset_manager.m_render_context, math::vec3(0.75, 0.75, 0.75)));
+    }
+
+    m_asset_manager
+    asset_manager.m_models.push_back(std::move(z23_f_model));
+
+    fairing_model_path
+    
+    setSeparationForce(m_separation_force);
+    
+    m_fairing_model*/
+
+    return EXIT_SUCCESS;
 }
-
-
-void VegaSolidEngine::setEngineStats(double average_thrust, double mass_flow_rate, double max_deflection_angle){
-    m_average_thrust = average_thrust;
-    m_mass_flow_rate = mass_flow_rate;
-    m_max_deflection_angle = max_deflection_angle;
-}
-
-
-void VegaSolidEngine::setSeparationForce(double force){
-    m_separation_force = force;
-}
-

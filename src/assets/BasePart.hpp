@@ -18,6 +18,10 @@ class Resource;
 class Physics;
 class Model;
 
+namespace tinyxml2{
+    class XMLElement;
+}
+
 struct object_transform;
 
 
@@ -440,6 +444,14 @@ class BasePart : public Object{
          * @new_alpha: new alpha value
          */
         void setAlpha(float new_alpha);
+
+        /*
+         * Used by derived classes to load custom data from parts file. Returns EXIT_SUCCESS on 
+         * success, EXIT_FAILURE on error, which should terminate the application.
+         *
+         * @elem: tinyxml2 xml element with the data of the part that is being loaded.
+         */
+        int loadCustom(const tinyxml2::XMLElement* elem);
 
         btQuaternion m_user_rotation;
 };

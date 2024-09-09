@@ -222,3 +222,124 @@ resource state
         <p>4</p>
     </properties>
 </part>
+
+<part>
+    <part_class>VegaSolidEngine</part_class>
+    <part_name>p80</part_name>
+    <part_fancy_name>P80!</part_fancy_name>
+    <model_path>../data/vega/p80.dae</model_path>
+    <collision>
+        <shape>1</shape>
+        <properties>
+            <param1>1.5</param1>
+            <param2>5.6051</param2>
+            <param3>1.0</param3>
+        </properties>
+    </collision>
+    <mass>7408.0</mass>
+    <color>0.75, 0.75, 0.75</color>
+    <parent_att_point>
+        <origin>
+            <x>0.0</x>
+            <y>5.6051</y>
+            <z>0.0</z>
+        </origin>
+        <orientation>
+            <x>0.0</x>
+            <y>0.0</y>
+            <z>0.0</z>
+        </orientation>
+    </parent_att_point>
+    <att_points>
+        <point>
+            <origin>
+                <x>0.0</x>
+                <y>-5.6051</y>
+                <z>0.0</z>
+            </origin>
+            <orientation>
+                <x>0.0</x>
+                <y>0.0</y>
+                <z>0.0</z>
+            </orientation>
+        </point>
+    </att_points>
+    <resources>
+        <resource>
+            <name>htpb</name>
+            <mass>88385.0</mass>
+            <max_mass>88385.0</max_mass>
+        </resource>
+    </resources>
+    <properties>
+        <p>1</p>
+        <p>4</p>
+    </properties>
+    <separation_force>100000.0</separation_force>
+    <engine_stats>
+        <avg_thrust>2271000.0</avg_thrust>
+        <mass_flow_rate>828.35</mass_flow_rate>
+        <max_deflect_angle>0.113446</max_deflect_angle>
+    </engine_stats>
+</part>
+
+<part>
+    <part_class>VegaSolidEngine</part_class>
+    <part_name>z23</part_name>
+    <part_fancy_name>Z23!</part_fancy_name>
+    <model_path>"../data/vega/z23.dae</model_path>
+    <fairing_model_path>../data/vega/z23_fairing.dae</fairing_model_path>
+    <collision>
+        <shape>1</shape>
+        <properties>
+            <param1>0.95</param1>
+            <param2>3.4138</param2>
+            <param3>1.0</param3>
+        </properties>
+    </collision>
+    <mass>1860.0</mass>
+    <color>0.75, 0.75, 0.75</color>
+    <parent_att_point>
+        <origin>
+            <x>0.0</x>
+            <y>3.4138</y>
+            <z>0.0</z>
+        </origin>
+        <orientation>
+            <x>0.0</x>
+            <y>0.0</y>
+            <z>0.0</z>
+        </orientation>
+    </parent_att_point>
+    <att_points>
+        <point>
+            <origin>
+                <x>0.0</x>
+                <y>-4.4054</y>
+                <z>0.0</z>
+            </origin>
+            <orientation>
+                <x>0.0</x>
+                <y>0.0</y>
+                <z>0.0</z>
+            </orientation>
+        </point>
+    </att_points>
+    <resources>
+        <resource>
+            <name>htpb</name>
+            <mass>23900.0</mass>
+            <max_mass>23900.0</max_mass>
+        </resource>
+    </resources>
+    <properties>
+        <p>1</p>
+        <p>4</p>
+    </properties>
+    <separation_force>50000.0</separation_force>
+    <engine_stats>871000.0, 331.94, 6.5 * ONE_DEG_IN_RAD
+        <avg_thrust>871000.0</avg_thrust>
+        <mass_flow_rate>331.94</mass_flow_rate>
+        <max_deflect_angle>0.113446</max_deflect_angle>
+    </engine_stats>
+</part>

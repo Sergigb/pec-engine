@@ -145,6 +145,16 @@ int load_parts(BasePartMap& part_map, const char* path, BaseApp* app){
             part.reset(new GenericEngine(model.get(), app->getPhysics(),
                                          shape.get(), mass, base_id, asset_manager));
         }
+        if(strcmp(part_class, "VegaSolidEngine") == 0){
+            std::unique_ptr<VegaSolidEngine> vega_part(new VegaSolidEngine(model.get(),
+                                                           app->getPhysics(), shape.get(),
+                                                           mass, base_id, asset_manager));
+
+            if(vega_part->loadCustom(part_element) == EXIT_FAILURE)
+                return EXIT_FAILURE;
+
+            part.reset(vega_part.release());
+        }
 
         part->setColor(math::vec3(0.75, 0.75, 0.75));
         

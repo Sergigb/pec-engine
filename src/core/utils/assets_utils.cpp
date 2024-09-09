@@ -20,88 +20,6 @@ void load_parts_old(AssetManager& asset_manager){
     std::pair<map_iterator, bool> res;
     std::hash<std::string> str_hash;
 
-    std::unique_ptr<btCollisionShape> cube_shape(new btBoxShape(btVector3(1,1,1)));
-    std::unique_ptr<btCollisionShape> cylinder_shape(new btCylinderShape(btVector3(1,1,1)));
-    std::unique_ptr<btCollisionShape> cylinder_shape_tank2(new btCylinderShape(btVector3(1.0, 2.5, 1.0)));
-    std::unique_ptr<btCollisionShape> cylinder_shape_separator(new btCylinderShape(btVector3(1.0, 0.065, 1.0)));
-    std::unique_ptr<btCollisionShape> cone(new btConeShape(0.5, 1.70));
-
-    std::unique_ptr<Model> engine_model(new Model("../data/engine.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, asset_manager.m_frustum, asset_manager.m_render_context, math::vec3(0.25, 0.25, 0.25)));
-    std::unique_ptr<Model> tank2_model(new Model("../data/tank2.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, asset_manager.m_frustum, asset_manager.m_render_context, math::vec3(0.25, 0.25, 0.25)));
-    std::unique_ptr<Model> com_module_model(new Model("../data/capsule.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, asset_manager.m_frustum, asset_manager.m_render_context, math::vec3(0.75, 0.75, 0.75)));
-    std::unique_ptr<Model> separator_model(new Model("../data/separator.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, asset_manager.m_frustum, asset_manager.m_render_context, math::vec3(0.75, 0.75, 0.75)));
-
-    std::unique_ptr<BasePart> separator(new Separator(separator_model.get(), asset_manager.m_physics, cylinder_shape_separator.get(), 10.0, 555, static_cast<AssetManagerInterface*>(&asset_manager)));
-    separator->setColor(math::vec3(0.75, 0.75, 0.75));
-    separator->setParentAttachmentPoint(math::vec3(0.0, 0.065, 0.0), math::vec3(0.0, 0.0, 0.0));
-    separator->addAttachmentPoint(math::vec3(0.0, -0.065, 0.0), math::vec3(0.0, 0.0, 0.0));
-    separator->setName(std::string("separator_") + std::to_string(555));
-    separator->setFancyName("Separator");
-    separator->setCollisionGroup(CG_DEFAULT | CG_PART);
-    separator->setCollisionFilters(~CG_RAY_EDITOR_RADIAL);
-    separator->setProperties(PART_SEPARATES);
-
-    res = asset_manager.m_master_parts.insert({555, std::move(separator)});
-
-    if(!res.second){
-        log("Failed to insert part with id ", 555, " (collided with ", res.first->first, ")");
-        std::cerr << "Failed to insert part with id " << 555 << " (collided with " << res.first->first << ")" << std::endl;
-    }
-
-    std::unique_ptr<BasePart> com_module(new BasePart(com_module_model.get(), asset_manager.m_physics, cone.get(), 10.0, 444, static_cast<AssetManagerInterface*>(&asset_manager)));
-    com_module->setColor(math::vec3(0.75, 0.75, 0.75));
-    com_module->setParentAttachmentPoint(math::vec3(0.0, 0.605, 0.0), math::vec3(0.0, 0.0, 0.0));
-    com_module->addAttachmentPoint(math::vec3(0.0, -0.653, 0.0), math::vec3(0.0, 0.0, 0.0));
-    com_module->setName(std::string("command_module_") + std::to_string(444));
-    com_module->setFancyName("Command Module");
-    com_module->setCollisionGroup(CG_DEFAULT | CG_PART);
-    com_module->setCollisionFilters(~CG_RAY_EDITOR_RADIAL);
-    com_module->setProperties(PART_IS_CM);
-
-    res = asset_manager.m_master_parts.insert({444, std::move(com_module)});
-
-    if(!res.second){
-        log("Failed to insert part with id ", 444, " (collided with ", res.first->first, ")");
-        std::cerr << "Failed to insert part with id " << 444 << " (collided with " << res.first->first << ")" << std::endl;
-    }
-
-    std::unique_ptr<BasePart> tank2(new BasePart(tank2_model.get(), asset_manager.m_physics, cylinder_shape_tank2.get(), 10.0, 111, static_cast<AssetManagerInterface*>(&asset_manager)));
-    tank2->setColor(math::vec3(0.75, 0.75, 0.75));
-    tank2->setParentAttachmentPoint(math::vec3(0.0, 2.5, 0.0), math::vec3(0.0, 0.0, 0.0));
-    tank2->setFreeAttachmentPoint(math::vec3(1.0, 0.0, 0.0), math::vec3(1.0, 0.0, 0.0));
-    //void setFreeAttachmentPoint(const math::vec3& point, const math::vec3& orientation);
-    tank2->addAttachmentPoint(math::vec3(0.0, -2.5, 0.0), math::vec3(0.0, 0.0, 0.0));
-    tank2->setName(std::string("tank_") + std::to_string(111));
-    tank2->setFancyName("Tank 2");
-    tank2->setCollisionGroup(CG_DEFAULT | CG_PART);
-    tank2->setCollisionFilters(~CG_RAY_EDITOR_RADIAL);
-    tank2->addResource({asset_manager.m_resources.at(str_hash("liquid_hydrogen")).get(), 5000.0f, 5000.0f});
-    tank2->addResource({asset_manager.m_resources.at(str_hash("liquid_oxygen")).get(), 2000.0f, 2000.0f});
-
-    res = asset_manager.m_master_parts.insert({111, std::move(tank2)});
-
-    if(!res.second){
-        log("Failed to insert part with id ", 111, " (collided with ", res.first->first, ")");
-        std::cerr << "Failed to insert part with id " << 111 << " (collided with " << res.first->first << ")" << std::endl;
-    }
-
-    std::unique_ptr<BasePart> engine(new GenericEngine(engine_model.get(), asset_manager.m_physics, cylinder_shape.get(), 10.0, 333, static_cast<AssetManagerInterface*>(&asset_manager)));
-    engine->setColor(math::vec3(0.75, 0.75, 0.75));
-    engine->setParentAttachmentPoint(math::vec3(0.0, 0.43459, 0.0), math::vec3(0.0, 0.0, 0.0));
-    engine->addAttachmentPoint(math::vec3(0.0, -0.848, 0.0), math::vec3(0.0, 0.0, 0.0));
-    engine->setName(std::string("engine_") + std::to_string(333));
-    engine->setFancyName("Engine");
-    engine->setCollisionGroup(CG_DEFAULT | CG_PART);
-    engine->setCollisionFilters(~CG_RAY_EDITOR_RADIAL);
-    engine->setProperties(PART_HAS_ENGINE);
-
-    res = asset_manager.m_master_parts.insert({333, std::move(engine)});
-
-    if(!res.second){
-        log("Failed to insert part with id ", 333, " (collided with ", res.first->first, ")");
-        std::cerr << "Failed to insert part with id " << 333 << " (collided with " << res.first->first << ")" << std::endl;
-    }
-
     // P80 engine
     std::unique_ptr<btCollisionShape> cylinder_p80(new btCylinderShape(btVector3(1.5, 5.6051, 1)));
 
@@ -116,8 +34,6 @@ void load_parts_old(AssetManager& asset_manager){
     p80->setCollisionFilters(~CG_RAY_EDITOR_RADIAL);
     p80->addResource({asset_manager.m_resources.at(str_hash("htpb")).get(), 88385.0f, 88385.0f});
     p80->setProperties(PART_HAS_ENGINE | PART_SEPARATES);
-    p80->setEngineStats(2271000.0, 828.35, 6.5 * ONE_DEG_IN_RAD);
-    p80->setSeparationForce(100000.0);
 
 
     res = asset_manager.m_master_parts.insert({666, std::move(p80)});
@@ -145,9 +61,6 @@ void load_parts_old(AssetManager& asset_manager){
     z23->setCollisionFilters(~CG_RAY_EDITOR_RADIAL);
     z23->addResource({asset_manager.m_resources.at(str_hash("htpb")).get(), 23900.0f, 23900.0f});
     z23->setProperties(PART_HAS_ENGINE | PART_SEPARATES);
-    z23->setFairingModel(z23_f_model.get());
-    z23->setEngineStats(871000.0, 331.94, 6.5 * ONE_DEG_IN_RAD);
-    z23->setSeparationForce(50000.0);
 
     res = asset_manager.m_master_parts.insert({777, std::move(z23)});
 
@@ -174,9 +87,7 @@ void load_parts_old(AssetManager& asset_manager){
     z9->setCollisionFilters(~CG_RAY_EDITOR_RADIAL);
     z9->addResource({asset_manager.m_resources.at(str_hash("htpb")).get(), 10115.0f, 10115.0f});
     z9->setProperties(PART_HAS_ENGINE | PART_SEPARATES);
-    z9->setFairingModel(z9_f_model.get());
-    z9->setEngineStats(260000.0, 91.95, 6.5 * ONE_DEG_IN_RAD);
-    z9->setSeparationForce(10000.0);
+
 
     res = asset_manager.m_master_parts.insert({888, std::move(z9)});
 
@@ -212,19 +123,6 @@ void load_parts_old(AssetManager& asset_manager){
 
     asset_manager.m_collision_shapes.push_back(std::move(separator3m_shape));
     asset_manager.m_models.push_back(std::move(separator3m_model));
-
-
-    //////
-
-    asset_manager.m_collision_shapes.push_back(std::move(cylinder_shape));
-    asset_manager.m_collision_shapes.push_back(std::move(cylinder_shape_tank2));
-    asset_manager.m_collision_shapes.push_back(std::move(cone));
-    asset_manager.m_collision_shapes.push_back(std::move(cylinder_shape_separator));
-
-    asset_manager.m_models.push_back(std::move(engine_model));
-    asset_manager.m_models.push_back(std::move(tank2_model));
-    asset_manager.m_models.push_back(std::move(com_module_model));
-    asset_manager.m_models.push_back(std::move(separator_model));
 }
 
 

@@ -627,3 +627,9 @@ void BasePart::setAlpha(float new_alpha){
     m_alpha = new_alpha;
 }
 
+
+int BasePart::loadCustom(const tinyxml2::XMLElement* elem){
+    UNUSED(elem);
+    return EXIT_SUCCESS;
+}
+
