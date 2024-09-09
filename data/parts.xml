@@ -9,12 +9,32 @@ properties
     PART_SEPARATES 1
     PART_IS_CM 2
     PART_HAS_ENGINE 4
+
+resource names (check resources.xml)
+    liquid_oxygen
+    liquid_hydrogen
+    rp1
+    htpb
+
+resource types
+    RESOURCE_TYPE_LIQUID 1
+    RESOURCE_TYPE_SOLID 2
+    RESOURCE_TYPE_FUEL_LIQUID 4
+    RESOURCE_TYPE_FUEL_SOLID 8
+    RESOURCE_TYPE_FUEL_GAS 16
+    RESOURCE_TYPE_OXIDIZER 32
+
+resource state
+    RESOURCE_STATE_SOLID 1
+    RESOURCE_STATE_LIQUID 2
+    RESOURCE_STATE_GAS 3
+
 -->
 
 <part>
     <part_class>Separator</part_class>
     <part_name>separator</part_name>
-    <part_fancy_name>Separator</part_fancy_name>
+    <part_fancy_name>Separator!</part_fancy_name>
     <model_path>../data/separator.dae</model_path>
     <collision>
         <shape>1</shape>
@@ -40,9 +60,16 @@ properties
     </parent_att_point>
     <att_points>
         <point>
-            <x>0.0</x>
-            <y>0.0</y>
-            <z>0.0</z>
+            <origin>
+                <x>0.0</x>
+                <y>-0.065</y>
+                <z>0.0</z>
+            </origin>
+            <orientation>
+                <x>0.0</x>
+                <y>0.0</y>
+                <z>0.0</z>
+            </orientation>
         </point>
     </att_points>
     <properties>
@@ -50,11 +77,10 @@ properties
     </properties>
 </part>
 
-
 <part>
     <part_class>BasePart</part_class>
     <part_name>command_module</part_name>
-    <part_fancy_name>Command Module2</part_fancy_name>
+    <part_fancy_name>Command Module!</part_fancy_name>
     <model_path>../data/capsule.dae</model_path>
     <collision>
         <shape>2</shape>
@@ -79,12 +105,120 @@ properties
     </parent_att_point>
     <att_points>
         <point>
-            <x>0.0</x>
-            <y>-0.653</y>
-            <z>0.0</z>
+            <origin>
+                <x>0.0</x>
+                <y>-0.653</y>
+                <z>0.0</z>
+            </origin>
+            <orientation>
+                <x>0.0</x>
+                <y>0.0</y>
+                <z>0.0</z>
+            </orientation>
         </point>
     </att_points>
     <properties>
         <p>2</p>
+    </properties>
+</part>
+
+<part>
+    <part_class>BasePart</part_class>
+    <part_name>tank2</part_name>
+    <part_fancy_name>Tank 2!</part_fancy_name>
+    <model_path>../data/tank2.dae</model_path>
+    <collision>
+        <shape>1</shape>
+        <properties>
+            <param1>1.0</param1>
+            <param2>2.5</param2>
+            <param3>1.0</param3>
+        </properties>
+    </collision>
+    <mass>10.0</mass>
+    <color>0.75, 0.75, 0.75</color>
+    <parent_att_point>
+        <origin>
+            <x>0.0</x>
+            <y>2.5</y>
+            <z>0.0</z>
+        </origin>
+        <orientation>
+            <x>0.0</x>
+            <y>0.0</y>
+            <z>0.0</z>
+        </orientation>
+    </parent_att_point>
+    <att_points>
+        <point>
+            <origin>
+                <x>0.0</x>
+                <y>-2.5</y>
+                <z>0.0</z>
+            </origin>
+            <orientation>
+                <x>0.0</x>
+                <y>0.0</y>
+                <z>0.0</z>
+            </orientation>
+        </point>
+    </att_points>
+    <resources>
+        <resource>
+            <name>liquid_hydrogen</name>
+            <mass>5000.0</mass>
+            <max_mass>5000.0</max_mass>
+        </resource>
+        <resource>
+            <name>liquid_oxygen</name>
+            <mass>2000.0</mass>
+            <max_mass>2000.0</max_mass>
+        </resource>
+    </resources>
+</part>
+
+<part>
+    <part_class>GenericEngine</part_class>
+    <part_name>engine</part_name>
+    <part_fancy_name>Engine!</part_fancy_name>
+    <model_path>../data/engine.dae</model_path>
+    <collision>
+        <shape>1</shape>
+        <properties>
+            <param1>1.0</param1>
+            <param2>1.0</param2>
+            <param3>1.0</param3>
+        </properties>
+    </collision>
+    <mass>10.0</mass>
+    <color>0.75, 0.75, 0.75</color>
+    <parent_att_point>
+        <origin>
+            <x>0.0</x>
+            <y>0.43459</y>
+            <z>0.0</z>
+        </origin>
+        <orientation>
+            <x>0.0</x>
+            <y>0.0</y>
+            <z>0.0</z>
+        </orientation>
+    </parent_att_point>
+    <att_points>
+        <point>
+            <origin>
+                <x>0.0</x>
+                <y>-0.848</y>
+                <z>0.0</z>
+            </origin>
+            <orientation>
+                <x>0.0</x>
+                <y>0.0</y>
+                <z>0.0</z>
+            </orientation>
+        </point>
+    </att_points>
+    <properties>
+        <p>4</p>
     </properties>
 </part>
