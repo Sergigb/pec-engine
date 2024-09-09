@@ -11,6 +11,7 @@
 #include "../../core/AssetManagerInterface.hpp"
 #include "../../core/maths_funcs.hpp"
 #include "../../core/log.hpp"
+#include "../../core/RenderContext.hpp"
 #include "../../core/loading/xml_utils.hpp"
 
 
@@ -260,8 +261,8 @@ typedef tinyxml2::XMLElement xmle;
 int VegaSolidEngine::loadCustom(const tinyxml2::XMLElement* elem){
     const xmle* stats_elem = get_element(elem, "engine_stats");
     const xmle* eject_elem = get_element(elem, "separation_force");
-    //const xmle* fairing_elem = get_element(elem, "fairing_model_path");
-    //const char* fairing_model_path;
+    const xmle* fairing_elem = get_element(elem, "fairing_model_path", true);
+    const char* fairing_model_path;
 
     if(!stats_elem){
         std::cerr << "VegaSolidEngine::loadCustom: Missing stats elements in engine defined in "
@@ -292,22 +293,17 @@ int VegaSolidEngine::loadCustom(const tinyxml2::XMLElement* elem){
         return EXIT_FAILURE;
 
     // load fairing
-    /*if(fairing_elem){
-        if(elem->GetText(&fairing_model_path))
-            return EXIT_FAILURE;
+    if(fairing_elem){
+        fairing_model_path = fairing_elem->GetText();
 
         std::unique_ptr<Model> fairing(new Model(fairing_model_path, nullptr,
-                                SHADER_PHONG_BLINN_NO_TEXTURE, asset_manager.m_frustum, asset_manager.m_render_context, math::vec3(0.75, 0.75, 0.75)));
+                                                 SHADER_PHONG_BLINN_NO_TEXTURE, 
+                                                 math::vec3(0.75, 0.75, 0.75)));
+        m_fairing_model = fairing.get();
+        m_asset_manager->storeModel(std::move(fairing));
     }
-
-    m_asset_manager
-    asset_manager.m_models.push_back(std::move(z23_f_model));
-
-    fairing_model_path
-    
-    setSeparationForce(m_separation_force);
-    
-    m_fairing_model*/
+    else
+        m_fairing_model = nullptr;
 
     return EXIT_SUCCESS;
 }

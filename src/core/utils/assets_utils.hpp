@@ -11,14 +11,6 @@ class btGImpactMeshShape;
 
 struct iv_array;
 
-/*
- * Legacy function to "load" the parts available for the game. In the near future I should load the
- * parts like the way I do for the planets and the resources, from xml files.
- *
- * @asset_manager: reference to the asset manager of the game.
- */
-void load_parts_old(AssetManager& asset_manager);
-
 
 /*
  * Loads a triangle mesh from a valid 3D file. It stores the mesh in a struct of type iv_array, 
