@@ -503,8 +503,8 @@ void GameSimulation::editorToSimulation(){
 
 void GameSimulation::initLaunchBase(){
     std::unique_ptr<Model> bigcube(new Model("../data/bigcube.dae", nullptr,
-                                              SHADER_PHONG_BLINN_NO_TEXTURE, m_frustum,
-                                              m_render_context, math::vec3(0.75, 0.75, 0.75)));
+                                             SHADER_PHONG_BLINN_NO_TEXTURE,
+                                             math::vec3(0.75, 0.75, 0.75)));
     std::unique_ptr<btCollisionShape> sphere_shape(new btBoxShape(btVector3(25.0, 25.0, 25.0)));
 
     btQuaternion quat(0.0, 0.0, 0.0);

@@ -32,7 +32,7 @@ SimulationRenderer::SimulationRenderer(BaseApp* app){
 
     check_gl_errors(true, "SimulationRenderer::SimulationRenderer");
 
-    PlanetTree::loadBases(m_app->getFrustum(), m_render_context);
+    PlanetTree::loadBases();
 }
 
 

@@ -228,11 +228,8 @@ class Planet;
 
         /*
          * Static method to load the grids used to render the surface.
-         *
-         * @frustum: pointer to the game's frustum object. Not used yet to cull the rendering.
-         * @render_context: pointer to the render context object.
          */
-        static void loadBases(const Frustum* frustum, const RenderContext* render_context);
+        static void loadBases();
 };
 
 

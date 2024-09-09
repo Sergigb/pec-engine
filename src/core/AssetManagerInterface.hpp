@@ -10,6 +10,7 @@ class AssetManager;
 class BasePart;
 class btTypedConstraint;
 class Object;
+class Model;
 
 
 /*
@@ -34,6 +35,7 @@ class AssetManagerInterface{
         std::vector<std::shared_ptr<BasePart>> m_delete_subtree_buffer;
         std::vector<BasePart*> m_build_constraint_subtree_buffer;
         std::vector<struct set_vessel_velocity_msg> m_set_vessel_velocity_buffer;
+        std::vector<std::unique_ptr<Model>> m_public_models;
     public:
         AssetManagerInterface();
         ~AssetManagerInterface();
@@ -135,6 +137,15 @@ class AssetManagerInterface{
          * @vel: new velocity value.
          */
         void setVesselVelocity(Vessel* vessel, const btVector3& vel);
+
+        /*
+         * Stores a model in the m_public_models' vector. Useful if you want to store from model
+         * just once.
+         *
+         * @model: rvalue ref to the shared pointer of the model, which this class will take
+         * ownership of.
+         */
+        void storeModel(std::unique_ptr<Model>&& model);
 };
 
 

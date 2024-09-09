@@ -28,8 +28,7 @@ EditorRenderer::EditorRenderer(BaseApp* app){
     m_pb_proj_mat = m_render_context->getUniformLocation(SHADER_PHONG_BLINN, "proj");
 
     m_att_point_model.reset(new Model("../data/sphere.dae", nullptr, 
-                                      SHADER_PHONG_BLINN_NO_TEXTURE, m_app->getFrustum(),
-                                      m_render_context, math::vec3(1.0, 0.0, 0.0)));
+                                      SHADER_PHONG_BLINN_NO_TEXTURE, math::vec3(1.0, 0.0, 0.0)));
     m_att_point_scale = math::identity_mat4();
     m_att_point_scale.m[0] = 0.25;
     m_att_point_scale.m[5] = 0.25;

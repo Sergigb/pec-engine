@@ -23,7 +23,7 @@ void load_parts_old(AssetManager& asset_manager){
     // P80 engine
     std::unique_ptr<btCollisionShape> cylinder_p80(new btCylinderShape(btVector3(1.5, 5.6051, 1)));
 
-    std::unique_ptr<Model> p80_model(new Model("../data/vega/p80.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, asset_manager.m_frustum, asset_manager.m_render_context, math::vec3(0.75, 0.75, 0.75)));
+    std::unique_ptr<Model> p80_model(new Model("../data/vega/p80.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, math::vec3(0.75, 0.75, 0.75)));
     std::unique_ptr<VegaSolidEngine> p80(new VegaSolidEngine(p80_model.get(), asset_manager.m_physics, cylinder_p80.get(), 7408.0, 666, static_cast<AssetManagerInterface*>(&asset_manager)));
     p80->setColor(math::vec3(0.75, 0.75, 0.75));
     p80->setParentAttachmentPoint(math::vec3(0.0, 5.6051, 0.0), math::vec3(0.0, 0.0, 0.0));
@@ -49,8 +49,8 @@ void load_parts_old(AssetManager& asset_manager){
     // Z23 engine
     std::unique_ptr<btCollisionShape> cylinder_z23(new btCylinderShape(btVector3(0.95, 3.4138, 1)));
 
-    std::unique_ptr<Model> z23_model(new Model("../data/vega/z23.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, asset_manager.m_frustum, asset_manager.m_render_context, math::vec3(0.75, 0.75, 0.75)));
-    std::unique_ptr<Model> z23_f_model(new Model("../data/vega/z23_fairing.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, asset_manager.m_frustum, asset_manager.m_render_context, math::vec3(0.75, 0.75, 0.75)));
+    std::unique_ptr<Model> z23_model(new Model("../data/vega/z23.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, math::vec3(0.75, 0.75, 0.75)));
+    std::unique_ptr<Model> z23_f_model(new Model("../data/vega/z23_fairing.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, math::vec3(0.75, 0.75, 0.75)));
     std::unique_ptr<VegaSolidEngine> z23(new VegaSolidEngine(z23_model.get(), asset_manager.m_physics, cylinder_z23.get(), 1860.0, 777, static_cast<AssetManagerInterface*>(&asset_manager)));
     z23->setColor(math::vec3(0.75, 0.75, 0.75));
     z23->setParentAttachmentPoint(math::vec3(0.0, 3.4138, 0.0), math::vec3(0.0, 0.0, 0.0));
@@ -75,8 +75,8 @@ void load_parts_old(AssetManager& asset_manager){
     // Z9 engine
     std::unique_ptr<btCollisionShape> cylinder_z9(new btCylinderShape(btVector3(0.95, 1.2695, 1)));
 
-    std::unique_ptr<Model> z9_model(new Model("../data/vega/z9.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, asset_manager.m_frustum, asset_manager.m_render_context, math::vec3(0.75, 0.75, 0.75)));
-    std::unique_ptr<Model> z9_f_model(new Model("../data/vega/z9_fairing.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, asset_manager.m_frustum, asset_manager.m_render_context, math::vec3(0.75, 0.75, 0.75)));
+    std::unique_ptr<Model> z9_model(new Model("../data/vega/z9.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, math::vec3(0.75, 0.75, 0.75)));
+    std::unique_ptr<Model> z9_f_model(new Model("../data/vega/z9_fairing.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, math::vec3(0.75, 0.75, 0.75)));
     std::unique_ptr<VegaSolidEngine> z9(new VegaSolidEngine(z9_model.get(), asset_manager.m_physics, cylinder_z9.get(), 835.0, 888, static_cast<AssetManagerInterface*>(&asset_manager)));
     z9->setColor(math::vec3(0.75, 0.75, 0.75));
     z9->setParentAttachmentPoint(math::vec3(0.0, 1.2695, 0.0), math::vec3(0.0, 0.0, 0.0));
@@ -101,7 +101,7 @@ void load_parts_old(AssetManager& asset_manager){
 
     // 3 m separator
     std::unique_ptr<btCollisionShape> separator3m_shape(new btCylinderShape(btVector3(1.5, 0.075, 1.5)));
-    std::unique_ptr<Model> separator3m_model(new Model("../data/vega/3m_separator.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, asset_manager.m_frustum, asset_manager.m_render_context, math::vec3(0.75, 0.75, 0.75)));
+    std::unique_ptr<Model> separator3m_model(new Model("../data/vega/3m_separator.dae", nullptr, SHADER_PHONG_BLINN_NO_TEXTURE, math::vec3(0.75, 0.75, 0.75)));
 
     std::unique_ptr<Separator> separator3m(new Separator(separator3m_model.get(), asset_manager.m_physics, separator3m_shape.get(), 1000.0, 999, static_cast<AssetManagerInterface*>(&asset_manager)));
     separator3m->setColor(math::vec3(0.75, 0.75, 0.75));

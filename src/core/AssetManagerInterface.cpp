@@ -5,6 +5,7 @@
 
 #include "AssetManagerInterface.hpp"
 #include "AssetManager.hpp"
+#include "../assets/Model.hpp"
 
 
 AssetManagerInterface::AssetManagerInterface(){
@@ -65,6 +66,11 @@ void AssetManagerInterface::setMotionState(Object* obj, const btVector3& orig, c
 }
 
 
-void  AssetManagerInterface::setVesselVelocity(Vessel* vessel, const btVector3& vel){
+void AssetManagerInterface::setVesselVelocity(Vessel* vessel, const btVector3& vel){
     m_set_vessel_velocity_buffer.emplace_back(vessel, vel);
+}
+
+
+void AssetManagerInterface::storeModel(std::unique_ptr<Model>&& model){
+    m_public_models.emplace_back(std::move(model));
 }

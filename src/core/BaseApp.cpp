@@ -132,6 +132,8 @@ void BaseApp::init(int gl_width, int gl_height){
     m_player.reset(new Player(m_camera.get(), m_asset_manager.get(), m_input.get()));
     m_predictor.reset(new Predictor(this));
 
+    Model::setStaticMembers(m_frustum.get(), m_render_context.get());
+
     m_buffers.last_updated = none;
 
     m_gui_mode = 0;

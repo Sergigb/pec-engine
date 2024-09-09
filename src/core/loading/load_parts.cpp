@@ -122,7 +122,6 @@ int load_parts(BasePartMap& part_map, const char* path, BaseApp* app){
         }
 
         std::unique_ptr<Model> model(new Model(model_path, nullptr, SHADER_PHONG_BLINN_NO_TEXTURE,
-                                     app->getFrustum(), app->getRenderContext(),
                                      math::vec3(0.75, 0.75, 0.75)));
 
         // mass

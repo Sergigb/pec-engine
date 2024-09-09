@@ -377,9 +377,9 @@ void PlanetTree::textureFree(){
 }
 
 
-void PlanetTree::loadBases(const Frustum* frustum, const RenderContext* render_context){
-    PlanetTree::m_base32.reset(new Model("../data/base32.dae", nullptr, SHADER_PLANET, frustum, render_context, math::vec3(1.0, 1.0, 1.0)));
-    PlanetTree::m_base64.reset(new Model("../data/base64.dae", nullptr, SHADER_PLANET, frustum, render_context, math::vec3(1.0, 1.0, 1.0)));
+void PlanetTree::loadBases(){
+    PlanetTree::m_base32.reset(new Model("../data/base32.dae", nullptr, SHADER_PLANET, math::vec3(1.0, 1.0, 1.0)));
+    PlanetTree::m_base64.reset(new Model("../data/base64.dae", nullptr, SHADER_PLANET, math::vec3(1.0, 1.0, 1.0)));
     //base128.reset(new Model("../data/base128.dae", nullptr, SHADER_PLANET, frustum, render_context, math::vec3(1.0, 1.0, 1.0)));
     PlanetTree::m_base32->setMeshColor(math::vec4(0.0, 0.0, 0.0, 1.0));
     PlanetTree::m_base64->setMeshColor(math::vec4(0.0, 0.0, 0.0, 1.0));

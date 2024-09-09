@@ -10,19 +10,19 @@
 #include "../core/utils/gl_utils.hpp"
 
 
+const Frustum* Model::m_frustum;
+const RenderContext* Model::m_render_context;
+
 Model::Model(){
     m_has_texture = false;
-    m_frustum = nullptr;
 }
 
 
-Model::Model(const char* path_to_mesh, const char* path_to_texture, int shader, const Frustum* frustum, const RenderContext* render_context, const math::vec3& mesh_color){
-    m_frustum = frustum;
+Model::Model(const char* path_to_mesh, const char* path_to_texture, int shader, const math::vec3& mesh_color){
     m_shader = shader;
-    m_render_context = render_context;
 
-    m_model_mat_location = render_context->getUniformLocation(m_shader, "model");
-    m_color_location = render_context->getUniformLocation(m_shader, "object_color");
+    m_model_mat_location = m_render_context->getUniformLocation(m_shader, "model");
+    m_color_location = m_render_context->getUniformLocation(m_shader, "object_color");
 
     m_mesh_color = math::vec4(mesh_color, 1.0);
 
@@ -175,7 +175,7 @@ int Model::loadScene(const std::string& pFile){
 
 
 int Model::render(const math::mat4& transform) const{
-    if(m_frustum->checkBox(m_aabb.vert, transform)){
+    if(Model::m_frustum->checkBox(m_aabb.vert, transform)){
     ///if(m_frustum->checkSphere(math::vec3(transform.m[12], transform.m[13], transform.m[14]), m_cs_radius)){
         m_render_context->useProgram(m_shader);
         m_render_context->bindVao(m_vao);
@@ -217,3 +217,10 @@ void Model::render_terrain(const math::mat4& transform) const{
     check_gl_errors(true, "Model::render_terrain");
 }
 
+
+
+void Model::setStaticMembers(const Frustum* frustum,
+                             const RenderContext* render_context){
+    Model::m_frustum = frustum;
+    Model::m_render_context = render_context;
+}
