@@ -635,7 +635,10 @@ void RenderContext::renderImGui(){
                          "invalid GUI mode (" << m_app->getGUIMode() << ")" << std::endl;
             log("RenderContext::render: renderImGUI, invalid GUI mode (",
                 m_app->getGUIMode(), ")");
-        }
+    }
+
+    if(m_debug_draw && (RENDER_EDITOR | RENDER_SIMULATION))
+        m_debug_drawer->renderImGUI();
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
