@@ -2,6 +2,7 @@
 
 #include <imgui.h>
 
+#include "log.hpp"
 #include "DebugDrawer.hpp"
 #include "RenderContext.hpp"
 #include "utils/gl_utils.hpp"
@@ -54,7 +55,7 @@ DebugDrawer::DebugDrawer(const RenderContext* render_context) :
     m_color_location = render_context->getUniformLocation(SHADER_DEBUG, "line_color");
     m_debug_alpha_location = m_render_context->getUniformLocation(SHADER_DEBUG, "alpha");
 
-    m_options = 0;
+    m_options = DBG_NoDebug;
 
     glGenVertexArrays(1, &m_line_vao);
     glBindVertexArray(m_line_vao);
@@ -102,9 +103,9 @@ void DebugDrawer::drawLine(const btVector3& from, const btVector3& to, const btV
 
 void DebugDrawer::drawContactPoint(const btVector3& PointOnB, const btVector3& normalOnB, 
                                    btScalar distance, int lifeTime, const btVector3& color){
-/*    btVector3 end
+    btVector3 end_point = PointOnB + normalOnB * distance * 30;
     color_buf = colorbufferdata(color.getX(), color.getY(), color.getZ());
-    vertex_buf.set(from - m_camera_center, to - m_camera_center);
+    vertex_buf.set(end_point - m_camera_center, PointOnB - m_camera_center);
 
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo_vert);
     glBufferSubData(GL_ARRAY_BUFFER, 0, VERTEX_BUF_SIZE, vertex_buf.bufferdata);
@@ -113,7 +114,7 @@ void DebugDrawer::drawContactPoint(const btVector3& PointOnB, const btVector3& n
 
     glDrawArrays(GL_LINES, 0, VERTEX_BUF_SIZE);
 
-    check_gl_errors(true, "DebugDrawer::drawLine");*/
+    check_gl_errors(true, "DebugDrawer::drawContactPoint");
 }
 
 
@@ -123,6 +124,9 @@ void DebugDrawer::reportErrorWarning(const char *warningString){
     m_text->addString(wstr.c_str(), 400., 400., 1.0, STRING_DRAW_ABSOLUTE_BL,
                       STRING_ALIGN_RIGHT, c);
     m_text->render();
+
+    std::cerr << warningString << std::endl;
+    log(warningString);
 }
 
 
@@ -136,7 +140,7 @@ void DebugDrawer::draw3dText(const btVector3& location, const char *textString){
 }
 
 
-int DebugDrawer::getDebugMode () const{
+int DebugDrawer::getDebugMode() const{
     return m_options;
 }
 
@@ -261,6 +265,14 @@ void DebugDrawer::renderImGUI(){
         m_options |= DBG_DrawFrames;
     else
         m_options &= ~DBG_DrawFrames;
+
+    if (ImGui::Button("Toggle all")){
+        std::cout << m_options << std::endl;
+        if(m_options != DBG_NoDebug)
+            m_options = DBG_NoDebug;
+        else
+            m_options = ~0;
+    }
 
     ImGui::End();
 }
