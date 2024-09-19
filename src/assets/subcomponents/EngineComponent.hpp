@@ -1,19 +1,36 @@
 #ifndef ENGINE_COMPONENT_HPP
 #define ENGINE_COMPONENT_HPP
 
+#include <vector>
+
 #define BT_USE_DOUBLE_PRECISION
 #include <bullet/btBulletDynamicsCommon.h>
 
 class BasePart;
 
 
+// propellant required by the engine
+struct required_propellant{
+    double mass_flow_rate; // flow rate at 100% throttle
+    std::uint32_t resource_id; // resource id, the ids can be gotten by hasing its name.
+
+    required_propellant(double flow_rate, std::uint32_t resource){
+        mass_flow_rate = flow_rate;
+        resource_id = resource;
+    }
+};
+
+#define ENGINE_OFF 1
+#define ENGINE_ON 2
+#define ENGINE_DAMAGED 3
+
 /*
- * Represents an engine, a part can have none, one or multiple engines. Every engine has its own
- * local origin (where the force is applied), local orientation, thrust parameters etc. Any part
- * that contains an engine should use this class or make a derived one. This will be useful to
+ * Represents a base engine, a part can have none, one or multiple engines. Every engine has its
+ * own local origin (where the force is applied), local orientation, thrust parameters etc. Any
+ * part that contains an engine should use this class or make a derived one. This will be useful to
  * standarize an interface for engines. If a part has an engine and does use this class nor
- * register it (there will be a list of engines in each part) it can not be taken into account
- * by things like PDI controllers, automatic pilots and such.
+ * register it (include it in m_engine_list) it can not be seen by things like PDI controllers,
+ * automatic pilots and such.
  */
 class EngineComponent{
     private:
@@ -25,7 +42,13 @@ class EngineComponent{
         double m_max_angle_yaw, m_max_angle_pitch;
         // yaw, pitch controls
         bool m_yaw, m_pitch;
+        // maximum average thrust of the engine
+        double m_max_avg_thrust;
+        // required propellants by this engine
+        std::vector<struct required_propellant> m_propellants;
 
+        // engine status
+        int m_status;
 
         BasePart* m_parent_part;
 
@@ -39,9 +62,32 @@ class EngineComponent{
          * it to (0.0, -1.0, 0.0). Should be a unit vector, but will be normalised anyways.
          */
         EngineComponent(BasePart* parent_part, const btVector3& origin,
-                        const btVector3& orientation);
+                        const btVector3& orientation, double max_avg_thrust);
 
         EngineComponent();
+
+        /*
+         * Adds a required propellant by the engine.
+         *
+         * @flow_rate: mass flow rate of the propellant at 100% throttle.
+         * @resource: resource id of the propellant.
+         */
+        void addPropellant(double flow_rate, std::uint32_t resource);
+
+        /*
+         * Returns the vector with the required engine propellants.
+         */
+        const std::vector<struct required_propellant>& getPropellants() const;
+
+        /*
+         * Starts the engine, sets m_status to ENGINE_ON.
+         */
+        void startEngine();
+
+        /*
+         * Gets the status of the engine.
+         */
+        int getEngineStatus() const;
 
         /*
          * Returns the local origin of the thrust with respect its part. The force/thrust should be
@@ -90,6 +136,12 @@ class EngineComponent{
         void getDeflectionParams(bool& yaw, bool& pitch, double& max_angle_yaw,
                                        double& max_angle_pitch) const;
 
+        /*
+         * Returns the maximum thrust of the engine at 100% throttle (wether this thrust can be
+         * pushed further depends on your simulation of the engine). Does not represent the current
+         * thrust, but the theoretical maximum thrust.
+         */
+        double getMaxAvgThrust() const;
 };
 
 

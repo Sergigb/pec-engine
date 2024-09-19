@@ -13,8 +13,9 @@
 #include "../core/utils/gl_utils.hpp"
 
 
-BasePart::BasePart(Model* model, Physics* physics, btCollisionShape* col_shape, btScalar dry_mass, int baseID, AssetManagerInterface* asset_manager) : 
-    Object(model, physics, col_shape, dry_mass, baseID), m_user_rotation(btQuaternion::getIdentity()){
+BasePart::BasePart(Model* model, Physics* physics, btCollisionShape* col_shape, btScalar dry_mass,
+                   int baseID, AssetManagerInterface* asset_manager) : Object(model, physics,
+                   col_shape, dry_mass, baseID), m_user_rotation(btQuaternion::getIdentity()){
     m_asset_manager = asset_manager;
     init();
 }
@@ -47,7 +48,8 @@ BasePart::~BasePart(){
 }
 
 
-BasePart::BasePart(const BasePart& part) : Object(part), m_user_rotation(btQuaternion::getIdentity()){
+BasePart::BasePart(const BasePart& part) : 
+        Object(part), m_user_rotation(btQuaternion::getIdentity()){
     m_parent_att_point = part.m_parent_att_point;
     m_attachment_points = part.m_attachment_points;
     m_free_att_point = part.m_free_att_point;
@@ -115,8 +117,10 @@ void BasePart::setParent(BasePart* parent){
 bool BasePart::addChild(std::shared_ptr<BasePart>&& child){
     for(uint i=0; i < m_childs.size(); i++){
         if(m_childs.at(i).get() == child.get()){
-            log("BasePart::addChild - tried to add child part with value ", child.get(), " but it's already in the list");
-            std::cerr << "BasePart::addChild - tried to add child part with value " << child.get() << " but it's already in the list" << std::endl;
+            log("BasePart::addChild - tried to add child part with value ", child.get(),
+                " but it's already in the list");
+            std::cerr << "BasePart::addChild - tried to add child part with value " << child.get()
+                      << " but it's already in the list" << std::endl;
             return false;
         }
     }
@@ -132,12 +136,15 @@ std::shared_ptr<BasePart> BasePart::removeChild(BasePart* child){
         if(m_childs.at(i).get() == child){
             partsptr = std::dynamic_pointer_cast<BasePart>(m_childs.at(i)); 
             m_childs.erase(m_childs.begin() + i);
-            //std::cout << "part with value " << this << " has disowned child part with value " << child << std::endl;
+            //std::cout << "part with value " << this << " has disowned child part with value "
+                        //<< child << std::endl;
             return partsptr;
         }
     }
-    log("BasePart::removeChild - tried to remove child part with value ", child, " but it's not in the list");
-    std::cerr << "BasePart::removeChild - tried to remove child part with value " << child << " but it's not in the list" << std::endl;
+    log("BasePart::removeChild - tried to remove child part with value ", child,
+        " but it's not in the list");
+    std::cerr << "BasePart::removeChild - tried to remove child part with value " << child 
+              << " but it's not in the list" << std::endl;
     return partsptr;
 }
 
@@ -157,7 +164,8 @@ void BasePart::updateSubTreeMotionState(const btVector3& disp, const btVector3& 
     trans_r = btTransform(rotation, btVector3(0.0, 0.0, 0.0));
     trans = trans_r * trans;
 
-    m_asset_manager->setMotionState(this, root_origin + trans.getOrigin() + disp, trans.getRotation());
+    m_asset_manager->setMotionState(this, root_origin + trans.getOrigin() + disp,
+                                    trans.getRotation());
 
     for(uint i=0; i < m_childs.size(); i++){
         m_childs.at(i)->updateSubTreeMotionState(disp, root_origin, rotation);
@@ -375,8 +383,10 @@ void BasePart::decoupleSelf(){
     std::shared_ptr<BasePart> ourselves = m_vessel->removeChild(this);
 
     if(ourselves.get() == nullptr){
-        std::cerr << "BasePart::decoupleSelf - part with id " << m_unique_id << " tried to decouple itself but owner vessel returned a null pointer" << std::endl;
-        log("BasePart::decoupleSelf - part with id ", m_unique_id, " tried to decouple itself but owner vessel returned a null pointer");
+        std::cerr << "BasePart::decoupleSelf - part with id " << m_unique_id << " tried to decouple"
+                     " itself but owner vessel returned a null pointer" << std::endl;
+        log("BasePart::decoupleSelf - part with id ", m_unique_id, " tried to decouple itself but "
+            "owner vessel returned a null pointer");
 
         return;
     }
@@ -461,7 +471,8 @@ int BasePart::removeBodiesSubtree(){
 }
 
 
-void BasePart::cloneSubTree(std::shared_ptr<BasePart>& current, bool is_subtree_root, bool m_radial_clone){
+void BasePart::cloneSubTree(std::shared_ptr<BasePart>& current, bool is_subtree_root,
+                            bool m_radial_clone){
     btTransform transform;
 
     m_body->getMotionState()->getWorldTransform(transform);
@@ -509,8 +520,9 @@ void BasePart::buildSubTreeConstraints(const BasePart* parent){
         parent->m_body->getMotionState()->getWorldTransform(parent_transform);
         frame_child = btTransform(transform.inverse() * parent_transform);
 
-        btGeneric6DofConstraint* constraint = new btGeneric6DofConstraint(*parent->m_body, *m_body, 
-                                                                          btTransform::getIdentity(), frame_child, false);
+        btGeneric6DofConstraint* constraint = 
+            new btGeneric6DofConstraint(*parent->m_body, *m_body,
+                                        btTransform::getIdentity(), frame_child, false);
 
         constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 0);
         constraint->setParam(BT_CONSTRAINT_STOP_CFM, 0.f, 1);
@@ -597,7 +609,8 @@ void BasePart::action(int action){
 }
 
 
-void BasePart::addSubTreeToRenderBuffer(std::vector<object_transform>& buffer, const btVector3& btv_cam_origin){
+void BasePart::addSubTreeToRenderBuffer(std::vector<object_transform>& buffer, 
+                                        const btVector3& btv_cam_origin){
     try{
         if(m_body.get()){
             math::mat4 mat;
@@ -613,8 +626,10 @@ void BasePart::addSubTreeToRenderBuffer(std::vector<object_transform>& buffer, c
         }
     }
     catch(std::bad_weak_ptr& e){
-        std::cout << "BasePart::addSubTreeToRenderBuffer: Warning, weak ptr for object " << m_fancy_name << " with id " << getBaseId() << '\n';
-        log("BasePart::addSubTreeToRenderBuffer: Warning, weak ptr for object ", m_fancy_name, " with id ", getBaseId());
+        std::cout << "BasePart::addSubTreeToRenderBuffer: Warning, weak ptr for object " 
+                  << m_fancy_name << " with id " << getBaseId() << '\n';
+        log("BasePart::addSubTreeToRenderBuffer: Warning, weak ptr for object ", m_fancy_name,
+            " with id ", getBaseId());
     }
 
     for(uint i=0; i < m_childs.size(); i++){
@@ -633,3 +648,7 @@ int BasePart::loadCustom(const tinyxml2::XMLElement* elem){
     return EXIT_SUCCESS;
 }
 
+
+const std::vector<EngineComponent*>& BasePart::getEngineList() const{
+    return m_engine_list;
+}

@@ -6,8 +6,8 @@
 
 
 EngineComponent::EngineComponent(BasePart* parent_part, const btVector3& origin,
-                                 const btVector3& orientation) : m_local_origin(origin),
-                                 m_local_orientation(orientation) {
+                                 const btVector3& orientation, double max_avg_thrust)
+                                 : m_local_origin(origin), m_local_orientation(orientation) {
     assert(parent_part);
 
     m_local_orientation = m_local_orientation.normalize();
@@ -16,6 +16,8 @@ EngineComponent::EngineComponent(BasePart* parent_part, const btVector3& origin,
     m_max_angle_pitch = 0.0;
     m_yaw = false;
     m_pitch = false;
+    m_max_avg_thrust = max_avg_thrust;
+    m_status = ENGINE_OFF;
 
     m_parent_part = parent_part;
 
@@ -31,6 +33,7 @@ EngineComponent::EngineComponent(){
     m_max_angle_pitch = 0.0;
     m_yaw = false;
     m_pitch = false;
+    m_status = ENGINE_OFF;
 }
 
 
@@ -94,3 +97,26 @@ void EngineComponent::getDeflectionParams(bool& yaw, bool& pitch, double& max_an
 }
 
 
+double EngineComponent::getMaxAvgThrust() const{
+    return m_max_avg_thrust;
+}
+
+
+void EngineComponent::addPropellant(double flow_rate, std::uint32_t resource){
+    m_propellants.emplace_back(required_propellant(flow_rate, resource));
+}
+
+
+const std::vector<struct required_propellant>& EngineComponent::getPropellants() const{
+    return m_propellants;
+}
+
+
+void EngineComponent::startEngine(){
+    m_status = ENGINE_ON;
+}
+
+
+int EngineComponent::getEngineStatus() const{
+    return m_status;
+}

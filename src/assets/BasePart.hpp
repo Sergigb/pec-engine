@@ -17,6 +17,7 @@ class AssetManagerInterface;
 class Resource;
 class Physics;
 class Model;
+class EngineComponent;
 
 namespace tinyxml2{
     class XMLElement;
@@ -91,7 +92,9 @@ class BasePart : public Object{
         std::vector<BasePart*> m_clones;
         BasePart* m_cloned_from;
 
+        // components of the part
         std::vector<struct resource_container> m_resources;
+        std::vector<EngineComponent*> m_engine_list;
 
         AssetManagerInterface* m_asset_manager;
 
@@ -122,7 +125,8 @@ class BasePart : public Object{
          * @baseID: base ID of the object, shared among all copied objects.
          * @asset_manager: pointer to the asset manager interface object.
          */
-        BasePart(Model* model, Physics* physics, btCollisionShape* col_shape, btScalar mass, int baseID, AssetManagerInterface* asset_manager);
+        BasePart(Model* model, Physics* physics, btCollisionShape* col_shape, btScalar mass, 
+                 int baseID, AssetManagerInterface* asset_manager);
 
         BasePart(const BasePart& part);
         BasePart();
@@ -202,7 +206,8 @@ class BasePart : public Object{
          * should be the new origin of the part we are using to call this method.
          * @rotation: new rotation of the subtree.
          */
-        void updateSubTreeMotionState(const btVector3& disp, const btVector3& root_origin, const btQuaternion& rotation);
+        void updateSubTreeMotionState(const btVector3& disp, const btVector3& root_origin,
+                                      const btQuaternion& rotation);
 
         /*
          * When this part and its subtree are attached to a Vessel, m_vessel is be updated to the
@@ -270,7 +275,8 @@ class BasePart : public Object{
          * @is_subtree_root: should be true in the first non-recursive call.
          * @m_radial_clone: used to manage radial clones in the editor, true if it's a radial clone.
          */
-        void cloneSubTree(std::shared_ptr<BasePart>& current, bool is_subtree_root, bool m_radial_clone);
+        void cloneSubTree(std::shared_ptr<BasePart>& current, bool is_subtree_root,
+                          bool m_radial_clone);
 
         /*
          * Builds the constraints of this part's subtree. Not thread safe, use the buffer
@@ -296,7 +302,8 @@ class BasePart : public Object{
          * @buffer: reference to the render buffer.
          * @btv_cam_origin: camera origin.
          */
-        void addSubTreeToRenderBuffer(std::vector<object_transform>& buffer, const btVector3& btv_cam_origin);
+        void addSubTreeToRenderBuffer(std::vector<object_transform>& buffer,
+                                      const btVector3& btv_cam_origin);
 
         /*
          * Returns all the attachment points of this part.
@@ -452,6 +459,16 @@ class BasePart : public Object{
          * @elem: tinyxml2 xml element with the data of the part that is being loaded.
          */
         int loadCustom(const tinyxml2::XMLElement* elem);
+
+        /*
+         * Returns a list with the engines (EngineComponent objects) that this part contains.
+         * Derived classes should not reimplement this method, but rather add the engines to the
+         * engine list (m_engine_list) in, for example, the constructor. It is important that any
+         * regular engine (with the exception of reaction control engines) is added to this list,
+         * which will (or is?) used by other components, such as autopilots and attitude control
+         * systems.
+         */
+        const std::vector<EngineComponent*>& getEngineList() const;
 
         btQuaternion m_user_rotation;
 };
