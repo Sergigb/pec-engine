@@ -28,12 +28,14 @@ class FontAtlas;
 #define STRING_ALIGN_RIGHT 5 // this should be used when the text is drawn relative to the bottom left/top right
 
 
+/* used to draw static 2D text. Text should be static (static as in "it's not going to change
+ * every few frames") because I create big ass buffers with all the text vertexes/texture
+ * coords/indices, and use GL_STATIC_DRAW. I will probably make a new class to draw dynamic text
+ * (text that is supposed to change every frame or every few frames) using GL_DYNAMIC_DRAW or
+ * GL_STREAM_DRAW. The buffers will be fixed sized and will be flushed when they are full or ready
+ * to be drawn. Something like in 
+ * https://www.reddit.com/r/opengl/comments/6d4eai/how_do_you_manage_your_quads_when_doing_text/ */
 class Text2D{
-    // used to draw static 2D text. Text should be static (static as in "it's not going to change every few frames") because 
-    // I craete big ass buffers with all the text vertexes/texture coords/indices, and use GL_STATIC_DRAW. I will probably
-    // make a new class to draw dynamic text (text that is supposed to change every frame or every few frames) using
-    // GL_DYNAMIC_DRAW or GL_STREAM_DRAW. The buffers will be fixed sized and will be flushed when they are full or ready
-    // to be drawn. Something like in https://www.reddit.com/r/opengl/comments/6d4eai/how_do_you_manage_your_quads_when_doing_text/
     private:
         GLuint m_vao, m_vbo_vert, m_vbo_tex, m_vbo_col, m_vbo_ind;
         GLuint m_disp_location;
@@ -52,19 +54,75 @@ class Text2D{
         void getPenXY(float& pen_x, float& pen_y, struct string* string_);
     public:
         Text2D();
-        Text2D(int fb_width, int fb_height, const FontAtlas* font, const RenderContext* render_context);
+        /*
+         * Constructor.
+         * 
+         * @fb_width: width of the framebuffer.
+         * @fb_height: height of the framebuffer.
+         * @font: pointer to the font atlas object, which holds the texture.
+         * @render_context: pointer to the app's render context object.
+         */
+        Text2D(int fb_width, int fb_height, const FontAtlas* font, 
+               const RenderContext* render_context);
         ~Text2D();
 
+        /*
+         * Adds a string to render.
+         * 
+         * @string: text to render.
+         * @x: absolute x position in the framebuffer.
+         * @y: absolute y position in the framebuffer.
+         * @scale: scale of the text (1.0 is regular scale).
+         * @placement: relative origin of the string, check the macro STRING_DRAW_*.
+         * @aligment: aligment of the text, check the macro STRING_ALIGN*.
+         * @color: color of the string, includes alpha.
+         */
         void addString(const wchar_t* string, uint x, uint y, float scale, 
                        int placement, int alignment, const float color[4]);
+
+        /*
+         * Adds a string to render.
+         * 
+         * @string: text to render.
+         * @x: relative x position (0.0 to 1.0) in the framebuffer.
+         * @y: relative y position (0.0 to 1.0) in the framebuffer.
+         * @scale: scale of the text (1.0 is regular scale).
+         * @placement: relative origin of the string, check the macro STRING_DRAW_*.
+         * @aligment: aligment of the text, check the macro STRING_ALIGN*.
+         * @color: color of the string, includes alpha.
+         */        
         void addString(const wchar_t* string, float relative_x, float relative_y,
                        float scale, int alignment, const float color[4]);
+
+        /*
+         * Sets the relative displacement of ALL the text contained in this object, the default is 
+         * (0.0, 0.0).
+         * 
+         * @disp: relative displacement in x and y.
+         */
         void setDisplacement(const math::vec2& disp);
+
+        /*
+         * Clears all the strings.
+         */
         void clearStrings();
 
+        /*
+         * Returns the height of the font (vertical shift between lines of text).
+         */
         uint getFontHeigth() const;
 
+        /*
+         * Should be called when the size of the framebuffer changes.
+         * 
+         * @fb_width: width of the framebuffer.
+         * @fb_height: height of the framebuffer.
+         */
         void onFramebufferSizeUpdate(int fb_width, int fb_height);
+
+        /*
+         * Renders all the strings.
+         */
         void render();
 };
 
