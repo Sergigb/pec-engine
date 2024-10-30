@@ -48,8 +48,8 @@ struct attachment_point{
  */
 struct resource_container{
     Resource* resource;
-    float mass;
-    float max_mass;
+    double mass;
+    double max_mass;
 };
 
 
@@ -428,7 +428,7 @@ class BasePart : public Object{
          * @mass: mass being requested, this value will be overwritten with the actual ammount this
          * part is returning.
          */
-        void requestResource(const BasePart* requester, std::uint32_t resource_id, float& mass);
+        void requestResource(const BasePart* requester, std::uint32_t resource_id, double& mass);
 
         /*  
          * This method allows the caller to obtain a copy of the current object without needing to 

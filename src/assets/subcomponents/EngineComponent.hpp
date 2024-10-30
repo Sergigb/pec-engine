@@ -11,18 +11,20 @@ class BasePart;
 
 // propellant required by the engine
 struct required_propellant{
-    double mass_flow_rate; // flow rate at 100% throttle
+    double max_flow_rate; // flow rate at 100% throttle
+    double current_flow_rate;  // current flow rate, is used by some function below to compute the thrust
     std::uint32_t resource_id; // resource id, the ids can be gotten by hasing its name.
 
-    required_propellant(double flow_rate, std::uint32_t resource){
-        mass_flow_rate = flow_rate;
+    required_propellant(double mfr, std::uint32_t resource){
+        max_flow_rate = mfr;
         resource_id = resource;
+        current_flow_rate = 0.;
     }
 };
 
-#define ENGINE_OFF 1
-#define ENGINE_ON 2
-#define ENGINE_DAMAGED 3
+#define ENGINE_STATUS_OFF 1
+#define ENGINE_STATUS_ON 2
+#define ENGINE_STATUS_DAMAGED 3
 
 /*
  * Represents a base engine, a part can have none, one or multiple engines. Every engine has its
@@ -36,7 +38,7 @@ class EngineComponent{
     private:
         // local origin
         btVector3 m_local_origin;
-        // thrust orientation, already in matrix form
+        // thrust orientation
         btVector3 m_local_orientation;
         // deflection angles
         double m_max_angle_yaw, m_max_angle_pitch;
@@ -44,24 +46,28 @@ class EngineComponent{
         bool m_yaw, m_pitch;
         // maximum average thrust of the engine
         double m_max_avg_thrust;
+        // current throttle of the engine (0.0 to 1.0)
+        double m_throttle;
         // required propellants by this engine
         std::vector<struct required_propellant> m_propellants;
+        // if true, can be stopped
+        bool m_can_be_stopped;
 
         // engine status
         int m_status;
 
-        BasePart* m_parent_part;
+        BasePart* m_owner_part;
 
     public:
         /*
          * Constructor
          *
-         * @parent_part: part that contains this engine.
+         * @owner_part: part that contains this engine.
          * @origin: local origin (on the part) of the thrust.
          * @orientation: local orientation (on the part) of the thrust. Most likely you want to set
          * it to (0.0, -1.0, 0.0). Should be a unit vector, but will be normalised anyways.
          */
-        EngineComponent(BasePart* parent_part, const btVector3& origin,
+        EngineComponent(BasePart* owner_part, const btVector3& origin,
                         const btVector3& orientation, double max_avg_thrust);
 
         EngineComponent();
@@ -69,10 +75,10 @@ class EngineComponent{
         /*
          * Adds a required propellant by the engine.
          *
-         * @flow_rate: mass flow rate of the propellant at 100% throttle.
          * @resource: resource id of the propellant.
+         * @flow_rate: mass flow rate of the propellant at 100% throttle.
          */
-        void addPropellant(double flow_rate, std::uint32_t resource);
+        void addPropellant(std::uint32_t resource, double flow_rate);
 
         /*
          * Returns the vector with the required engine propellants.
@@ -80,14 +86,20 @@ class EngineComponent{
         const std::vector<struct required_propellant>& getPropellants() const;
 
         /*
-         * Starts the engine, sets m_status to ENGINE_ON.
+         * Starts the engine, sets m_status to ENGINE_STATUS_ON.
          */
         void startEngine();
 
         /*
+         * Stp`s the engine, sets m_status to ENGINE_STATUS_OFF. Might not take effect if the
+         * engine can not be shut down.
+         */
+        void stopEngine();
+
+        /*
          * Gets the status of the engine.
          */
-        int getEngineStatus() const;
+        int getStatus() const;
 
         /*
          * Returns the local origin of the thrust with respect its part. The force/thrust should be
@@ -142,6 +154,40 @@ class EngineComponent{
          * thrust, but the theoretical maximum thrust.
          */
         double getMaxAvgThrust() const;
+
+        /*
+         * Sets wether the engine can be stopped or not.
+         *
+         * @can_be_stopped: sets the property to true/false.
+         */
+        void setStop(bool can_be_stopped);
+
+        /*
+         * Sets the engine throttle.
+         *
+         * @throttle: throttle value, from 0.0 to 1.0.
+         */
+        void setThrottle(double throttle);
+
+        /*
+         * Gets the current throttle.
+         */
+        double getThrottle() const;
+
+        /*
+         * Updates the amount of resources that flow into the engine. This function requests
+         * resources to the parent part of the owner part, but it could also request resources to
+         * the owner engine in a derived class. Depends on the requires resources and the current
+         * throttle.
+         */
+        void updateResourcesFlow();
+
+        /*
+         * Sets the owner part of this engine.
+         *
+         * @owner_part: part that contains this engine.
+         */
+        void setOwner(BasePart* owner_part);
 };
 
 

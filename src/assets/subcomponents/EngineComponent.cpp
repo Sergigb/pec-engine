@@ -5,10 +5,10 @@
 #include "../BasePart.hpp"
 
 
-EngineComponent::EngineComponent(BasePart* parent_part, const btVector3& origin,
+EngineComponent::EngineComponent(BasePart* owner_part, const btVector3& origin,
                                  const btVector3& orientation, double max_avg_thrust)
                                  : m_local_origin(origin), m_local_orientation(orientation) {
-    assert(parent_part);
+    assert(owner_part);
 
     m_local_orientation = m_local_orientation.normalize();
 
@@ -17,23 +17,27 @@ EngineComponent::EngineComponent(BasePart* parent_part, const btVector3& origin,
     m_yaw = false;
     m_pitch = false;
     m_max_avg_thrust = max_avg_thrust;
-    m_status = ENGINE_OFF;
+    m_status = ENGINE_STATUS_OFF;
+    m_can_be_stopped = true;
+    m_throttle = 1.0;
 
-    m_parent_part = parent_part;
+    m_owner_part = owner_part;
 
 }
 
 
 EngineComponent::EngineComponent(){
     m_local_origin = btVector3(0.0, 0.0, 0.0);
-    m_parent_part = nullptr;
+    m_owner_part = nullptr;
     m_local_orientation = btVector3(0., -1., 0.);
 
     m_max_angle_yaw = 0.0;
     m_max_angle_pitch = 0.0;
     m_yaw = false;
     m_pitch = false;
-    m_status = ENGINE_OFF;
+    m_status = ENGINE_STATUS_OFF;
+    m_can_be_stopped = true;
+    m_throttle = 1.0;
 }
 
 
@@ -49,7 +53,7 @@ const btVector3& EngineComponent::getThrustOrientation() const{
 
 const btMatrix3x3 EngineComponent::getThrustDeflectionBasis() const{
     btMatrix3x3 deflect_basis;
-    const Vessel* vessel = m_parent_part->getVessel();
+    const Vessel* vessel = m_owner_part->getVessel();
 
     deflect_basis.setEulerZYX(vessel->getYaw() * m_max_angle_yaw, 0.0,
                               vessel->getPitch() * m_max_angle_pitch);
@@ -102,7 +106,7 @@ double EngineComponent::getMaxAvgThrust() const{
 }
 
 
-void EngineComponent::addPropellant(double flow_rate, std::uint32_t resource){
+void EngineComponent::addPropellant(std::uint32_t resource, double flow_rate){
     m_propellants.emplace_back(required_propellant(flow_rate, resource));
 }
 
@@ -113,10 +117,57 @@ const std::vector<struct required_propellant>& EngineComponent::getPropellants()
 
 
 void EngineComponent::startEngine(){
-    m_status = ENGINE_ON;
+    if(m_status != ENGINE_STATUS_DAMAGED)
+        m_status = ENGINE_STATUS_ON;
 }
 
 
-int EngineComponent::getEngineStatus() const{
+void EngineComponent::stopEngine(){
+    if(m_can_be_stopped)
+        m_status = ENGINE_STATUS_OFF;
+}
+
+
+int EngineComponent::getStatus() const{
     return m_status;
+}
+
+
+void EngineComponent::setStop(bool can_be_stopped){
+    m_can_be_stopped = can_be_stopped;
+}
+
+
+void EngineComponent::setThrottle(double throttle){
+    assert(throttle >= 0.0);
+    assert(throttle <= 1.0);
+    m_throttle = throttle;
+}
+
+
+double EngineComponent::getThrottle() const{
+    return m_throttle;
+}
+#include <iostream>
+
+void EngineComponent::updateResourcesFlow(){
+    BasePart* m_parent_part = m_owner_part->getParent();
+
+    if(!m_parent_part)
+        return;
+
+    float min_ratio = 0.0;    
+    for(uint i=0; i < m_propellants.size(); i++){
+        required_propellant& prop = m_propellants.at(i);
+
+        prop.current_flow_rate = prop.max_flow_rate * m_throttle;
+        m_parent_part->requestResource(m_owner_part, prop.resource_id, prop.current_flow_rate);
+        if(prop.current_flow_rate / prop.max_flow_rate < min_ratio)
+            min_ratio = prop.current_flow_rate / prop.max_flow_rate;
+    }
+}
+
+
+void EngineComponent::setOwner(BasePart* owner_part){
+    m_owner_part = owner_part;
 }

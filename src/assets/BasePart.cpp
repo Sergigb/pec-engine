@@ -1,5 +1,6 @@
 #include <sstream>
 #include <iomanip>
+#include <cassert>
 
 #include "BasePart.hpp"
 #include "Vessel.hpp"
@@ -66,6 +67,7 @@ BasePart::BasePart(const BasePart& part) :
     m_resources = part.m_resources;
     m_cloned_from = nullptr;
     m_alpha = part.m_alpha;
+    m_engine_list = part.m_engine_list;
 }
 
 
@@ -300,7 +302,9 @@ void BasePart::renderOther(){
         for(uint i=0; i < m_resources.size(); i++){
             const std::string& rname = m_resources.at(i).resource->getFancyName();
             ImGui::Text(rname.c_str());
-            ImGui::SliderFloat("kg", &m_resources.at(i).mass, 0.0f, m_resources.at(i).max_mass);
+            float resource_mass = m_resources.at(i).mass;
+            ImGui::SliderFloat("kg", &resource_mass, 0.0f, (float)m_resources.at(i).max_mass);
+            m_resources.at(i).mass = resource_mass;
         }
 
         ImGui::End();
@@ -431,7 +435,8 @@ BasePart* BasePart::clone() const{
 }
 
 
-void BasePart::requestResource(const BasePart* requester, std::uint32_t resource_id, float& mass){
+void BasePart::requestResource(const BasePart* requester, std::uint32_t resource_id, double& mass){
+    assert(requester);
     if(requester->getVessel() != m_vessel){
         std::cerr << "BasePart::requestResource - part with id " << requester->getUniqueId()
                   << " requested resource to a part from a different vessel" << std::endl;

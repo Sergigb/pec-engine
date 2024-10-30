@@ -79,8 +79,10 @@ void VegaSolidEngine::renderOther(){
 
         for(uint i=0; i < m_resources.size(); i++){
             const std::string& rname = m_resources.at(i).resource->getFancyName();
-            ImGui::SliderFloat(rname.c_str(), &m_resources.at(i).mass,
-                               0.0f, m_resources.at(i).max_mass);
+            float current_mass = m_resources.at(i).mass;
+            if(ImGui::SliderFloat(rname.c_str(), &current_mass,
+                               0.0f, m_resources.at(i).max_mass))
+                m_resources.at(i).mass = current_mass;
         }
 
         ss.str("");
@@ -148,7 +150,7 @@ void VegaSolidEngine::update(){
     }
 
     if(m_engine_status == ENGINE_ON){
-        float current_flow = m_mass_flow_rate * TIME_STEP;
+        double current_flow = m_mass_flow_rate * TIME_STEP;
 
         const btMatrix3x3& basis = m_body->getWorldTransform().getBasis();
         btMatrix3x3 gimbal;
