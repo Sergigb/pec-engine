@@ -171,6 +171,8 @@ void VegaSolidEngine::update(){
         gimbal.setEulerZYX(m_vessel->getYaw() * m_max_deflection_angle, 0.0,
                            m_vessel->getPitch() * m_max_deflection_angle);
         force = basis * gimbal * force;
+        
+        std::cout << force.getX() << " "<< force.getY() << " "<< force.getZ() << std::endl;
         m_asset_manager->applyForce(this, force, basis * btVector3(0.0, -5.0, 0.0));
     }
 

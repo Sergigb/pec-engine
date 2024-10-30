@@ -51,7 +51,7 @@ const btVector3& EngineComponent::getThrustOrientation() const{
 }
 
 
-const btMatrix3x3 EngineComponent::getThrustDeflectionBasis() const{
+const btMatrix3x3 EngineComponent::getDeflectionBasis() const{
     btMatrix3x3 deflect_basis;
     const Vessel* vessel = m_owner_part->getVessel();
 
@@ -62,11 +62,17 @@ const btMatrix3x3 EngineComponent::getThrustDeflectionBasis() const{
 }
 
 
-const btVector3 EngineComponent::getDeflectedThrust() const{
-    const btMatrix3x3& deflect_basis = getThrustDeflectionBasis();
+const btVector3 EngineComponent::getDeflectedThrustDirection() const{
+    const btMatrix3x3& deflect_basis = getDeflectionBasis();
     const btVector3 deflected_thrust = deflect_basis * m_local_orientation;
 
     return deflected_thrust;
+}
+
+
+const btVector3 EngineComponent::getFinalThrustDirection() const{
+    const btMatrix3x3& basis = m_owner_part->m_body->getWorldTransform().getBasis();
+    return basis * getDeflectedThrustDirection();
 }
 
 
@@ -148,26 +154,40 @@ void EngineComponent::setThrottle(double throttle){
 double EngineComponent::getThrottle() const{
     return m_throttle;
 }
-#include <iostream>
 
-void EngineComponent::updateResourcesFlow(){
+
+// temp vvv
+#define TIME_STEP (1. / 60.)
+double EngineComponent::updateResourceFlow(){
     BasePart* m_parent_part = m_owner_part->getParent();
+    double min_ratio = 1.0;
 
     if(!m_parent_part)
-        return;
+        return 0.0;
 
-    float min_ratio = 0.0;    
     for(uint i=0; i < m_propellants.size(); i++){
         required_propellant& prop = m_propellants.at(i);
 
-        prop.current_flow_rate = prop.max_flow_rate * m_throttle;
+        prop.current_flow_rate = prop.max_flow_rate * m_throttle * TIME_STEP;
         m_parent_part->requestResource(m_owner_part, prop.resource_id, prop.current_flow_rate);
         if(prop.current_flow_rate / prop.max_flow_rate < min_ratio)
             min_ratio = prop.current_flow_rate / prop.max_flow_rate;
     }
+    return min_ratio;
 }
 
 
 void EngineComponent::setOwner(BasePart* owner_part){
     m_owner_part = owner_part;
+}
+
+#include <iostream>
+const btVector3 EngineComponent::update(){
+    double min_flow = updateResourceFlow();
+    btVector3 thrust_direction = getFinalThrustDirection();
+    thrust_direction.normalize();
+    double thrust = min_flow * m_throttle * m_max_avg_thrust * TIME_STEP;
+    std::cout << min_flow << " " << m_throttle << " " << m_max_avg_thrust << " " << TIME_STEP << std::endl;
+    std::cout << "force applied timestep " << thrust << ", per second: " << thrust / TIME_STEP << ", max: " << m_max_avg_thrust <<  std::endl;
+    return thrust * thrust_direction.normalize();
 }

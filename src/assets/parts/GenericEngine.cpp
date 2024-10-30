@@ -15,9 +15,10 @@ GenericEngine::GenericEngine(Model* model, Physics* physics, btCollisionShape* c
     std::hash<std::string> str_hash;
 
     new (&m_main_engine) EngineComponent(this, btVector3(0., 0.064, 0.),
-                                         btVector3(0., -1., 0.), 25000.);
+                                         btVector3(0., 1., 0.), 2000000000.);
     m_main_engine.addPropellant(str_hash("liquid_hydrogen"), 300.);
     m_main_engine.addPropellant(str_hash("liquid_oxygen"), 60.);
+    m_main_engine.setDeflectionParams(true, true, 10., 10.);
     m_main_engine.setThrottle(1.0);
 }
 
@@ -96,28 +97,11 @@ void GenericEngine::renderOther(){
 typedef std::vector<struct required_propellant> prop_t;
 void GenericEngine::update(){
     if(m_main_engine.getStatus() == ENGINE_STATUS_ON && m_parent){
-        m_main_engine.updateResourcesFlow();
+        const btVector3 force = m_main_engine.update();
 
-       /* float throttle = m_main_engine.getThrottle();
+        std::cout << force.getX() << " "<< force.getY() << " "<< force.getZ() << std::endl;
 
-        float liq_hyd = 5.0f * throttle, liq_oxy = 2.0f * throttle;
-        float flow_hyd = liq_hyd, flow_oxy = liq_oxy;
-        float flow = 1.0f; // the quantities are made up
-        float max_gimbal_angle = 10.5f * ONE_DEG_IN_RAD; // all this stuff won't be hardcoded in the future
-        const btMatrix3x3& basis = m_body->getWorldTransform().getBasis();
-        btMatrix3x3 gimbal;
-        btVector3 force;
-
-        m_parent->requestResource(this, m_liquid_hydrogen_id, flow_hyd);
-        m_parent->requestResource(this, m_liquid_oxygen_id, flow_oxy);
-
-        flow = flow_hyd / liq_hyd > flow_oxy / liq_oxy ? flow_oxy / liq_oxy : flow_hyd / liq_hyd; // this will be re-thinked
-        force = btVector3(0.0, flow * 25000.0 * throttle, 0.0);
-
-        // I'm using Y as the roll, this is wrong. In the future I'll make sure Z is the forward vector, which will make it the roll vector
-        gimbal.setEulerZYX(m_vessel->getYaw() * max_gimbal_angle, 0.0, m_vessel->getPitch() * max_gimbal_angle);
-        force = basis * gimbal * force;
-        m_asset_manager->applyForce(this, force, btVector3(0.0, 0.0, 0.0));*/
+        m_asset_manager->applyForce(this, force, btVector3(0.0, 0.0, 0.0));
     }
 }
 

@@ -116,13 +116,19 @@ class EngineComponent{
         /*
          * Returns a basis transform according to the yaw and pitch values of the vessel.
          */
-        const btMatrix3x3 getThrustDeflectionBasis() const;
+        const btMatrix3x3 getDeflectionBasis() const;
 
         /*
          * Returns the deflected orientation of the thrust. This value does not represent the final
          * thrust value, as it is normalized.
          */
-        const btVector3 getDeflectedThrust() const;
+        const btVector3 getDeflectedThrustDirection() const;
+
+        /*
+         * Returns the global deflected orientation of the thrust. This value does not represent
+         * the final thrust value, as it is normalized. 
+         */
+        const btVector3 getFinalThrustDirection() const;
 
         /*
          * Sets the thrust deflection/vectoring parameters.
@@ -178,9 +184,10 @@ class EngineComponent{
          * Updates the amount of resources that flow into the engine. This function requests
          * resources to the parent part of the owner part, but it could also request resources to
          * the owner engine in a derived class. Depends on the requires resources and the current
-         * throttle.
+         * throttle. Returns the minimum ratio among the all requested resources (this ratio is the 
+         * division between the desired and the actual flow).
          */
-        void updateResourcesFlow();
+        double updateResourceFlow();
 
         /*
          * Sets the owner part of this engine.
@@ -188,6 +195,12 @@ class EngineComponent{
          * @owner_part: part that contains this engine.
          */
         void setOwner(BasePart* owner_part);
+
+        /*
+         * Updates the status of the engine. Request resources, computes the forces, and returns
+         * the force that should be applied on the parent part.
+         */
+        const btVector3 update();
 };
 
 
