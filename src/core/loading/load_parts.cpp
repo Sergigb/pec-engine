@@ -144,6 +144,54 @@ int set_parent_att_point(const xmle* part_element, std::unique_ptr<BasePart>& pa
 
 
 int set_free_att_points(const xmle* part_element, std::unique_ptr<BasePart>& part){
+    const xmle* att_pts_elem = get_element(part_element, "free_att_point", true);
+
+    if(!att_pts_elem)
+        return EXIT_SUCCESS;
+
+    double x, y, z, ox, oy, oz;
+    const xmle* origin_element = get_element(att_pts_elem, "origin");
+    const xmle* orient_element = get_element(att_pts_elem, "orientation");
+
+    if(!origin_element){
+        std::cerr << "set_free_att_points: Missing origin element for free attachment"
+                     "point defined in line " << att_pts_elem->GetLineNum() << std::endl;
+        log("set_free_att_points: Missing origin element for free attachment point "
+            "defined in line ", att_pts_elem->GetLineNum());
+
+        return EXIT_FAILURE;
+    }
+
+    if(!orient_element){
+        std::cerr << "set_free_att_points: Missing orientation element for free attachment"
+                     " point defined in line " << att_pts_elem->GetLineNum() << std::endl;
+        log("set_free_att_points: Missing orientation element for free attachment point"
+            "defined in line ", att_pts_elem->GetLineNum());
+
+        return EXIT_FAILURE;
+    }
+
+    if(get_double(origin_element, "x", x))
+        return EXIT_FAILURE;
+    if(get_double(origin_element, "y", y))
+        return EXIT_FAILURE;
+    if(get_double(origin_element, "z", z))
+        return EXIT_FAILURE;
+
+    if(get_double(orient_element, "x", ox))
+        return EXIT_FAILURE;
+    if(get_double(orient_element, "y", oy))
+        return EXIT_FAILURE;
+    if(get_double(orient_element, "z", oz))
+        return EXIT_FAILURE;
+
+    part->setFreeAttachmentPoint(math::vec3(x, y, z), math::vec3(ox, oy, oz));
+
+    return EXIT_SUCCESS;
+}
+
+
+int set_att_points(const xmle* part_element, std::unique_ptr<BasePart>& part){
     const xmle* att_pts_elem = get_element(part_element, "att_points", true);
 
     if(att_pts_elem){
@@ -155,18 +203,18 @@ int set_free_att_points(const xmle* part_element, std::unique_ptr<BasePart>& par
             const xmle* orient_element = get_element(point_elem, "orientation");
 
             if(!origin_element){
-                std::cerr << "set_free_att_points: Missing origin element for free attachment"
+                std::cerr << "set_att_points: Missing origin element for attachment"
                              "point defined in line " << att_pts_elem->GetLineNum() << std::endl;
-                log("set_free_att_points: Missing origin element for free attachment point "
+                log("set_att_points: Missing origin element for attachment point "
                     "defined in line ", att_pts_elem->GetLineNum());
 
                 return EXIT_FAILURE;
             }
 
             if(!orient_element){
-                std::cerr << "set_free_att_points: Missing orientation element for free attachment"
+                std::cerr << "set_att_points: Missing orientation element for attachment"
                              " point defined in line " << att_pts_elem->GetLineNum() << std::endl;
-                log("set_free_att_points: Missing orientation element for free attachment point"
+                log("set_att_points: Missing orientation element for attachment point"
                     "defined in line ", att_pts_elem->GetLineNum());
 
                 return EXIT_FAILURE;
@@ -337,6 +385,10 @@ int load_parts(BasePartMap& part_map, const char* path, BaseApp* app){
 
         // parent att point
         if(set_parent_att_point(part_element, part) == EXIT_FAILURE)
+            return EXIT_FAILURE;
+
+        // att points
+        if(set_att_points(part_element, part))
             return EXIT_FAILURE;
 
         // free att points

@@ -163,6 +163,18 @@ resource state
             </orientation>
         </point>
     </att_points>
+    <free_att_point>
+        <origin>
+            <x>1.0</x>
+            <y>0.0</y>
+            <z>0.0</z>
+        </origin>
+        <orientation>
+            <x>1.0</x>
+            <y>0.0</y>
+            <z>0.0</z>
+        </orientation>
+    </free_att_point>
     <resources>
         <resource>
             <name>liquid_hydrogen</name>
