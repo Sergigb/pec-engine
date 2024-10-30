@@ -5,6 +5,8 @@
 *.blend
 *.obj
 *.gltf
+*.png
+*.jpg
 bin/opengl
 bin/main
 bin/log.txt
