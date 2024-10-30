@@ -98,9 +98,6 @@ typedef std::vector<struct required_propellant> prop_t;
 void GenericEngine::update(){
     if(m_main_engine.getStatus() == ENGINE_STATUS_ON && m_parent){
         const btVector3 force = m_main_engine.update();
-
-        std::cout << force.getX() << " "<< force.getY() << " "<< force.getZ() << std::endl;
-
         m_asset_manager->applyForce(this, force, btVector3(0.0, 0.0, 0.0));
     }
 }

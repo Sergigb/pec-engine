@@ -181,13 +181,11 @@ void EngineComponent::setOwner(BasePart* owner_part){
     m_owner_part = owner_part;
 }
 
-#include <iostream>
+
 const btVector3 EngineComponent::update(){
     double min_flow = updateResourceFlow();
     btVector3 thrust_direction = getFinalThrustDirection();
     thrust_direction.normalize();
     double thrust = min_flow * m_throttle * m_max_avg_thrust * TIME_STEP;
-    std::cout << min_flow << " " << m_throttle << " " << m_max_avg_thrust << " " << TIME_STEP << std::endl;
-    std::cout << "force applied timestep " << thrust << ", per second: " << thrust / TIME_STEP << ", max: " << m_max_avg_thrust <<  std::endl;
     return thrust * thrust_direction.normalize();
 }
