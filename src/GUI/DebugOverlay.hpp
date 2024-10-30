@@ -47,6 +47,10 @@ struct times_render{
     }
 };
 
+/*
+ *  Draws the debug overlay, which includes informations such as load times and number of rendered
+ *  objects.
+ */
 class DebugOverlay{
     private:
         std::unique_ptr<Text2D> m_text_debug;
@@ -60,12 +64,48 @@ class DebugOverlay{
         DebugOverlay(int fb_width, int fb_height, const RenderContext* render_context);
         ~DebugOverlay();
 
+        /*
+         * Sets the number of rendered objects during the last frame (useful to test culling).
+         * 
+         * @n: number of rendered objects.
+         */
         void setRenderedObjects(int n);
+        
+        /*
+         * Sets the logic thread load times. Check the structs with the timings defined in
+         * core/timing.hpp.
+         * 
+         * @times: struct with the different load times.
+         */
         void setLogicTimes(const logic_timing& times);
+
+        /*
+         * Sets the physics thread load times. Check the structs with the timings defined in
+         * core/timing.hpp.
+         * 
+         * @times: struct with the different load times.
+         */
         void setPhysicsTimes(const physics_timing& times);
+
+        /*
+         * Sets the render thread load times. Check the structs with the timings defined in
+         * core/timing.hpp.
+         * 
+         * @times: struct with the different load times.
+         */
         void setRenderTimes(const render_timing& times);
+        
+        /*
+         * Should be called when the framebuffer size changes.
+         * 
+         * @fb_width: width of the framebuffer.
+         * @fb_height: height of the framebuffer.
+         */
         void onFramebufferSizeUpdate(int fb_width, int fb_height);
 
+        /*
+         * Render function, should be called by the render thread.
+         */
         void render();
 };
 
