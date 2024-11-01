@@ -34,7 +34,7 @@ resource state
 <part>
     <part_class>Separator</part_class>
     <part_name>separator</part_name>
-    <part_fancy_name>Separator!</part_fancy_name>
+    <part_fancy_name>Separator</part_fancy_name>
     <model_path>../data/separator.dae</model_path>
     <collision>
         <shape>1</shape>
@@ -80,7 +80,7 @@ resource state
 <part>
     <part_class>BasePart</part_class>
     <part_name>command_module</part_name>
-    <part_fancy_name>Command Module!</part_fancy_name>
+    <part_fancy_name>Command Module</part_fancy_name>
     <model_path>../data/capsule.dae</model_path>
     <collision>
         <shape>2</shape>
@@ -125,7 +125,7 @@ resource state
 <part>
     <part_class>BasePart</part_class>
     <part_name>tank2</part_name>
-    <part_fancy_name>Tank 2!</part_fancy_name>
+    <part_fancy_name>Tank 2</part_fancy_name>
     <model_path>../data/tank2.dae</model_path>
     <collision>
         <shape>1</shape>
@@ -192,7 +192,7 @@ resource state
 <part>
     <part_class>GenericEngine</part_class>
     <part_name>engine</part_name>
-    <part_fancy_name>Engine!</part_fancy_name>
+    <part_fancy_name>Engine</part_fancy_name>
     <model_path>../data/engine.dae</model_path>
     <collision>
         <shape>1</shape>
@@ -238,7 +238,7 @@ resource state
 <part>
     <part_class>VegaSolidEngine</part_class>
     <part_name>p80</part_name>
-    <part_fancy_name>P80!</part_fancy_name>
+    <part_fancy_name>P80</part_fancy_name>
     <model_path>../data/vega/p80.dae</model_path>
     <collision>
         <shape>1</shape>
@@ -298,7 +298,7 @@ resource state
 <part>
     <part_class>VegaSolidEngine</part_class>
     <part_name>z23</part_name>
-    <part_fancy_name>Z23!</part_fancy_name>
+    <part_fancy_name>Z23</part_fancy_name>
     <model_path>../data/vega/z23.dae</model_path>
     <fairing_model_path>../data/vega/z23_fairing.dae</fairing_model_path>
     <collision>
@@ -359,7 +359,7 @@ resource state
 <part>
     <part_class>VegaSolidEngine</part_class>
     <part_name>z9</part_name>
-    <part_fancy_name>Z9!</part_fancy_name>
+    <part_fancy_name>Z9</part_fancy_name>
     <model_path>../data/vega/z9.dae</model_path>
     <fairing_model_path>../data/vega/z9_fairing.dae</fairing_model_path>
     <collision>
@@ -420,7 +420,7 @@ resource state
 <part>
     <part_class>Separator</part_class>
     <part_name>3m_separator</part_name>
-    <part_fancy_name>3m separator!</part_fancy_name>
+    <part_fancy_name>3m separator</part_fancy_name>
     <model_path>../data/vega/3m_separator.dae</model_path>
     <collision>
         <shape>1</shape>
