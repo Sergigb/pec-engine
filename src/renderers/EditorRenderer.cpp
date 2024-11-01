@@ -29,6 +29,8 @@ EditorRenderer::EditorRenderer(BaseApp* app){
 
     m_att_point_model.reset(new Model("../data/sphere.dae", nullptr, 
                                       SHADER_PHONG_BLINN_NO_TEXTURE, math::vec3(1.0, 0.0, 0.0)));
+    m_grid.reset(new Model("../data/floor_grid.dae", "../data/grid_cell.png", 
+                           SHADER_PHONG_BLINN, math::vec3(1.0, 1.0, 1.0)));
     m_att_point_scale = math::identity_mat4();
     m_att_point_scale.m[0] = 0.25;
     m_att_point_scale.m[5] = 0.25;
@@ -47,6 +49,10 @@ int EditorRenderer::render(struct render_buffer* rbuf){
     int num_rendered = 0;
 
     num_rendered = renderObjects(rbuf->buffer, rbuf->view_mat);
+    //if(rbuf->buffer.size())
+    math::mat4 transform = math::identity_mat4();
+    transform = math::translate(transform, math::vec3(-rbuf->cam_origin.v[0], -rbuf->cam_origin.v[1], -rbuf->cam_origin.v[2]));
+    m_grid->render(transform);
 
     check_gl_errors(true, "EditorRenderer::render");
 

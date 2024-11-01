@@ -20,6 +20,10 @@ vec3 Kd = vec3 (0.75, 0.75, 0.75); // diffuse surface reflectance
 vec3 Ka = vec3 (0.25, 0.25, 0.25); // ambient light reflectance
 float specular_exponent = 100.0; // specular 'power'
 
+// fog variables
+const vec3 fog_colour = vec3 (0.428, 0.706, 0.751);
+const float min_fog_radius = 3.0;
+const float max_fog_radius = 250.0;
 
 void main() {
     vec3 Ia = La * Ka;
@@ -44,7 +48,14 @@ void main() {
     vec3 Is = Ls * Ks * specular_factor; // final specular intensity
 
     vec4 texel = texture(tex, st);
-    
-    // final colour
-    frag_colour = vec4 (object_color.xyz * texel.xyz * (Is + Id + Ia), object_color.w);
+
+    // work out distance from camera to point
+    float dist = length (-position_eye);
+    float fog_fac = (dist - min_fog_radius) / (max_fog_radius - min_fog_radius);
+    fog_fac = clamp (fog_fac, 0.0, 1.0);
+
+    frag_colour = vec4(texel.xyz * (Is + Id + Ia), texel.w) * object_color;
+
+    // blend the fog colour with the lighting colour, based on the fog factor
+    frag_colour.rgb = mix(frag_colour.rgb, fog_colour, fog_fac); 
 }

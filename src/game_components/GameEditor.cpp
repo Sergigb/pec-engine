@@ -56,7 +56,7 @@ GameEditor::GameEditor(BaseApp* app, FontAtlas* font_atlas){
 
 
 void GameEditor::init(){
-    m_render_context->setLightPosition(math::vec3(150.0, 100.0, 0.0));
+    m_render_context->setLightPosition(math::vec3(500.0, 1000.0, 0.0));
 
     m_physics_pause = true;
     m_picked_obj = nullptr;
@@ -678,7 +678,7 @@ void GameEditor::processGUI(){
         }
 
         if(!m_vessel_id){ // set the vessel root
-            m_asset_manager->addBody(part.get(), btVector3(0.0, 60.0, 0.0),
+            m_asset_manager->addBody(part.get(), btVector3(0.0, 30.0, 0.0),
                                      btVector3(0.0, 0.0, 0.0), btQuaternion::getIdentity());
 
             std::shared_ptr<Vessel> vessel = std::make_shared<Vessel>(std::move(part), m_input);

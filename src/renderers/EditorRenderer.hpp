@@ -26,6 +26,7 @@ class EditorRenderer : public BaseRenderer{
         const Camera* m_camera;
 
         std::unique_ptr<Model> m_att_point_model;
+        std::unique_ptr<Model> m_grid;
         math::mat4 m_att_point_scale;
 
         int renderObjects(const std::vector<object_transform>& buff, 
