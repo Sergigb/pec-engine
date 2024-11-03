@@ -141,6 +141,10 @@ int load_planets(const tinyxml2::XMLElement* planets_element, planet_map& planet
                       "resource with same name)" << std::endl;
         }
 
+        log("load_star_system::load_planets: successfully inserted planet ", name, " with id ", 
+            (std::uint32_t)str_hash(name));
+
+
         planet_element = planet_element->NextSiblingElement("planet");
     }
 

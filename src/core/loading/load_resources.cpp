@@ -49,6 +49,8 @@ int create_resource(ResourceMap& resource_map, const tinyxml2::XMLElement* resou
                   << (std::uint32_t)str_hash(name) << " (collided with another resource with the "
                   "same name)" << std::endl;
     }
+    log("load_resources::create_resource: created and inserted resource ", name," with id ", 
+        (std::uint32_t)str_hash(name));
 
     return EXIT_SUCCESS;
 }

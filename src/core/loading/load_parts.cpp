@@ -419,7 +419,7 @@ int load_parts(BasePartMap& part_map, const char* path, BaseApp* app){
             std::cerr << "load_parts: Failed to insert part with id " << base_id 
                       << " (collided with " << res.first->first << ")" << std::endl;
         }
-        log("load_parts: insedted part with base ID ", base_id);
+        log("load_parts: inserted part with base ID ", base_id);
 
         asset_manager->m_collision_shapes.push_back(std::move(shape));
         asset_manager->m_models.push_back(std::move(model));
