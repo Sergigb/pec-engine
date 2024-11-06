@@ -195,7 +195,7 @@ const btVector3 EngineComponent::update(){
     double min_flow = updateResourceFlow();
     btVector3 thrust_direction = getFinalThrustDirection();
     thrust_direction.normalize();
-    double thrust = min_flow * m_throttle * m_max_avg_thrust * TIME_STEP;
+    double thrust = min_flow * m_throttle * m_max_avg_thrust;
     return thrust * thrust_direction.normalize();
 }
 
