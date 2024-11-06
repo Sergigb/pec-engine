@@ -11,7 +11,7 @@
  */
 class GenericEngine : public BasePart{
     private:
-        EngineComponent m_main_engine;
+        EngineComponent* m_main_engine;
     public:
         GenericEngine(Model* model, Physics* physics, btCollisionShape* col_shape, 
                       btScalar mass, int baseID, AssetManagerInterface* asset_manager);

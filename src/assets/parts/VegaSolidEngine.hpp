@@ -13,7 +13,7 @@ class VegaSolidEngine : public BasePart{
         double m_separation_force;
         bool m_separate;
 
-        EngineComponent m_main_engine;
+        EngineComponent* m_main_engine;
 
         Model* m_fairing_model;
 

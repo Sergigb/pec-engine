@@ -46,7 +46,7 @@ VegaSolidEngine::VegaSolidEngine(const VegaSolidEngine& engine) : BasePart(engin
     m_separate = false;
     m_separation_force = engine.m_separation_force;
     m_main_engine = engine.m_main_engine;
-    m_main_engine.setOwner(this);
+    m_main_engine->setOwner(this);
 }
 
 
@@ -96,7 +96,7 @@ void VegaSolidEngine::renderOther(){
         ImGui::SetNextWindowSize(ImVec2(300.f, 300.f), ImGuiCond_Appearing);
         ImGui::Begin((m_fancy_name + ss.str()).c_str(), &m_show_game_menu);
 
-        switch(m_main_engine.getStatus()){
+        switch(m_main_engine->getStatus()){
             case(ENGINE_STATUS_ON):
             ImGui::Text("Engine status: off");
             if(ImGui::Button("Start engine"))
@@ -139,8 +139,8 @@ void VegaSolidEngine::update(){
         m_asset_manager->setMassProps(this, m_mass);
     }
 
-    if(m_main_engine.getStatus() == ENGINE_STATUS_ON){
-        const btVector3 force = m_main_engine.update();
+    if(m_main_engine->getStatus() == ENGINE_STATUS_ON){
+        const btVector3 force = m_main_engine->update();
         m_asset_manager->applyForce(this, force, btVector3(0.0, 0.0, 0.0));
     }
 
@@ -168,9 +168,9 @@ void VegaSolidEngine::action(int action){
     switch(action){
         case PART_ACTION_ENGINE_START:
         case PART_ACTION_ENGINE_TOGGLE:
-            if(m_main_engine.getStatus() == ENGINE_STATUS_OFF)
-                m_main_engine.startEngine();
-            else if(m_main_engine.getStatus() == ENGINE_STATUS_ON){
+            if(m_main_engine->getStatus() == ENGINE_STATUS_OFF)
+                m_main_engine->startEngine();
+            else if(m_main_engine->getStatus() == ENGINE_STATUS_ON){
                 std::cerr << "VegaSolidEngine::action: can't stop solid engines: "
                           << action << std::endl;
                 log("VegaSolidEngine::action: can't stop solid engines: ", action);
@@ -318,8 +318,10 @@ int VegaSolidEngine::loadCustom(const tinyxml2::XMLElement* elem){
     if(get_double(orientation_elem, "z", oz))
         return EXIT_FAILURE;
 
-    new (&m_main_engine) EngineComponent(this, btVector3(x, y, z),
-                                         btVector3(ox, oy, oz), average_thrust);
+    m_engine_list.emplace_back(new EngineComponent(this, btVector3(x, y, z),
+                               btVector3(ox, oy, oz), average_thrust));
+
+    m_main_engine = m_engine_list.at(0);
 
     const xmle* resources_elem = get_element(stats_elem, "required_resource");
 
@@ -345,14 +347,14 @@ int VegaSolidEngine::loadCustom(const tinyxml2::XMLElement* elem){
         if(get_string(resource_elem, "resource_name", &resource_name) == EXIT_FAILURE)
             return EXIT_FAILURE;
 
-        m_main_engine.addPropellant(str_hash(resource_name), flow_rate);
+        m_main_engine->addPropellant(str_hash(resource_name), flow_rate);
 
         resource_elem = resource_elem->NextSiblingElement("resource");
     }
 
-    m_main_engine.setDeflectionParams(true, true, max_deflection_angle, max_deflection_angle);
-    m_main_engine.setThrottle(1.0);
-    m_main_engine.requestResourcesOwner();
+    m_main_engine->setDeflectionParams(true, true, max_deflection_angle, max_deflection_angle);
+    m_main_engine->setThrottle(1.0);
+    m_main_engine->requestResourcesOwner();
 
     return EXIT_SUCCESS;
 }
