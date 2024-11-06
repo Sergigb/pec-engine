@@ -290,8 +290,23 @@ resource state
     <separation_force>100000.0</separation_force>
     <engine_stats>
         <avg_thrust>2271000.0</avg_thrust>
-        <mass_flow_rate>828.35</mass_flow_rate>
+        <required_resource>
+            <resource>
+                <mass_flow_rate>828.35</mass_flow_rate>
+                <resource_name>htpb</resource_name>
+            </resource>
+        </required_resource>
         <max_deflect_angle>0.113446</max_deflect_angle>
+        <origin>
+            <x>0.0</x>
+            <y>-5.</y>
+            <z>0.0</z>
+        </origin>
+        <orientation>
+            <x>0.0</x>
+            <y>1.0</y>
+            <z>0.0</z>
+        </orientation>
     </engine_stats>
 </part>
 
@@ -351,8 +366,23 @@ resource state
     <separation_force>50000.0</separation_force>
     <engine_stats>
         <avg_thrust>871000.0</avg_thrust>
-        <mass_flow_rate>331.94</mass_flow_rate>
+        <required_resource>
+            <resource>
+                <mass_flow_rate>331.94</mass_flow_rate>
+                <resource_name>htpb</resource_name>
+            </resource>
+        </required_resource>
         <max_deflect_angle>0.113446</max_deflect_angle>
+        <origin>
+            <x>0.0</x>
+            <y>-5.</y>
+            <z>0.0</z>
+        </origin>
+        <orientation>
+            <x>0.0</x>
+            <y>1.0</y>
+            <z>0.0</z>
+        </orientation>
     </engine_stats>
 </part>
 
@@ -412,8 +442,23 @@ resource state
     <separation_force>10000.0</separation_force>
     <engine_stats>
         <avg_thrust>260000.0</avg_thrust>
-        <mass_flow_rate>91.95</mass_flow_rate>
+        <required_resource>
+            <resource>
+                <mass_flow_rate>91.95</mass_flow_rate>
+                <resource_name>htpb</resource_name>
+            </resource>
+        </required_resource>
         <max_deflect_angle>0.113446</max_deflect_angle>
+        <origin>
+            <x>0.0</x>
+            <y>-5.</y>
+            <z>0.0</z>
+        </origin>
+        <orientation>
+            <x>0.0</x>
+            <y>1.0</y>
+            <z>0.0</z>
+        </orientation>
     </engine_stats>
 </part>
 

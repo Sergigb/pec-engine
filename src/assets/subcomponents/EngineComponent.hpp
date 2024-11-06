@@ -52,7 +52,8 @@ class EngineComponent{
         std::vector<struct required_propellant> m_propellants;
         // if true, can be stopped
         bool m_can_be_stopped;
-
+        // if true, the resources are requested to the owner part
+        bool m_request_owner;
         // engine status
         int m_status;
 
@@ -201,6 +202,12 @@ class EngineComponent{
          * the force that should be applied on the parent part.
          */
         const btVector3 update();
+
+        /*
+         * Sets the m_request_owner to true, which means that the resources are requested to the
+         * owner part instead of the parent.
+         */
+        void requestResourcesOwner();
 };
 
 

@@ -4,19 +4,16 @@
 #include <memory>
 
 #include "../BasePart.hpp"
-
-
-#define ENGINE_OFF 0
-#define ENGINE_ON 1
-#define ENGINE_DEPLETED 2
+#include "../subcomponents/EngineComponent.hpp"
 
 
 class VegaSolidEngine : public BasePart{
     private:
-        short m_engine_status;
         std::uint32_t m_htpb_id;
-        double m_average_thrust, m_mass_flow_rate, m_max_deflection_angle, m_separation_force;
+        double m_separation_force;
         bool m_separate;
+
+        EngineComponent m_main_engine;
 
         Model* m_fairing_model;
 

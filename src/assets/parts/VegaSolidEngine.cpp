@@ -33,30 +33,20 @@ VegaSolidEngine::VegaSolidEngine() : BasePart() {
 }
 
 
-void VegaSolidEngine::init(){
-    std::hash<std::string> str_hash;
-
-    m_engine_status = ENGINE_OFF;
-    m_htpb_id = str_hash("htpb");
+void VegaSolidEngine::init(){   
     m_fairing_model = nullptr;
 
-    m_average_thrust = 0.0;
-    m_mass_flow_rate = 0.0;
-    m_max_deflection_angle = 0.0;
     m_separate = false;
     m_separation_force = 100000.0;
 }
 
 
 VegaSolidEngine::VegaSolidEngine(const VegaSolidEngine& engine) : BasePart(engine) {
-    m_engine_status = ENGINE_OFF;
-    m_htpb_id = engine.m_htpb_id;
     m_fairing_model = engine.m_fairing_model;
-    m_average_thrust = engine.m_average_thrust;
-    m_mass_flow_rate = engine.m_mass_flow_rate;
-    m_max_deflection_angle = engine.m_max_deflection_angle;
     m_separate = false;
     m_separation_force = engine.m_separation_force;
+    m_main_engine = engine.m_main_engine;
+    m_main_engine.setOwner(this);
 }
 
 
@@ -87,12 +77,12 @@ void VegaSolidEngine::renderOther(){
 
         ss.str("");
         ss.clear();
-        ss << "Vacuum thrust: " << m_average_thrust / 1000.0 << " kN";
+        ss << "Vacuum thrust: N/A";// << m_average_thrust / 1000.0 << " kN";
         ImGui::Text(ss.str().c_str());
 
         ss.str("");
         ss.clear();
-        ss << "Specific impulse: " << m_average_thrust / m_mass_flow_rate / EARTH_GRAVITY << " s";
+        ss << "Specific impulse: N/A";// " << m_average_thrust / m_mass_flow_rate / EARTH_GRAVITY << " s";
         ImGui::Text(ss.str().c_str());
 
         ImGui::End();
@@ -106,20 +96,20 @@ void VegaSolidEngine::renderOther(){
         ImGui::SetNextWindowSize(ImVec2(300.f, 300.f), ImGuiCond_Appearing);
         ImGui::Begin((m_fancy_name + ss.str()).c_str(), &m_show_game_menu);
 
-        switch(m_engine_status){
-            case(ENGINE_OFF):
+        switch(m_main_engine.getStatus()){
+            case(ENGINE_STATUS_ON):
             ImGui::Text("Engine status: off");
             if(ImGui::Button("Start engine"))
-                m_engine_status = ENGINE_ON;
+                action(PART_ACTION_ENGINE_START);
             break;
 
-            case(ENGINE_ON):
+            case(ENGINE_STATUS_OFF):
             ImGui::Text("Engine status: on");
             ImGui::Text("Solid-fuel engines cannot be turned off");
             break;
 
-            case(ENGINE_DEPLETED):
-            ImGui::Text("Engine status: off (fuel depleted)");
+            case(ENGINE_STATUS_DAMAGED):
+            ImGui::Text("Engine status: damaged");
             break;
         }
 
@@ -149,31 +139,9 @@ void VegaSolidEngine::update(){
         m_asset_manager->setMassProps(this, m_mass);
     }
 
-    if(m_engine_status == ENGINE_ON){
-        double current_flow = m_mass_flow_rate * TIME_STEP;
-
-        const btMatrix3x3& basis = m_body->getWorldTransform().getBasis();
-        btMatrix3x3 gimbal;
-        btVector3 force;
-
-        // request to ourselves
-        requestResource(this, m_htpb_id, current_flow);
-
-        if(current_flow == 0.0f){
-            m_engine_status = ENGINE_DEPLETED;
-            return;
-        }
-
-        // thrust = flow rate ratio (output / max) * avg_thrust
-        force = btVector3(0.0, (current_flow / (m_mass_flow_rate * TIME_STEP))
-                               * m_average_thrust, 0.0);
-
-        gimbal.setEulerZYX(m_vessel->getYaw() * m_max_deflection_angle, 0.0,
-                           m_vessel->getPitch() * m_max_deflection_angle);
-        force = basis * gimbal * force;
-        
-        std::cout << force.getX() << " "<< force.getY() << " "<< force.getZ() << std::endl;
-        m_asset_manager->applyForce(this, force, basis * btVector3(0.0, -5.0, 0.0));
+    if(m_main_engine.getStatus() == ENGINE_STATUS_ON){
+        const btVector3 force = m_main_engine.update();
+        m_asset_manager->applyForce(this, force, btVector3(0.0, 0.0, 0.0));
     }
 
     if(m_separate){
@@ -199,7 +167,14 @@ VegaSolidEngine* VegaSolidEngine::clone() const{
 void VegaSolidEngine::action(int action){
     switch(action){
         case PART_ACTION_ENGINE_START:
-            m_engine_status = ENGINE_ON;
+        case PART_ACTION_ENGINE_TOGGLE:
+            if(m_main_engine.getStatus() == ENGINE_STATUS_OFF)
+                m_main_engine.startEngine();
+            else if(m_main_engine.getStatus() == ENGINE_STATUS_ON){
+                std::cerr << "VegaSolidEngine::action: can't stop solid engines: "
+                          << action << std::endl;
+                log("VegaSolidEngine::action: can't stop solid engines: ", action);
+            }
             break;
         case PART_ACTION_SEPARATE:
             m_separate = true;
@@ -267,15 +242,7 @@ int VegaSolidEngine::loadCustom(const tinyxml2::XMLElement* elem){
     const xmle* eject_elem = get_element(elem, "separation_force");
     const xmle* fairing_elem = get_element(elem, "fairing_model_path", true);
     const char* fairing_model_path;
-
-    if(!stats_elem){
-        std::cerr << "VegaSolidEngine::loadCustom: Missing stats elements in engine defined in "
-                  << elem->GetLineNum() << std::endl;
-        log("VegaSolidEngine::loadCustom: Missing stats elements in engine defined in ",
-            elem->GetLineNum());
-
-        return EXIT_FAILURE;
-    }
+    double average_thrust, max_deflection_angle;
 
     if(!eject_elem){
         std::cerr << "VegaSolidEngine::loadCustom: Missing ejection force element in engine "
@@ -285,13 +252,6 @@ int VegaSolidEngine::loadCustom(const tinyxml2::XMLElement* elem){
 
         return EXIT_FAILURE;
     }
-
-    if(get_double(stats_elem, "avg_thrust", m_average_thrust) == EXIT_FAILURE)
-        return EXIT_FAILURE;
-    if(get_double(stats_elem, "mass_flow_rate", m_mass_flow_rate) == EXIT_FAILURE)
-        return EXIT_FAILURE;
-    if(get_double(stats_elem, "max_deflect_angle", m_max_deflection_angle) == EXIT_FAILURE)
-        return EXIT_FAILURE;
 
     if(eject_elem->QueryDoubleText(&m_separation_force))
         return EXIT_FAILURE;
@@ -308,6 +268,91 @@ int VegaSolidEngine::loadCustom(const tinyxml2::XMLElement* elem){
     }
     else
         m_fairing_model = nullptr;
+
+    if(!stats_elem){
+        std::cerr << "VegaSolidEngine::loadCustom: Missing stats elements in engine defined in "
+                  << elem->GetLineNum() << std::endl;
+        log("VegaSolidEngine::loadCustom: Missing stats elements in engine defined in ",
+            elem->GetLineNum());
+
+        return EXIT_FAILURE;
+    }
+
+    if(get_double(stats_elem, "avg_thrust", average_thrust) == EXIT_FAILURE)
+        return EXIT_FAILURE;
+    if(get_double(stats_elem, "max_deflect_angle", max_deflection_angle) == EXIT_FAILURE)
+        return EXIT_FAILURE;
+
+    const xmle* origin_elem = get_element(stats_elem, "origin");
+    const xmle* orientation_elem = get_element(stats_elem, "orientation");
+
+    if(!origin_elem){
+        std::cerr << "VegaSolidEngine::loadCustom: Missing origin for engine defined in "
+                  << stats_elem->GetLineNum() << std::endl;
+        log("VegaSolidEngine::loadCustom: Missing origin for engine defined in ",
+            stats_elem->GetLineNum());
+        return EXIT_FAILURE;
+    }
+
+    if(!orientation_elem){
+        std::cerr << "VegaSolidEngine::loadCustom: Missing orientation for engine defined in "
+                  << stats_elem->GetLineNum() << std::endl;
+        log("VegaSolidEngine::loadCustom: Missing orientation for engine defined in ",
+            stats_elem->GetLineNum());
+
+        return EXIT_FAILURE;
+    }
+    double x, y, z, ox, oy, oz;
+
+    if(get_double(origin_elem, "x", x))
+        return EXIT_FAILURE;
+    if(get_double(origin_elem, "y", y))
+        return EXIT_FAILURE;
+    if(get_double(origin_elem, "z", z))
+        return EXIT_FAILURE;
+
+    if(get_double(orientation_elem, "x", ox))
+        return EXIT_FAILURE;
+    if(get_double(orientation_elem, "y", oy))
+        return EXIT_FAILURE;
+    if(get_double(orientation_elem, "z", oz))
+        return EXIT_FAILURE;
+
+    new (&m_main_engine) EngineComponent(this, btVector3(x, y, z),
+                                         btVector3(ox, oy, oz), average_thrust);
+
+    const xmle* resources_elem = get_element(stats_elem, "required_resource");
+
+     if(!resources_elem){
+        std::cerr << "VegaSolidEngine::loadCustom: Missing resources element in engine "
+                     "stats defined in " << stats_elem->GetLineNum() << std::endl;
+        log("VegaSolidEngine::loadCustom: Missing resources element in engine stats defined in ",
+            stats_elem->GetLineNum());
+
+        return EXIT_FAILURE;
+    }
+
+    const xmle* resource_elem = resources_elem->FirstChildElement("resource");
+    std::hash<std::string> str_hash;
+
+    while(resource_elem){
+        double flow_rate;
+        const char* resource_name;
+
+        if(get_double(resource_elem, "mass_flow_rate", flow_rate) == EXIT_FAILURE)
+            return EXIT_FAILURE;
+
+        if(get_string(resource_elem, "resource_name", &resource_name) == EXIT_FAILURE)
+            return EXIT_FAILURE;
+
+        m_main_engine.addPropellant(str_hash(resource_name), flow_rate);
+
+        resource_elem = resource_elem->NextSiblingElement("resource");
+    }
+
+    m_main_engine.setDeflectionParams(true, true, max_deflection_angle, max_deflection_angle);
+    m_main_engine.setThrottle(1.0);
+    m_main_engine.requestResourcesOwner();
 
     return EXIT_SUCCESS;
 }

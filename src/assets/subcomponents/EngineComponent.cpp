@@ -20,6 +20,7 @@ EngineComponent::EngineComponent(BasePart* owner_part, const btVector3& origin,
     m_status = ENGINE_STATUS_OFF;
     m_can_be_stopped = true;
     m_throttle = 1.0;
+    m_request_owner = false;
 
     m_owner_part = owner_part;
 
@@ -38,6 +39,7 @@ EngineComponent::EngineComponent(){
     m_status = ENGINE_STATUS_OFF;
     m_can_be_stopped = true;
     m_throttle = 1.0;
+    m_request_owner = false;
 }
 
 
@@ -159,19 +161,26 @@ double EngineComponent::getThrottle() const{
 // temp vvv
 #define TIME_STEP (1. / 60.)
 double EngineComponent::updateResourceFlow(){
-    BasePart* m_parent_part = m_owner_part->getParent();
+    BasePart* requested;
     double min_ratio = 1.0;
 
-    if(!m_parent_part)
+    if(m_request_owner)
+        requested = m_owner_part;
+    else
+        requested = m_owner_part->getParent();
+
+    if(!requested)
         return 0.0;
 
     for(uint i=0; i < m_propellants.size(); i++){
         required_propellant& prop = m_propellants.at(i);
 
-        prop.current_flow_rate = prop.max_flow_rate * m_throttle * TIME_STEP;
-        m_parent_part->requestResource(m_owner_part, prop.resource_id, prop.current_flow_rate);
-        if(prop.current_flow_rate / prop.max_flow_rate < min_ratio)
-            min_ratio = prop.current_flow_rate / prop.max_flow_rate;
+        double ideal_flow_rate = prop.max_flow_rate * m_throttle * TIME_STEP;
+        prop.current_flow_rate = ideal_flow_rate;
+        // request and update the flow rate
+        requested->requestResource(m_owner_part, prop.resource_id, prop.current_flow_rate);
+        if(prop.current_flow_rate / ideal_flow_rate < min_ratio)
+            min_ratio = prop.current_flow_rate / ideal_flow_rate;
     }
     return min_ratio;
 }
@@ -188,4 +197,9 @@ const btVector3 EngineComponent::update(){
     thrust_direction.normalize();
     double thrust = min_flow * m_throttle * m_max_avg_thrust * TIME_STEP;
     return thrust * thrust_direction.normalize();
+}
+
+
+void EngineComponent::requestResourcesOwner(){
+    m_request_owner = true;
 }
